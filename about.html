@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[ PAGE TITLE GOES HERE ]</title>
+<meta name="description" content="[ META DESCRIPTION GOES HERE ]">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    /* Brand tokens — see README */
+    --blurple:       #5865F2;
+    --blurple-text:  #99A2F7;
+    --ground:        #101218;
+    --panel:         #171A22;
+    --border:        #272B36;
+    --text:          #FFFFFF;
+    --text-muted:    #9BA0AE;
+    --text-dim:      #7A8094;
+    --accent:        #D4A24C;   /* editable: swap to retheme the page */
+
+    --font: 'Poppins', system-ui, -apple-system, sans-serif;
+    --maxw: 640px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--text-muted);
+    font-family: var(--font);
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+  }
+
+  main {
+    width: 100%;
+    max-width: var(--maxw);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .card-body { padding: 36px 36px 44px; }
+
+  /* Header band — public domain artwork, see credit comment in the markup */
+  .banner { position: relative; }
+
+  .banner img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 5;
+    object-fit: cover;
+  }
+
+  .banner-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 16px;
+  }
+
+  /* Outline drawn behind the glyph with layered shadows, not -webkit-text-stroke,
+     which cuts into the letterform. */
+  .banner h1 {
+    margin: 0;
+    font-size: clamp(1.4rem, 5.4vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow:
+      3px 0 0 #0A0A0C, -3px 0 0 #0A0A0C, 0 3px 0 #0A0A0C, 0 -3px 0 #0A0A0C,
+      2px 2px 0 #0A0A0C, -2px 2px 0 #0A0A0C, 2px -2px 0 #0A0A0C, -2px -2px 0 #0A0A0C,
+      0 3px 10px rgba(0,0,0,0.4);
+  }
+
+  .banner .tag {
+    margin: 0;
+    font-size: clamp(0.95rem, 2.6vw, 1.3rem);
+    font-weight: 600;
+    color: #fff;
+    text-shadow:
+      2px 0 0 #0A0A0C, -2px 0 0 #0A0A0C, 0 2px 0 #0A0A0C, 0 -2px 0 #0A0A0C,
+      1.5px 1.5px 0 #0A0A0C, -1.5px 1.5px 0 #0A0A0C, 1.5px -1.5px 0 #0A0A0C, -1.5px -1.5px 0 #0A0A0C,
+      0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  .mark {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 20px;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--text);
+    margin: 0 0 14px;
+  }
+
+  .body {
+    font-size: 1rem;
+    font-weight: 300;
+    text-align: left;
+    margin: 0 0 20px;
+  }
+
+  .body:last-of-type { margin-bottom: 0; }
+
+  footer {
+    margin-top: 36px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  footer a { color: var(--blurple-text); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 480px) {
+    .card-body { padding: 28px 22px 34px; }
+  }
+</style>
+</head>
+<body>
+
+  <main>
+    <!-- Artwork: "Under the Wave off Kanagawa (The Great Wave)", Katsushika Hokusai,
+         ca. 1830-32. The Metropolitan Museum of Art, Open Access (public domain).
+         https://www.metmuseum.org/art/collection/search/39799 -->
+    <header class="banner">
+      <img src="img/header-wave.jpg" alt="Detail of Hokusai's The Great Wave: a cresting blue wave with clawed foam above boats, with Mount Fuji small in the distance.">
+      <div class="banner-text">
+        <h1>Welcome to the Realm</h1>
+        <p class="tag">About</p>
+      </div>
+    </header>
+
+    <div class="card-body">
+    <p class="body">I am the PrinterMan, the gracious ruler of this realm. I have created PrinterMan's Art Club as an extension of my iFunny presence and thereby as a suitable replacement for the vileness of it. Here, I welcome all to my sanctuary. Whether you are an artist or not, we all will benefit from the community through healthy dialogue, shared values of excellence, and good vibes forever.</p>
+
+    <p class="body">This place is more than art appreciation. We are centered on encouraging each other through examples of brotherhood and honor, dedicated to the propositions of equality and justice.</p>
+
+    <p class="body">I am grateful for all who visit. Share with us your doodles, masterpieces, and creative energies of all forms. But most of all, share your true self. Together, we will make the Internet great again.</p>
+
+    <p class="body">Thank you and have a good day!</p>
+
+    <footer>
+      <a href="/">printermanart.club</a> &nbsp;·&nbsp; About &nbsp;·&nbsp; &copy; 2026 PrinterMan
+    </footer>
+    </div>
+  </main>
+
+</body>
+</html>

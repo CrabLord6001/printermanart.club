@@ -55,8 +55,57 @@
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 48px 36px;
+    overflow: hidden;
     text-align: center;
+  }
+
+  .card-body { padding: 36px 36px 44px; }
+
+  /* Header band — public domain artwork, see img credit in README */
+  .banner { position: relative; }
+
+  .banner img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 5;
+    object-fit: cover;
+  }
+
+  .banner-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 16px;
+  }
+
+  /* Outline drawn behind the glyph with layered shadows, not -webkit-text-stroke,
+     which cuts into the letterform. */
+  .banner h1 {
+    margin: 0;
+    font-size: clamp(1.4rem, 5.4vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow:
+      3px 0 0 #0A0A0C, -3px 0 0 #0A0A0C, 0 3px 0 #0A0A0C, 0 -3px 0 #0A0A0C,
+      2px 2px 0 #0A0A0C, -2px 2px 0 #0A0A0C, 2px -2px 0 #0A0A0C, -2px -2px 0 #0A0A0C,
+      0 3px 10px rgba(0,0,0,0.4);
+  }
+
+  .banner .tag {
+    margin: 0;
+    font-size: clamp(0.95rem, 2.6vw, 1.3rem);
+    font-weight: 600;
+    color: #fff;
+    text-shadow:
+      2px 0 0 #0A0A0C, -2px 0 0 #0A0A0C, 0 2px 0 #0A0A0C, 0 -2px 0 #0A0A0C,
+      1.5px 1.5px 0 #0A0A0C, -1.5px 1.5px 0 #0A0A0C, 1.5px -1.5px 0 #0A0A0C, -1.5px -1.5px 0 #0A0A0C,
+      0 2px 8px rgba(0,0,0,0.4);
   }
 
   .mark {
@@ -109,27 +158,31 @@
   footer a:hover { text-decoration: underline; }
 
   @media (max-width: 480px) {
-    main { padding: 36px 22px; }
+    .card-body { padding: 28px 22px 34px; }
   }
 </style>
 </head>
 <body>
 
   <main>
-    <p class="mark">[ SMALL LABEL GOES HERE ]</p>
+    <!-- Artwork: "Irises at Yatsuhashi (Eight Bridges)", Ogata Korin, after 1709.
+         The Metropolitan Museum of Art, Open Access (public domain).
+         https://www.metmuseum.org/art/collection/search/39664 -->
+    <header class="banner">
+      <img src="img/header-irises.jpg" alt="Detail of Ogata Korin's screen painting Irises at Yatsuhashi: deep blue irises and green blades across a gold ground, with a plank bridge crossing above them.">
+      <div class="banner-text">
+        <h1>PrinterMan's Art Club</h1>
+        <p class="tag">The Chill Creative Zone</p>
+      </div>
+    </header>
 
-    <h1>[ TAGLINE GOES HERE ]</h1>
-
-    <p class="sub">[ SUBHEAD GOES HERE ]</p>
-
-    <a class="cta" href="https://discord.gg/nn3xjcS745">[ CTA LABEL GOES HERE ]</a>
+    <div class="card-body">
+    <a class="cta" href="https://discord.gg/nn3xjcS745">Join Now</a>
 
     <footer>
-      printermanart.club &nbsp;·&nbsp;
-      <a href="https://discord.gg/nn3xjcS745">discord.gg/nn3xjcS745</a>
-      <br>
-      &copy; 2026 PrinterMan
+      printermanart.club &nbsp;·&nbsp; <a href="/about.html">About</a> &nbsp;·&nbsp; &copy; 2026 PrinterMan
     </footer>
+    </div>
   </main>
 
 </body>
