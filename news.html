@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>News Briefing &mdash; PrinterMan's Art Club</title>
+<link rel="canonical" href="https://printermanart.club/news.html">
+<meta name="theme-color" content="#F3EFE4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14130F" media="(prefers-color-scheme: dark)">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PrinterMan's Art Club">
+<meta property="og:title" content="News Briefing &mdash; PrinterMan's Art Club">
+<meta property="og:url" content="https://printermanart.club/news.html">
+<!-- [ META DESCRIPTION GOES HERE ] and og:description to match -->
+
+<style>
+  /* Base reset. The artifact host supplied this; a standalone page must. */
+  html, body { margin: 0; padding: 0; }
+  img { max-width: 100%; }
+</style>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap">
+
+<style>
+/* A front page, not a blog post. Blackletter nameplate over a ruled folio bar;
+   one dominant lead story set across two columns with a drop cap; the remaining
+   stories in a ruled two-column well beneath it. Past days collapse into a
+   ruled index at the foot of the page. Seven-day rolling window. */
+:root {
+  --bg: #F3EFE4;
+  --surface: #FBF8F0;
+  --ink: #17150F;
+  --muted: #5A5347;
+  --rule: #C7BEAB;
+  --accent: #8C2318;
+  --accent-wash: #EDE3D2;
+  --notice: #E9E0CC;
+
+  --nameplate: "UnifrakturMaguntia", "Old Standard TT", Times, serif;
+  --display: "Old Standard TT", "Times New Roman", Times, serif;
+  --body: "PT Serif", Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14130F; --surface: #1B1915; --ink: #E6E1D4; --muted: #9D9484;
+    --rule: #35312A; --accent: #DD8070; --accent-wash: #27201C; --notice: #241F18;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14130F; --surface: #1B1915; --ink: #E6E1D4; --muted: #9D9484;
+  --rule: #35312A; --accent: #DD8070; --accent-wash: #27201C; --notice: #241F18;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.52;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 54rem; margin: 0 auto; padding-inline: 20px; padding-block: 0 72px; }
+
+/* ---- Nameplate and folio bar ---- */
+
+.dateline { padding: 0; border: none; }
+
+.masthead {
+  font-family: var(--nameplate);
+  font-size: clamp(2.5rem, 9.5vw, 4.25rem);
+  font-weight: 400; line-height: 1.02; letter-spacing: 0.01em;
+  text-align: center; margin: 0;
+  padding-block: 20px 12px;
+}
+
+.dateline-row {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: var(--bg);
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  border-top: 3px double var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding-block: 7px;
+  font-family: var(--display);
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--muted);
+}
+.dateline-row::before {
+  content: "Late edition";
+  flex: 1 1 0; min-width: 0;
+}
+.dateline-row::after {
+  content: "US \0026  World";
+  flex: 1 1 0; min-width: 0; text-align: right;
+}
+.stamp {
+  font-family: var(--display); font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink); text-align: center; white-space: nowrap;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+@media (max-width: 540px) {
+  .dateline-row::before, .dateline-row::after { display: none; }
+  .stamp { flex: 1; letter-spacing: 0.1em; white-space: normal; }
+}
+
+/* ---- Notice ---- */
+
+.notice {
+  background: var(--notice); border: 1px solid var(--ink);
+  padding: 11px 13px; margin-top: 22px;
+  font-size: 0.9rem; line-height: 1.5; color: var(--muted);
+}
+.notice strong { color: var(--ink); font-weight: 700; }
+
+/* ---- Section flags ---- */
+
+.today-label, .archive-label {
+  display: flex; align-items: center; gap: 14px;
+  font-family: var(--display); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--ink); margin: 26px 0 0; padding: 0; border: none;
+}
+.today-label::before, .today-label::after,
+.archive-label::before, .archive-label::after {
+  content: ""; flex: 1; border-top: 1px solid var(--rule);
+}
+.archive-label { margin-top: 42px; color: var(--muted); }
+
+/* ---- The well ---- */
+
+.dispatches { display: grid; grid-template-columns: 1fr; margin-top: 18px; }
+
+.dispatch { padding-block: 20px; border-top: 1px solid var(--rule); min-width: 0; }
+.dispatch:first-child { border-top: none; padding-top: 6px; }
+
+.rank {
+  font-family: var(--display); font-size: 0.76rem; font-weight: 700;
+  letter-spacing: 0.12em; color: var(--muted); margin-bottom: 5px;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.dispatch-body { min-width: 0; }
+
+.tag {
+  display: block; font-family: var(--display); font-size: 0.72rem;
+  font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 7px;
+}
+
+.headline {
+  font-family: var(--display); font-size: clamp(1.15rem, 2.7vw, 1.4rem);
+  font-weight: 700; line-height: 1.16; letter-spacing: -0.005em;
+  text-wrap: balance; margin: 0 0 9px;
+}
+
+.summary { margin: 0 0 11px; text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+
+.attribution {
+  font-family: var(--body); font-size: 0.8rem; font-style: italic;
+  color: var(--muted); margin: 0;
+}
+.attribution a { color: var(--muted); text-decoration-color: var(--rule); text-underline-offset: 3px; }
+.attribution a:hover { color: var(--accent); }
+.attribution a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---- The lead ---- */
+
+.dispatches > .dispatch:first-child {
+  padding-bottom: 24px;
+  border-bottom: 3px double var(--ink);
+}
+.dispatches > .dispatch:first-child .rank,
+.dispatches > .dispatch:first-child .tag { text-align: center; }
+.dispatches > .dispatch:first-child .headline {
+  font-size: clamp(1.85rem, 6.2vw, 2.8rem);
+  line-height: 1.04; letter-spacing: -0.015em;
+  text-align: center; margin: 0 0 14px;
+  max-width: 34ch; margin-inline: auto;
+}
+.dispatches > .dispatch:first-child .summary { font-size: 1.03rem; line-height: 1.55; }
+.dispatches > .dispatch:first-child .summary::first-letter {
+  float: left; font-family: var(--display); font-weight: 700;
+  font-size: 3.5em; line-height: 0.76;
+  margin: 0.05em 0.08em 0 0; color: var(--ink);
+}
+.dispatches > .dispatch:first-child .attribution { text-align: center; font-size: 0.82rem; }
+
+@media (min-width: 700px) {
+  .dispatches > .dispatch:first-child .summary {
+    columns: 2; column-gap: 32px; column-rule: 1px solid var(--rule);
+  }
+}
+
+/* ---- Two-column well for the remaining stories ---- */
+
+@media (min-width: 700px) {
+  .dispatches { grid-template-columns: 1fr 1fr; column-gap: 0; }
+  .dispatches > .dispatch:first-child { grid-column: 1 / -1; }
+  .dispatches > .dispatch:nth-child(even):not(:first-child) { padding-right: 28px; }
+  .dispatches > .dispatch:nth-child(odd):not(:first-child) {
+    padding-left: 28px; border-left: 1px solid var(--rule);
+  }
+  .dispatches > .dispatch:last-child:nth-child(even):not(:first-child) {
+    grid-column: 1 / -1; padding-right: 0;
+  }
+}
+
+/* ---- Archive index ---- */
+
+details.day { border-bottom: 1px solid var(--rule); }
+details.day > summary {
+  cursor: pointer; list-style: none;
+  padding-block: 13px;
+  display: flex; align-items: baseline; gap: 12px;
+  font-family: var(--body); font-size: 0.92rem;
+}
+details.day > summary::-webkit-details-marker { display: none; }
+details.day > summary::before {
+  content: "+"; font-family: var(--display); color: var(--accent);
+  font-weight: 700; width: 0.9rem; flex: none;
+}
+details.day[open] > summary::before { content: "\2212"; }
+details.day > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.day-date {
+  font-family: var(--display); font-weight: 700; font-size: 0.78rem;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink);
+  white-space: nowrap; flex: none;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.day-gist { color: var(--muted); font-style: italic; min-width: 0; overflow-wrap: anywhere; }
+details.day > .day-contents { padding-bottom: 10px; }
+details.day .dispatch { padding-block: 16px; border-top: 1px solid var(--rule); }
+details.day .dispatch:first-child { border-top: 1px solid var(--rule); padding-top: 18px; }
+details.day .headline { font-size: 1.02rem; line-height: 1.2; }
+details.day .summary { font-size: 0.9rem; line-height: 1.5; }
+details.day .attribution { font-size: 0.76rem; }
+
+.empty-day {
+  font-family: var(--body); font-size: 0.88rem; font-style: italic; color: var(--muted);
+  padding: 6px 0 18px 1.9rem; margin: 0;
+}
+
+/* ---- Footer ---- */
+
+.footer {
+  margin-top: 34px; padding-top: 18px; border-top: 3px double var(--ink);
+  font-family: var(--body); font-size: 0.82rem; line-height: 1.65;
+  color: var(--muted);
+}
+.footer-label {
+  font-family: var(--display); text-transform: uppercase; letter-spacing: 0.22em;
+  font-weight: 700; font-size: 0.72rem; color: var(--ink);
+  display: block; margin-bottom: 7px;
+}
+.footer ul { list-style: none; padding: 0; margin: 0; }
+.footer a { color: var(--muted); text-underline-offset: 3px; }
+.footer a:hover { color: var(--accent); }
+
+@media (min-width: 700px) {
+  .footer ul { columns: 2; column-gap: 32px; }
+  .footer li { break-inside: avoid; margin-bottom: 4px; }
+}
+
+/* ---- Decks and datelines ---- */
+
+.deck {
+  font-family: var(--body); font-style: italic; font-size: 0.92rem;
+  line-height: 1.4; color: var(--muted); margin: 0 0 9px;
+  text-wrap: pretty;
+}
+.dispatches > .dispatch:first-child .deck {
+  font-size: clamp(1rem, 2.2vw, 1.14rem); line-height: 1.38;
+  color: var(--ink); text-align: center;
+  max-width: 50ch; margin: 0 auto 16px;
+  padding-bottom: 14px; border-bottom: 1px solid var(--rule);
+}
+details.day .deck { font-size: 0.84rem; }
+
+.place {
+  font-family: var(--display); font-weight: 700; font-size: 0.78rem;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink);
+}
+.place::after { content: " \2014  "; letter-spacing: 0; }
+
+/* ---- Colophon rail ---- */
+
+.colophon {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 14px; margin-bottom: 14px;
+}
+.colophon-side { flex: 1 1 0; min-width: 0; font-style: italic; }
+.colophon-right { text-align: right; }
+.colophon .footer-label { flex: none; margin: 0; }
+@media (max-width: 560px) {
+  .colophon { flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+  .colophon-side, .colophon-right { flex: none; text-align: center; }
+}
+
+/* ---- Print: pull a clean front page ---- */
+
+@media print {
+  :root {
+    --bg: #FFFFFF; --surface: #FFFFFF; --ink: #000000; --muted: #333333;
+    --rule: #999999; --accent: #000000;
+  }
+  body { font-size: 10pt; line-height: 1.34; }
+  .wrap { max-width: none; padding: 0; }
+  .dateline-row { position: static; }
+  .archive-label, details.day, .colophon { display: none; }
+  .footer ul { columns: 2; }
+  a { color: #000; text-decoration: none; }
+}
+
+</style>
+
+<style>
+/* Site furniture — printermanart.club only, not part of the briefing itself.
+   Set in the paper's own type and tokens so it reads as a publisher's line
+   rather than a web nav bar. The daily task does not touch this block. */
+.site-strip {
+  display: flex; align-items: baseline; gap: 16px;
+  padding-block: 11px; border-bottom: 1px solid var(--rule);
+  font-family: var(--display); font-size: 0.68rem;
+  text-transform: uppercase; letter-spacing: 0.18em;
+}
+.site-strip a { color: var(--muted); text-decoration: none; }
+.site-strip a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.site-strip a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.site-strip .site-home { flex: 1 1 auto; font-weight: 700; color: var(--ink); }
+.site-foot {
+  margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--rule);
+  font-size: 0.78rem; text-align: center;
+}
+@media (max-width: 420px) {
+  .site-strip { gap: 11px; letter-spacing: 0.12em; }
+}
+@media print { .site-strip, .site-foot { display: none; } }
+</style>
+
+<div class="wrap">
+
+  <nav class="site-strip">
+    <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
+    <a href="/about.html">About</a>
+    <a href="https://discord.gg/nn3xjcS745">Join</a>
+  </nav>
+
+  <header class="dateline">
+    <h1 class="masthead">Morning Briefing</h1>
+    <div class="dateline-row">
+      <span class="stamp">Thursday 22 October 2026</span>
+    </div>
+  </header>
+
+  <span class="today-label">Today &middot; Thursday 22 October</span>
+
+  <main class="dispatches">
+    <article class="dispatch">
+      <div class="rank">01</div>
+      <div class="dispatch-body">
+        <span class="tag">World</span>
+        <h2 class="headline">Critical PHP Flaw Drives Governments Offline</h2>
+        <p class="deck">An OpenAI model found the bug first; the Netherlands, Finland, France and Australia pull services to patch</p>
+        <p class="summary">Two critical vulnerabilities in PHP, the scripting language behind millions of websites, allow unauthenticated remote code execution on any installation serving web requests, the US Cybersecurity and Infrastructure Security Agency said in naming the pair php2shell; OpenAI said one of its models found the flaw and called it one of the most impactful vulnerabilities in recent memory. The Netherlands, Finland, France and Australia took government services offline to apply the patch, and the PHP Foundation warned the update could briefly darken millions of sites; Japan&rsquo;s prime minister, Sanae Takaichi, told administrators to check whether their public sites run PHP, and the National Security Agency&rsquo;s cybersecurity division advised taking systems down where an immediate update was not feasible. Fixes shipped as PHP 8.5.12, 8.4.27, 8.3.36 and 8.2.35, with backports for older branches; Wiz Research reports every version back to 5.4 is affected by at least one of the two flaws, which carry a severity score of 9.2 out of 10. Accounts of exploitation differ in scope rather than substance: Cloudflare&rsquo;s chief executive said the company saw thousands of attempts to use the flaw within hours, while the security firm Patchstack said its own telemetry showed probing without hard evidence of a breach.</p>
+        <p class="attribution">The National &middot; 21 October 2026 &mdash; <a href="https://www.thenationalnews.com/future/technology/2026/10/21/php-security-issues-exploit/" target="_blank" rel="noopener">thenationalnews.com</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">02</div>
+      <div class="dispatch-body">
+        <span class="tag">World</span>
+        <h2 class="headline">Cluster Missile Hits Kyiv Hours After Talks</h2>
+        <p class="deck">Two killed and thirty-four injured in a barrage of twenty-one missiles and 210 drones</p>
+        <p class="summary"><span class="place">Kyiv</span>Russian forces struck the capital&rsquo;s historic centre overnight with an Iskander ballistic missile carrying a cluster warhead, part of an assault President Zelensky said involved 21 missiles; at least two people were killed and 34 injured, five of them children. Serhii Beskrestnov, a presidential adviser known by the callsign Flash, said the warhead detonates in the air and scatters 58 bomblets across an area roughly 400 metres square, which he took as evidence that civilians were the intended target. Ukraine&rsquo;s air force counted 210 drones, 110 of them jet-powered, alongside Iskander-M, S-400, Zircon and Onyx missiles, said 181 drones were intercepted, and recorded strikes at 32 locations across five districts of the city. The attack came hours after the US envoy Steve Witkoff met Vladimir Putin in St Petersburg and described him as a humanitarian; Russia said Ukraine sent 630 drones toward Moscow the same night.</p>
+        <p class="attribution">Euronews &middot; 22 October 2026 &mdash; <a href="https://www.euronews.com/2026/10/22/russia-reportedly-strikes-central-kyiv-with-cluster-warhead-ballistic-missile-designed-to-" target="_blank" rel="noopener">euronews.com</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">03</div>
+      <div class="dispatch-body">
+        <span class="tag">United States</span>
+        <h2 class="headline">Pentagon Drafts Iran Strikes for After Midterms</h2>
+        <p class="deck">Reported targets include nuclear and energy sites; Trump has approved nothing and has refused five earlier plans</p>
+        <p class="summary"><span class="place">Washington</span>The New York Times reported on Wednesday, citing people familiar with the deliberations, that American and Israeli officials have drawn up plans for renewed strikes on Iran after the 3 November midterm elections, with energy infrastructure, nuclear facilities and missile and drone arsenals among the targets. Defence Secretary Pete Hegseth discussed the options with Prime Minister Benjamin Netanyahu in Israel this week; President Trump has not approved them, and the reporting says he blocked a multi-day Israeli offensive earlier this month and turned down five proposals in recent months. Officials who favour acting argue that a short, intense campaign would hasten Iran&rsquo;s economic collapse and push it toward talks; Tehran says it will not negotiate directly until Washington lifts its naval blockade and releases frozen funds, and has threatened data centres, subsea cables and oil assets in answer to any new attack. Israel votes on 27 October, and Gregg Roman of the Middle East Forum said Washington is the larger constraint on when any strikes would come.</p>
+        <p class="attribution">TIME &middot; 22 October 2026 &mdash; <a href="https://time.com/article/2026/10/22/us-israel-iran-war-strikes-midterms/" target="_blank" rel="noopener">time.com</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">04</div>
+      <div class="dispatch-body">
+        <span class="tag">United States</span>
+        <h2 class="headline">Judge Orders Meta to Pay Twenty-Five Billion</h2>
+        <p class="deck">New Mexico wins the largest state privacy penalty yet over Cambridge Analytica; the company will appeal</p>
+        <p class="summary"><span class="place">Santa Fe, New Mexico</span>Judge Francis Mathew ordered Meta on Wednesday to pay New Mexico $25 billion, after a jury in September found the company liable for more than 43 million violations of the state&rsquo;s consumer protection law through deceptive statements about privacy on Facebook. The state had asked for $35 billion to $40 billion and Meta argued for no more than $3.4 billion; its lawyer Matt Nicholson called the larger sum shocking to the conscience, and the company says it will appeal, arguing the state proved no harm and that counting violations by how many people may have seen a statement is unprecedented. The case grew out of the Cambridge Analytica affair, in which a personality quiz harvested data from about 87 million Facebook profiles and sold it to a consultancy that built targeted political advertising for the 2016 election, among its clients Trump&rsquo;s campaign. Attorney General Ra&uacute;l Torrez said the money will go to a state education fund; 48 states settled with Meta for $18 billion in August, and New Mexico alone took its case to trial.</p>
+        <p class="attribution">Associated Press via ABC7 New York &middot; 21 October 2026 &mdash; <a href="https://abc7ny.com/story/judge-orders-meta-pay-25-billion-violating-new-mexico-law-cambridge-analytica-data-breach/19965355/" target="_blank" rel="noopener">abc7ny.com</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">05</div>
+      <div class="dispatch-body">
+        <span class="tag">United States</span>
+        <h2 class="headline">Court Curbs Homeland Security Voter Interviews</h2>
+        <p class="deck">Order covering nine states bars stops of suspected citizens and lapses at the close of election day</p>
+        <p class="summary"><span class="place">San Francisco</span>In a nineteen-page ruling on Wednesday, Judge Araceli Mart&iacute;nez-Olgu&iacute;n barred Homeland Security agents in nine states from conducting field interviews with people they know or should reasonably suspect are American citizens, part of the department&rsquo;s Unlawful Voter Initiative. She wrote that the stops were likely to discourage registration and voter engagement, and that target lists drawn from federal immigration data contained errors and included naturalised citizens; agency memos cited in the ruling said nearly 150 nonprofit and church voter-engagement groups had been surveilled or infiltrated as of July. The order covers California, Connecticut, Georgia, Missouri, Nevada, New York, Pennsylvania, Washington and Wisconsin, is paused until Friday evening to allow an appeal, and lifts at the end of election day. It stops short of halting field work altogether and its practical effect is unclear; in California, 28 green-card holders suspected of registering or voting before naturalisation were released on Monday, about one in a million of the state&rsquo;s 23 million registered voters.</p>
+        <p class="attribution">The New York Times via The Philadelphia Inquirer &middot; 22 October 2026 &mdash; <a href="https://www.inquirer.com/politics/nation/homeland-security-voter-fraud-crackdown-20261022.html" target="_blank" rel="noopener">inquirer.com</a></p>
+      </div>
+    </article>
+  </main>
+
+  <span class="archive-label">Past seven days</span>
+
+  <details class="day">
+    <summary><span class="day-date">Wednesday 21 October</span> <span class="day-gist">Russia frees an American retired teacher as Witkoff presses Putin to resume three-way talks</span></summary>
+    <div class="day-contents">
+
+    <article class="dispatch">
+      <div class="rank">01</div>
+      <div class="dispatch-body">
+        <span class="tag">United States</span>
+        <h2 class="headline">Russia Frees American as Witkoff Presses Putin</h2>
+        <p class="deck">Trump says no swap was needed; the Kremlin will study a trilateral format it has long refused</p>
+        <p class="summary">Vladimir Putin opened his meeting with the US envoy Steve Witkoff in St Petersburg on Wednesday by announcing that Stephen Hubbard, a 74-year-old retired teacher from Michigan held for more than four years, was waiting at Pulkovo Airport; Russian forces seized Hubbard at Izyum in eastern Ukraine in April 2022 and a court sentenced him to nearly seven years as a mercenary, charges his lawyer Martin De Luca and the State Department both reject. President Trump wrote on Truth Social that no swap had been necessary, and said the release would not have come had he not set aside the sanctions due to take effect last week. Witkoff, who saw President Zelensky in Oslo on Tuesday, carried documents setting out approaches to a settlement and asked Putin to consider resuming trilateral talks with Kyiv, a format Moscow has rejected; Kremlin spokesman Dmitry Peskov said the proposals would be studied but that the process would be long, and state media quoted officials saying a settlement is theoretically possible once Ukraine&rsquo;s leaders take what they called the necessary decisions. Zelensky told Fox News that a meeting of the three presidents was the better path and dismissed any arrangement shaped by Beijing, Moscow and Washington, saying &ldquo;Don&rsquo;t talk about us without us&rdquo;; Putin separately raised a possible meeting with Trump in China in mid-November and offered to mediate between Washington and Tehran.</p>
+        <p class="attribution">Axios &middot; 21 October 2026 &mdash; <a href="https://www.axios.com/2026/10/21/russia-ukraine-putin-witkoff-peace" target="_blank" rel="noopener">axios.com</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">02</div>
+      <div class="dispatch-body">
+        <span class="tag">World</span>
+        <h2 class="headline">Drone Strike Kills 153 at Border Market</h2>
+        <p class="deck">South Sudan blames Sudan&rsquo;s army; a Sudanese officer says the target was fuel tankers bound for the RSF</p>
+        <p class="summary"><span class="place">Juba, South Sudan</span>Drones struck Amiet Market, north of Abyei town in the oil-bearing region claimed by both Sudan and South Sudan, on Monday. A South Sudanese official put the toll at at least 153, a figure Al Jazeera reported as unconfirmed, while the United Nations said dozens of civilians were killed and M&eacute;decins Sans Fronti&egrave;res treated more than twenty wounded, some with severe burns; the local official Yohanna Akol Ngor said fires were still burning and the count would rise. South Sudan&rsquo;s foreign ministry blamed Sudan&rsquo;s military and summoned its ambassador; the army made no public comment, though a senior Sudanese officer told the Associated Press anonymously that the strike hit fuel tankers bound for the Rapid Support Forces and that the dead were fighters and smugglers, and denied the military targets civilians. Stephane Dujarric, spokesman for the UN secretary-general, condemned the attacks near Amiet and Todach; diplomats say Abyei has become a principal route for RSF fuel since war between the army and the paramilitary force began in April 2023.</p>
+        <p class="attribution">Al Jazeera &middot; 21 October 2026 &mdash; <a href="https://www.aljazeera.com/news/2026/10/21/drone-attack-in-disputed-sudan-south-sudan-border-region-kills-at-least-153" target="_blank" rel="noopener">aljazeera.com</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">03</div>
+      <div class="dispatch-body">
+        <span class="tag">United States</span>
+        <h2 class="headline">County Finds US-Born Names on Noncitizen List</h2>
+        <p class="deck">Nearly 40 per cent of 200 records sampled report American birth; the Justice Department concedes errors</p>
+        <p class="summary"><span class="place">Los Angeles</span>Two officials in the Los Angeles County registrar&rsquo;s office examined 200 of the roughly 20,000 names on a Justice Department list of Californians it says are likely noncitizens registered to vote, and found that nearly 40 per cent reported being born in the United States, which the officials called strong evidence of citizenship; 71.2 per cent of the records carried no voting history at all. The department has asked California to verify the citizenship of ballots cast by people on the list and proposed segregating those ballots, which the state refused; Monica Flores, an assistant registrar, said in a court declaration that the process would risk disenfranchising validly registered voters and could delay results and the seating of elected officials. Deputy Attorney General Trent McCotter acknowledged at a press conference on Monday that the list likely contains errors and that some named may be citizens, saying the department was most confident in the names it had flagged. A spokesperson, Kiersten Pels, accused the state of willful blindness; more than 23 million Californians are registered and over 16 million votes were cast there in 2024.</p>
+        <p class="attribution">ABC News &middot; 20 October 2026 &mdash; <a href="https://abcnews.com/US/high-percentage-dojs-california-noncitizen-voters-list-born/story?id=137429359" target="_blank" rel="noopener">abcnews.com</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">04</div>
+      <div class="dispatch-body">
+        <span class="tag">World</span>
+        <h2 class="headline">Nigeria Confirms Ebola Case in Abuja</h2>
+        <p class="deck">Forty-four contacts traced as the Bundibugyo outbreak passes 9,500 infections and 4,600 deaths</p>
+        <p class="summary"><span class="place">Abuja</span>Nigeria&rsquo;s health ministry said on Tuesday that a woman who arrived from Uganda had tested positive for Ebola in the capital. She began showing symptoms on 7 October and was admitted to a private Abuja hospital on 11 October; Health Minister Muhammad Pate said 44 contacts of the patient were being traced and that officials were doing everything possible to contain the case. Uganda&rsquo;s health ministry said the woman is a Nigerian national who only transited the country after a business trip to eastern Congo and that Uganda has no confirmed active cases, while Nigerian authorities have not confirmed her nationality; the two accounts address different questions, her route and the place of infection, which remains under investigation. Jean Kaseya, who heads the Africa Centres for Disease Control, called the threat extremely serious, put the fatality rate near half of cases and said the Bundibugyo outbreak, which has infected more than 9,500 people and killed more than 4,600 since beginning in Congo in May, is the most geographically extensive on record; Kenya has recorded nine infections since confirming its first this month.</p>
+        <p class="attribution">Associated Press via PBS NewsHour &middot; 20 October 2026 &mdash; <a href="https://www.pbs.org/newshour/world/nigeria-confirms-ebola-case-in-its-capital-as-woman-who-arrived-from-uganda-tests-positive" target="_blank" rel="noopener">pbs.org</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">05</div>
+      <div class="dispatch-body">
+        <span class="tag">United States</span>
+        <h2 class="headline">CDC Logs Third Measles Death This Year</h2>
+        <p class="deck">The federal tally trails Pennsylvania&rsquo;s own count as cases pass 4,400 in the largest outbreak in decades</p>
+        <p class="summary"><span class="place">Atlanta</span>The Centers for Disease Control and Prevention confirmed on Tuesday a third measles death in the United States this year, after the National Center for Health Statistics verified measles as the underlying cause on a death certificate; the agency did not say where the death occurred and said the count may change as reviews are completed. It recorded 4,410 cases nationwide as of 15 October, the country&rsquo;s largest measles outbreak in decades. Pennsylvania officials reported 1,286 cases and five deaths in that state alone as of Monday, and the gap with the federal figure reflects a change in method rather than a dispute over the facts, because the CDC now counts deaths from national mortality records instead of state health department reports. The agency, which says the approach has drawn scrutiny, is working with the Council of State and Territorial Epidemiologists on a standard definition of a measles death; the Pennsylvania outbreak began in Lancaster County and has reached 42 counties.</p>
+        <p class="attribution">Al Jazeera &middot; 20 October 2026 &mdash; <a href="https://www.aljazeera.com/news/2026/10/20/cdc-reports-third-measles-death-in-the-united-states-this-year" target="_blank" rel="noopener">aljazeera.com</a></p>
+      </div>
+    </article>
+
+    </div>
+  </details>
+
+  <details class="day">
+    <summary><span class="day-date">Tuesday 20 October</span> <span class="day-gist">Albertans reject the road to secession by about three to one as separatist leaders claim the argument</span></summary>
+    <div class="day-contents">
+
+      <article class="dispatch">
+        <div class="rank">01</div>
+        <div class="dispatch-body">
+          <span class="tag">World</span>
+          <h2 class="headline">Alberta Rejects Secession by Wide Margin</h2>
+          <p class="deck">About 76 per cent vote to stay in Canada; separatist leaders claim the argument itself as a win</p>
+          <p class="summary">Albertans voted on Monday to remain in Canada, rejecting a ballot question that would have instructed the provincial government to begin the legal process toward a future vote on separation. With more than a million ballots counted, about 76 per cent backed remaining and 23 per cent backed starting that process, the Associated Press reported; more than 1.35 million Albertans, about 43 per cent of eligible voters, had already cast advance or special ballots, and voting hours were extended at more than 100 stations that opened late. Premier Danielle Smith, who called the referendum under pressure from separatists in her United Conservative Party while opposing independence herself, had urged a vote to remain, citing polling that put support for separation at 22 per cent and calling that figure still too high. Prime Minister Mark Carney, who had described the separatist push as a dangerous bluff and compared it to the Brexit referendum, told a rally in Edmonton to vote as though the country&rsquo;s future depended on it; Thomas Lukaszuk, a former deputy premier who led the Forever Canadian campaign, said the country was united coast to coast, while Keith Wilson of the pro-independence group Let Alberta Decide told supporters they had already won.</p>
+          <p class="attribution">Associated Press via CBS News &middot; 20 October 2026 &mdash; <a href="https://www.cbsnews.com/news/canada-alberta-referendum-vote-separation-independence/" target="_blank" rel="noopener">cbsnews.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">02</div>
+        <div class="dispatch-body">
+          <span class="tag">World</span>
+          <h2 class="headline">Houthi Missiles Kill Scores at Yemeni Camp</h2>
+          <p class="deck">Three ballistic missiles hit a training centre as the group claims fresh strikes on Saudi oil and airports</p>
+          <p class="summary"><span class="place">Ataq, Yemen</span>Houthi forces struck the Al Alam training centre in Shabwa province with three ballistic missiles on Monday morning, hitting soldiers and new recruits of the internationally recognised government during a training session, government sources told Reuters. The National reported 73 killed, while the figure it attributed to unnamed sources was at least 18; Shabwa&rsquo;s governor, Awad Al Wazir, put the wounded at more than 200 with 14 missing, and the Houthis said Saudi personnel were among the casualties, a claim Riyadh did not address. Rashad Al Alimi, who heads the Presidential Leadership Council, called the attackers terrorists and ordered a firm response; the strike followed a government offensive this month toward Houthi-held ground near the Bab al-Mandeb strait. The group separately claimed six operations in 48 hours against Saudi targets, among them an Aramco site at Yanbu, the Shaybah oilfield and King Khalid International Airport in Riyadh, claims Saudi authorities have not confirmed and Reuters could not verify; Brent crude settled at $109.55 on Monday and traded near $110 on Tuesday morning, with Kpler putting crude flows through the Strait of Hormuz at about 8.5 million barrels a day over the past week.</p>
+          <p class="attribution">The National &middot; 19 October 2026 &mdash; <a href="https://thenationalnews.com/news/mena/2026/10/19/at-least-18-killed-in-houthi-attack-on-yemeni-government-military-camp-in-shabwa-sources-say" target="_blank" rel="noopener">thenationalnews.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">03</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">Trump Approval Falls to Record Low</h2>
+          <p class="deck">Reuters/Ipsos puts him at 31 per cent a fortnight out; Democrats lead the generic ballot by twelve</p>
+          <p class="summary"><span class="place">Washington</span>A Reuters/Ipsos poll reported on Monday put President Trump&rsquo;s approval rating at 31 per cent, the lowest of his political career, and gave Democrats a twelve-point lead on a generic congressional ballot two weeks before the 3 November midterm elections. A Washington Post/ABC/Ipsos survey released the same day put his approval at 33 per cent, also a record low for him, and found seven in ten respondents saying petrol is becoming unaffordable; an NBC poll released on Sunday had 71 per cent saying the country is on the wrong track and 55 per cent saying they would vote Democratic. The two approval figures differ because they are separate surveys with their own samples and fieldwork, not because the pollsters dispute the direction of travel. Al Jazeera, reporting the Reuters numbers, tied the decline to the war on Iran that began on 28 February and the fuel and wider cost increases that have followed; neither outlet published sample sizes or margins of error.</p>
+          <p class="attribution">Al Jazeera &middot; 19 October 2026 &mdash; <a href="https://www.aljazeera.com/news/2026/10/19/trump-approval-hits-record-low-31-percent-polls-show-republican-struggles" target="_blank" rel="noopener">aljazeera.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">04</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">USDA Pledges Eight Billion in Diesel Aid</h2>
+          <p class="deck">Harvest Fuel Relief payments scaled to modelled 2026 crop losses, with commodity rates due in November</p>
+          <p class="summary"><span class="place">Park City, Kansas</span>President Trump announced an $8 billion Harvest Fuel Relief Program at a Monday night rally for Senator Roger Marshall, saying it would offset diesel costs through this harvest and attributing the rise to attacks on global energy supply by Iran and its proxies. The Agriculture Department&rsquo;s Farm Service Agency will administer the money under the Commodity Credit Corporation Charter Act, with support proportional to modelled losses in the 2026 crop year and calculated from planted acres, production-cost estimates, yields and prices; commodity-specific payment rates are expected in November. Trump credited Marshall with pushing the programme through and cited a separate executive order waiving the off-road restriction on red-dyed diesel, allowing farmers and truckers to buy it untaxed. Agriculture Secretary Brooke Rollins said the investment would bring certainty to farmers during the harvest; the department compared it with a $12 billion bridge-assistance programme earlier this year that it says reached more than 560,000 farmers.</p>
+          <p class="attribution">Fox Business &middot; 20 October 2026 &mdash; <a href="https://www.foxbusiness.com/energy/trump-announces-8b-bailout-farmers-cover-diesel-cost-surge-amid-attacks-global-supply" target="_blank" rel="noopener">foxbusiness.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">05</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">Nor&rsquo;easter Lashes Coast From Carolinas North</h2>
+          <p class="deck">Hurricane centre watches the low for development as waves reach fourteen feet off the Outer Banks</p>
+          <p class="summary"><span class="place">Nags Head, North Carolina</span>A nor&rsquo;easter meandering off the Atlantic coast is expected to bring coastal flooding, high surf and gusting wind for several days this week, with the longest-lasting effects from the Delmarva peninsula to eastern North Carolina and the worst wind and rain over the Outer Banks. Forecasters at weather.com reported coastal flood alerts for coastal North Carolina, where one to four feet of inundation is possible, up to a foot for Virginia, Maryland, Delaware and New Jersey, wind advisories for gusts to 40 miles an hour, and high surf advisories with waves to fourteen feet off North Carolina and twelve feet further north. Most of the heavy rain is expected to stay offshore, and significant beach erosion is forecast along the coast. The National Hurricane Center is watching the system for possible development into Tropical Storm Josephine; it should sit off Massachusetts by Thursday before a cold front carries it out to sea.</p>
+          <p class="attribution">The Weather Channel &middot; 20 October 2026 &mdash; <a href="https://weather.com/2026/10/20/forecast/regional/coastal-storm-southeast-mid-atlantic" target="_blank" rel="noopener">weather.com</a></p>
+        </div>
+      </article>
+
+
+    </div>
+  </details>
+
+  <details class="day">
+    <summary><span class="day-date">Monday 19 October</span> <span class="day-gist">Albertans vote on a referendum that would open the legal road out of Canada</span></summary>
+    <div class="day-contents">
+
+
+      <article class="dispatch">
+        <div class="rank">01</div>
+        <div class="dispatch-body">
+          <span class="tag">World</span>
+          <h2 class="headline">Alberta Votes on Path to Secession</h2>
+          <p class="deck">Ballot would open the legal road out of Canada; polling puts about four in five Albertans against it</p>
+          <p class="summary">Albertans vote on Monday in a referendum that would not make the province independent but would instruct its government to begin the legal process toward a future separation vote; it is one of ten questions on the ballot, others of which would restrict temporary residents&rsquo; access to health care and education and let the province choose its own judges. Polling reported by Al Jazeera suggests about four in five Albertans want to remain in Canada, and Viewpoint Alberta data indicates roughly two-thirds of those backing the referendum say they are doing so to send a message to Ottawa. Premier Danielle Smith, who called the vote, opposes independence and said on 14 October that she had voted to remain. Prime Minister Mark Carney told a rally of about 5,000 people in Calgary last week that &ldquo;some outside our borders are working to break us so they can own us&rdquo;, the Associated Press reported, and called treating the ballot as a message a dangerous bluff; any secession would require negotiations with Ottawa, the other provinces and Indigenous peoples in and around Alberta.</p>
+          <p class="attribution">Al Jazeera &middot; 18 October 2026 &mdash; <a href="https://www.aljazeera.com/news/2026/10/18/alberta-independence-referendum-will-separatists-survive-a-loss" target="_blank" rel="noopener">aljazeera.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">02</div>
+        <div class="dispatch-body">
+          <span class="tag">World</span>
+          <h2 class="headline">France Orders Curfews After Weekend Riots</h2>
+          <p class="deck">Interior minister concedes control was lost in some cities; at least 2,400 arrested nationwide</p>
+          <p class="summary"><span class="place">Paris</span>Prime Minister S&eacute;bastien Lecornu instructed prefects on Monday to impose curfews he described as very limited and localised, with details to follow later in the day, after two nights of fires and looting that followed Saturday&rsquo;s nationwide protests over living costs and the condition of schools. At least 2,400 people have been arrested; Lecornu said it was a miracle that nobody was killed on Saturday, while Interior Minister Laurent Nu&ntilde;ez acknowledged that authorities had lost control in some major cities and blamed hordes of troublemakers and looters along with far-left activists. Nu&ntilde;ez offered his resignation and President Emmanuel Macron refused it, asking him instead for full transparency on the planning and intelligence failures and for new policing tactics as quickly as possible. The prefect in Marseille banned protests and gatherings between noon and 8 p.m. on Monday; in Limoges, a fire in the nineteenth-century city hall brought down its roof.</p>
+          <p class="attribution">Associated Press via PBS NewsHour &middot; 19 October 2026 &mdash; <a href="https://www.pbs.org/newshour/world/french-prime-minister-lecornu-calls-for-localized-curfews-in-cities-to-curb-rioting-and-looting" target="_blank" rel="noopener">pbs.org</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">03</div>
+        <div class="dispatch-body">
+          <span class="tag">World</span>
+          <h2 class="headline">Driver Rams Australian MP Outside Office</h2>
+          <p class="deck">Counterterrorism squad joins the inquiry after civilians detain a man and police find a knife in his car</p>
+          <p class="summary"><span class="place">Wangaratta, Australia</span>Helen Haines, 65, an independent member of the federal parliament, was critically injured on Monday when a Toyota Land Cruiser struck her outside her electorate office in Wangaratta, about 200 kilometres from Melbourne. Civilians detained the 43-year-old driver and handed him to officers, who found a knife in the vehicle; Victoria Police acting superintendent Ashley Mason confirmed the arrest, no motive has been established and the national counterterrorism squad has been activated. Prime Minister Anthony Albanese told the ABC that the act was deliberate, saying &ldquo;this wasn&rsquo;t an accident&rdquo;, and said the political climate had grown more heated. Haines, a former nurse and midwife elected in 2019, has pressed for stronger climate action and tighter rules on political conduct; her family thanked bystanders and medical staff and asked for privacy, and federal police have recorded a rise in threats against politicians, who customarily work without security.</p>
+          <p class="attribution">Al Jazeera &middot; 19 October 2026 &mdash; <a href="https://www.aljazeera.com/news/2026/10/19/australian-mp-helen-haines-critically-injured-in-deliberate-car-ramming" target="_blank" rel="noopener">aljazeera.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">04</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">Texas Opens Early Voting With Record Rolls</h2>
+          <p class="deck">Nineteen million now registered, up 2.2 per cent on 2024, with two weeks left before election day</p>
+          <p class="summary"><span class="place">Austin</span>Early in-person voting in Texas began on Monday and runs through 30 October, with voters able to use any early site in their county of registration before the 3 November general election. Secretary of State Robert Howden announced on 16 October that the state holds 19,041,684 registered voters, which his office calls a record, up 2.2 per cent on the November 2024 general election and 2 per cent on the March primary. President Trump, who is not on the ballot, was due on Monday evening at a 6,500-seat arena in Park City, Kansas, for Senator Roger Marshall, whose contest with Democrat Adam Hamilton polls rate a toss-up in a state that has not sent a Democrat to the Senate since 1932. Trump has pledged $5,000 to every adult citizen if Republicans hold both chambers; the Wichita broadcaster KWCH put his approval rating between 30 and 34 per cent, and Politico reported Kansas is one of ten states on his October schedule.</p>
+          <p class="attribution">Texas Secretary of State &middot; 16 October 2026 &mdash; <a href="https://www.sos.state.tx.us/about/newsreleases/2026/101626.shtml" target="_blank" rel="noopener">sos.state.tx.us</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">05</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">Protected Status Lapses for 101,000 Ukrainians</h2>
+          <p class="deck">Lawyers say a missed sixty-day notice extends the designation to April; Homeland Security has published nothing</p>
+          <p class="summary"><span class="place">Philadelphia</span>Temporary Protected Status for Ukraine was set to expire on Monday, covering about 101,000 people, and the Citizenship and Immigration Services website still carried that date over the weekend. Immigration lawyers and advocacy groups argue that because no decision was published in the Federal Register sixty days ahead, the designation extends automatically by six months, to 19 April 2027; the administration has not confirmed that, and the Department of Homeland Security said on Sunday that roughly 100,000 Ukrainians and 1,800 Sudanese would keep the status for now, with a decision to come at the appropriate time. Iryna Mazur, Ukraine&rsquo;s honorary consul in Philadelphia and an immigration attorney, said the community is under great strain and that the status must be both extended and redesignated to cover newer arrivals. Sudan&rsquo;s designation expired the same day; only El Salvador, Lebanon, Ukraine and Sudan still hold TPS, and the State Department advises against all travel to Ukraine.</p>
+          <p class="attribution">The Philadelphia Inquirer &middot; 18 October 2026 &mdash; <a href="https://www.inquirer.com/news/ukraine-tps-expire-philly-ice-20261018.html" target="_blank" rel="noopener">inquirer.com</a></p>
+        </div>
+      </article>
+
+    </div>
+  </details>
+
+  <details class="day">
+    <summary><span class="day-date">Sunday 18 October</span> <span class="day-gist">Riots follow nationwide protests across France as Macron summons his ministers</span></summary>
+    <div class="day-contents">
+
+
+    <article class="dispatch">
+      <div class="rank">01</div>
+      <div class="dispatch-body">
+        <span class="tag">World</span>
+        <h2 class="headline">Riots Sweep France After Mass Protests</h2>
+        <p class="deck">At least 1,800 arrested and more than 500 officers injured; Macron summons ministers and will address the country</p>
+        <p class="summary">Nationwide demonstrations over the cost of living, fuel prices and the condition of schools drew about 550,000 people by the government&rsquo;s count and some 800,000 by the organisers&rsquo; on Saturday, and were followed in several cities by hours of violence. Masked groups fought police, set fires, attacked public buildings and looted hundreds of businesses in Paris, Marseille, Lyon, Bordeaux, Rennes, Strasbourg, Grenoble, Nice and Limoges, where a fire deliberately set in the 19th-century city hall brought down its roof; the Haute-Vienne prefect, Maurice Barate, said that blaze was under control on Sunday. Interior Minister Laurent Nu&ntilde;ez put the arrests at a minimum of 1,800 nationwide, 855 of them in the Paris region, and said more than 500 police officers, gendarmes and firefighters were hurt; he called the right to protest fundamental while condemning the violence, and Prime Minister S&eacute;bastien Lecornu attributed some of it to radical far-left groups. One person died of a heart attack and the Paris prosecutor&rsquo;s office has opened an investigation. President Emmanuel Macron called an emergency meeting of senior officials for Sunday afternoon and was due to address the country at 8 p.m., while the mayors of Paris, Marseille and Lyon asked to meet the prime minister.</p>
+        <p class="attribution">Associated Press via The Korea Times &middot; 18 October 2026 &mdash; <a href="https://www.koreatimes.co.kr/world/20261018/french-police-arrest-1800-after-violent-clashes-and-looting-mar-protests" target="_blank" rel="noopener">koreatimes.co.kr</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">02</div>
+      <div class="dispatch-body">
+        <span class="tag">World</span>
+        <h2 class="headline">Canada Confirms Deaths in Military Base Fire</h2>
+        <p class="deck">Defence minister reports fatalities without numbers as flames cross the fence at Wainwright and spread in high winds</p>
+        <p class="summary"><span class="place">Wainwright, Alberta</span>Defence Minister David McGuinty said on Saturday that an incident at Canadian Forces Base Wainwright, one of the country&rsquo;s busiest training installations about 180 kilometres southeast of Edmonton, had killed and injured people, though he gave no figures and described the investigation, which involves the Royal Canadian Mounted Police, as very active and delicate. The Municipal District of Wainwright said fire crossed the base fence and spread quickly in high winds, drawing crews from several jurisdictions late into the night; no evacuation order was issued. Global News, citing unnamed military sources, reported at least seven killed and dozens hurt and said a gas line or well was struck during live-fire training, setting off an explosion &mdash; an account no official has confirmed. Dr Warren Thirsk, an emergency physician at Edmonton&rsquo;s Royal Alexandra Hospital, said casualties were being spread across city hospitals because facilities near the base were overwhelmed; Prime Minister Mark Carney called it a serious incident and Alberta Premier Danielle Smith called the fire significant and tragic.</p>
+        <p class="attribution">Al Jazeera &middot; 18 October 2026 &mdash; <a href="https://www.aljazeera.com/news/2026/10/18/deaths-injuries-after-fire-at-alberta-military-base-canada-minister" target="_blank" rel="noopener">aljazeera.com</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">03</div>
+      <div class="dispatch-body">
+        <span class="tag">United States</span>
+        <h2 class="headline">Thousands Rally to Push Early Voting</h2>
+        <p class="deck">No Kings coalition turns from protest to turnout, training poll watchers in thousands of towns before 3 November</p>
+        <p class="summary"><span class="place">Minneapolis</span>The No Kings coalition held thousands of rallies, marches and neighbourhood events across the country on Saturday, recast from demonstration to get-out-the-vote drive seventeen days before the midterm elections. Thousands gathered at The Commons in Minneapolis, where Minnesota Attorney General Keith Ellison and the former mayor R. T. Rybak spoke; smaller events ran from Portland, Maine, to Everett, Washington, with about 200 people in Baton Rouge and two dozen at a ballot drop box near the Capitol. Ezra Levin, a co-founder of Indivisible, said the coalition was shifting from sending a message to getting people to the polls; organisers barred endorsements and sitting candidates from the stage, handed out voting information and trained volunteers as poll watchers. Levin cited the failed SAVE America Act, which would have required documentary proof of citizenship to register, concerns about federal immigration officers at polling places, and the administration&rsquo;s efforts to restrict mail voting. The coalition includes hundreds of partner groups, among them the American Civil Liberties Union and Black Voters Matter.</p>
+        <p class="attribution">NPR via KPBS &middot; 17 October 2026 &mdash; <a href="https://www.kpbs.org/news/national/2026/10/17/no-kings-draws-crowds-with-focus-on-early-voting" target="_blank" rel="noopener">kpbs.org</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">04</div>
+      <div class="dispatch-body">
+        <span class="tag">United States</span>
+        <h2 class="headline">Both Parties Rebuke Trump Sanctions Waiver</h2>
+        <p class="deck">Tillis calls it beyond irresponsible and Cornyn invokes Graham, but both chambers stay in recess until after the election</p>
+        <p class="summary"><span class="place">Washington</span>The executive order President Trump signed late Friday, setting aside indefinitely the sanctions in the Lindsey Graham Russian Sanctions Act days before they were to take effect, drew objections across both parties on Saturday. The law, which would have imposed steep tariffs on countries buying large volumes of Russian oil and gas, passed the Senate 86 to 11 and the House with bipartisan support, and Trump signed it about a month ago; the waiver follows his agreement to import Russian diesel, which he has presented as a way to lower pump prices before 3 November. Senator Thom Tillis of North Carolina called the move beyond irresponsible and said a law carried 86 to 11 ought to be enforced, Senator John Cornyn of Texas said the late Senator Graham would be appalled, and Senator Rick Scott of Florida said it was not the step he would have taken; Senator Elizabeth Warren and Senate Democratic leader Chuck Schumer accused the president of defying Congress and giving the Russian economy life support. Representative Gregory Meeks, the ranking Democrat on House Foreign Affairs, introduced a bill on Friday to block the diesel arrangement and said Congress is not helpless, but with both chambers in recess until after election day no vote is scheduled.</p>
+        <p class="attribution">Associated Press via PBS NewsHour &middot; 17 October 2026 &mdash; <a href="https://www.pbs.org/newshour/politics/trumps-decision-to-waive-russian-sanctions-outrages-congress-but-no-quick-counter-seen" target="_blank" rel="noopener">pbs.org</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">05</div>
+      <div class="dispatch-body">
+        <span class="tag">United States</span>
+        <h2 class="headline">Truck Kills Two at Kansas Soccer Field</h2>
+        <p class="deck">A six-year-old boy and a thirty-five-year-old man die; eleven hurt, five of them children under ten</p>
+        <p class="summary"><span class="place">Wichita, Kansas</span>A pickup truck drove onto a field during a youth soccer game at the Stryker Sports Complex on Saturday afternoon, with the first emergency calls at about 3.25 p.m.; a six-year-old boy and a 35-year-old man, both from McPherson, Kansas, were pronounced dead at the scene. Eleven people were taken to hospital, five of them children aged five to nine and the adults aged 28 to 68, with injuries ranging from bruises to what police described as extremely severe. The driver, a 34-year-old woman from Garden City, stayed with the truck, was cooperative and was taken into custody; two juveniles were in the vehicle, and police said one of her children was playing at the complex that day though not on the field that was struck. Captain Aaron Moses said investigators had interviewed more than thirty witnesses and appealed for photographs and video, and Chief Joe Sullivan said police know what happened but not yet why; the city has cancelled all events at the complex, and Governor Laura Kelly said she was monitoring the case.</p>
+        <p class="attribution">ABC News &middot; 17 October 2026 &mdash; <a href="https://abcnews.com/US/2-dead-after-truck-drives-soccer-game-wichita/story?id=137352588" target="_blank" rel="noopener">abcnews.com</a></p>
+      </div>
+    </article>
+
+    <article class="dispatch">
+      <div class="rank">06</div>
+      <div class="dispatch-body">
+        <span class="tag">Faith &amp; Church</span>
+        <h2 class="headline">Pope Leo Resumes Duties After Lung Surgery</h2>
+        <p class="deck">Discharged after four days, he thanks crowds in St Peter&rsquo;s Square as biopsy results decide any further treatment</p>
+        <p class="summary"><span class="place">Vatican City</span>Pope Leo XIV appeared at the window of the Apostolic Palace for the Angelus on Sunday, thanked thousands in St Peter&rsquo;s Square for their prayers and said he would gradually resume his activities. He was discharged from the Gemelli hospital on Saturday after four days, a shorter stay than expected, and told a reporter he was doing much better; surgeons removed the lower lobe of his right lung on Tuesday and confirmed adenocarcinoma, the most common form of lung cancer, in the first serious illness of his seventeen-month pontificate. His surgeon, Dr Stefano Margaritora, expects a full recovery in about ten days and told Vatican News there is no clinical reason his 6 to 17 November journey to Uruguay, Argentina and Peru should not go ahead. Tests on the tumour and lymph nodes were still under way, and their results will determine whether he needs chemotherapy, chemotherapy with immunotherapy or a targeted oral treatment; no prognosis has been published.</p>
+        <p class="attribution">CBS News &middot; 18 October 2026 &mdash; <a href="https://www.cbsnews.com/news/pope-leo-cancer-surgery-resume-activities-vatican/" target="_blank" rel="noopener">cbsnews.com</a></p>
+      </div>
+    </article>
+
+    </div>
+  </details>
+
+  <details class="day">
+    <summary><span class="day-date">Saturday 17 October</span> <span class="day-gist">Trump waives the Graham Act sanctions on Russia days before they were to take effect</span></summary>
+    <div class="day-contents">
+
+        <article class="dispatch">
+          <div class="rank">01</div>
+          <div class="dispatch-body">
+            <span class="tag">United States</span>
+            <h2 class="headline">Trump Waives Sanctions on Russia</h2>
+            <p class="deck">Executive order shelves the Graham Act tariffs before they bite; Zelensky says Washington is rewarding Putin</p>
+            <p class="summary">President Trump signed an executive order on Friday waiving almost all of the penalties in the Lindsey O. Graham Sanctioning Russia and Iran Act, the measure Congress passed this summer, before it took effect. The order nominally raised duties on Russian goods by 500 per cent, and by 100 per cent on goods from the five largest buyers of Russian crude and natural gas, then set those measures aside; the act gives the president broad latitude to impose or waive them. Senator Richard Blumenthal, a co-author of the law, and Representative Don Beyer said the waiver defies the statute&rsquo;s intent and amounts to capitulation, while Kirill Dmitriev, Moscow&rsquo;s economic negotiator, called it a historic moment and said economic talks with Washington would go on. The waiver follows Trump&rsquo;s announcement on 9 October that Russia would supply millions of tonnes of diesel to the United States and world markets, an arrangement twelve senators asked him to rescind on 13 October; President Volodymyr Zelensky, who said this week he was finished with the energy ceasefire Washington announced, said Trump was rewarding Putin.</p>
+            <p class="attribution">The Kyiv Independent &middot; 17 October 2026 &mdash; <a href="https://kyivindependent.com/trump-waives-latest-russia-sanctions-amid-growing-ukraine-us-tensions/" target="_blank" rel="noopener">kyivindependent.com</a></p>
+          </div>
+        </article>
+
+        <article class="dispatch">
+          <div class="rank">02</div>
+          <div class="dispatch-body">
+            <span class="tag">United States</span>
+            <h2 class="headline">Santa Ana Winds Push Fires Toward Homes</h2>
+            <p class="deck">Six homes burn in Orange County, two firefighters hurt, tens of thousands lose power</p>
+            <p class="summary"><span class="place">San Clemente, California</span>The Norte Fire began on Friday afternoon in Orange County and had burned about 570 acres with no containment, destroying six homes and injuring two firefighters, one of them with heat exhaustion; mandatory evacuation orders covered parts of San Clemente and San Juan Capistrano, where residents were told to leave at once. Governor Gavin Newsom announced a federal fire management assistance grant for that fire, which Orange County Fire Authority Chief TJ McGovern&rsquo;s crews are fighting. Further south the Henderson Fire, near Camp Pendleton in San Diego County, had reached about 2,080 acres and closed Interstate 5 in both directions between Vandergrift Boulevard and Basilone Road, while the Bryson Fire, which started just before 5 p.m. Thursday in Malibu, burned at least 200 acres and forced evacuations there. Red flag and high wind warnings remained in force across the Los Angeles area in the season&rsquo;s first Santa Ana event, and utilities cut power to tens of thousands of customers as a precaution.</p>
+            <p class="attribution">Fox Weather &middot; 17 October 2026 &mdash; <a href="https://www.foxweather.com/weather-news/southern-california-first-santa-ana-wind-season-wildfire" target="_blank" rel="noopener">foxweather.com</a></p>
+          </div>
+        </article>
+
+        <article class="dispatch">
+          <div class="rank">03</div>
+          <div class="dispatch-body">
+            <span class="tag">World</span>
+            <h2 class="headline">Supertanker Burns After Mine Blast in Hormuz</h2>
+            <p class="deck">Revolutionary Guard says the ship carried two million barrels and declares the strait closed; Centcom disagrees</p>
+            <p class="summary"><span class="place">Tehran</span>The naval arm of Iran&rsquo;s Revolutionary Guard Corps said on Saturday that a supertanker carrying more than two million barrels of oil struck a sea mine in the Strait of Hormuz, setting off a large explosion and a fierce fire; the Fars news agency published video appearing to show a vessel alight. The Guard said the ship had taken an unauthorised route with its positioning and radar systems switched off, and declared the strait closed. The account has not been independently confirmed and the ship&rsquo;s name, flag and crew were not disclosed; Admiral Brad Cooper, who commands US Central Command, said the strait remains open and is controlled by the United States and regional partners rather than Iran, and the US military said commercial vessels continue to transit. The strait normally carries about a quarter of the world&rsquo;s seaborne oil trade; Iran has effectively barred passage since the war began in late February, and the United States has blockaded Iranian ports.</p>
+            <p class="attribution">Euronews &middot; 17 October 2026 &mdash; <a href="https://www.euronews.com/2026/10/17/super-tanker-ablaze-after-striking-mine-in-strait-of-hormuz-irgc-says" target="_blank" rel="noopener">euronews.com</a></p>
+          </div>
+        </article>
+
+        <article class="dispatch">
+          <div class="rank">04</div>
+          <div class="dispatch-body">
+            <span class="tag">World</span>
+            <h2 class="headline">Settlers Attack Villages at Olive Harvest</h2>
+            <p class="deck">Washington Post photographer hospitalized as medics treat fourteen wounded across eight northern West Bank villages</p>
+            <p class="summary"><span class="place">Abu Falah, West Bank</span>Israeli settlers attacked Palestinian villages across the northern occupied West Bank on Friday as the olive harvest began, setting cars and trees alight and beating residents along with Heidi Levine, a photographer for the Washington Post, who was taken to hospital. Local officials and the Palestine Red Crescent Society reported attacks in at least eight villages; medics treated fourteen wounded people in six locations and officials counted at least four more injuries elsewhere. In Abu Falah, where settlers set upon residents who had begun picking alongside Israeli peace activists, villagers said soldiers who arrived afterwards shot the village council member Abdel Jaber Hassan; the military said troops fired on a man running towards them with a sharp object, an account his fellow councillor Nazem Saleh Shoman disputed. The United Nations humanitarian office recorded more than 1,600 settler attacks in the territory between January and August, and Prime Minister Benjamin Netanyahu&rsquo;s office condemned the violence while saying the facts remained under investigation.</p>
+            <p class="attribution">Associated Press via PBS NewsHour &middot; 16 October 2026 &mdash; <a href="https://www.pbs.org/newshour/world/israeli-settlers-attack-palestinians-during-west-bank-olive-harvest-and-beat-u-s-photojournalist" target="_blank" rel="noopener">pbs.org</a></p>
+          </div>
+        </article>
+
+        <article class="dispatch">
+          <div class="rank">05</div>
+          <div class="dispatch-body">
+            <span class="tag">United States</span>
+            <h2 class="headline">Justice Department Threatens California Ballot Counters</h2>
+            <p class="deck">Letter warns Los Angeles officials of prosecution for counting ballots the government deems likely noncitizen</p>
+            <p class="summary"><span class="place">Washington</span>Acting Deputy Attorney General Trent McCotter wrote to the Los Angeles County counsel&rsquo;s office warning that processing or tabulating ballots cast by suspected noncitizens could expose local election officials to criminal investigation and prosecution, saying that knowingly facilitating such conduct is equally unlawful. The letter, first obtained by the Associated Press, was copied to Secretary of State Shirley Weber and county registrar Dean Logan, and arrived less than three weeks before the 3 November election; any case would fall to Bill Essayli, the senior federal prosecutor for the Los Angeles area. It followed a Justice Department suit the previous day to stop California counting mail ballots from people the federal government deems likely noncitizens, after the state missed a 48-hour deadline to review a password-protected drive listing 20,000 names. California says the administration has produced no evidence; the department has charged about 90 people with election misconduct this year, 50 of them with voting as noncitizens, and a federal review of 1,500 names flagged in Nevada found no registered noncitizens. Rick Hasen, a law professor at UCLA, criticised the letter.</p>
+            <p class="attribution">Associated Press via PBS NewsHour &middot; 16 October 2026 &mdash; <a href="https://www.pbs.org/newshour/politics/doj-says-california-officials-who-process-ballots-from-suspected-noncitizens-risk-prosecution" target="_blank" rel="noopener">pbs.org</a></p>
+          </div>
+        </article>
+
+
+
+    </div>
+  </details>
+
+  <details class="day">
+    <summary><span class="day-date">Friday 16 October</span> <span class="day-gist">A sixteen-year-old kills three children and a teacher at an elementary school in Bend, Oregon</span></summary>
+    <div class="day-contents">
+
+      <article class="dispatch">
+        <div class="rank">01</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">Gunman Kills Four at Bend Elementary School</h2>
+          <p class="deck">Three children and a teacher die at Silver Rail; an armed bystander shot the sixteen-year-old attacker</p>
+          <p class="summary">Police in Bend, Oregon, were called shortly before 1 p.m. on Thursday about a person shot at while driving near Silver Rail Elementary School, and dozens of calls followed reporting that the gunman had forced his way inside by firing at locked doors. Three children aged five, eight and eleven and a teacher were killed; a seven-year-old pupil and a 54-year-old teacher were taken to St. Charles Medical Center in critical condition. Officers reached the school within three minutes and found the suspect, a sixteen-year-old male, already dead, shot by a community member who had seen him enter and followed him inside; Governor Tina Kotek said the bystander &ldquo;heroically intervened to stop further loss of life&rdquo;. Police Chief Mike Krantz gave no motive and did not confirm the weapon, though law enforcement sources told CBS News it was a shotgun and the Associated Press reported a pump-action shotgun bought by the suspect&rsquo;s mother; the FBI and ATF are assisting, and Bend-La Pine schools cancelled classes on Friday.</p>
+          <p class="attribution">CBS News &middot; 16 October 2026 &mdash; <a href="https://www.cbsnews.com/live-updates/oregon-silver-rail-elementary-shooting-bend/" target="_blank" rel="noopener">cbsnews.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">02</div>
+        <div class="dispatch-body">
+          <span class="tag">World</span>
+          <h2 class="headline">Attacks Sink Two Ships in Hormuz Strait</h2>
+          <p class="deck">Oil moving through the strait falls below a quarter of pre-war volumes as near-daily strikes continue</p>
+          <p class="summary"><span class="place">Singapore</span>The Singapore-registered container ship GFS Pride was struck on Tuesday while passing through the Strait of Hormuz, caught fire and sank, Singapore&rsquo;s Maritime and Port Authority said; all its crew were evacuated. International Maritime Organization data reported on Wednesday also recorded the sinking of the Cape Dao, an Antigua and Barbuda-registered merchant vessel first hit by a projectile on 23 September, in which one Indian crew member was killed. Neither attack has been formally attributed: Iranian state broadcaster Press TV said the GFS Pride struck a sea mine while on an unauthorised route, an account specialists doubted, pointing instead to a drone. The United Kingdom Maritime Trade Operations reported nine attacks in or near the strait since Monday, and the maritime data firm Kpler put Monday&rsquo;s oil flow at 4.147 million barrels, under a quarter of pre-war levels; Charlie Brown of United Against Nuclear Iran called the sinking a dangerous escalation.</p>
+          <p class="attribution">CNN via ABC17 News &middot; 14 October 2026 &mdash; <a href="https://abc17news.com/news/national-world/cnn-world/2026/10/14/two-cargo-ships-sunk-in-strait-of-hormuz-as-iran-ramps-up-attacks-in-run-up-to-midterms/" target="_blank" rel="noopener">abc17news.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">03</div>
+        <div class="dispatch-body">
+          <span class="tag">World</span>
+          <h2 class="headline">Tankers Burn Off Romania, Seven Sailors Missing</h2>
+          <p class="deck">President Dan says drones struck both vessels near the Sulina Canal as NATO reinforces the Black Sea</p>
+          <p class="summary"><span class="place">Bucharest</span>The San Marino-flagged chemical tanker Wine Trader, sailing from Tunisia to Romania, caught fire overnight into Thursday about 24 kilometres southeast of Sulina, and the Comoros-flagged tanker Yara J burned on Wednesday evening, its crew putting out the blaze themselves. Both were anchored near the mouth of the Sulina Canal, a main route for Ukrainian shipping into the Danube. Romania&rsquo;s naval authority said seven sailors from the Wine Trader were missing and five people rescued; the interior ministry sent two Black Hawk helicopters and two vessels with medical staff but said very large waves made the work unsafe. President Nicusor Dan, at an EU summit, said two drones had hit the ships and that Romania would respond once it had more information; neither Romania nor Bulgaria has blamed Russia directly, and Bulgarian President Rumen Radev said there was no solid evidence the drones were Russian while noting Ukraine would have no reason to attack its own shipping. NATO Secretary-General Mark Rutte said the alliance has added counter-drone capability on its eastern flank.</p>
+          <p class="attribution">Al Jazeera &middot; 15 October 2026 &mdash; <a href="https://www.aljazeera.com/news/2026/10/15/ship-catches-fire-in-romanias-waters-amid-rising-attacks-in-the-black-sea" target="_blank" rel="noopener">aljazeera.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">04</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">Pentagon Sends Six Hundred Troops to Panama</h2>
+          <p class="deck">A 10th Mountain battalion opens a jungle training site and will work with Colombian and Honduran forces</p>
+          <p class="summary"><span class="place">Washington</span>The New York Times reported on Wednesday, citing unnamed military officials, that a 600-soldier battalion of the 10th Mountain Division, based at Fort Drum, New York, has begun occupying a new jungle warfare facility in Panama, from which it is to train partner forces in Colombia and Honduras. Several hundred more soldiers from the division will help staff a new Western Hemisphere command in Miami. Southern Command&rsquo;s Steven McLoud declined to confirm the deployment, saying the command does not discuss personnel movements for operational security; officials describe the rotations as temporary while acknowledging they could become a lasting regional presence. TRT World, relaying the same reporting, noted that the US military has carried out 71 boat strikes in the Caribbean and eastern Pacific, killing at least 239 people it identified as traffickers without publishing its evidence.</p>
+          <p class="attribution">Daily Caller &middot; 15 October 2026 &mdash; <a href="https://dailycaller.com/2026/10/15/pentagon-soldiers-latin-america-trump-cartels-drug-trafficking/" target="_blank" rel="noopener">dailycaller.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">05</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">Trump Cancels Livestream of Firing-Squad Execution</h2>
+          <p class="deck">The December execution of the Fort Hood gunman stands after bipartisan objections to broadcasting it</p>
+          <p class="summary"><span class="place">Washington</span>President Trump said in an online post on Thursday that the planned public livestream of the 3 December firing-squad execution of Nidal Malik Hasan will not go ahead. He wrote that streaming it &ldquo;might have been a strong deterrent&rdquo; but that many well-meaning people would rather not watch a man die. Defence Secretary Pete Hegseth had announced the broadcast the previous week, and a growing number of Republicans, among them Vice President JD Vance, said they would not watch it. Hasan, the Army major convicted of killing 13 people at Fort Hood in 2009, is still to be executed; the military has not used a firing squad since the Second World War.</p>
+          <p class="attribution">PBS NewsHour &middot; 15 October 2026 &mdash; <a href="https://www.pbs.org/newshour/show/news-wrap-trump-says-fort-hood-shooters-execution-will-not-be-livestreamed" target="_blank" rel="noopener">pbs.org</a></p>
+        </div>
+      </article>
+    </div>
+  </details>
+
+  <details class="day">
+    <summary><span class="day-date">Thursday 15 October</span> <span class="day-gist">US strike options for Iran are said to include the largest non-nuclear bomb in the arsenal</span></summary>
+    <div class="day-contents">
+
+      <article class="dispatch">
+        <div class="rank">01</div>
+        <div class="dispatch-body">
+          <span class="tag">World</span>
+          <h2 class="headline">US Weighs Largest Non-Nuclear Bomb Against Iran</h2>
+          <p class="deck">Strike options drawn up for nuclear and energy sites; officials doubt the weapon can reach Pickaxe Mountain</p>
+          <p class="summary">Citing US officials, CNN reported on Thursday that the military has prepared strike options for Iran that could employ the GBU-43/B Massive Ordnance Air Blast &mdash; the largest non-nuclear bomb in the American arsenal &mdash; against nuclear sites and energy infrastructure should President Trump order renewed combat operations. The weapon weighs about 9,800 kilograms, carries roughly 8,500 kilograms of explosive, is guided by satellite and inertial systems and is released from a C-130; it detonates above ground and is not designed to penetrate deep rock, unlike the heavier GBU-57. Sources told CNN they doubted it could destroy the deeply buried complex at Pickaxe Mountain near Natanz, thought to be shielded by layers of granite, and raised concerns about civilian casualties; officials said any use would mark a significant escalation. The White House declined to discuss sensitive military planning and the Pentagon said it prepares for a range of operational scenarios, and the reporting does not establish that Trump has authorised such an attack.</p>
+          <p class="attribution">Gulf News &middot; 15 October 2026 &mdash; <a href="https://gulfnews.com/world/mena/what-is-the-mother-of-all-bombs-us-may-use-in-iran-1.500711596" target="_blank" rel="noopener">gulfnews.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">02</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">Chip Selloff Deepens on Rate Fears</h2>
+          <p class="deck">Kospi falls 7.6 per cent and the Nikkei 4.9 as the cost of financing AI data centres climbs</p>
+          <p class="summary"><span class="place">New York</span>Semiconductor and AI-linked shares fell for a second day on Thursday. South Korea&rsquo;s Kospi closed down 7.6 per cent at 5,554.22, with Samsung Electronics off 9.5 per cent and SK Hynix 11.1; Japan&rsquo;s Nikkei 225 dropped 4.9 per cent to 64,425.95 and SoftBank 9.3 per cent. Nasdaq futures were down 1 per cent before the US open, with CoreWeave off about 6 per cent in premarket trading after a 15.5 per cent fall on Wednesday, its worst day since February, and yields above 16 per cent on its 2031 bonds; Oracle, Nvidia and Advanced Micro Devices were also lower. Wednesday&rsquo;s inflation reading left prices well above the Federal Reserve&rsquo;s 2 per cent target, putting a further rate rise before year-end in play, and the ten-year Treasury yield eased to 5.09 per cent from 5.32. Lorraine Tan of Morningstar pointed to a possible mismatch between the market&rsquo;s growth expectations and what may follow; TSMC reported a record quarterly profit and said AI demand remains strong, yet its shares still slipped 2 per cent.</p>
+          <p class="attribution">Associated Press via BNN Bloomberg &middot; 15 October 2026 &mdash; <a href="https://www.bnnbloomberg.ca/markets/2026/10/15/inflation-anxiety-drags-on-ai-stocks-for-a-second-day-as-markets-point-to-a-mixed-open/" target="_blank" rel="noopener">bnnbloomberg.ca</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">03</div>
+        <div class="dispatch-body">
+          <span class="tag">World</span>
+          <h2 class="headline">Kyiv Resumes Refinery Strikes, Ending Truce</h2>
+          <p class="deck">Zelensky says he is done with a ceasefire Washington announced and Moscow never observed</p>
+          <p class="summary"><span class="place">Kyiv</span>Russia&rsquo;s defence ministry said Ukraine attempted a large-scale drone attack on an oil refinery at Ryazan, about 180 kilometres south of Moscow, on Thursday, and that a fire broke out after debris fell on the site. President Volodymyr Zelensky told the Financial Times that Kyiv was done with the energy ceasefire President Trump announced on Sunday, which was never publicly confirmed and during which Russian strikes on Ukrainian energy infrastructure continued. Washington had pressed Kyiv to hold off, arguing that a pause and a deal to buy 1.8 million tonnes of Russian diesel would ease rising fuel prices; Zelensky said he would stop again only if the United States supplied Patriot interceptors, and accused Washington of withdrawing intelligence sharing, which Trump denies. Elon Musk said on X that only the US military and the president can limit Starshield&rsquo;s speed, and called for Zelensky to step down; the Ukrainian leader was due in Brussels on Thursday to press European leaders for tougher sanctions.</p>
+          <p class="attribution">Al Jazeera &middot; 15 October 2026 &mdash; <a href="https://www.aljazeera.com/news/2026/10/15/russia-says-ukraine-resumes-attacks-on-oil-refineries" target="_blank" rel="noopener">aljazeera.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">04</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">Grand Jury Subpoenas Omar&rsquo;s Relatives</h2>
+          <p class="deck">Her phone was seized in Monday&rsquo;s search; Pirro says several investigations are under way</p>
+          <p class="summary"><span class="place">Washington</span>Federal authorities seized Representative Ilhan Omar&rsquo;s phone during Monday&rsquo;s pre-dawn search of her Washington home, and more than a dozen grand jury subpoenas have been issued, some of them to her relatives, with evidence being gathered by a grand jury in Minnesota, a person familiar with the matter told the Associated Press. Homeland Security Secretary Markwayne Mullin suggested investigators were examining possible crimes involving her family&rsquo;s immigration paperwork, while the US attorney in Washington, Jeanine Pirro, told Fox News that her office is separately examining Omar&rsquo;s financial disclosures and that several investigations are under way. Omar, who is seeking re-election in Minnesota&rsquo;s fifth district, called the search an attempt to target political enemies and said she would not be silenced. The steps come about three weeks before the midterms, a period in which the Justice Department has historically avoided public investigative actions involving candidates.</p>
+          <p class="attribution">Associated Press via Gulf News &middot; 15 October 2026 &mdash; <a href="https://gulfnews.com/world/americas/us-rep-ilhan-omars-phone-seized-and-relatives-subpoenaed-in-criminal-probe-1.500711009" target="_blank" rel="noopener">gulfnews.com</a></p>
+        </div>
+      </article>
+
+      <article class="dispatch">
+        <div class="rank">05</div>
+        <div class="dispatch-body">
+          <span class="tag">United States</span>
+          <h2 class="headline">Social Security Lifts Benefits 3.6 Percent</h2>
+          <p class="deck">Nearly 72 million recipients gain about $75 a month from January, the largest rise in four years</p>
+          <p class="summary"><span class="place">Baltimore</span>The Social Security Administration announced on Wednesday a 3.6 per cent cost-of-living adjustment for 2027, the largest in four years, worth about $75 a month in average retirement benefits. Nearly 72 million Social Security beneficiaries receive the higher payments from January 2027, and about 7.3 million recipients of Supplemental Security Income from 31 December 2026; the agency puts the combined reach at 76 million Americans. Commissioner Frank J. Bisignano announced the figure, which is calculated from consumer price data for urban wage earners and clerical workers. The same inflation that set the adjustment is what unsettled markets this week, with Wednesday&rsquo;s reading leaving prices well above the Federal Reserve&rsquo;s 2 per cent target.</p>
+          <p class="attribution">Social Security Administration &middot; 14 October 2026 &mdash; <a href="https://www.ssa.gov/news/en/press/releases/2026-10-14.html" target="_blank" rel="noopener">ssa.gov</a></p>
+        </div>
+      </article>
+    </div>
+  </details>
+
+  <footer class="footer">
+    <div class="colophon">
+      <span class="colophon-side"><a href="https://docs.google.com/spreadsheets/d/1KEYcq5mrYggtbCHQ_AEtlRVp6LRjqEd2KeEJ5nsPPKg/edit" target="_blank" rel="noopener">Archive &mdash; every story, by day</a></span>
+      <span class="footer-label">Sources</span>
+      <span class="colophon-side colophon-right"><a href="https://discord.gg/nn3xjcS745" target="_blank" rel="noopener">Printerman&rsquo;s Art Club on Discord</a></span>
+    </div>
+    <ul>
+      <li><a href="https://www.thenationalnews.com/future/technology/2026/10/21/php-security-issues-exploit/" target="_blank" rel="noopener">The National &mdash; Websites taken down as OpenAI spots flaw in the backbone of the internet</a></li>
+      <li><a href="https://patchstack.com/articles/php-major-vulnerability-alert-10-2026/" target="_blank" rel="noopener">Patchstack &mdash; PHP vulnerable to critical remote code execution, attacks ongoing</a></li>
+      <li><a href="https://www.rescana.com/post/php-rce-flaws-patch-october-2026-prepare-now" target="_blank" rel="noopener">Rescana &mdash; Two critical PHP vulnerabilities fixed; patch and restart now</a></li>
+      <li><a href="https://www.euronews.com/2026/10/22/russia-reportedly-strikes-central-kyiv-with-cluster-warhead-ballistic-missile-designed-to-" target="_blank" rel="noopener">Euronews &mdash; Russia strikes central Kyiv with a cluster-warhead ballistic missile</a></li>
+      <li><a href="https://kyivindependent.com/russian-ballistic-missiles-rock-kyiv-in-late-night-attack-injuring-6/" target="_blank" rel="noopener">The Kyiv Independent &mdash; Deadly strike on Kyiv reportedly used cluster warheads</a></li>
+      <li><a href="https://time.com/article/2026/10/22/us-israel-iran-war-strikes-midterms/" target="_blank" rel="noopener">TIME &mdash; US reportedly considering major strikes on Iran after the midterms</a></li>
+      <li><a href="https://abc7ny.com/story/judge-orders-meta-pay-25-billion-violating-new-mexico-law-cambridge-analytica-data-breach/19965355/" target="_blank" rel="noopener">AP via ABC7 New York &mdash; Judge orders Meta to pay $25 billion to New Mexico</a></li>
+      <li><a href="https://www.inquirer.com/politics/nation/homeland-security-voter-fraud-crackdown-20261022.html" target="_blank" rel="noopener">NYT via The Philadelphia Inquirer &mdash; Judge restricts DHS field operations on voter fraud</a></li>
+      <li><a href="https://www.justsecurity.org/161692/early-edition-october-22-2026/" target="_blank" rel="noopener">Just Security &mdash; Early Edition, 22 October 2026 (index)</a></li>
+      <li><a href="https://news.google.com/" target="_blank" rel="noopener">Google News &mdash; Top stories (index)</a></li>
+      <li><a href="https://www.pbs.org/newshour/latest" target="_blank" rel="noopener">PBS NewsHour &mdash; Latest (index)</a></li>
+    </ul>
+    <p class="site-foot"><a href="/">printermanart.club</a> &nbsp;&middot;&nbsp; <a href="/about.html">About</a> &nbsp;&middot;&nbsp; &copy; 2026 PrinterMan</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
