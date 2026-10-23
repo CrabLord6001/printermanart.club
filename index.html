@@ -148,20 +148,46 @@
     max-width: 44ch;
   }
 
-  /* Header menu — the two standing pages, directly beneath the banner */
+  /* Header menu — a band of equal cells under the banner, divided by a
+     hairline. Deliberately monochrome: the Join button keeps the only colour
+     on the page. Caps and letterspacing match the link strip on the news and
+     art pages, so navigation reads the same everywhere on the site. */
   .menu {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px 24px;
-    margin: 0 0 28px;
-    font-size: 0.82rem;
-    font-weight: 500;
+    background: var(--ground);
+    border-bottom: 1px solid var(--border);
   }
 
-  .menu a { color: var(--blurple-text); text-decoration: none; }
-  .menu a:hover { text-decoration: underline; }
-  .menu a:focus-visible { outline: 2px solid var(--blurple-text); outline-offset: 3px; }
+  .menu a {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 15px 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    line-height: 1.35;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .menu a + a { border-left: 1px solid var(--border); }
+
+  .menu a:hover {
+    color: var(--blurple-text);
+    background: var(--panel);
+  }
+
+  .menu a:focus-visible {
+    outline: 2px solid var(--blurple-text);
+    outline-offset: -2px;
+  }
+
+  @media (max-width: 400px) {
+    .menu a { letter-spacing: 0.08em; padding: 13px 8px; }
+  }
 
   .cta {
     display: inline-block;
@@ -207,12 +233,12 @@
       </div>
     </header>
 
-    <div class="card-body">
     <nav class="menu">
       <a href="/news.html">Daily News Briefing</a>
       <a href="/showcase.html">Weekly Art History</a>
     </nav>
 
+    <div class="card-body">
     <a class="cta" href="https://discord.gg/nn3xjcS745">Join Now</a>
 
     <footer>

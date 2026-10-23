@@ -141,20 +141,45 @@
     margin: 0 0 14px;
   }
 
-  /* Header menu — the two standing pages, directly beneath the banner */
+  /* Header menu — a band of equal cells under the banner, divided by a
+     hairline. Deliberately monochrome, matching the link strip on the news
+     and art pages so navigation reads the same everywhere on the site. */
   .menu {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px 24px;
-    margin: 0 0 28px;
-    font-size: 0.82rem;
-    font-weight: 500;
+    background: var(--ground);
+    border-bottom: 1px solid var(--border);
   }
 
-  .menu a { color: var(--blurple-text); text-decoration: none; }
-  .menu a:hover { text-decoration: underline; }
-  .menu a:focus-visible { outline: 2px solid var(--blurple-text); outline-offset: 3px; }
+  .menu a {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 15px 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    line-height: 1.35;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .menu a + a { border-left: 1px solid var(--border); }
+
+  .menu a:hover {
+    color: var(--blurple-text);
+    background: var(--panel);
+  }
+
+  .menu a:focus-visible {
+    outline: 2px solid var(--blurple-text);
+    outline-offset: -2px;
+  }
+
+  @media (max-width: 400px) {
+    .menu a { letter-spacing: 0.08em; padding: 13px 8px; }
+  }
 
   .body {
     font-size: 1rem;
@@ -195,12 +220,12 @@
       </div>
     </header>
 
-    <div class="card-body">
     <nav class="menu">
       <a href="/news.html">Daily News Briefing</a>
       <a href="/showcase.html">Weekly Art History</a>
     </nav>
 
+    <div class="card-body">
     <p class="body">I am the PrinterMan, the gracious ruler of this realm. I have created PrinterMan's Art Club as an extension of my iFunny presence and thereby as a suitable replacement for the vileness of it. Here, I welcome all to my sanctuary. Whether you are an artist or not, we all will benefit from the community through healthy dialogue, shared values of excellence, and good vibes forever.</p>
 
     <p class="body">This place is more than art appreciation. We are centered on encouraging each other through examples of brotherhood and honor, dedicated to the propositions of equality and justice.</p>
