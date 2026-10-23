@@ -1,0 +1,285 @@
+/* Weekly Art History — shared stylesheet for the lander and the six rooms.
+   Gallery wall: one reading column, each work a plate matted on board with
+   its tombstone and label beneath. Public-domain works show the institution's
+   own image; living artists carry a credit card instead.
+   The Sunday task regenerates the HTML. It must NOT edit this file. */
+:root {
+  --bg: #F1EDE6;        /* plaster wall */
+  --surface: #FFFFFF;   /* mat board */
+  --ink: #1E1A14;
+  --muted: #6B6153;
+  --rule: #DED6C7;
+  --accent: #8A6520;    /* bronze: frame gilding, brass plaque */
+  --accent-wash: #E8DFCB;
+  --plaster: #EBE5DA;
+  --plaster-lip: rgba(255,255,255,.60);
+  --plaster-dim: rgba(48,40,28,.055);
+  --grain: .20;
+  --shadow: 0 1px 2px rgba(30,26,20,.09), 0 10px 22px -12px rgba(30,26,20,.30);
+
+  --display: "Spectral", Georgia, serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16130F; --surface: #1E1A15; --ink: #EDE7DC; --muted: #9A9183;
+    --rule: #322C24; --accent: #D4A24C; --accent-wash: #2A2318;
+    --plaster: #1C1813; --plaster-lip: rgba(255,246,228,.055);
+    --plaster-dim: rgba(0,0,0,.30); --grain: .30;
+    --shadow: 0 1px 2px rgba(0,0,0,.55), 0 12px 28px -14px rgba(0,0,0,.8);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16130F; --surface: #1E1A15; --ink: #EDE7DC; --muted: #9A9183;
+  --rule: #322C24; --accent: #D4A24C; --accent-wash: #2A2318;
+  --plaster: #1C1813; --plaster-lip: rgba(255,246,228,.055);
+  --plaster-dim: rgba(0,0,0,.30); --grain: .30;
+  --shadow: 0 1px 2px rgba(0,0,0,.55), 0 12px 28px -14px rgba(0,0,0,.8);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--body); font-size: 1rem; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+img { max-width: 100%; }
+.col { max-width: 44rem; margin: 0 auto; }
+
+/* ---- Site furniture, shared with news.html ---- */
+.site-strip {
+  display: flex; align-items: center; gap: 8px 22px;
+  padding-block: 13px; border-bottom: 1px solid var(--rule);
+  font-family: var(--body); font-size: 0.7rem;
+  text-transform: uppercase; letter-spacing: 0.16em;
+}
+.site-strip a { color: var(--muted); text-decoration: none; white-space: nowrap; }
+.site-strip a:hover { color: var(--accent); }
+.site-strip a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.site-strip .site-home {
+  margin-right: auto; font-weight: 600; color: var(--ink); letter-spacing: 0.12em;
+}
+.site-strip .site-home:hover { color: var(--accent); }
+.site-strip .site-join {
+  color: var(--accent); border: 1px solid var(--accent);
+  border-radius: 2px; padding: 5px 13px 4px;
+  letter-spacing: 0.16em; line-height: 1;
+  transition: background-color .15s, color .15s;
+}
+.site-strip .site-join:hover { background: var(--accent); color: var(--surface); }
+@media (max-width: 560px) {
+  .site-strip { gap: 6px 14px; font-size: 0.64rem; letter-spacing: 0.1em; }
+  .site-strip .site-home { letter-spacing: 0.08em; }
+  .site-strip .site-join { padding: 4px 10px 3px; }
+}
+@media (max-width: 380px) {
+  .site-strip { font-size: 0.6rem; gap: 5px 10px; }
+}
+.site-foot {
+  margin: 28px 0 0; padding-top: 16px; border-top: 1px solid var(--rule);
+  font-size: 0.8rem; text-align: center; color: var(--muted);
+}
+.site-foot a { color: var(--accent); text-decoration: none; }
+.site-foot a:hover { text-decoration: underline; }
+
+/* ---- Masthead: limewashed plaster, lit from above ---- */
+header.page {
+  position: relative; isolation: isolate; overflow: hidden;
+  margin-block: 14px 0; padding: 54px 22px 26px;
+  border: 1px solid var(--rule); border-bottom: 3px double var(--rule);
+  text-align: center; background-color: var(--plaster);
+  background-image:
+    radial-gradient(118% 88% at 50% -24%, var(--plaster-lip), transparent 62%),
+    radial-gradient(70% 70% at 8% 118%, var(--plaster-dim), transparent 72%),
+    radial-gradient(70% 70% at 96% 112%, var(--plaster-dim), transparent 70%);
+}
+header.page::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.86' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+h1 {
+  font-family: var(--display); font-weight: 600;
+  font-size: clamp(1.9rem, 6vw, 2.6rem); line-height: 1.1;
+  letter-spacing: 0.005em; margin: 0 0 9px; text-wrap: balance;
+}
+.range {
+  font-family: var(--body); font-size: 0.72rem; font-weight: 500;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted); margin: 0;
+}
+.back {
+  display: inline-block; margin: 0 0 10px;
+  font-family: var(--body); font-size: 0.66rem; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none;
+}
+.back:hover { color: var(--accent); }
+.back:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ---- Room cards: six doorways, three rows of two ---- */
+.rooms { padding-block: 30px 2px; }
+.rooms-foot { padding-block: 40px 2px; }
+.room-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+@media (max-width: 560px) { .room-grid { grid-template-columns: 1fr; gap: 16px; } }
+/* An odd card out — the five rooms on a room page — sits centered rather than
+   orphaned in the left column. Only above the single-column breakpoint. */
+@media (min-width: 561px) {
+  .room-grid > .room:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    width: calc(50% - 10px);
+    margin-inline: auto;
+  }
+}
+.room {
+  display: block; text-decoration: none; color: inherit; min-width: 0;
+  background: var(--surface); border: 1px solid var(--rule);
+  box-shadow: var(--shadow);
+  transition: border-color .15s, transform .15s;
+}
+.room:hover { border-color: var(--accent); transform: translateY(-2px); }
+.room:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.room[aria-current="page"] { border-color: var(--accent); }
+.room[aria-current="page"] .room-name { color: var(--accent); }
+.room-img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.pos-upper { object-position: 50% 22%; }
+.pos-high  { object-position: 50% 12%; }
+.pos-sky   { object-position: 50% 38%; }
+.room-cap { padding: 14px 14px 16px; text-align: center; }
+.room-name {
+  font-family: var(--display); font-weight: 600;
+  font-size: 1.04rem; line-height: 1.25; margin: 0;
+}
+.rooms-foot .room-img { aspect-ratio: 5 / 3; }
+.rooms-foot .room-cap { padding: 10px 10px 12px; }
+.rooms-foot .room-name { font-size: 0.92rem; }
+.rooms-label {
+  display: flex; align-items: center; justify-content: center; gap: 15px;
+  font-family: var(--body); font-size: 0.7rem; font-weight: 500;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 22px;
+}
+.rooms-label::before, .rooms-label::after {
+  content: ""; flex: 1 1 auto; height: 1px; background: var(--rule);
+}
+
+/* ---- This week, folded away so the cards hold the lander ---- */
+.week { padding-block: 34px 0; }
+.week-fold > summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 15px;
+  font-family: var(--body); font-size: 0.7rem; font-weight: 500;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--accent); margin: 0;
+}
+.week-fold > summary::-webkit-details-marker { display: none; }
+.week-fold > summary::before, .week-fold > summary::after {
+  content: ""; flex: 1 1 auto; height: 1px; background: var(--rule);
+}
+.week-fold > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.fold-text { display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; }
+.chev { flex: none; transition: transform .15s; }
+.week-fold[open] > summary .chev { transform: rotate(90deg); }
+.week-list { list-style: none; padding: 0; margin: 20px 0 0; }
+.week-row {
+  display: flex; align-items: baseline; gap: 10px 16px;
+  border-top: 1px solid var(--rule); padding-block: 12px;
+}
+.week-row:last-child { border-bottom: 1px solid var(--rule); }
+.week-main { flex: 1 1 auto; min-width: 0; }
+.week-main a { color: var(--ink); text-decoration: none; }
+.week-main a:hover .w-title { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.week-main a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.w-title { font-family: var(--display); font-size: 1.06rem; font-weight: 600; }
+.w-by { font-family: var(--display); font-style: italic; color: var(--accent); }
+.w-sep { color: var(--rule); margin: 0 0.45em; font-weight: 300; }
+.w-room {
+  flex: 0 0 auto; font-family: var(--body); font-size: 0.64rem; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+  white-space: nowrap;
+}
+.w-note {
+  font-family: var(--body); font-size: 0.68rem; letter-spacing: 0.04em;
+  color: var(--muted); font-style: italic;
+}
+@media (max-width: 480px) {
+  .week-row { flex-wrap: wrap; }
+  .w-room { flex-basis: 100%; }
+}
+.cadence {
+  font-family: var(--body); font-size: 0.74rem; color: var(--muted);
+  text-align: center; margin: 22px 0 0;
+}
+
+/* ---- A work on its room page ---- */
+.work { margin-bottom: 38px; min-width: 0; padding-top: 34px; border-top: 1px solid var(--rule); }
+.work:first-of-type { border-top: 0; }
+.frame {
+  background: var(--surface); border: 1px solid var(--rule);
+  padding: clamp(14px, 4vw, 26px); margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.frame img { display: block; width: 100%; height: auto; }
+/* Living artists: no plate, a credit card that sends the viewer to the artist */
+.offsite {
+  background: var(--surface); border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  padding: 16px 18px; margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.offsite p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+.offsite a { color: var(--accent); font-weight: 500; text-underline-offset: 3px; }
+.offsite a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.plaque { position: relative; text-align: center; margin: 0 0 14px; line-height: 1.35; }
+.work-title { display: inline; font-family: var(--display); font-size: 1.3rem; font-weight: 600; margin: 0; }
+.sep { color: var(--rule); margin: 0 0.5em; font-weight: 300; }
+.by { font-family: var(--display); font-style: italic; font-size: 1.12rem; color: var(--accent); }
+/* Catalogue data, folded away behind a plaque marker */
+.cite { display: inline-block; margin-left: 0.45em; }
+.cite summary {
+  list-style: none; cursor: pointer;
+  width: 1.2rem; height: 1.2rem; border-radius: 50%;
+  border: 1px solid var(--rule); color: var(--muted);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-style: italic; font-size: 0.82rem;
+  line-height: 1; transition: color .15s, border-color .15s;
+}
+.cite summary::-webkit-details-marker { display: none; }
+.cite summary:hover { color: var(--accent); border-color: var(--accent); }
+.cite summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cite[open] summary { color: var(--accent); border-color: var(--accent); }
+.cite-panel {
+  position: absolute; z-index: 5;
+  top: calc(100% + 9px); left: 50%; transform: translateX(-50%);
+  width: min(23rem, 100%); max-width: 100%; text-align: left;
+  background: var(--surface); border: 1px solid var(--rule);
+  box-shadow: var(--shadow); padding: 13px 15px;
+}
+.tombstone {
+  font-family: var(--body); font-size: 0.74rem; line-height: 1.7;
+  letter-spacing: 0.012em; color: var(--muted); margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.tombstone a { color: var(--muted); text-underline-offset: 3px; }
+.tombstone a:hover { color: var(--accent); }
+.tombstone a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.label { margin: 0; }
+.shown {
+  font-family: var(--body); font-size: 0.64rem; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted); margin: 12px 0 0; text-align: center;
+}
+.empty {
+  font-family: var(--body); font-style: italic; font-size: 0.9rem;
+  color: var(--muted); margin: 34px 0 0;
+}
+.sr { position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
