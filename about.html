@@ -113,6 +113,22 @@
       0 3px 10px rgba(0,0,0,0.4);
   }
 
+  /* On sub-pages the site name is the title and the way home: on a long page
+     the footer link is several screens away. Underlined on hover and focus so
+     it reads as a link over the artwork. */
+  .banner h1 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .banner h1 a:hover { text-decoration: underline; }
+
+  .banner h1 a:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
   .banner .tag {
     margin: 0;
     font-size: clamp(0.95rem, 2.6vw, 1.3rem);
@@ -215,13 +231,14 @@
     <header class="banner">
       <img fetchpriority="high" decoding="async" src="img/header-wave.jpg" alt="Detail of Hokusai's The Great Wave: a cresting blue wave with clawed foam above boats, with Mount Fuji small in the distance.">
       <div class="banner-text">
-        <h1>Welcome to the Realm</h1>
-        <p class="tag">About</p>
+        <h1><a href="/">PrinterMan&rsquo;s Art Club</a></h1>
+        <p class="tag">Welcome to the Realm</p>
       </div>
     </header>
 
     <nav class="menu">
       <a href="/news.html">Daily News Briefing</a>
+      <a href="/faq.html">FAQ</a>
       <a href="/showcase.html">Weekly Art History</a>
     </nav>
 
