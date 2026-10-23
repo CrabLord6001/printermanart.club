@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ — PrinterMan's Art Club</title>
+<meta name="description" content="Answers to common questions about the club, the Discord server, and how to join.">
+<link rel="canonical" href="https://printermanart.club/faq.html">
+<meta name="theme-color" content="#5865F2">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PrinterMan's Art Club">
+<meta property="og:title" content="FAQ — PrinterMan's Art Club">
+<meta property="og:description" content="Answers to common questions about the club, the Discord server, and how to join.">
+<meta property="og:url" content="https://printermanart.club/faq.html">
+<meta property="og:image" content="https://printermanart.club/img/og-faq.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A gold-ground 17th-century Japanese screen painting of Kyoto, crowded with streets, rooftops and temples.">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    /* Brand tokens — see README */
+    --blurple:       #5865F2;
+    --blurple-text:  #99A2F7;
+    --ground:        #101218;
+    --panel:         #171A22;
+    --border:        #272B36;
+    --text:          #FFFFFF;
+    --text-muted:    #9BA0AE;
+    --text-dim:      #7A8094;
+    --accent:        #D4A24C;   /* editable: swap to retheme the page */
+
+    --font: 'Poppins', system-ui, -apple-system, sans-serif;
+    --maxw: 640px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--text-muted);
+    font-family: var(--font);
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+  }
+
+  main {
+    width: 100%;
+    max-width: var(--maxw);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .card-body { padding: 36px 36px 44px; }
+
+  /* Header band — public domain artwork, see credit comment in the markup */
+  .banner { position: relative; }
+
+  .banner img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 5;
+    object-fit: cover;
+  }
+
+  .banner-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 16px;
+  }
+
+  /* Outline drawn behind the glyph with layered shadows, not -webkit-text-stroke,
+     which cuts into the letterform. */
+  .banner h1 {
+    margin: 0;
+    font-size: clamp(1.4rem, 5.4vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow:
+      3px 0 0 #0A0A0C, -3px 0 0 #0A0A0C, 0 3px 0 #0A0A0C, 0 -3px 0 #0A0A0C,
+      2px 2px 0 #0A0A0C, -2px 2px 0 #0A0A0C, 2px -2px 0 #0A0A0C, -2px -2px 0 #0A0A0C,
+      0 3px 10px rgba(0,0,0,0.4);
+  }
+
+  .banner .tag {
+    margin: 0;
+    font-size: clamp(0.95rem, 2.6vw, 1.3rem);
+    font-weight: 600;
+    color: #fff;
+    text-shadow:
+      2px 0 0 #0A0A0C, -2px 0 0 #0A0A0C, 0 2px 0 #0A0A0C, 0 -2px 0 #0A0A0C,
+      1.5px 1.5px 0 #0A0A0C, -1.5px 1.5px 0 #0A0A0C, 1.5px -1.5px 0 #0A0A0C, -1.5px -1.5px 0 #0A0A0C,
+      0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  /* Header menu — a band of equal cells under the banner, divided by a
+     hairline. Deliberately monochrome, matching the link strip on the news
+     and art pages so navigation reads the same everywhere on the site. */
+  .menu {
+    display: flex;
+    background: var(--ground);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .menu a {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 15px 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    line-height: 1.35;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .menu a + a { border-left: 1px solid var(--border); }
+
+  .menu a:hover {
+    color: var(--blurple-text);
+    background: var(--panel);
+  }
+
+  .menu a:focus-visible {
+    outline: 2px solid var(--blurple-text);
+    outline-offset: -2px;
+  }
+
+  @media (max-width: 400px) {
+    .menu a { letter-spacing: 0.08em; padding: 13px 8px; }
+  }
+
+  /* Question list — each entry is a question heading with its answer below.
+     No accordion: nine short answers read faster open than behind a click. */
+  .qa {
+    text-align: left;
+    margin: 0 0 28px;
+    padding: 0 0 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .qa:last-of-type {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .qa h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--text);
+    margin: 0 0 10px;
+  }
+
+  .qa p {
+    font-size: 1rem;
+    font-weight: 300;
+    margin: 0;
+  }
+
+  .qa a { color: var(--blurple-text); text-decoration: none; }
+  .qa a:hover { text-decoration: underline; }
+
+  footer {
+    margin-top: 36px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  footer a { color: var(--blurple-text); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 480px) {
+    .card-body { padding: 28px 22px 34px; }
+  }
+</style>
+</head>
+<body>
+
+  <main>
+    <!-- Artwork: "Scenes in and around the Capital" (Rakuchu rakugai zu), Japan,
+         Edo period, 17th century. The Metropolitan Museum of Art, Open Access
+         (public domain). https://www.metmuseum.org/art/collection/search/53428 -->
+    <header class="banner">
+      <img fetchpriority="high" decoding="async" src="img/header-capital.jpg" alt="Detail of a 17th-century Japanese screen painting of Kyoto: crowds, rooftops and temple gates among gold clouds.">
+      <div class="banner-text">
+        <h1>Frequently Asked Questions</h1>
+        <p class="tag">FAQ</p>
+      </div>
+    </header>
+
+    <nav class="menu">
+      <a href="/about.html">About</a>
+      <a href="/news.html">Daily News Briefing</a>
+      <a href="/showcase.html">Weekly Art History</a>
+    </nav>
+
+    <div class="card-body">
+
+    <section class="qa">
+      <h2>What is the PrinterMan's Art Club?</h2>
+      <p>Good question! At first I had an iFunny account in which I began posting art around themes. As I grew a decent following, I thought it good to separate from the platform to keep things organized. So, I created the Discord server &ldquo;PrinterMan's Art Club&rdquo; in late February of 2026 as a central place for everyone to hang out. We've been thriving ever since!</p>
+    </section>
+
+    <section class="qa">
+      <h2>What's the purpose of this website?</h2>
+      <p>This website is intended as a way to draw new people into the community - but more than that it's a collaboration project for everyone from the Discord. Have ideas to make things more fun and exciting? Join and share your thoughts.</p>
+    </section>
+
+    <section class="qa">
+      <h2>What are the rules of the Discord server?</h2>
+      <p>We have a few simple guidelines to keep people safe and ensure everyone has a great time. Just 4 broad rules actually: (1) don't be rude or annoying, (2) don't doxx people, or share personal non-public information without consent, (3) post mature content in the right channel, (4) public advertising is only allowed after admin approval.</p>
+    </section>
+
+    <section class="qa">
+      <h2>What does the server do for fun?</h2>
+      <p>We do all kinds of fun activities, including playing games (Minecraft, Dead by Daylight, Halo, etc&hellip;), sharing memes, posting our art, and watching movies. We would love for you to join the fun today. Consider joining and telling us what interests you have. We'll try to find ways to incorporate events that everyone will enjoy.</p>
+    </section>
+
+    <section class="qa">
+      <h2>How do I join the community?</h2>
+      <p>Press the join button in the corner of each page here or the big blue &ldquo;Join Now&rdquo; button on the <a href="/">home page</a>. You'll be redirected to Discord. We have two short pre-join access questions for verification: Why do you want to join our server? How did you find us? There's no wrong answer to these per se, but putting intelligible answers tells me you're a human user and helps weed out bots and spam accounts. After an admin approves you, you're in! Feel free to introduce yourself and get to know the cool people (that's everyone).</p>
+    </section>
+
+    <section class="qa">
+      <h2>Do I have to be an artist to join?</h2>
+      <p>No, absolutely not. Our crowd is diverse. Some are gamers, students, or pet lovers. All kinds of interests thrive among members. Art brings us together, whether it's art appreciation or sharing our own creations.</p>
+    </section>
+
+    <section class="qa">
+      <h2>What kind of art can I share?</h2>
+      <p>Any art is fine! There's no preference for a particular genre or style. We have a channel for member art and another for art made by someone else. Try to credit the artists if possible. If your art is mature, post it in the &ldquo;mature art&rdquo; channel (Rule #3).</p>
+    </section>
+
+    <section class="qa">
+      <h2>What's our take on AI art?</h2>
+      <p>AI is a good tool for analyzing images to provide constructive feedback and can tweak some elements, but if you join and only post completely generative AI content, you won't be taken seriously. Don't be cringe.</p>
+    </section>
+
+    <section class="qa">
+      <h2>Who runs the server?</h2>
+      <p>I do! Contact the PrinterMan once you join if you have questions or concerns. We also have a wonderful staff of admin that help out.</p>
+    </section>
+
+    <footer>
+      <a href="/">printermanart.club</a> &nbsp;·&nbsp; <a href="/about.html">About</a> &nbsp;·&nbsp; FAQ &nbsp;·&nbsp; &copy; 2026 PrinterMan
+    </footer>
+    </div>
+  </main>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0b3e30f708cd4777957b92defbbdd859"}'></script><!-- End Cloudflare Web Analytics -->
+
+<!-- GoatCounter --><script data-goatcounter="https://crablord9001.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script><!-- End GoatCounter -->
+
+</body>
+</html>
