@@ -148,6 +148,21 @@
     max-width: 44ch;
   }
 
+  /* Header menu — the two standing pages, directly beneath the banner */
+  .menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 24px;
+    margin: 0 0 28px;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+
+  .menu a { color: var(--blurple-text); text-decoration: none; }
+  .menu a:hover { text-decoration: underline; }
+  .menu a:focus-visible { outline: 2px solid var(--blurple-text); outline-offset: 3px; }
+
   .cta {
     display: inline-block;
     background: var(--blurple);
@@ -193,6 +208,11 @@
     </header>
 
     <div class="card-body">
+    <nav class="menu">
+      <a href="/news.html">Daily News Briefing</a>
+      <a href="/showcase.html">Weekly Art History</a>
+    </nav>
+
     <a class="cta" href="https://discord.gg/nn3xjcS745">Join Now</a>
 
     <footer>

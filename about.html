@@ -141,6 +141,21 @@
     margin: 0 0 14px;
   }
 
+  /* Header menu — the two standing pages, directly beneath the banner */
+  .menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 24px;
+    margin: 0 0 28px;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+
+  .menu a { color: var(--blurple-text); text-decoration: none; }
+  .menu a:hover { text-decoration: underline; }
+  .menu a:focus-visible { outline: 2px solid var(--blurple-text); outline-offset: 3px; }
+
   .body {
     font-size: 1rem;
     font-weight: 300;
@@ -181,6 +196,11 @@
     </header>
 
     <div class="card-body">
+    <nav class="menu">
+      <a href="/news.html">Daily News Briefing</a>
+      <a href="/showcase.html">Weekly Art History</a>
+    </nav>
+
     <p class="body">I am the PrinterMan, the gracious ruler of this realm. I have created PrinterMan's Art Club as an extension of my iFunny presence and thereby as a suitable replacement for the vileness of it. Here, I welcome all to my sanctuary. Whether you are an artist or not, we all will benefit from the community through healthy dialogue, shared values of excellence, and good vibes forever.</p>
 
     <p class="body">This place is more than art appreciation. We are centered on encouraging each other through examples of brotherhood and honor, dedicated to the propositions of equality and justice.</p>
