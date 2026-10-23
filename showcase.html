@@ -172,7 +172,7 @@ section.theme { padding-block: 36px 4px; border-bottom: 1px solid var(--rule); }
 }
 
 /* Catalogue data, folded away behind a plaque marker */
-.cite { display: inline-block; position: relative; margin-left: 0.45em; }
+.cite { display: inline-block; margin-left: 0.45em; }
 .cite summary {
   list-style: none; cursor: pointer;
   width: 1.2rem; height: 1.2rem; border-radius: 50%;
@@ -185,10 +185,12 @@ section.theme { padding-block: 36px 4px; border-bottom: 1px solid var(--rule); }
 .cite summary:hover { color: var(--accent); border-color: var(--accent); }
 .cite summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .cite[open] summary { color: var(--accent); border-color: var(--accent); }
+/* Anchored to .plaque (the nearest positioned ancestor), so it centres on the
+   reading column and can never hang off the edge of a narrow screen. */
 .cite-panel {
   position: absolute; z-index: 5;
   top: calc(100% + 9px); left: 50%; transform: translateX(-50%);
-  width: min(23rem, 80vw); text-align: left;
+  width: min(23rem, 100%); max-width: 100%; text-align: left;
   background: var(--surface); border: 1px solid var(--rule);
   box-shadow: var(--shadow); padding: 13px 15px;
 }
@@ -391,6 +393,35 @@ section.theme { padding-block: 36px 4px; border-bottom: 1px solid var(--rule); }
   <p class="site-foot"><a href="/">printermanart.club</a> &nbsp;&middot;&nbsp; <a href="/about.html">About</a> &nbsp;&middot;&nbsp; &copy; 2026 PrinterMan</p>
 
 </div>
+
+
+<script>
+// Catalogue popovers: one open at a time, dismissed by clicking away or Escape.
+// The <details> element handles open/close on its own; this only adds dismissal.
+(function () {
+  var sel = "details.cite";
+
+  function closeAll(except) {
+    document.querySelectorAll(sel + "[open]").forEach(function (d) {
+      if (d !== except) d.open = false;
+    });
+  }
+
+  // "toggle" does not bubble, so listen in the capture phase.
+  document.addEventListener("toggle", function (e) {
+    if (e.target.matches && e.target.matches(sel) && e.target.open) closeAll(e.target);
+  }, true);
+
+  document.addEventListener("click", function (e) {
+    var inside = e.target.closest ? e.target.closest(sel) : null;
+    closeAll(inside);
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeAll(null);
+  });
+}());
+</script>
 
 </body>
 </html>
