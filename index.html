@@ -232,10 +232,18 @@
   /* ---- Member Meme Features: one at a time, arrows on desktop ---- */
   /* spacing mirrors the footer rule: 36px of air, then the hairline, then 22px */
   .feat{ margin-top:36px; padding:22px 0 2px; border-top:1px solid #272B36; }
-  .feat-label{
-    font-size:.7rem; letter-spacing:.2em; text-transform:uppercase;
-    color:#D4A24C; text-align:center; margin:0 0 14px;
-    line-height:1.7; text-wrap:balance; padding:0 10px;
+  /* the strip breaks out of the card's padding: full bleed, the way iFunny runs a post.
+     with no frame edge, the space around a wide meme reads as background, not as an empty box. */
+  .feat-stage{ margin-left:-36px; margin-right:-36px; }
+  @media (max-width:480px){ .feat-stage{ margin-left:-22px; margin-right:-22px; } }
+  /* ---- Section label: the template for every block below the Join button ----
+     Scales with the card, so it holds its own over a full-bleed strip and the
+     tracking eases off as it grows. A new block needs nothing but the class:
+       <p class="block-label">Its Name</p>                                      */
+  .block-label{
+    font-size:clamp(.95rem, 2.2vw, 1.15rem); letter-spacing:.15em; text-transform:uppercase;
+    color:#D4A24C; text-align:center; margin:0 0 18px;
+    line-height:1.55; text-wrap:balance; padding:0 10px;
   }
   .feat-stage{ position:relative; }
   .feat-track{
@@ -251,8 +259,7 @@
     display:flex; align-items:center; justify-content:center;
   }
   .feat-frame{
-    width:210px; height:265px; border-radius:9px; overflow:hidden;
-    background:#0C0E13; border:1px solid #272B36;
+    width:100%; height:480px; overflow:hidden;
     display:flex; align-items:center; justify-content:center;
   }
   .feat-frame img, .feat-frame video{
@@ -277,8 +284,35 @@
     display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
   #memebox .box-close:hover{ color:#D4A24C; border-color:#D4A24C; }
+
+  /* step through the set without closing: arrows on desktop, swipe on touch */
+  #memebox .box-nav{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:40px; height:40px; border-radius:50%;
+    background:#171A22; border:1px solid #3A404F; color:#C7CBD6;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; padding:0; transition:color .15s, border-color .15s, opacity .15s;
+  }
+  #memebox .box-nav:hover{ color:#D4A24C; border-color:#D4A24C; }
+  #memebox .box-nav:focus-visible{ outline:2px solid #D4A24C; outline-offset:2px; }
+  #memebox .box-nav[disabled]{ opacity:.25; cursor:default; }
+  #memebox .box-nav[disabled]:hover{ color:#C7CBD6; border-color:#3A404F; }
+  #memebox .box-prev{ left:-54px; }
+  #memebox .box-next{ right:-54px; }
+
+  /* a pill, because the page shows through the backdrop behind it */
+  #memebox .box-count{
+    position:absolute; left:0; right:0; bottom:-32px;
+    width:fit-content; margin:0 auto; padding:3px 11px;
+    background:rgba(12,14,19,.82); border-radius:20px;
+    font-size:.72rem; letter-spacing:.16em;
+    color:#9BA0AE; font-variant-numeric:tabular-nums;
+  }
+
   @media (max-width:560px){
     #memebox .box-close{ top:6px; right:6px; }
+    #memebox .box-nav{ display:none; }   /* swipe instead */
+    #memebox .box-count{ bottom:-26px; }
   }
 
   .feat-nav{
@@ -292,9 +326,10 @@
   .feat-nav:focus-visible{ outline:2px solid #D4A24C; outline-offset:2px; }
   .feat-nav[disabled]{ opacity:.3; cursor:default; }
   .feat-nav[disabled]:hover{ color:#9BA0AE; border-color:#272B36; }
-  /* pinned to the frame's edge, not the card's: half the frame + a gap */
-  .feat-prev{ right:calc(50% + 105px + 10px); }
-  .feat-next{ left:calc(50% + 105px + 10px); }
+  /* nothing sits outside a full-bleed strip, so the arrows ride on top of it */
+  .feat-nav{ background:rgba(12,14,19,.72); border-color:#3A404F; color:#C7CBD6; }
+  .feat-prev{ left:12px; }
+  .feat-next{ right:12px; }
 
   .feat-dots{ display:flex; justify-content:center; gap:7px; margin-top:12px; }
   .feat-dot{
@@ -306,13 +341,11 @@
 
   @media (max-width:560px){            /* touch: swipe instead of arrows */
     .feat-nav{ display:none; }
-    .feat-frame{ width:190px; height:240px; }
+    .feat-frame{ height:440px; }
   }
 
   /* ---- Server Change Log: beaded rail, newest first ---- */
   .rail{ margin-top:36px; padding:22px 0 2px; border-top:1px solid #272B36; }
-  .rail-label{ font-size:.7rem; letter-spacing:.2em; text-transform:uppercase;
-    color:#D4A24C; text-align:center; margin:0 0 22px; }
   .rail-list{ text-align:left; position:relative; margin:0 auto; padding:2px 0 2px 28px;
     list-style:none; max-width:30rem; }
   .rail-list::before{ content:""; position:absolute; left:5px; top:9px; bottom:9px;
@@ -354,7 +387,7 @@
     <a class="cta" href="https://discord.gg/nn3xjcS745"><svg viewBox="0 0 127.14 96.36" aria-hidden="true" focusable="false"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>Join Now</a>
 
     <section class="feat" aria-roledescription="carousel" aria-label="Member Meme Features">
-      <p class="feat-label">Member Meme Features: October, 2026</p>
+      <p class="block-label">Member Meme Features: October, 2026</p>
       <div class="feat-stage">
         <button class="feat-nav feat-prev" type="button" aria-label="Previous meme" disabled>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg>
@@ -380,14 +413,21 @@
     </section>
 
     <dialog id="memebox" aria-label="Expanded meme">
+      <button class="box-nav box-prev" type="button" aria-label="Previous meme">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg>
+      </button>
       <div class="box-media"></div>
-      <button class="box-close" type="button" aria-label="Close">
+      <button class="box-nav box-next" type="button" aria-label="Next meme">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="box-close" type="button" aria-label="Close" autofocus>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
+      <p class="box-count" aria-live="polite"><span class="box-n">1</span> / <span class="box-of">5</span></p>
     </dialog>
 
     <section class="rail">
-      <p class="rail-label">Server Change Log</p>
+      <p class="block-label">Server Change Log</p>
       <ul class="rail-list">
         <li class="rail-item"><div class="rail-head"><span class="rail-date">Oct 23, 2026</span><span class="rail-tag">Channels</span></div><p class="rail-what">Starboard &ldquo;feature&rdquo; system for meme channel</p></li>
         <li class="rail-item"><div class="rail-head"><span class="rail-date">Oct 22, 2026</span><span class="rail-tag">Admin</span></div><p class="rail-what">Printermanart.club URL acquired and building</p></li>
@@ -442,28 +482,63 @@
     },120);
   });
 
-  /* click a meme to see it full size */
+  /* click a meme to see it full size, then keep stepping without closing */
   var box=document.getElementById('memebox'),
       hold=box?box.querySelector('.box-media'):null;
   if(box&&hold&&box.showModal){
-    track.addEventListener('click',function(e){
-      var frame=e.target.closest('.feat-frame'); if(!frame)return;
-      var src=frame.firstElementChild, big=src.cloneNode(true);
+    var bPrev=box.querySelector('.box-prev'),
+        bNext=box.querySelector('.box-next'),
+        bN=box.querySelector('.box-n');
+    box.querySelector('.box-of').textContent=slides.length;
+
+    var show = function(n){
+      if(n<0||n>=slides.length) return;
+      i=n;
+      var src=slides[i].querySelector('.feat-frame').firstElementChild,
+          big=src.cloneNode(true);
       big.removeAttribute('loading'); big.removeAttribute('width'); big.removeAttribute('height');
       if(big.tagName==='VIDEO'){
         big.controls=true; big.loop=true; big.playsInline=true;
         big.preload='auto'; big.removeAttribute('autoplay');
         big.muted=false; big.currentTime=0;          /* the click is the gesture that allows sound */
       }
-      hold.innerHTML=''; hold.appendChild(big);
-      box.showModal();
-      if(src.tagName==='VIDEO') src.pause();
+      hold.innerHTML=''; hold.appendChild(big);      /* replacing the node stops the old clip */
       if(big.tagName==='VIDEO'){
         big.play().catch(function(){                 /* blocked? fall back to silent rather than dead */
           big.muted=true; big.play().catch(function(){});
         });
       }
+      if(vids) vids.forEach(function(v){ v.pause(); });  /* nothing plays behind the backdrop */
+      bPrev.disabled = i===0;
+      bNext.disabled = i===slides.length-1;
+      bN.textContent = i+1;
+      go(i);                                         /* so closing lands on the one you were watching */
+    };
+
+    track.addEventListener('click',function(e){
+      var frame=e.target.closest('.feat-frame'); if(!frame)return;
+      show(slides.indexOf(frame.closest('.feat-slide')));
+      box.showModal();
     });
+    bPrev.addEventListener('click',function(){ show(i-1); });
+    bNext.addEventListener('click',function(){ show(i+1); });
+    box.addEventListener('keydown',function(e){
+      if(e.key==='ArrowLeft'){ e.preventDefault(); show(i-1); }
+      if(e.key==='ArrowRight'){ e.preventDefault(); show(i+1); }
+    });
+
+    /* swipe, the way the strip behaves — horizontal only, so a scroll isn't hijacked */
+    var sx=0, sy=0, swiping=false;
+    box.addEventListener('touchstart',function(e){
+      if(e.touches.length!==1){ swiping=false; return; }
+      sx=e.touches[0].clientX; sy=e.touches[0].clientY; swiping=true;
+    },{passive:true});
+    box.addEventListener('touchend',function(e){
+      if(!swiping) return; swiping=false;
+      var t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+      if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)*1.5) show(dx<0 ? i+1 : i-1);
+    },{passive:true});
+
     box.addEventListener('click',function(e){ if(e.target===box) box.close(); });
     box.querySelector('.box-close').addEventListener('click',function(){ box.close(); });
     box.addEventListener('close',function(){ hold.innerHTML=''; });
@@ -472,7 +547,9 @@
   var vids=[].slice.call(track.querySelectorAll('video'));
   if(vids.length&&'IntersectionObserver' in window){
     var io=new IntersectionObserver(function(es){
+      var modal=document.getElementById('memebox');
       es.forEach(function(e){
+        if(modal&&modal.open){e.target.pause();return;}   /* the expanded copy has the floor */
         if(e.isIntersecting&&e.intersectionRatio>0.6){e.target.play().catch(function(){});}
         else{e.target.pause();}
       });
