@@ -15,6 +15,10 @@
 <meta property="og:site_name" content="PrinterMan's Art Club">
 <meta property="og:title" content="Daily News Briefing &mdash; PrinterMan's Art Club">
 <meta property="og:url" content="https://printermanart.club/news.html">
+<meta property="og:image" content="https://printermanart.club/img/og-news.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The words Daily News Briefing in blackletter above a double rule, on newsprint cream.">
 <meta property="og:description" content="Five stories from US and world news, briefed each morning for the PrinterMan's Art Club community.">
 <meta name="description" content="Five stories from US and world news, briefed each morning for the PrinterMan's Art Club community.">
 
@@ -333,15 +337,35 @@ details.day .deck { font-size: 0.84rem; }
    Set in the paper's own type and tokens so it reads as a publisher's line
    rather than a web nav bar. The daily task does not touch this block. */
 .site-strip {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 16px;
-  padding-block: 11px; border-bottom: 1px solid var(--rule);
-  font-family: var(--display); font-size: 0.68rem;
+  display: flex; align-items: center; gap: 8px 22px;
+  padding-block: 13px; border-bottom: 1px solid var(--rule);
+  font-family: var(--display); font-size: 0.7rem;
   text-transform: uppercase; letter-spacing: 0.18em;
 }
-.site-strip a { color: var(--muted); text-decoration: none; }
-.site-strip a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-.site-strip a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.site-strip .site-home { flex: 1 1 auto; font-weight: 700; color: var(--ink); }
+.site-strip a { color: var(--muted); text-decoration: none; white-space: nowrap; }
+.site-strip a:hover { color: var(--accent); }
+.site-strip a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.site-strip .site-home {
+  margin-right: auto; font-weight: 700; color: var(--ink);
+  letter-spacing: 0.14em;
+}
+.site-strip .site-home:hover { color: var(--accent); }
+/* Join is the action, not a fourth link: a chip, set apart from the navigation */
+.site-strip .site-join {
+  color: var(--accent); border: 1px solid var(--accent);
+  border-radius: 2px; padding: 5px 13px 4px;
+  letter-spacing: 0.16em; line-height: 1;
+  transition: background-color .15s, color .15s;
+}
+.site-strip .site-join:hover { background: var(--accent); color: var(--surface); }
+@media (max-width: 560px) {
+  .site-strip { gap: 6px 14px; font-size: 0.64rem; letter-spacing: 0.1em; }
+  .site-strip .site-home { letter-spacing: 0.08em; }
+  .site-strip .site-join { padding: 4px 10px 3px; }
+}
+@media (max-width: 380px) {
+  .site-strip { font-size: 0.6rem; gap: 5px 10px; }
+}
 .site-foot {
   margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--rule);
   font-size: 0.78rem; text-align: center;
@@ -356,9 +380,8 @@ details.day .deck { font-size: 0.84rem; }
 
   <nav class="site-strip">
     <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
-    <a href="/showcase.html">Weekly Art History</a>
-    <a href="/about.html">About</a>
-    <a href="https://discord.gg/nn3xjcS745">Join</a>
+    <a href="/showcase.html">Art History</a>
+    <a class="site-join" href="https://discord.gg/nn3xjcS745">Join</a>
   </nav>
 
   <header class="dateline">

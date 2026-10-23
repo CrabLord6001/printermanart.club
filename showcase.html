@@ -15,6 +15,10 @@
 <meta property="og:site_name" content="PrinterMan's Art Club">
 <meta property="og:title" content="Weekly Art History &mdash; PrinterMan's Art Club">
 <meta property="og:url" content="https://printermanart.club/showcase.html">
+<meta property="og:image" content="https://printermanart.club/img/og-showcase.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The words Weekly Art History set on a plain plaster-colored gallery wall.">
 <meta property="og:description" content="Curated artworks from history, updated every Sunday morning.">
 <meta name="description" content="Curated artworks from history, updated every Sunday morning.">
 
@@ -34,6 +38,10 @@
   --rule: #DED6C7;
   --accent: #8A6520;    /* bronze: frame gilding, brass plaque */
   --accent-wash: #E8DFCB;
+  --plaster: #EBE5DA;      /* limewashed wall behind the masthead */
+  --plaster-lip: rgba(255,255,255,.60);
+  --plaster-dim: rgba(48,40,28,.055);
+  --grain: .20;
   --shadow: 0 1px 2px rgba(30,26,20,.09), 0 10px 22px -12px rgba(30,26,20,.30);
 
   --display: "Spectral", Georgia, serif;
@@ -44,6 +52,8 @@
   :root:not([data-theme="light"]) {
     --bg: #16130F; --surface: #1E1A15; --ink: #EDE7DC; --muted: #9A9183;
     --rule: #322C24; --accent: #D4A24C; --accent-wash: #2A2318;
+    --plaster: #1C1813; --plaster-lip: rgba(255,246,228,.055);
+    --plaster-dim: rgba(0,0,0,.30); --grain: .30;
     --shadow: 0 1px 2px rgba(0,0,0,.55), 0 12px 28px -14px rgba(0,0,0,.8);
     color-scheme: dark;
   }
@@ -51,6 +61,8 @@
 :root[data-theme="dark"] {
   --bg: #16130F; --surface: #1E1A15; --ink: #EDE7DC; --muted: #9A9183;
   --rule: #322C24; --accent: #D4A24C; --accent-wash: #2A2318;
+    --plaster: #1C1813; --plaster-lip: rgba(255,246,228,.055);
+    --plaster-dim: rgba(0,0,0,.30); --grain: .30;
   --shadow: 0 1px 2px rgba(0,0,0,.55), 0 12px 28px -14px rgba(0,0,0,.8);
   color-scheme: dark;
 }
@@ -78,16 +90,35 @@ img { max-width: 100%; }
 /* ---- Site furniture, shared with news.html ---- */
 
 .site-strip {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 16px;
-  padding-block: 11px; border-bottom: 1px solid var(--rule);
-  font-family: var(--mono); font-size: 0.68rem;
-  text-transform: uppercase; letter-spacing: 0.14em;
+  display: flex; align-items: center; gap: 8px 22px;
+  padding-block: 13px; border-bottom: 1px solid var(--rule);
+  font-family: var(--body); font-size: 0.7rem;
+  text-transform: uppercase; letter-spacing: 0.16em;
 }
-.site-strip a { color: var(--muted); text-decoration: none; }
-.site-strip a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-.site-strip a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.site-strip .site-home { flex: 1 1 auto; font-weight: 500; color: var(--ink); }
-
+.site-strip a { color: var(--muted); text-decoration: none; white-space: nowrap; }
+.site-strip a:hover { color: var(--accent); }
+.site-strip a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.site-strip .site-home {
+  margin-right: auto; font-weight: 600; color: var(--ink);
+  letter-spacing: 0.12em;
+}
+.site-strip .site-home:hover { color: var(--accent); }
+/* Join is the action, not a fourth link: a chip, set apart from the navigation */
+.site-strip .site-join {
+  color: var(--accent); border: 1px solid var(--accent);
+  border-radius: 2px; padding: 5px 13px 4px;
+  letter-spacing: 0.16em; line-height: 1;
+  transition: background-color .15s, color .15s;
+}
+.site-strip .site-join:hover { background: var(--accent); color: var(--surface); }
+@media (max-width: 560px) {
+  .site-strip { gap: 6px 14px; font-size: 0.64rem; letter-spacing: 0.1em; }
+  .site-strip .site-home { letter-spacing: 0.08em; }
+  .site-strip .site-join { padding: 4px 10px 3px; }
+}
+@media (max-width: 380px) {
+  .site-strip { font-size: 0.6rem; gap: 5px 10px; }
+}
 .site-foot {
   margin: 28px 0 0; padding-top: 16px; border-top: 1px solid var(--rule);
   font-size: 0.8rem; text-align: center; color: var(--muted);
@@ -101,9 +132,26 @@ img { max-width: 100%; }
 
 /* ---- Masthead ---- */
 
+/* The wall itself: limewashed plaster, lit from above, with a fine grain.
+   No artwork — the banner is the surface the works are hung on. */
 header.page {
-  padding-block: 40px 18px; border-bottom: 3px double var(--rule);
+  position: relative; isolation: isolate; overflow: hidden;
+  margin-block: 14px 0;
+  padding: 54px 22px 26px;
+  border: 1px solid var(--rule);
+  border-bottom: 3px double var(--rule);
   text-align: center;
+  background-color: var(--plaster);
+  background-image:
+    radial-gradient(118% 88% at 50% -24%, var(--plaster-lip), transparent 62%),
+    radial-gradient(70% 70% at 8% 118%, var(--plaster-dim), transparent 72%),
+    radial-gradient(70% 70% at 96% 112%, var(--plaster-dim), transparent 70%);
+}
+header.page::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.86' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
 }
 
 h1 {
@@ -233,9 +281,8 @@ section.theme { padding-block: 36px 4px; border-bottom: 1px solid var(--rule); }
 
   <nav class="site-strip">
     <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
-    <a href="/news.html">Daily News Briefing</a>
-    <a href="/about.html">About</a>
-    <a href="https://discord.gg/nn3xjcS745">Join</a>
+    <a href="/news.html">News Briefing</a>
+    <a class="site-join" href="https://discord.gg/nn3xjcS745">Join</a>
   </nav>
 
   <header class="page">
