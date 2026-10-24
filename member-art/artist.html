@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Member Art — PrinterMan's Art Club</title>
+<meta name="description" content="Work by a member of PrinterMan's Art Club.">
+<meta name="theme-color" content="#5865F2">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PrinterMan's Art Club">
+<meta property="og:title" content="Member Art — PrinterMan's Art Club">
+<meta property="og:description" content="Work by a member of PrinterMan's Art Club.">
+<meta property="og:image" content="https://printermanart.club/img/og-home.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/member-art/gallery.css">
+</head>
+<body class="framed">
+
+  <main>
+    <!-- No artwork in this band on purpose: a borrowed painting sitting
+         over a member's name would read as theirs. Their own work is
+         right below it. -->
+    <header class="banner blank">
+      <div class="banner-text">
+        <h1 id="who">&nbsp;</h1>
+        <p class="tag"><a href="/">PrinterMan&rsquo;s Art Club</a></p>
+      </div>
+    </header>
+
+    <nav class="menu">
+      <a href="/news.html">Daily News Briefing</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/art-history/">Weekly Art History</a>
+    </nav>
+
+    <div class="card-body">
+
+      <a class="crumb" href="/member-art/">&larr; Member Art</a>
+
+      <p class="lede" id="note"></p>
+      <p class="artist-link" id="link" hidden></p>
+
+      <div class="grid" id="grid">
+        <p class="empty" id="state">Loading&hellip;</p>
+      </div>
+
+      <p class="site-foot">
+        <a href="/">printermanart.club</a> &nbsp;&middot;&nbsp;
+        <a href="/member-art/submit.html">Sign in</a> &nbsp;&middot;&nbsp;
+        <a href="/about.html">About</a> &nbsp;&middot;&nbsp; &copy; 2026 PrinterMan
+      </p>
+
+    </div>
+  </main>
+
+<script type="module">
+import { artistBySlug, worksByArtist, publicUrl, esc } from '/member-art/studio.js';
+
+const LINK_GLYPH = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>';
+
+const grid  = document.getElementById('grid');
+const state = document.getElementById('state');
+
+/* The address is a query string rather than a path because the site is
+   static: there is no server to route /member-art/printerman to a page, and
+   the 404 trick that fakes it would have Google seeing a missing page. */
+const slug = new URLSearchParams(location.search).get('a');
+
+function work(w) {
+  const bits = [];
+  if (w.year) bits.push('<span class="y">(' + esc(w.year) + ')</span>');
+
+  const title = '<span class="t">' + esc(w.title) + '</span>' +
+    (bits.length ? ' ' + bits.join(' ') : '') +
+    (w.medium ? '<span class="sep" aria-hidden="true">|</span>' +
+                '<span class="medium">' + esc(w.medium) + '</span>' : '');
+
+  const img = '<img src="' + esc(publicUrl(w.image_path)) + '"' +
+    (w.image_width ? ' width="' + w.image_width + '" height="' + w.image_height + '"' : '') +
+    ' loading="lazy" decoding="async" alt="' + esc(w.alt_text || w.title) + '">';
+
+  // Deliberately not a link. Clicking a piece should not take you off the
+  // site; the artist's own link lives under their name instead.
+  const plate = '<div class="plate">' + img + '</div>';
+
+  return '<figure class="work">' + plate +
+    '<figcaption><p class="line">' + title + '</p>' +
+    (w.description ? '<p class="desc">' + esc(w.description) + '</p>' : '') +
+    '</figcaption></figure>';
+}
+
+(async () => {
+  if (!slug) { state.textContent = 'No artist named in the address.'; return; }
+
+  const artist = await artistBySlug(slug);
+  if (!artist) { state.textContent = 'No artist here.'; return; }
+
+  document.getElementById('who').textContent = artist.display_name;
+  document.title = artist.display_name + ' — PrinterMan’s Art Club';
+
+  if (artist.artist_note) document.getElementById('note').textContent = artist.artist_note;
+
+  /* Their own link, shown as the host rather than the whole address. Only
+     http(s) ever reaches here -- the database refuses anything else -- but
+     it is checked again before being made into an href. */
+  if (artist.artist_link && /^https?:\/\//i.test(artist.artist_link)) {
+    let host = artist.artist_link;
+    try { host = new URL(artist.artist_link).host.replace(/^www\./, ''); } catch (e) {}
+
+    const box = document.getElementById('link');
+    box.innerHTML = '<a href="' + esc(artist.artist_link) + '" target="_blank" rel="noopener noreferrer">' +
+      LINK_GLYPH + '<span>' + esc(host) + '</span></a>';
+    box.hidden = false;
+  }
+
+  const works = await worksByArtist(artist.user_id);
+
+  if (works === null) { state.textContent = 'Could not load their work.'; return; }
+  if (!works.length)  { state.textContent = 'Nothing published yet.'; return; }
+
+  grid.innerHTML = works.map(work).join('');
+})();
+</script>
+
+<script type="module" src="/session.js"></script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0b3e30f708cd4777957b92defbbdd859"}'></script><!-- End Cloudflare Web Analytics -->
+
+<!-- GoatCounter --><script data-goatcounter="https://crablord9001.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script><!-- End GoatCounter -->
+
+</body>
+</html>

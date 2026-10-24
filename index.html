@@ -25,6 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/games/arcade.css">
 
 <style>
   :root {
@@ -445,6 +446,89 @@
     .art-frame, .art-all{ height:440px; }
   }
 
+  /* ---- Arcade: one card per game ----
+     Same deck mechanics as the two strips above with its own element ids.
+     One game for now, so the arrows and dots stay hidden until there is a
+     second slide worth moving to -- the script hides them, rather than the
+     markup pretending there is nowhere to go. Clicking a card opens the
+     game over the page the way a meme opens, so the index stays the one
+     place everything lives. */
+  .arc{ margin-top:36px; padding:22px 0 2px; border-top:1px solid #272B36; }
+  .arc-stage{ position:relative; }
+  .arc-track{
+    display:flex; overflow-x:auto;
+    scroll-snap-type:x mandatory; scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .arc-track::-webkit-scrollbar{ display:none; }
+  .arc-slide{
+    flex:0 0 100%; scroll-snap-align:center;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* a button, not a link: it opens something rather than going somewhere */
+  .arc-card{
+    width:100%; max-width:430px; margin:0 auto; padding:0;
+    display:block; cursor:pointer; font:inherit; color:inherit;
+    background:#13161D; border:1px solid #272B36; border-radius:12px;
+    overflow:hidden; transition:border-color .15s, transform .15s;
+  }
+  .arc-card:hover{ border-color:var(--blurple-text); transform:translateY(-2px); }
+  .arc-card:focus-visible{ outline:2px solid var(--blurple-text); outline-offset:3px; }
+
+  .arc-plate{
+    position:relative; height:190px; background:#0C0E13;
+    border-bottom:1px solid #272B36;
+    display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .arc-plate svg{ width:100%; height:100%; display:block; }
+
+  /* the fade-and-name treatment the art strip uses, so the two read as kin */
+  .arc-veil{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(10,12,17,.74); color:#fff;
+    font-size:.72rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
+    opacity:0; transition:opacity .15s;
+  }
+  .arc-card:hover .arc-veil, .arc-card:focus-visible .arc-veil{ opacity:1; }
+
+  /* A button may only hold phrasing content, so these are spans rather than
+     a p. They need telling to stack. */
+  .arc-who{ display:block; padding:14px 16px 16px; text-align:center; }
+  .arc-name{
+    display:block; font-size:1rem; font-weight:600; line-height:1.35;
+    color:var(--blurple-text); text-wrap:balance;
+  }
+  .arc-note{ display:block; margin-top:3px; font-size:.8rem; color:var(--text-dim); text-wrap:balance; }
+
+  .arc-nav{
+    position:absolute; top:120px; transform:translateY(-50%);
+    width:34px; height:34px; border-radius:50%;
+    background:rgba(12,14,19,.72); border:1px solid #3A404F; color:#C7CBD6;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; padding:0; transition:color .15s, border-color .15s, opacity .15s;
+  }
+  .arc-nav:hover{ color:#D4A24C; border-color:#D4A24C; }
+  .arc-nav:focus-visible{ outline:2px solid #D4A24C; outline-offset:2px; }
+  .arc-nav[disabled]{ opacity:.3; cursor:default; }
+  .arc-nav[disabled]:hover{ color:#C7CBD6; border-color:#3A404F; }
+  .arc-prev{ left:12px; }
+  .arc-next{ right:12px; }
+
+  .arc-dots{ display:flex; justify-content:center; gap:7px; margin-top:14px; }
+  .arc-dot{
+    width:7px; height:7px; padding:0; border-radius:50%;
+    background:#2F3442; border:0; cursor:pointer; transition:background .15s;
+  }
+  .arc-dot[aria-current="true"]{ background:#D4A24C; }
+  .arc-dot:focus-visible{ outline:2px solid #D4A24C; outline-offset:3px; }
+
+  /* display:flex would otherwise beat the hidden attribute, so the single
+     game still showed arrows pointing nowhere. */
+  .arc-nav[hidden], .arc-dots[hidden]{ display:none; }
+
+  @media (max-width:560px){ .arc-nav{ display:none; } }
+
   /* ---- Server Change Log: beaded rail, newest first ---- */
   .rail{ margin-top:36px; padding:22px 0 2px; border-top:1px solid #272B36; }
   .rail-list{ text-align:left; position:relative; margin:0 auto; padding:2px 0 2px 28px;
@@ -537,16 +621,11 @@
 
         <div class="art-track" id="artdeck">
 
-          <div class="art-slide">
-            <a class="art-frame" href="/member-art/printerman.html">
-              <img src="img/member-art/printerman-01.jpg" width="1082" height="1400" loading="lazy" decoding="async"
-                   alt="Froggy Me by PrinterMan: a digitally manipulated self-portrait, a man&rsquo;s face stretched and tinted frog-green, in glasses and a patterned tie, under a broken umbrella with cartoon bubbles around him.">
-              <span class="art-veil" aria-hidden="true">See more from PrinterMan</span>
-            </a>
-            <div class="art-cap">
-              <p class="art-line"><span class="art-title">Froggy Me</span><span class="art-year"> (2017)</span><span class="sep" aria-hidden="true">|</span><a class="art-by" href="/member-art/printerman.html">PrinterMan</a></p>
-            </div>
-          </div>
+          <!-- One slide per artist, newest approved piece as their image,
+               filled in when this block comes into view. The slide below is
+               the only one written by hand: it is the way through to the
+               full gallery, and it means the strip is never empty even if
+               the fetch fails. -->
 
           <div class="art-slide">
             <div class="art-all">
@@ -561,11 +640,161 @@
         </button>
       </div>
 
-      <div class="art-dots">
-        <button class="art-dot" type="button" aria-label="Go to artist 1" aria-current="true"></button>
-        <button class="art-dot" type="button" aria-label="Go to the full gallery"></button>
+      <div class="art-dots" id="artdots"></div>
+    </section>
+
+    <section class="arc" aria-label="Arcade">
+      <p class="block-label">Arcade</p>
+
+      <div class="arc-stage">
+        <button class="arc-nav arc-prev" type="button" aria-label="Previous game" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg>
+        </button>
+
+        <div class="arc-track" id="arcdeck">
+
+          <!-- One slide per game. Copy the block below, swap the plate, the
+               name, the line and data-game. -->
+          <div class="arc-slide">
+            <button class="arc-card" type="button" data-game="paper-trail">
+              <span class="arc-plate">
+                <!-- Ms. Printer, her trail, and the ink ahead of her. -->
+                <svg viewBox="0 0 240 150" role="img" aria-label="Ms. Printer trailing stacks of printed paper, with ink splats ahead of her.">
+                  <g>
+                    <rect x="20"  y="66" width="22" height="22" rx="3" fill="#B9B3A4"/>
+                    <rect x="17"  y="63" width="22" height="22" rx="3" fill="#D6D0C2"/>
+                    <rect x="14"  y="60" width="22" height="22" rx="3" fill="#F2EFE6"/>
+                    <rect x="17"  y="63" width="16" height="4" rx="1.5" fill="#2B2F3A"/>
+                    <rect x="17"  y="71" width="16" height="1.8" fill="#C9C3B4"/>
+                    <rect x="17"  y="75" width="11" height="1.8" fill="#C9C3B4"/>
+
+                    <rect x="58"  y="66" width="22" height="22" rx="3" fill="#B9B3A4"/>
+                    <rect x="55"  y="63" width="22" height="22" rx="3" fill="#D6D0C2"/>
+                    <rect x="52"  y="60" width="22" height="22" rx="3" fill="#F2EFE6"/>
+                    <rect x="55"  y="63" width="16" height="4" rx="1.5" fill="#E8C53D"/>
+                    <rect x="55"  y="71" width="16" height="1.8" fill="#C9C3B4"/>
+                    <rect x="55"  y="75" width="11" height="1.8" fill="#C9C3B4"/>
+
+                    <rect x="96"  y="66" width="22" height="22" rx="3" fill="#B9B3A4"/>
+                    <rect x="93"  y="63" width="22" height="22" rx="3" fill="#D6D0C2"/>
+                    <rect x="90"  y="60" width="22" height="22" rx="3" fill="#F2EFE6"/>
+                    <rect x="93"  y="63" width="16" height="4" rx="1.5" fill="#22B8E6"/>
+                    <rect x="93"  y="71" width="16" height="1.8" fill="#C9C3B4"/>
+                    <rect x="93"  y="75" width="11" height="1.8" fill="#C9C3B4"/>
+                  </g>
+
+                  <g>
+                    <rect x="138" y="42" width="20" height="13" rx="2" fill="#F2EFE6"/>
+                    <rect x="141" y="45" width="14" height="1.8" fill="#C9C3B4"/>
+                    <rect x="141" y="49" width="14" height="1.8" fill="#C9C3B4"/>
+                    <rect x="134" y="86" width="28" height="7" rx="2.6" fill="#C72E42"/>
+                    <rect x="126" y="52" width="44" height="40" rx="9" fill="#E8394F"/>
+                    <rect x="131" y="60" width="34" height="25" rx="6" fill="#F7F4ED"/>
+                    <rect x="136" y="55" width="24" height="4" rx="2" fill="#C72E42"/>
+                    <circle cx="137" cy="79" r="3" fill="#F79AAC"/>
+                    <circle cx="159" cy="79" r="3" fill="#F79AAC"/>
+                    <circle cx="142" cy="70" r="6.2" fill="#fff"/>
+                    <circle cx="154" cy="70" r="6.2" fill="#fff"/>
+                    <circle cx="144" cy="70" r="3.1" fill="#241B22"/>
+                    <circle cx="156" cy="70" r="3.1" fill="#241B22"/>
+                    <circle cx="145" cy="68.5" r="1.2" fill="#fff"/>
+                    <circle cx="157" cy="68.5" r="1.2" fill="#fff"/>
+                    <path d="M140 77 a8 8 0 0 0 16 0 Z" fill="#7A1626"/>
+                    <path d="M143.5 79 a4.6 4.6 0 0 0 9 0 Z" fill="#F07A95"/>
+                  </g>
+
+                  <g>
+                    <path d="M196 34 q10 -6 16 2 q10 -2 9 9 q6 7 -3 12 q-1 10 -11 7 q-7 6 -13 -2 q-11 1 -9 -10 q-5 -8 4 -12 q1 -8 7 -6 Z" fill="#E8459B"/>
+                    <circle cx="219" cy="24" r="2.6" fill="#E8459B"/>
+                    <circle cx="189" cy="60" r="2" fill="#E8459B"/>
+                    <path d="M200 104 q9 -5 14 2 q9 -1 8 8 q5 6 -3 10 q-1 9 -10 6 q-6 5 -11 -2 q-10 1 -8 -9 q-5 -7 3 -11 Z" fill="#22B8E6"/>
+                    <circle cx="222" cy="97" r="2.3" fill="#22B8E6"/>
+                  </g>
+                </svg>
+                <span class="arc-veil">Play</span>
+              </span>
+              <span class="arc-who">
+                <span class="arc-name">The Adventures of Ms. Printer, Part 1: Paper Trail</span>
+                <span class="arc-note">Eat the Ink, Don&rsquo;t Jam</span>
+              </span>
+            </button>
+          </div>
+
+        </div>
+
+        <button class="arc-nav arc-next" type="button" aria-label="Next game">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+
+      <div class="arc-dots">
+        <button class="arc-dot" type="button" aria-label="Go to game 1" aria-current="true"></button>
       </div>
     </section>
+
+    <dialog id="playbox" aria-label="Paper Trail">
+      <div class="play-wrap">
+
+        <div class="play-head">
+          <p class="play-name">Paper Trail</p>
+          <div class="who-row" id="pWho"></div>
+
+          <button class="snd" id="pSound" type="button" aria-pressed="false" aria-label="Turn sound on">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 5 6 9H2v6h4l5 4z"/>
+              <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+              <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
+            </svg>
+          </button>
+
+          <div class="play-stats">
+            <span>Sheets <b id="pScore">0</b></span>
+            <span class="best">Best <b id="pBest">&mdash;</b></span>
+          </div>
+        </div>
+
+        <div class="tray">
+          <canvas id="play" width="768" height="576" aria-label="Paper Trail game board"></canvas>
+
+          <!-- Everything that is not the board lives on this panel: the rules
+               before the first run, the score and the board after a jam. -->
+          <div class="veil" id="pVeil">
+            <h2 id="pTitle" class="lore">The Adventures of Ms. Printer, Part 1: Paper Trail</h2>
+            <p id="pText" hidden></p>
+
+            <div id="pExtra">
+              <ul class="rules">
+                <li>WASD, arrow keys, or swipe</li>
+                <li>Consume ink to keep printing</li>
+                <li>Hit your own printouts or the wall and it&rsquo;s game over</li>
+              </ul>
+            </div>
+
+            <p class="where" id="pWhere" hidden></p>
+            <div class="rooms" id="pRooms"></div>
+
+            <div class="after" id="pAfter" hidden>
+              <button class="btn" id="pBtn" type="button">Print again</button>
+              <button class="btn ghost" id="pBack" type="button">Change room</button>
+            </div>
+
+            <p class="msg" id="pMsg" hidden></p>
+          </div>
+        </div>
+
+        <div class="pad" aria-label="Direction pad">
+          <button class="up"    type="button" aria-label="Up">&#9650;</button>
+          <button class="left"  type="button" aria-label="Left">&#9664;</button>
+          <button class="down"  type="button" aria-label="Down">&#9660;</button>
+          <button class="right" type="button" aria-label="Right">&#9654;</button>
+        </div>
+
+        <button class="box-close" id="pClose" type="button" aria-label="Close">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+
+      </div>
+    </dialog>
 
     <section class="rail">
       <p class="block-label">Server Change Log</p>
@@ -581,7 +810,7 @@
     </section>
 
     <footer>
-      printermanart.club &nbsp;·&nbsp; <a href="/about.html">About</a> &nbsp;·&nbsp; <a href="/faq.html">FAQ</a> &nbsp;·&nbsp; &copy; 2026 PrinterMan
+      printermanart.club &nbsp;·&nbsp; <a href="/about.html">About</a> &nbsp;·&nbsp; <a href="/member-art/submit.html">Sign in</a> &nbsp;·&nbsp; <a href="/faq.html">FAQ</a> &nbsp;·&nbsp; &copy; 2026 PrinterMan
     </footer>
     </div>
   </main>
@@ -699,41 +928,601 @@
   }
 }());
 
-/* Member Art deck. Same mechanics as the meme strip, its own element ids, no
-   lightbox -- clicking a work should take you to the artist, not open it
-   bigger here. */
-(function(){
-  var track=document.getElementById('artdeck'); if(!track)return;
-  var slides=[].slice.call(track.querySelectorAll('.art-slide')),
-      prev=document.querySelector('.art-prev'),
-      next=document.querySelector('.art-next'),
-      dots=[].slice.call(document.querySelectorAll('.art-dot')),
-      i=0;
+</script>
 
-  function go(n){
-    i=Math.max(0,Math.min(slides.length-1,n));
-    track.scrollTo({left:slides[i].offsetLeft-track.offsetLeft,behavior:'smooth'});
-    sync();
+<script type="module">
+/* Arcade block: the deck, and the game that opens out of it.
+
+   Nothing the game needs is downloaded until someone clicks a card. A
+   visitor who only reads the page never fetches the game or the Supabase
+   client, which matters because this is the home page. */
+
+const track = document.getElementById('arcdeck');
+
+if (track) {
+  const slides  = Array.from(track.querySelectorAll('.arc-slide'));
+  const prev    = document.querySelector('.arc-prev');
+  const next    = document.querySelector('.arc-next');
+  const dotWrap = document.querySelector('.arc-dots');
+  const dots    = Array.from(document.querySelectorAll('.arc-dot'));
+  let i = 0;
+
+  // One game means nowhere to page to, so the controls stay out of the way
+  // until a second slide exists.
+  if (slides.length < 2) {
+    if (prev) prev.hidden = true;
+    if (next) next.hidden = true;
+    if (dotWrap) dotWrap.hidden = true;
   }
-  function sync(){
-    prev.disabled = i===0;
-    next.disabled = i===slides.length-1;
-    dots.forEach(function(d,n){
-      if(n===i){d.setAttribute('aria-current','true');}else{d.removeAttribute('aria-current');}
+
+  const sync = () => {
+    if (prev) prev.disabled = i === 0;
+    if (next) next.disabled = i === slides.length - 1;
+    dots.forEach((d, n) => {
+      if (n === i) d.setAttribute('aria-current', 'true');
+      else d.removeAttribute('aria-current');
     });
-  }
-  prev.addEventListener('click',function(){go(i-1);});
-  next.addEventListener('click',function(){go(i+1);});
-  dots.forEach(function(d,n){d.addEventListener('click',function(){go(n);});});
+  };
+  const go = (n) => {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    track.scrollTo({ left: slides[i].offsetLeft - track.offsetLeft, behavior: 'smooth' });
+    sync();
+  };
 
-  var t; track.addEventListener('scroll',function(){
-    clearTimeout(t); t=setTimeout(function(){
-      i=Math.round(track.scrollLeft/track.clientWidth); sync();
-    },120);
+  if (prev) prev.addEventListener('click', () => go(i - 1));
+  if (next) next.addEventListener('click', () => go(i + 1));
+  dots.forEach((d, n) => d.addEventListener('click', () => go(n)));
+
+  let t;
+  track.addEventListener('scroll', () => {
+    clearTimeout(t);
+    t = setTimeout(() => { i = Math.round(track.scrollLeft / track.clientWidth); sync(); }, 120);
   });
   sync();
-}());
+
+  /* ---- the expanded game ---- */
+
+  const GAME = 'paper-trail';
+  const LOCAL_BEST = 'pt-best';
+
+  const box     = document.getElementById('playbox');
+  const canvas  = document.getElementById('play');
+  const elScore = document.getElementById('pScore');
+  const elBest  = document.getElementById('pBest');
+  const elVeil  = document.getElementById('pVeil');
+  const elTitle = document.getElementById('pTitle');
+  const elText  = document.getElementById('pText');
+  const elExtra = document.getElementById('pExtra');
+  const elBtn   = document.getElementById('pBtn');
+  const elRooms = document.getElementById('pRooms');
+  const elAfter = document.getElementById('pAfter');
+  const elBack  = document.getElementById('pBack');
+  const elWhere = document.getElementById('pWhere');
+  const elWho   = document.getElementById('pWho');
+  const elMsg   = document.getElementById('pMsg');
+
+  // The rules sit in the markup, so they are there for anyone with no
+  // scripting at all. Keep a copy to put back between runs.
+  const rulesHTML = elExtra.innerHTML;
+
+  let mods = null, game = null, signedIn = false, room = 'classic';
+
+  /* A best kept in this browser as well as on the server, so the number is
+     there before sign-in and stays there for anyone who never signs in.
+     One per room, because a Classic score and a Data Center score are not
+     the same achievement. */
+  let best = 0;
+  const bestKey = (r) => LOCAL_BEST + '-' + r;
+
+  function loadBest(r) {
+    try { best = Number(localStorage.getItem(bestKey(r)) || 0) || 0; }
+    catch (e) { best = 0; }
+    showBest();
+  }
+
+  const esc = (v) => String(v).replace(/[&<>"]/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+  const showBest = () => { elBest.innerHTML = best > 0 ? String(best) : '&mdash;'; };
+
+  const say = (text, kind) => {
+    if (!text) { elMsg.hidden = true; return; }
+    elMsg.hidden = false;
+    elMsg.textContent = text;
+    elMsg.className = 'msg' + (kind ? ' ' + kind : '');
+  };
+
+  const LORE = 'The Adventures of Ms. Printer, Part 1: Paper Trail';
+  const CHOOSE = 'Choose Your Stage';
+
+  /* The opening panel is the title and the three lines and nothing else.
+     Later panels swap in a score line, which is what text is for. */
+  const veil = (title, text, button, jammed) => {
+    elTitle.textContent = title;
+    elTitle.className = (jammed ? 'jam' : '') + (title === LORE ? ' lore' : '');
+    elText.textContent = text || '';
+    elText.hidden = !text;
+    elBtn.textContent = button;
+    elVeil.hidden = false;
+  };
+
+  async function ensureModules() {
+    if (mods) return mods;
+    const [pt, auth, sound] = await Promise.all([
+      import('/games/paper-trail.js'),
+      import('/games/club-auth.js'),
+      import('/games/chiptune.js')
+    ]);
+    mods = {
+      startPaperTrail: pt.startPaperTrail,
+      drawPreview: pt.drawPreview,
+      rooms: pt.ROOMS, order: pt.ROOM_ORDER,
+      auth, sound
+    };
+    mods.auth.onMember(whenMemberChanges);
+    paintSound();
+    buildRooms();
+    return mods;
+  }
+
+  function makeGame() {
+    if (game) return game;
+
+    game = mods.startPaperTrail({
+      canvas,
+
+      onScore(sheets) {
+        elScore.textContent = sheets;
+        if (sheets > 0) {
+          mods.sound.eat(sheets);
+          // The loop speeds up with her, so getting faster is audible.
+          mods.sound.setRate(1 + sheets * 0.012);
+        }
+      },
+
+      onPause() {
+        mods.sound.stopMusic();
+        veil('Paused', 'Nothing is printing.', 'Resume');
+        elExtra.innerHTML = '';
+        elWhere.hidden = true;
+        elRooms.hidden = true;
+        elAfter.hidden = false;
+        elBack.hidden = true;        // leaving mid-run would lose the run
+      },
+
+      onResume() {
+        elVeil.hidden = true;
+        mods.sound.startMusic();
+      },
+
+      onConfirm() { elBtn.click(); },
+
+      async onEnd(result) {
+        mods.sound.stopMusic();
+        if (result.reason === 'full') mods.sound.begin(); else mods.sound.jam();
+
+        const beatIt = result.sheets > best;
+        if (beatIt) {
+          best = result.sheets;
+          try { localStorage.setItem(bestKey(room), String(best)); } catch (e) {}
+          showBest();
+        }
+
+        const word = result.sheets === 1 ? 'sheet' : 'sheets';
+        if (result.reason === 'full') {
+          veil('Tray Full', 'You printed the whole room. That is the end of the paper.', 'Print again');
+        } else {
+          veil('Paper Jam', 'You printed ' + result.sheets + ' ' + word + '.', 'Print again', true);
+        }
+
+        elWhere.textContent = mods.rooms[room].name;
+        elWhere.hidden = false;
+        elRooms.hidden = true;
+        elAfter.hidden = false;
+        elBack.hidden = false;
+
+        showBoard();
+
+        // Nothing to say when signed out -- the sign-in button is right there
+        // and already says what it is for.
+        if (!signedIn) { say(null); return; }
+
+        const posted = await mods.auth.postScore(GAME, result.sheets, { reason: result.reason }, room);
+        if (!posted.ok) { say('That run did not save. Try again in a moment.', 'bad'); return; }
+        say(beatIt ? 'Saved. New personal best.' : 'Saved.', 'good');
+        showBoard();
+      }
+    });
+
+    return game;
+  }
+
+  /* One still of each room, drawn by the same code that draws the live
+     board, so a preview can never show a layout the game does not have.
+     Names alone told you nothing about what you were picking. */
+  function buildRooms() {
+    elRooms.innerHTML = '';
+
+    mods.order.forEach((key) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'room-card' + (key === 'classic' ? ' plain' : '');
+
+      const shot = document.createElement('canvas');
+      card.appendChild(shot);
+
+      const label = document.createElement('span');
+      label.textContent = mods.rooms[key].name;
+      card.appendChild(label);
+
+      card.addEventListener('click', () => startRoom(key));
+      elRooms.appendChild(card);
+
+      mods.drawPreview(shot, key);
+    });
+  }
+
+  /* Two panels before you play: what the game is, then which room. */
+  function showIntro() {
+    say(null);
+    elExtra.innerHTML = rulesHTML;
+    elWhere.hidden = true;
+    elRooms.hidden = true;
+    elAfter.hidden = false;
+    elBack.hidden = true;
+    veil(LORE, '', 'Play');
+  }
+
+  function showChooser() {
+    say(null);
+    elExtra.innerHTML = '';
+    elWhere.hidden = true;
+    elRooms.hidden = false;
+    elAfter.hidden = true;
+    veil(CHOOSE, '', '');
+  }
+
+  function startRoom(key) {
+    room = key;
+    loadBest(room);
+    say(null);
+
+    elExtra.innerHTML = '';
+    elVeil.hidden = true;
+
+    mods.sound.arm();
+    mods.sound.setRate(1);
+    mods.sound.begin();
+    mods.sound.startMusic();
+
+    game.begin(room);
+    if (signedIn) syncBest();
+  }
+
+  async function showBoard() {
+    elExtra.innerHTML =
+      '<div class="board-wrap"><h3>Top Ten \u00b7 ' + esc(mods.rooms[room].name) + '</h3>' +
+      '<ol class="board" id="pBoard"><li class="none"><span class="nm">Loading&hellip;</span></li></ol></div>';
+
+    const rows = await mods.auth.leaderboard(GAME, room, 10);
+    const ol = document.getElementById('pBoard');
+    if (!ol) return;
+
+    if (rows === null) {
+      ol.innerHTML = '<li class="none"><span class="nm">Board unavailable right now.</span></li>';
+      return;
+    }
+    if (!rows.length) {
+      ol.innerHTML = '<li class="none"><span class="nm">Nobody has posted a score yet.</span></li>';
+      return;
+    }
+
+    const me = mods.auth.currentMember();
+    ol.innerHTML = rows.map((r) => {
+      const mine = me && r.display_name === me.displayName ? ' class="me"' : '';
+      return '<li' + mine + '><span class="nm">' + esc(r.display_name) +
+             '</span><span class="sc">' + r.score + '</span></li>';
+    }).join('');
+  }
+
+  function drawSignedOut() {
+    elWho.innerHTML = '';
+
+    // No explanatory line beside it: the button label is the explanation.
+    const button = document.createElement('button');
+    button.className = 'btn ghost small';
+    button.type = 'button';
+    button.textContent = 'Sign in to save score';
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try { await mods.auth.signIn(); }
+      catch (err) { button.disabled = false; say('Could not reach Discord sign-in.', 'bad'); }
+    });
+
+    elWho.append(button);
+  }
+
+  function drawSignedIn(member) {
+    elWho.innerHTML = '';
+
+    if (member.avatarUrl) {
+      const img = document.createElement('img');
+      img.className = 'avatar';
+      img.src = member.avatarUrl;
+      img.alt = '';
+      img.width = 26; img.height = 26;
+      elWho.append(img);
+    }
+
+    const name = document.createElement('span');
+    name.className = 'nm';
+    name.textContent = member.displayName;
+
+    const out = document.createElement('button');
+    out.className = 'btn ghost small';
+    out.type = 'button';
+    out.textContent = 'Sign out';
+    out.addEventListener('click', () => mods.auth.signOut());
+
+    elWho.append(name, out);
+  }
+
+  async function whenMemberChanges(member) {
+    signedIn = !!member;
+    if (!member) { drawSignedOut(); return; }
+
+    drawSignedIn(member);
+    syncBest();
+  }
+
+  /* The server wins if it is higher: a best set on another device should not
+     be lost just because this browser has not seen it. Per room, like
+     everything else about a score. */
+  async function syncBest() {
+    const serverBest = await mods.auth.myBest(GAME, room);
+    if (serverBest && serverBest > best) {
+      best = serverBest;
+      try { localStorage.setItem(bestKey(room), String(best)); } catch (e) {}
+      showBest();
+    }
+  }
+
+  async function openGame() {
+    if (!box || !box.showModal) return;
+
+    elScore.textContent = '0';
+    elExtra.innerHTML = rulesHTML;
+    elWhere.hidden = true;
+    elRooms.hidden = true;
+    elAfter.hidden = false;
+    elBack.hidden = true;
+    elBtn.disabled = true;
+    veil(LORE, '', 'Loading\u2026');
+    say(null);
+    loadBest(room);
+    box.showModal();
+
+    try {
+      await ensureModules();
+    } catch (err) {
+      elBtn.textContent = 'Unavailable';
+      say('The game could not load. Try again in a moment.', 'bad');
+      return;
+    }
+
+    elBtn.disabled = false;
+    elBtn.textContent = 'Play';
+    makeGame();
+  }
+
+  const sndBtn = document.getElementById('pSound');
+
+  function paintSound() {
+    const lit = mods && mods.sound.isOn();
+    sndBtn.setAttribute('aria-pressed', lit ? 'true' : 'false');
+    sndBtn.setAttribute('aria-label', lit ? 'Turn sound off' : 'Turn sound on');
+  }
+
+  // setOn arms the audio, which has to happen inside a click: browsers will
+  // not start audio any other way.
+  sndBtn.addEventListener('click', () => {
+    if (!mods) return;
+    mods.sound.setOn(!mods.sound.isOn());
+    paintSound();
+    if (mods.sound.isOn() && game && game.isRunning()) mods.sound.startMusic();
+  });
+
+  // Closing tears the game down rather than leaving it listening for arrow
+  // keys behind a closed dialog. Esc fires this too.
+  box.addEventListener('close', () => {
+    if (game) { game.destroy(); game = null; }
+    if (mods) mods.sound.stopMusic();
+  });
+
+  document.querySelectorAll('.arc-card[data-game]').forEach((card) => {
+    card.addEventListener('click', () => {
+      if (card.dataset.game === GAME) openGame();
+    });
+  });
+
+  document.getElementById('pClose').addEventListener('click', () => box.close());
+
+  elBtn.addEventListener('click', () => {
+    if (!game || game.isRunning() || elBtn.disabled) return;
+    if (elTitle.textContent === 'Paused') { game.resume(); return; }
+    if (elTitle.textContent === LORE)     { showChooser(); return; }
+    startRoom(room);                 // same room again
+  });
+
+  elBack.addEventListener('click', () => { if (game) showChooser(); });
+
+  document.querySelectorAll('.pad button').forEach((b) => {
+    b.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (game) game.turn(b.className);
+    });
+  });
+
+  showBest();
+}
 </script>
+
+<script type="module">
+/* Member Art Showcase: one slide per artist, straight from the database.
+
+   Read with a plain fetch and no library. The home page's job is getting
+   people into the Discord, and making every visitor download the Supabase
+   client so a strip further down can fill itself would be a poor trade. It
+   is also deferred until the block is near the viewport, so somebody who
+   reads the top and leaves fetches nothing at all. */
+
+import { SUPABASE_URL, SUPABASE_KEY } from '/club-config.js';
+
+const section = document.querySelector('section.art');
+const track   = document.getElementById('artdeck');
+
+if (section && track) {
+  const esc = (v) => String(v == null ? '' : v)
+    .replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+  const imageUrl = (path) =>
+    SUPABASE_URL + '/storage/v1/object/public/member-art/' + path;
+
+  function slide(a) {
+    const page = '/member-art/artist.html?a=' + encodeURIComponent(a.slug);
+    const size = a.w ? ' width="' + a.w + '" height="' + a.h + '"' : '';
+
+    return '<div class="art-slide">' +
+      '<a class="art-frame" href="' + page + '">' +
+        '<img src="' + esc(imageUrl(a.image)) + '"' + size + ' loading="lazy" decoding="async" ' +
+             'alt="' + esc(a.alt || a.title) + '">' +
+        '<span class="art-veil" aria-hidden="true">See more from ' + esc(a.name) + '</span>' +
+      '</a>' +
+      '<div class="art-cap"><p class="art-line">' +
+        '<span class="art-title">' + esc(a.title) + '</span>' +
+        (a.year ? '<span class="art-year"> (' + esc(a.year) + ')</span>' : '') +
+        '<span class="sep" aria-hidden="true">|</span>' +
+        '<a class="art-by" href="' + page + '">' + esc(a.name) + '</a>' +
+      '</p></div></div>';
+  }
+
+  /* Wired only once the slides exist, because the arrows and dots have to
+     count them. */
+  function wire() {
+    const slides = Array.from(track.querySelectorAll('.art-slide'));
+    const prev = document.querySelector('.art-prev');
+    const next = document.querySelector('.art-next');
+    const dotWrap = document.getElementById('artdots');
+    let i = 0;
+
+    dotWrap.innerHTML = slides.map((_, n) =>
+      '<button class="art-dot" type="button" aria-label="Go to slide ' + (n + 1) + '"></button>').join('');
+    const dots = Array.from(dotWrap.querySelectorAll('.art-dot'));
+
+    const sync = () => {
+      if (prev) prev.disabled = i === 0;
+      if (next) next.disabled = i === slides.length - 1;
+      dots.forEach((d, n) => {
+        if (n === i) d.setAttribute('aria-current', 'true');
+        else d.removeAttribute('aria-current');
+      });
+    };
+    const go = (n) => {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      track.scrollTo({ left: slides[i].offsetLeft - track.offsetLeft, behavior: 'smooth' });
+      sync();
+    };
+
+    if (prev) prev.addEventListener('click', () => go(i - 1));
+    if (next) next.addEventListener('click', () => go(i + 1));
+    dots.forEach((d, n) => d.addEventListener('click', () => go(n)));
+
+    let t;
+    track.addEventListener('scroll', () => {
+      clearTimeout(t);
+      t = setTimeout(() => { i = Math.round(track.scrollLeft / track.clientWidth); sync(); }, 120);
+    });
+
+    sync();
+  }
+
+  /* Browsers remember how far a scrollable element was scrolled and put it
+     back on a return visit, which for a strip like this means coming home to
+     the last slide rather than the first. Reset it whenever the page is
+     shown, including a restore from the back/forward cache, which re-runs
+     none of the script above. */
+  function rewind() {
+    track.scrollLeft = 0;
+    const first = document.querySelector('.art-dot');
+    if (first) {
+      document.querySelectorAll('.art-dot').forEach((d) => d.removeAttribute('aria-current'));
+      first.setAttribute('aria-current', 'true');
+    }
+    const prev = document.querySelector('.art-prev');
+    const next = document.querySelector('.art-next');
+    if (prev) prev.disabled = true;
+    if (next) next.disabled = track.querySelectorAll('.art-slide').length < 2;
+  }
+
+  window.addEventListener('pageshow', rewind);
+
+  async function fill() {
+    const query =
+      'select=member_id,title,year,image_path,image_width,image_height,alt_text,' +
+      'artist:club_members!club_artworks_member_id_fkey(display_name,artist_slug)' +
+      '&status=eq.approved&order=created_at.desc&limit=60';
+
+    let rows = [];
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/club_artworks?' + query,
+                              { headers: { apikey: SUPABASE_KEY } });
+      if (res.ok) rows = await res.json();
+    } catch (e) {
+      // Leave the hand-written slide in place and say nothing.
+    }
+
+    // Newest approved piece per artist, same rule the directory uses.
+    const byArtist = new Map();
+    for (const r of rows) {
+      const who = r.artist;
+      if (!who || !who.artist_slug || byArtist.has(r.member_id)) continue;
+      byArtist.set(r.member_id, {
+        slug: who.artist_slug, name: who.display_name,
+        title: r.title, year: r.year, alt: r.alt_text,
+        image: r.image_path, w: r.image_width, h: r.image_height
+      });
+    }
+
+    const artists = [...byArtist.values()];
+    if (artists.length) {
+      // In front of the gallery link, which stays last.
+      track.insertAdjacentHTML('afterbegin', artists.map(slide).join(''));
+    }
+
+    wire();
+    rewind();
+  }
+
+  /* Nothing is fetched until the strip is nearly on screen -- but only once
+     the page has actually laid itself out. Watching from the start fires
+     immediately, because before the images above have loaded the document
+     is short and everything is near the top, which defeats the point. */
+  function watchForIt() {
+    if (!('IntersectionObserver' in window)) { fill(); return; }
+
+    const watch = new IntersectionObserver((entries, obs) => {
+      if (entries.some((e) => e.isIntersecting)) { obs.disconnect(); fill(); }
+    }, { rootMargin: '200px' });
+
+    watch.observe(section);
+  }
+
+  if (document.readyState === 'complete') watchForIt();
+  else window.addEventListener('load', watchForIt, { once: true });
+}
+</script>
+
+<script type="module" src="/session.js"></script>
 
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0b3e30f708cd4777957b92defbbdd859"}'></script><!-- End Cloudflare Web Analytics -->
 

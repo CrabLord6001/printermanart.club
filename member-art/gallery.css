@@ -155,10 +155,13 @@ header.page .bio {
   gap: 30px 26px;
 }
 
+/* Two across on a full-width page, not three. The art is the point, so
+   fewer and larger beats more and smaller; three only fitted because the
+   cards were narrow. Below about 600px it falls to one. */
 .work {
-  flex: 0 1 300px;
-  min-width: 250px;
-  max-width: 340px;
+  flex: 0 1 400px;
+  min-width: 280px;
+  max-width: 440px;
   margin: 0;
   background: var(--panel);
   border: 1px solid var(--border);
@@ -168,19 +171,24 @@ header.page .bio {
   flex-direction: column;
 }
 
+/* A fixed height, not a minimum. Members submit whatever shape they like,
+   and with min-height a tall piece made its card tall while a wide one left
+   a void under its caption, because a flex row stretches every card to the
+   tallest. Same plate for everyone, image centred inside it, nothing
+   cropped. */
 .work .plate {
   background: #0C0E13;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 14px;
-  min-height: 240px;
+  height: 340px;
 }
 
 .work .plate img {
   display: block;
   max-width: 100%;
-  max-height: 360px;
+  max-height: 100%;
   width: auto;
   height: auto;
   border-radius: 3px;
@@ -307,6 +315,26 @@ header.page .bio {
   padding: 10px;
 }
 
+/* ---- an artist's own link ---- */
+
+.artist-link { margin: 12px 0 0; }
+
+.artist-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.artist-link a:hover { text-decoration: underline; }
+.artist-link a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+/* On a card this is a mark, not a link: the card is already one. */
+.artist .has-link { color: var(--accent); vertical-align: -1px; margin-left: 4px; }
+
 /* ---- foot ---- */
 
 .site-foot {
@@ -324,4 +352,212 @@ header.page .bio {
 @media (max-width: 560px) {
   .controls { gap: 12px; }
   .work .plate { min-height: 200px; }
+}
+
+/* ============================================================
+   Page frame — the lander's card, for the two pages visitors
+   see. Scoped to body.framed so the submit and review screens
+   keep the plain column above them.
+   ============================================================ */
+
+body.framed {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 20px;
+}
+
+body.framed main {
+  width: 100%;
+  /* Wider than the lander's 640 because this page puts pictures side by
+     side: two across needs about 900. Its own value, not --maxw, so the
+     submit and review columns are left where they were. */
+  max-width: 920px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.card-body { padding: 36px 36px 44px; }
+
+/* ---- header band ---- */
+
+.banner { position: relative; }
+
+/* The band is the same 200px deep as the lander's, which is what 16/5 comes
+   to at 640 wide. The cap holds it there on a wider card instead of letting
+   the picture grow with the frame; below 640 the ratio takes over again and
+   the band shrinks with the screen. */
+.banner img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 5;
+  max-height: 200px;
+  object-fit: cover;
+}
+
+.banner-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+}
+
+/* Outline drawn behind the glyph with layered shadows, not
+   -webkit-text-stroke, which cuts into the letterform. */
+.banner h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 5.4vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #fff;
+  text-shadow:
+    3px 0 0 #0A0A0C, -3px 0 0 #0A0A0C, 0 3px 0 #0A0A0C, 0 -3px 0 #0A0A0C,
+    2px 2px 0 #0A0A0C, -2px 2px 0 #0A0A0C, 2px -2px 0 #0A0A0C, -2px -2px 0 #0A0A0C,
+    0 3px 10px rgba(0,0,0,0.4);
+}
+
+.banner h1 a { color: inherit; text-decoration: none; }
+.banner h1 a:hover { text-decoration: underline; }
+
+.banner h1 a:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.banner .tag {
+  margin: 0;
+  font-size: clamp(0.95rem, 2.6vw, 1.3rem);
+  font-weight: 600;
+  color: #fff;
+  text-shadow:
+    2px 0 0 #0A0A0C, -2px 0 0 #0A0A0C, 0 2px 0 #0A0A0C, 0 -2px 0 #0A0A0C,
+    1.5px 1.5px 0 #0A0A0C, -1.5px 1.5px 0 #0A0A0C, 1.5px -1.5px 0 #0A0A0C, -1.5px -1.5px 0 #0A0A0C,
+    0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* An artist's own page carries no painting up here. Someone else's
+   artwork over their name would read as theirs, and their own work is
+   right below. A plain band instead, with the name on it. */
+.banner.blank {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 26px 20px;
+  background: radial-gradient(120% 150% at 50% 0%, #1C2029 0%, var(--ground) 72%);
+  border-bottom: 1px solid var(--border);
+}
+
+.banner.blank .banner-text { position: static; gap: 11px; padding: 0; }
+
+.banner.blank h1 {
+  /* Same size as the title on every other page, so an artist's page sits
+     in the set rather than shouting over it. */
+  font-size: clamp(1.4rem, 5.4vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-shadow: none;
+}
+
+.banner.blank .tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-shadow: none;
+}
+
+.banner.blank .tag a { color: inherit; text-decoration: none; }
+.banner.blank .tag a:hover { color: var(--accent); }
+
+/* ---- the nav band under it, same cells as every other page ---- */
+
+.menu {
+  display: flex;
+  background: var(--ground);
+  border-bottom: 1px solid var(--border);
+}
+
+.menu a {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 15px 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.menu a + a { border-left: 1px solid var(--border); }
+.menu a:hover { color: var(--blurple-text); background: var(--panel); }
+
+.menu a:focus-visible {
+  outline: 2px solid var(--blurple-text);
+  outline-offset: -2px;
+}
+
+@media (max-width: 400px) {
+  .menu a { letter-spacing: 0.08em; padding: 13px 8px; }
+}
+
+/* ---- pieces inside the card ---- */
+
+.crumb {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  margin: 0 0 20px;
+}
+
+.crumb:hover { color: var(--accent); }
+
+.card-body h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--accent);
+  margin: 0 0 14px;
+}
+
+.lede {
+  margin: 0 auto;
+  max-width: 54ch;
+  font-size: 0.98rem;
+  font-weight: 300;
+  color: var(--text-muted);
+}
+
+.lede:empty { display: none; }
+
+/* The gap above the work belongs to the work, so it is the same whether or
+   not the artist wrote a line or left a link above it. */
+.card-body .artists,
+.card-body .grid { margin-top: 30px; }
+
+.card-body .site-foot { margin-top: 44px; }
+
+@media (max-width: 480px) {
+  body.framed { padding: 24px 12px; }
+  .card-body { padding: 28px 22px 34px; }
 }

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review Queue — PrinterMan's Art Club</title>
+
+<!-- A moderator page. Nothing here should ever turn up in a search result. -->
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+<meta name="theme-color" content="#5865F2">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/member-art/gallery.css">
+<link rel="stylesheet" href="/member-art/portal.css">
+</head>
+<body>
+
+<div class="col">
+
+  <nav class="site-strip">
+    <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
+    <a href="/member-art/">Member Art</a>
+    <a class="site-join" href="/member-art/submit.html">Submit</a>
+  </nav>
+
+  <header class="page">
+    <a class="back" href="/member-art/">&larr; Member Art</a>
+    <h1>Review Queue</h1>
+    <p class="bio" id="count">&nbsp;</p>
+  </header>
+
+  <div class="panel" id="gate" hidden>
+    <div class="gate">
+      <p id="gateText">Sign in to see the queue.</p>
+      <button class="btn" id="signIn" type="button">Sign in with Discord</button>
+    </div>
+  </div>
+
+  <!-- Signed in, but not a moderator. Says so plainly rather than pretending
+       the page does not exist, since the database refuses either way. -->
+  <div class="panel" id="nope" hidden>
+    <div class="gate">
+      <p>This page is for moderators. Nothing to see here.</p>
+      <button class="btn ghost" id="signOut2" type="button">Sign out</button>
+    </div>
+  </div>
+
+  <div class="panel wide" id="queuePanel" hidden>
+    <div class="me-row">
+      <img class="avatar" id="meAvatar" alt="" width="30" height="30" hidden>
+      <span class="nm" id="meName"></span>
+      <button class="btn ghost small" id="signOut" type="button">Sign out</button>
+    </div>
+    <div id="queue"></div>
+    <p class="note" id="note" hidden></p>
+  </div>
+
+  <div class="panel wide" id="donePanel" hidden>
+    <h2>Recently reviewed</h2>
+    <ul class="queue" id="done"></ul>
+  </div>
+
+  <p class="site-foot">
+    <a href="/">printermanart.club</a> &nbsp;&middot;&nbsp;
+    <a href="/member-art/">Member Art</a> &nbsp;&middot;&nbsp;
+    &copy; 2026 PrinterMan
+  </p>
+
+</div>
+
+<script type="module">
+import {
+  onMember, signIn, signOut, isAdmin,
+  pendingWorks, recentlyReviewed, review, dropImage,
+  publicUrl, esc, when
+} from '/member-art/studio.js';
+
+const gate   = document.getElementById('gate');
+const nope   = document.getElementById('nope');
+const panel  = document.getElementById('queuePanel');
+const donePn = document.getElementById('donePanel');
+const queue  = document.getElementById('queue');
+const note   = document.getElementById('note');
+const count  = document.getElementById('count');
+
+function say(text, kind) {
+  if (!text) { note.hidden = true; return; }
+  note.hidden = false;
+  note.textContent = text;
+  note.className = 'note' + (kind ? ' ' + kind : '');
+}
+
+function row(label, value) {
+  if (!value) return '';
+  return '<dt>' + label + '</dt><dd>' + value + '</dd>';
+}
+
+function card(r) {
+  const who = (r.artist && r.artist.display_name) || 'Unknown';
+  const handle = r.artist && r.artist.discord_username;
+  const size = r.image_width ? r.image_width + ' by ' + r.image_height : '';
+  // The artist's own link, which is theirs rather than this piece's, but
+  // worth seeing here since this is where you look at what they sent.
+  const theirs = r.artist && r.artist.artist_link;
+  const link = theirs
+    ? '<a href="' + esc(theirs) + '" target="_blank" rel="noopener noreferrer">' + esc(theirs) + '</a>'
+    : '';
+
+  return '' +
+  '<div class="job" data-id="' + esc(r.id) + '" data-path="' + esc(r.image_path) + '">' +
+    '<div class="shot">' +
+      '<a href="' + esc(publicUrl(r.image_path)) + '" target="_blank" rel="noopener noreferrer">' +
+        '<img src="' + esc(publicUrl(r.image_path)) + '" alt="" loading="lazy">' +
+      '</a>' +
+    '</div>' +
+    '<div class="side">' +
+      '<p class="t">' + esc(r.title) + '</p>' +
+      '<p class="meta">' + esc(who) + (handle ? ' (' + esc(handle) + ')' : '') +
+        ' · sent ' + when(r.created_at) + '</p>' +
+      '<dl>' +
+        row('Year', esc(r.year)) +
+        row('Medium', esc(r.medium)) +
+        row('About', esc(r.description)) +
+        row('Alt text', esc(r.alt_text)) +
+        row('Their link', link) +
+        row('Size', esc(size)) +
+      '</dl>' +
+      '<div class="why-note">' +
+        '<input type="text" class="rnote" maxlength="200" placeholder="Reason, if you are turning it down">' +
+      '</div>' +
+      '<div class="actions">' +
+        '<button class="btn yes small" data-do="approved" type="button">Approve</button>' +
+        '<button class="btn no small"  data-do="rejected" type="button">Reject</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+async function draw() {
+  const rows = await pendingWorks();
+
+  if (rows === null) {
+    queue.innerHTML = '<p class="empty">Could not read the queue.</p>';
+    return;
+  }
+
+  count.textContent = rows.length
+    ? rows.length + (rows.length === 1 ? ' piece waiting' : ' pieces waiting')
+    : 'Nothing waiting';
+
+  queue.innerHTML = rows.length
+    ? rows.map(card).join('')
+    : '<p class="empty">The queue is empty.</p>';
+
+  drawDone();
+}
+
+async function drawDone() {
+  const rows = await recentlyReviewed(12);
+  const list = document.getElementById('done');
+  if (!rows.length) { donePn.hidden = true; return; }
+
+  donePn.hidden = false;
+  list.innerHTML = rows.map((r) => {
+    const who = (r.artist && r.artist.display_name) || 'Unknown';
+    const thumb = r.status === 'rejected'
+      ? '<span class="thumb gone">Image removed</span>'
+      : '<img class="thumb" src="' + esc(publicUrl(r.image_path)) + '" alt="" loading="lazy">';
+    return '<li>' + thumb + '<div class="body">' +
+      '<p class="t">' + esc(r.title) +
+        '<span class="chip ' + r.status + '">' + r.status + '</span></p>' +
+      '<p class="meta">' + esc(who) + '</p>' +
+      (r.review_note ? '<p class="said">' + esc(r.review_note) + '</p>' : '') +
+      '</div></li>';
+  }).join('');
+}
+
+/* One listener for the whole queue rather than two per card, so redrawing
+   does not leave old handlers behind. */
+queue.addEventListener('click', async (ev) => {
+  const button = ev.target.closest('button[data-do]');
+  if (!button) return;
+
+  const job = button.closest('.job');
+  const id = job.dataset.id;
+  const path = job.dataset.path;
+  const status = button.dataset.do;
+  const reason = job.querySelector('.rnote').value.trim();
+
+  job.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+  say(null);
+
+  const out = await review(id, status, reason);
+  if (!out.ok) {
+    job.querySelectorAll('button').forEach((b) => { b.disabled = false; });
+    say(out.reason || 'That did not save.', 'bad');
+    return;
+  }
+
+  // A turned-down image should not stay in the bucket. The row stays so the
+  // member can see what happened and why.
+  if (status === 'rejected') await dropImage(path);
+
+  say(status === 'approved' ? 'Approved.' : 'Turned down.', 'good');
+  draw();
+});
+
+document.getElementById('signIn').addEventListener('click', async (e) => {
+  e.target.disabled = true;
+  try { await signIn(); } catch (err) { e.target.disabled = false; }
+});
+
+document.getElementById('signOut').addEventListener('click', () => signOut());
+document.getElementById('signOut2').addEventListener('click', () => signOut());
+
+/* Same last resort as the submit page: never leave the middle of the page
+   empty because the session check did not come back. */
+const settled = setTimeout(() => {
+  if (gate.hidden && nope.hidden && panel.hidden) {
+    gate.hidden = false;
+    document.getElementById('gateText').textContent =
+      'Could not check your sign-in. Reloading usually sorts it.';
+  }
+}, 6000);
+
+onMember(async (member) => {
+  clearTimeout(settled);
+
+  if (!member) {
+    gate.hidden = false; nope.hidden = true;
+    panel.hidden = true; donePn.hidden = true;
+    count.innerHTML = '&nbsp;';
+    return;
+  }
+
+  gate.hidden = true;
+
+  // Asked of the database, not worked out from anything the page knows.
+  if (!(await isAdmin())) {
+    nope.hidden = false;
+    panel.hidden = true; donePn.hidden = true;
+    count.innerHTML = '&nbsp;';
+    return;
+  }
+
+  nope.hidden = true;
+  panel.hidden = false;
+
+  document.getElementById('meName').textContent = member.displayName;
+  const av = document.getElementById('meAvatar');
+  if (member.avatarUrl) { av.src = member.avatarUrl; av.hidden = false; }
+
+  draw();
+});
+</script>
+
+</body>
+</html>

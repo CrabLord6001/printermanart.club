@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Submit Artwork — PrinterMan's Art Club</title>
+<meta name="description" content="Members: send your art in for the gallery. Sign in with Discord, add the credit details, and it goes to PrinterMan to approve.">
+<link rel="canonical" href="https://printermanart.club/member-art/submit.html">
+<meta name="theme-color" content="#5865F2">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PrinterMan's Art Club">
+<meta property="og:title" content="Submit Artwork — PrinterMan's Art Club">
+<meta property="og:description" content="Members: send your art in for the gallery.">
+<meta property="og:url" content="https://printermanart.club/member-art/submit.html">
+<meta property="og:image" content="https://printermanart.club/img/og-home.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/member-art/gallery.css">
+<link rel="stylesheet" href="/member-art/portal.css">
+</head>
+<body>
+
+<div class="col">
+
+  <nav class="site-strip">
+    <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
+    <a href="/art-history/">Weekly Art History</a>
+    <a class="site-join" href="https://discord.gg/nn3xjcS745">Join</a>
+  </nav>
+
+  <header class="page">
+    <a class="back" href="/member-art/">&larr; Member Art</a>
+    <h1>Submit Artwork</h1>
+  </header>
+
+  <!-- Signed out. Replaced by the form once there is somebody to attribute
+       the work to. -->
+  <div class="panel" id="gate" hidden>
+    <div class="gate">
+      <p>Sign in with the Discord account you use in the server. Your work is
+         credited to that name.</p>
+      <p class="note bad" id="gateWhy" hidden>Could not check whether you are
+         already signed in. Reloading usually sorts it.</p>
+      <button class="btn" id="signIn" type="button">Sign in with Discord</button>
+    </div>
+  </div>
+
+  <div class="panel" id="formPanel" hidden>
+
+    <div class="me-row">
+      <img class="avatar" id="meAvatar" alt="" width="30" height="30" hidden>
+      <span class="nm" id="meName"></span>
+      <button class="btn ghost small" id="editWho" type="button" hidden>Edit details</button>
+      <button class="btn ghost small" id="signOut" type="button">Sign out</button>
+    </div>
+
+    <!-- Set before the work, because this is the name the work gets credited
+         to. It starts as the Discord name and stops following it once saved. -->
+    <div class="who-set" id="whoSet">
+      <div class="two">
+        <div class="field">
+          <label for="artistName">Artist name</label>
+          <input type="text" id="artistName" maxlength="40" placeholder="How you want to be credited">
+        </div>
+        <div class="field">
+          <label for="artistNote">One line about you</label>
+          <input type="text" id="artistNote" maxlength="120" placeholder="Optional">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="artistLink">Your link</label>
+        <input type="url" id="artistLink" maxlength="300" placeholder="https://">
+        <span class="why">Social, shop, and portfolio linked to artist card.</span>
+      </div>
+      <button class="btn ghost small" id="saveWho" type="button">Save details</button>
+      <p class="note" id="whoNote" hidden></p>
+    </div>
+
+    <form id="work" novalidate>
+
+      <div class="field">
+        <label for="file">The image</label>
+        <div class="drop" id="drop">
+          <input type="file" id="file" accept="image/jpeg,image/png,image/webp,image/gif">
+          <span class="big" id="dropBig">Choose an image</span>
+          <span class="small" id="dropSmall">JPG, PNG, WebP or GIF &middot; up to 10MB</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="title">Title</label>
+        <input type="text" id="title" maxlength="120" placeholder="What it is called" required>
+      </div>
+
+      <div class="two">
+        <div class="field">
+          <label for="year">Year</label>
+          <input type="text" id="year" maxlength="16" placeholder="2026">
+        </div>
+        <div class="field">
+          <label for="medium">Medium</label>
+          <input type="text" id="medium" maxlength="60" placeholder="Digital, oil, pencil">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="description">About it</label>
+        <textarea id="description" maxlength="600" placeholder="Anything you want said about it. Optional."></textarea>
+      </div>
+
+      <label class="tick" id="publishRow" hidden>
+        <input type="checkbox" id="publishNow">
+        <span>Publish without review &mdash; skips the queue. Moderators only.</span>
+      </label>
+
+      <div class="actions">
+        <button class="btn" id="send" type="submit">Submit</button>
+      </div>
+
+      <p class="note" id="note" hidden></p>
+    </form>
+  </div>
+
+  <div class="panel" id="minePanel" hidden>
+    <h2>Submission History</h2>
+    <ul class="queue" id="mine"></ul>
+  </div>
+
+  <p class="site-foot">
+    <a href="/">printermanart.club</a> &nbsp;&middot;&nbsp;
+    <a href="/about.html">About</a> &nbsp;&middot;&nbsp;
+    <a href="/faq.html">FAQ</a> &nbsp;&middot;&nbsp;
+    &copy; 2026 PrinterMan
+  </p>
+
+</div>
+
+<script type="module">
+import {
+  onMember, signIn, signOut, currentMember,
+  submitWork, myWorks, publicUrl, checkFile, measure, esc, when,
+  profile, saveProfile, isAdmin
+} from '/member-art/studio.js';
+
+const gate   = document.getElementById('gate');
+const panel  = document.getElementById('formPanel');
+const minePn = document.getElementById('minePanel');
+const form   = document.getElementById('work');
+const drop   = document.getElementById('drop');
+const file   = document.getElementById('file');
+const send   = document.getElementById('send');
+const note   = document.getElementById('note');
+
+let picked = null;      // { file, w, h }
+
+function say(text, kind) {
+  if (!text) { note.hidden = true; return; }
+  note.hidden = false;
+  note.textContent = text;
+  note.className = 'note' + (kind ? ' ' + kind : '');
+}
+
+/* ---- picking the image ---- */
+
+function showPick(f, preview) {
+  drop.classList.add('has');
+  drop.innerHTML = '';
+  drop.appendChild(file);
+
+  const img = document.createElement('img');
+  img.src = preview;
+  img.alt = '';
+
+  const big = document.createElement('span');
+  big.className = 'big';
+  big.textContent = f.name;
+
+  const small = document.createElement('span');
+  small.className = 'small';
+  small.textContent = Math.round(f.size / 1024) + 'KB' +
+    (picked && picked.w ? ' · ' + picked.w + ' by ' + picked.h : '') +
+    ' · click to change';
+
+  drop.append(img, big, small);
+}
+
+async function take(f) {
+  const bad = checkFile(f);
+  if (bad) { picked = null; say(bad, 'bad'); return; }
+
+  say(null);
+  const m = await measure(f);
+  picked = { file: f, w: m.w, h: m.h };
+  showPick(f, m.url);
+}
+
+file.addEventListener('change', () => { if (file.files[0]) take(file.files[0]); });
+
+// Dragging one in works too, which is how most people will do it on a laptop.
+['dragenter', 'dragover'].forEach((e) =>
+  drop.addEventListener(e, (ev) => { ev.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach((e) =>
+  drop.addEventListener(e, () => drop.classList.remove('over')));
+
+drop.addEventListener('drop', (ev) => {
+  ev.preventDefault();
+  const f = ev.dataTransfer.files && ev.dataTransfer.files[0];
+  if (f) take(f);
+});
+
+/* ---- sending ---- */
+
+form.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+
+  const title = document.getElementById('title').value.trim();
+  if (!picked) { say('Choose an image first.', 'bad'); return; }
+  if (!title)  { say('It needs a title.', 'bad'); return; }
+
+  send.disabled = true;
+  say('Sending…');
+
+  const about = document.getElementById('description').value.trim() || null;
+
+  // One box, both jobs: what the artist wrote about the piece is also what a
+  // screen reader gets. Deliberate -- there is no separate alt field to fill.
+  const publish = document.getElementById('publishNow').checked;
+
+  const out = await submitWork(picked.file, {
+    title,
+    year:        document.getElementById('year').value.trim() || null,
+    medium:      document.getElementById('medium').value.trim() || null,
+    description: about,
+    alt_text:    about,
+    image_width:  picked.w,
+    image_height: picked.h
+  }, publish);
+
+  send.disabled = false;
+
+  if (!out.ok) { say(out.reason || 'That did not send.', 'bad'); return; }
+
+  say(out.published
+    ? 'Published. It is on your page now.'
+    : 'Sent. PrinterMan will take a look.', 'good');
+  form.reset();
+  picked = null;
+  drop.classList.remove('has');
+  drop.innerHTML = '';
+  drop.appendChild(file);
+  drop.insertAdjacentHTML('beforeend',
+    '<span class="big">Choose an image</span>' +
+    '<span class="small">JPG, PNG, WebP or GIF &middot; up to 10MB</span>');
+
+  drawMine();
+});
+
+/* ---- what you have sent ---- */
+
+async function drawMine() {
+  const rows = await myWorks();
+  const list = document.getElementById('mine');
+
+  if (!rows.length) {
+    minePn.hidden = false;
+    list.innerHTML = '<li class="empty">Nothing yet.</li>';
+    return;
+  }
+
+  minePn.hidden = false;
+  list.innerHTML = rows.map((r) => {
+    const src = publicUrl(r.image_path);
+    const thumb = r.status === 'rejected'
+      ? '<span class="thumb gone">Image removed</span>'
+      : '<img class="thumb" src="' + esc(src) + '" alt="" loading="lazy">';
+
+    const bits = [r.year, r.medium].filter(Boolean).join(' · ');
+
+    return '<li>' + thumb +
+      '<div class="body">' +
+        '<p class="t">' + esc(r.title) +
+          '<span class="chip ' + r.status + '">' + r.status + '</span></p>' +
+        '<p class="meta">' + (bits ? esc(bits) + ' · ' : '') + 'sent ' + when(r.created_at) + '</p>' +
+        (r.review_note ? '<p class="said">' + esc(r.review_note) + '</p>' : '') +
+      '</div></li>';
+  }).join('');
+}
+
+/* ---- artist name ---- */
+
+const nameBox = document.getElementById('artistName');
+const noteBox = document.getElementById('artistNote');
+const linkBox = document.getElementById('artistLink');
+const whoNote = document.getElementById('whoNote');
+
+function sayWho(text, kind) {
+  if (!text) { whoNote.hidden = true; return; }
+  whoNote.hidden = false;
+  whoNote.textContent = text;
+  whoNote.className = 'note' + (kind ? ' ' + kind : '');
+}
+
+const whoSet  = document.getElementById('whoSet');
+const editWho = document.getElementById('editWho');
+
+/* Setting up who you are is a one-off. Once it is done the block folds away
+   behind "Edit details", so submitting the second piece is just the piece. */
+function foldWho(done) {
+  whoSet.hidden = done;
+  editWho.hidden = !done;
+}
+
+async function loadProfile(member) {
+  const row = await profile();
+  nameBox.value = (row && row.display_name) || member.displayName || '';
+  noteBox.value = (row && row.artist_note) || '';
+  linkBox.value = (row && row.artist_link) || '';
+
+  // Nobody has to name themselves twice, but a first-timer still gets asked.
+  foldWho(!!(row && row.name_is_custom));
+}
+
+editWho.addEventListener('click', () => {
+  foldWho(false);
+  sayWho(null);
+  nameBox.focus();
+});
+
+document.getElementById('saveWho').addEventListener('click', async (ev) => {
+  const button = ev.currentTarget;
+  button.disabled = true;
+  sayWho('Saving\u2026');
+
+  const out = await saveProfile(nameBox.value, noteBox.value, linkBox.value);
+  button.disabled = false;
+
+  if (!out.ok) { sayWho(out.reason || 'That did not save.', 'bad'); return; }
+
+  document.getElementById('meName').textContent = out.displayName;
+  sayWho(null);
+  foldWho(true);
+  say('Details saved.', 'good');
+});
+
+/* ---- who is here ---- */
+
+document.getElementById('signIn').addEventListener('click', async (e) => {
+  e.target.disabled = true;
+  try { await signIn(); }
+  catch (err) { e.target.disabled = false; say('Could not reach Discord sign-in.', 'bad'); }
+});
+
+document.getElementById('signOut').addEventListener('click', () => signOut());
+
+/* Last resort. Both panels start hidden and the session check decides which
+   one opens, so if that check never reports back the page would show a header
+   and a footer with nothing in between. Rather than that, offer the way in. */
+const settled = setTimeout(() => {
+  if (gate.hidden && panel.hidden) {
+    gate.hidden = false;
+    document.getElementById('gateWhy').hidden = false;
+  }
+}, 6000);
+
+onMember((member) => {
+  clearTimeout(settled);
+
+  if (!member) {
+    gate.hidden = false;
+    panel.hidden = true;
+    minePn.hidden = true;
+    return;
+  }
+
+  gate.hidden = true;
+  panel.hidden = false;
+
+  document.getElementById('meName').textContent = member.displayName;
+  const av = document.getElementById('meAvatar');
+  if (member.avatarUrl) { av.src = member.avatarUrl; av.hidden = false; }
+
+  loadProfile(member);
+  drawMine();
+
+  // The tickbox only appears for someone it would actually work for.
+  isAdmin().then((yes) => {
+    if (yes) document.getElementById('publishRow').hidden = false;
+  });
+});
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0b3e30f708cd4777957b92defbbdd859"}'></script><!-- End Cloudflare Web Analytics -->
+
+<!-- GoatCounter --><script data-goatcounter="https://crablord9001.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script><!-- End GoatCounter -->
+
+</body>
+</html>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Member Art — PrinterMan's Art Club</title>
-<meta name="description" content="Showcase of our Discord members&rsquo; art. Join and ask to apply for posting.">
+<meta name="description" content="Showcase of our Discord members&rsquo; art. Join to apply for posting.">
 <link rel="canonical" href="https://printermanart.club/member-art/">
 <meta name="theme-color" content="#5865F2">
 
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PrinterMan's Art Club">
 <meta property="og:title" content="Member Art — PrinterMan's Art Club">
-<meta property="og:description" content="Showcase of our Discord members&rsquo; art. Join and ask to apply for posting.">
+<meta property="og:description" content="Showcase of our Discord members&rsquo; art. Join to apply for posting.">
 <meta property="og:url" content="https://printermanart.club/member-art/">
 <meta property="og:image" content="https://printermanart.club/img/member-art/printerman-01.jpg">
 <meta property="og:image:alt" content="Froggy Me (2017), by PrinterMan.">
@@ -25,50 +25,116 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/member-art/gallery.css">
 </head>
-<body>
+<body class="framed">
 
-<div class="col">
-
-  <nav class="site-strip">
-    <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
-    <a href="/art-history/">Weekly Art History</a>
-    <a class="site-join" href="https://discord.gg/nn3xjcS745">Join</a>
-  </nav>
-
-  <header class="page">
-    <a class="back" href="/">&larr; Home</a>
-    <h1>Member Art</h1>
-    <p class="bio">Showcase of our Discord members&rsquo; art. Join and ask to apply for posting.</p>
-  </header>
-
-  <!-- One card per artist, their own page behind it. A member gets one
-       representative work here; everything else lives on their page. -->
-  <div class="artists">
-
-    <a class="artist" href="/member-art/printerman.html">
-      <div class="plate">
-        <img src="/img/member-art/printerman-01.jpg" width="1082" height="1400" loading="lazy" decoding="async"
-             alt="Froggy Me by PrinterMan: a digitally manipulated self-portrait, a man&rsquo;s face stretched and tinted frog-green under a broken umbrella.">
+  <main>
+    <!-- Artwork: "Fishing Village", Andō Baiho, 19th century. Six-panel
+         folding screen, color on silk. The Metropolitan Museum of Art,
+         Open Access (public domain).
+         https://www.metmuseum.org/art/collection/search/57325 -->
+    <header class="banner">
+      <img fetchpriority="high" decoding="async" src="/img/header-village.jpg" alt="Detail of a Japanese folding screen: a gold harbor with moored cargo boats, a village of tiled roofs on the far shore and pale mountains behind.">
+      <div class="banner-text">
+        <h1><a href="/">PrinterMan&rsquo;s Art Club</a></h1>
+        <p class="tag">Member Art</p>
       </div>
-      <div class="who">
-        <p class="name">PrinterMan</p>
-        <p class="note">Server owner and goofball who loves the silly</p>
+    </header>
+
+    <nav class="menu">
+      <a href="/news.html">Daily News Briefing</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/art-history/">Weekly Art History</a>
+    </nav>
+
+    <div class="card-body">
+
+      <h2>Member Art</h2>
+      <p class="lede">Showcase of our Discord members&rsquo; art. Join to apply for posting.</p>
+
+      <!-- Filled from the database: every member with at least one approved
+           piece, their newest one as the card image. -->
+      <div class="artists" id="artists">
+        <p class="empty" id="artistsNote">Loading&hellip;</p>
       </div>
-    </a>
 
-    <!-- Per member, copy the block above: swap the href, the image, the name
-         and the line. -->
+      <p class="site-foot">
+        <a href="/">printermanart.club</a> &nbsp;&middot;&nbsp;
+        <a href="/about.html">About</a> &nbsp;&middot;&nbsp;
+        <a href="/member-art/submit.html">Sign in</a> &nbsp;&middot;&nbsp;
+        <a href="/faq.html">FAQ</a> &nbsp;&middot;&nbsp; &copy; 2026 PrinterMan
+      </p>
 
-  </div>
+    </div>
+  </main>
 
-  <p class="site-foot">
-    <a href="/">printermanart.club</a> &nbsp;&middot;&nbsp;
-    <a href="/about.html">About</a> &nbsp;&middot;&nbsp;
-    <a href="/faq.html">FAQ</a> &nbsp;&middot;&nbsp;
-    &copy; 2026 PrinterMan
-  </p>
+<script type="module" src="/session.js"></script>
 
-</div>
+<script type="module">
+import { approvedWorks, publicUrl, esc } from '/member-art/studio.js';
+
+/* The whole card is already a link to their page, so this cannot be a
+   second link inside it -- a mark that one exists, with the working link
+   on their page. */
+const LINK_GLYPH = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>';
+
+const wrap = document.getElementById('artists');
+const note = document.getElementById('artistsNote');
+
+function card(a) {
+  const plate = a.image_path
+    ? '<img src="' + esc(publicUrl(a.image_path)) + '"' +
+      (a.image_width ? ' width="' + a.image_width + '" height="' + a.image_height + '"' : '') +
+      ' loading="lazy" decoding="async" alt="' + esc(a.alt_text || a.title) + '">'
+    : '<span class="ph">No image</span>';
+
+  return '<a class="artist" href="/member-art/artist.html?a=' + encodeURIComponent(a.slug) + '">' +
+    '<div class="plate">' + plate + '</div>' +
+    '<div class="who">' +
+      '<p class="name">' + esc(a.name) +
+        (a.link ? ' <span class="has-link" title="Has a link">' + LINK_GLYPH + '</span>' : '') + '</p>' +
+      (a.note ? '<p class="note">' + esc(a.note) + '</p>' : '') +
+    '</div></a>';
+}
+
+(async () => {
+  const rows = await approvedWorks(200);
+
+  if (rows === null) {
+    note.textContent = 'The gallery is not reachable right now.';
+    return;
+  }
+
+  /* One card per artist, their most recent approved piece as the image, so
+     the directory shows what everyone is making now rather than freezing on
+     whatever they happened to put up first. The query comes back newest
+     first, so the first row seen for an artist is the one to keep. */
+  const byArtist = new Map();
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r.artist || !r.artist.artist_slug) continue;
+    if (byArtist.has(r.member_id)) continue;
+    byArtist.set(r.member_id, {
+      slug: r.artist.artist_slug,
+      name: r.artist.display_name,
+      note: r.artist.artist_note,
+      link: r.artist.artist_link,
+      image_path: r.image_path,
+      image_width: r.image_width,
+      image_height: r.image_height,
+      alt_text: r.alt_text,
+      title: r.title
+    });
+  }
+
+  const artists = [...byArtist.values()];
+  if (!artists.length) {
+    note.textContent = 'No member art yet.';
+    return;
+  }
+
+  wrap.innerHTML = artists.map(card).join('');
+})();
+</script>
 
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0b3e30f708cd4777957b92defbbdd859"}'></script><!-- End Cloudflare Web Analytics -->
 
