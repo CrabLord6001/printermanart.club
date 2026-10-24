@@ -344,6 +344,107 @@
     .feat-frame{ height:440px; }
   }
 
+  /* ---- Member Art: one work per artist, each a door to their page ----
+     Same deck mechanics as the memes above, with two differences. The strip
+     is not full-bleed, because a caption only reads as that picture's label
+     if the picture has an edge. And the whole image is a link: hovering
+     fades it down and names the artist. Touch has no hover, so the name in
+     the caption is a link too -- that is what carries it on a phone. */
+  .art{ margin-top:36px; padding:22px 0 2px; border-top:1px solid #272B36; }
+  /* breaks out of the card padding exactly like .feat-stage, so the two
+     strips are the same width as well as the same height */
+  .art-stage{ position:relative; margin-left:-36px; margin-right:-36px; }
+  @media (max-width:480px){ .art-stage{ margin-left:-22px; margin-right:-22px; } }
+
+  .art-track{
+    display:flex; overflow-x:auto;
+    scroll-snap-type:x mandatory; scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .art-track::-webkit-scrollbar{ display:none; }
+
+  .art-slide{
+    flex:0 0 100%; scroll-snap-align:center;
+    display:flex; flex-direction:column; align-items:center;
+  }
+
+  .art-frame{
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    width:100%; height:480px; overflow:hidden; text-decoration:none;
+  }
+  .art-frame img{
+    max-width:100%; max-height:100%; width:auto; height:auto;
+    display:block; border-radius:3px;
+    transition:opacity .22s ease, filter .22s ease;
+  }
+
+  .art-veil{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 24px; text-align:center;
+    font-size:.78rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+    color:#fff; opacity:0; transition:opacity .22s ease; pointer-events:none;
+  }
+  .art-frame:hover img, .art-frame:focus-visible img{ opacity:.22; filter:blur(1px); }
+  .art-frame:hover .art-veil, .art-frame:focus-visible .art-veil{ opacity:1; }
+  .art-frame:focus-visible{ outline:2px solid var(--blurple-text); outline-offset:4px; border-radius:4px; }
+
+  @media (prefers-reduced-motion: reduce){
+    .art-frame img, .art-veil{ transition:none; }
+  }
+
+  /* caption: title, year, artist -- one line, like the room pages */
+  .art-cap{ padding:15px 6px 2px; max-width:30rem; }
+  .art-line{ margin:0; font-size:1rem; line-height:1.45; text-wrap:balance; }
+  .art-title{ font-weight:600; color:var(--text); }
+  .art-year{ font-weight:400; color:var(--text-dim); }
+  .art-cap .sep{ color:var(--text-dim); margin:0 .5em; font-weight:300; }
+  .art-by{ font-weight:500; color:var(--blurple-text); text-decoration:none; white-space:nowrap; }
+  .art-by:hover{ text-decoration:underline; }
+  .art-by:focus-visible{ outline:2px solid var(--blurple-text); outline-offset:3px; border-radius:2px; }
+
+  /* the last slide: the way through to the gallery */
+  .art-all{
+    width:calc(100% - 72px); height:480px; margin:0 auto;
+    display:flex; align-items:center; justify-content:center;
+    border:1px dashed #333948; border-radius:10px;
+  }
+  .art-all a{
+    font-size:.78rem; font-weight:600; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--accent); text-decoration:none;
+    border:1px solid var(--accent); border-radius:8px; padding:10px 20px;
+  }
+  .art-all a:hover{ background:var(--accent); color:#11131A; }
+  .art-all a:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+
+  .art-nav{
+    position:absolute; top:240px; transform:translateY(-50%);
+    width:34px; height:34px; border-radius:50%;
+    background:rgba(12,14,19,.72); border:1px solid #3A404F; color:#C7CBD6;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; padding:0; transition:color .15s, border-color .15s, opacity .15s;
+  }
+  .art-nav:hover{ color:#D4A24C; border-color:#D4A24C; }
+  .art-nav:focus-visible{ outline:2px solid #D4A24C; outline-offset:2px; }
+  .art-nav[disabled]{ opacity:.3; cursor:default; }
+  .art-nav[disabled]:hover{ color:#C7CBD6; border-color:#3A404F; }
+  .art-prev{ left:12px; }
+  .art-next{ right:12px; }
+
+  .art-dots{ display:flex; justify-content:center; gap:7px; margin-top:14px; }
+  .art-dot{
+    width:7px; height:7px; padding:0; border-radius:50%;
+    background:#2F3442; border:0; cursor:pointer; transition:background .15s;
+  }
+  .art-dot[aria-current="true"]{ background:#D4A24C; }
+  .art-dot:focus-visible{ outline:2px solid #D4A24C; outline-offset:3px; }
+
+  @media (max-width:560px){
+    .art-nav{ display:none; }
+    .art-frame, .art-all{ height:440px; }
+  }
+
   /* ---- Server Change Log: beaded rail, newest first ---- */
   .rail{ margin-top:36px; padding:22px 0 2px; border-top:1px solid #272B36; }
   .rail-list{ text-align:left; position:relative; margin:0 auto; padding:2px 0 2px 28px;
@@ -425,6 +526,46 @@
       </button>
       <p class="box-count" aria-live="polite"><span class="box-n">1</span> / <span class="box-of">5</span></p>
     </dialog>
+
+    <section class="art" aria-roledescription="carousel" aria-label="Member Art Showcase">
+      <p class="block-label">Member Art Showcase</p>
+
+      <div class="art-stage">
+        <button class="art-nav art-prev" type="button" aria-label="Previous artist" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg>
+        </button>
+
+        <div class="art-track" id="artdeck">
+
+          <div class="art-slide">
+            <a class="art-frame" href="/member-art/printerman.html">
+              <img src="img/member-art/printerman-01.jpg" width="1082" height="1400" loading="lazy" decoding="async"
+                   alt="Froggy Me by PrinterMan: a digitally manipulated self-portrait, a man&rsquo;s face stretched and tinted frog-green, in glasses and a patterned tie, under a broken umbrella with cartoon bubbles around him.">
+              <span class="art-veil" aria-hidden="true">See more from PrinterMan</span>
+            </a>
+            <div class="art-cap">
+              <p class="art-line"><span class="art-title">Froggy Me</span><span class="art-year"> (2017)</span><span class="sep" aria-hidden="true">|</span><a class="art-by" href="/member-art/printerman.html">PrinterMan</a></p>
+            </div>
+          </div>
+
+          <div class="art-slide">
+            <div class="art-all">
+              <a href="/member-art/">All member art &rarr;</a>
+            </div>
+          </div>
+
+        </div>
+
+        <button class="art-nav art-next" type="button" aria-label="Next artist">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+
+      <div class="art-dots">
+        <button class="art-dot" type="button" aria-label="Go to artist 1" aria-current="true"></button>
+        <button class="art-dot" type="button" aria-label="Go to the full gallery"></button>
+      </div>
+    </section>
 
     <section class="rail">
       <p class="block-label">Server Change Log</p>
@@ -556,6 +697,41 @@
     },{root:track,threshold:[0,0.6,1]});
     vids.forEach(function(v){io.observe(v);});
   }
+}());
+
+/* Member Art deck. Same mechanics as the meme strip, its own element ids, no
+   lightbox -- clicking a work should take you to the artist, not open it
+   bigger here. */
+(function(){
+  var track=document.getElementById('artdeck'); if(!track)return;
+  var slides=[].slice.call(track.querySelectorAll('.art-slide')),
+      prev=document.querySelector('.art-prev'),
+      next=document.querySelector('.art-next'),
+      dots=[].slice.call(document.querySelectorAll('.art-dot')),
+      i=0;
+
+  function go(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    track.scrollTo({left:slides[i].offsetLeft-track.offsetLeft,behavior:'smooth'});
+    sync();
+  }
+  function sync(){
+    prev.disabled = i===0;
+    next.disabled = i===slides.length-1;
+    dots.forEach(function(d,n){
+      if(n===i){d.setAttribute('aria-current','true');}else{d.removeAttribute('aria-current');}
+    });
+  }
+  prev.addEventListener('click',function(){go(i-1);});
+  next.addEventListener('click',function(){go(i+1);});
+  dots.forEach(function(d,n){d.addEventListener('click',function(){go(n);});});
+
+  var t; track.addEventListener('scroll',function(){
+    clearTimeout(t); t=setTimeout(function(){
+      i=Math.round(track.scrollLeft/track.clientWidth); sync();
+    },120);
+  });
+  sync();
 }());
 </script>
 

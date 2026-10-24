@@ -1,0 +1,327 @@
+/* ============================================================
+   Member Art — shared styles for /member-art/
+   Club palette, same tokens as the lander and About. The two
+   standing products (news, art history) carry their own themes;
+   these pages belong to the club, so they look like the club.
+   ============================================================ */
+
+:root {
+  --blurple:       #5865F2;
+  --blurple-text:  #99A2F7;
+  --ground:        #101218;
+  --panel:         #171A22;
+  --border:        #272B36;
+  --text:          #FFFFFF;
+  --text-muted:    #9BA0AE;
+  --text-dim:      #7A8094;
+  --accent:        #D4A24C;
+
+  --font: 'Poppins', system-ui, -apple-system, sans-serif;
+  --maxw: 1000px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100%; }
+
+body {
+  background: var(--ground);
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.col {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 20px 64px;
+}
+
+/* ---- top strip, same shape as the art-history rooms ---- */
+
+.site-strip {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.site-strip a { color: var(--text-muted); text-decoration: none; }
+.site-strip a:hover { color: var(--accent); }
+.site-strip .site-home { color: var(--text); margin-right: auto; }
+.site-strip .site-join { color: var(--blurple-text); }
+
+/* ---- page header ---- */
+
+header.page { padding: 38px 0 26px; text-align: center; }
+
+header.page .back {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+header.page .back:hover { color: var(--accent); }
+
+header.page h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.7rem, 5vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+header.page .bio {
+  margin: 14px auto 0;
+  max-width: 46ch;
+  font-size: 0.98rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ============================================================
+   Controls — sort and filter
+   Plain selects, deliberately. A custom dropdown would be more
+   to look at and worse to use on a phone.
+   ============================================================ */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 0 4px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 30px;
+  padding-bottom: 18px;
+}
+
+.ctrl { display: flex; align-items: center; gap: 8px; }
+
+.ctrl label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.ctrl select {
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 11px;
+  cursor: pointer;
+}
+
+.ctrl select:hover { border-color: var(--text-dim); }
+.ctrl select:focus-visible { outline: 2px solid var(--blurple-text); outline-offset: 2px; }
+
+.count {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   The grid
+   ============================================================ */
+
+/* Flex rather than grid so a part-full row centers instead of hugging the
+   left with empty columns beside it. */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px 26px;
+}
+
+.work {
+  flex: 0 1 300px;
+  min-width: 250px;
+  max-width: 340px;
+  margin: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.work .plate {
+  background: #0C0E13;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  min-height: 240px;
+}
+
+.work .plate img {
+  display: block;
+  max-width: 100%;
+  max-height: 360px;
+  width: auto;
+  height: auto;
+  border-radius: 3px;
+}
+
+.work figcaption { padding: 15px 17px 18px; text-align: center; }
+
+/* Title, year and medium all on one line. Same shape as the caption on the
+   lander strip, and it keeps the card short when there is no description. */
+.work .line { margin: 0; font-size: 0.97rem; line-height: 1.45; text-wrap: balance; }
+.work .t { font-weight: 600; color: var(--text); }
+.work .y { font-weight: 400; color: var(--text-dim); }
+
+.work .sep { color: var(--text-dim); margin: 0 0.45em; font-weight: 300; }
+
+.work .medium {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.work .desc {
+  margin: 10px 0 0;
+  font-size: 0.88rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.work[hidden] { display: none; }
+
+/* ---- empty state ---- */
+
+.empty {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+/* ============================================================
+   Artist directory (/member-art/)
+   ============================================================ */
+
+.artists {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 26px 24px;
+}
+
+.artist {
+  flex: 0 1 280px;
+  min-width: 240px;
+  max-width: 320px;
+  display: block;
+  text-decoration: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.artist:hover { border-color: var(--blurple-text); transform: translateY(-2px); }
+.artist:focus-visible { outline: 2px solid var(--blurple-text); outline-offset: 3px; }
+
+.artist .plate {
+  background: #0C0E13;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.artist .plate img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+  border-radius: 3px;
+}
+
+.artist .who { padding: 14px 16px 16px; text-align: center; }
+
+.artist .name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--blurple-text);
+}
+
+.artist .note {
+  margin: 3px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  /* Splits the line evenly instead of letting a stray word or two hang
+     on the last line by themselves. Older browsers just wrap normally. */
+  text-wrap: balance;
+}
+
+/* ---- placeholder plate, for slots with no artwork yet ---- */
+
+.ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 210px;
+  background: repeating-linear-gradient(135deg, #1B1F29 0 11px, #1E222D 11px 22px);
+  border: 1px solid #333948;
+  border-radius: 3px;
+  color: #5D6476;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 10px;
+}
+
+/* ---- foot ---- */
+
+.site-foot {
+  margin-top: 48px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.site-foot a { color: var(--blurple-text); text-decoration: none; }
+.site-foot a:hover { text-decoration: underline; }
+
+@media (max-width: 560px) {
+  .controls { gap: 12px; }
+  .work .plate { min-height: 200px; }
+}

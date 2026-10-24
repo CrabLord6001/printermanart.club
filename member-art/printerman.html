@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PrinterMan — Member Art — PrinterMan's Art Club</title>
+<meta name="description" content="Server owner and goofball who loves the silly.">
+<link rel="canonical" href="https://printermanart.club/member-art/printerman.html">
+<meta name="theme-color" content="#5865F2">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PrinterMan's Art Club">
+<meta property="og:title" content="PrinterMan — Member Art — PrinterMan's Art Club">
+<meta property="og:description" content="Server owner and goofball who loves the silly.">
+<meta property="og:url" content="https://printermanart.club/member-art/printerman.html">
+<meta property="og:image" content="https://printermanart.club/img/member-art/printerman-01.jpg">
+<meta property="og:image:alt" content="Froggy Me (2017), by PrinterMan.">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/member-art/gallery.css">
+</head>
+<body>
+
+<div class="col">
+
+  <nav class="site-strip">
+    <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
+    <a href="/art-history/">Weekly Art History</a>
+    <a class="site-join" href="https://discord.gg/nn3xjcS745">Join</a>
+  </nav>
+
+  <header class="page">
+    <a class="back" href="/member-art/">&larr; Member Art</a>
+    <h1>PrinterMan</h1>
+    <!-- <p class="bio">…</p> when the artist writes one -->
+  </header>
+
+  <!-- Sort and filter. Values come off the data- attributes on each figure
+       below, so adding a work needs no change here. One date per work: the
+       year it was made. -->
+  <div class="controls">
+    <div class="ctrl">
+      <label for="sort">Sort</label>
+      <select id="sort">
+        <option value="year-desc">Newest</option>
+        <option value="year-asc">Oldest</option>
+        <option value="title-asc">Title, A&ndash;Z</option>
+        <option value="title-desc">Title, Z&ndash;A</option>
+        <option value="medium-asc">Medium</option>
+      </select>
+    </div>
+
+    <div class="ctrl">
+      <label for="medium">Medium</label>
+      <select id="medium">
+        <option value="">All</option>
+      </select>
+    </div>
+
+    <p class="count" id="count" hidden></p>
+  </div>
+
+  <div class="grid" id="grid">
+
+    <figure class="work"
+            data-title="Froggy Me"
+            data-year="2017"
+            data-medium="Digital">
+      <div class="plate">
+        <img src="/img/member-art/printerman-01.jpg" width="1082" height="1400" loading="lazy" decoding="async"
+             alt="A digitally manipulated self-portrait: a man&rsquo;s face stretched and tinted frog-green, in glasses, a white shirt and a patterned tie, standing under a broken umbrella against a pale green sky with cartoon bubbles floating around him.">
+      </div>
+      <figcaption>
+        <p class="line"><span class="t">Froggy Me</span><span class="y"> (2017)</span><span class="sep" aria-hidden="true">|</span><span class="medium">Digital</span></p>
+        <!-- <p class="desc">…</p> when the artist writes one -->
+      </figcaption>
+    </figure>
+
+    <figure class="work"
+            data-title="PrinterMan"
+            data-year="2019"
+            data-medium="Digital">
+      <div class="plate">
+        <img src="/img/member-art/printerman-02.jpg" width="1081" height="1400" loading="lazy" decoding="async"
+             alt="A poster titled Printer Man: a bearded man in glasses pulls a face with his tongue out, framed against swirling rainbow soap-film colors, wearing a blue shirt printed with a cartoon printer spilling cyan, magenta and yellow ink.">
+      </div>
+      <figcaption>
+        <p class="line"><span class="t">PrinterMan</span><span class="y"> (2019)</span><span class="sep" aria-hidden="true">|</span><span class="medium">Digital</span></p>
+        <!-- <p class="desc">…</p> when the artist writes one -->
+      </figcaption>
+    </figure>
+
+  </div>
+
+  <p class="empty" id="empty" hidden>Nothing in that medium.</p>
+
+  <p class="site-foot">
+    <a href="/">printermanart.club</a> &nbsp;&middot;&nbsp;
+    <a href="/member-art/">Member Art</a> &nbsp;&middot;&nbsp;
+    <a href="/about.html">About</a> &nbsp;&middot;&nbsp;
+    &copy; 2026 PrinterMan
+  </p>
+
+</div>
+
+<script>
+/* Sort and filter the grid in place. The figures are the data: each carries
+   data-title, data-year and data-medium, so a new work is one more
+   <figure> and nothing here changes. Sorting reorders the DOM rather than
+   re-rendering, which keeps the images loaded. */
+(function () {
+  var grid   = document.getElementById('grid');
+  if (!grid) return;
+  var works  = [].slice.call(grid.querySelectorAll('.work')),
+      sortEl = document.getElementById('sort'),
+      medEl  = document.getElementById('medium'),
+      countEl= document.getElementById('count'),
+      emptyEl= document.getElementById('empty');
+
+  /* Build the medium list from whatever the works actually say. */
+  var mediums = [];
+  works.forEach(function (w) {
+    var m = w.getAttribute('data-medium');
+    if (m && mediums.indexOf(m) === -1) mediums.push(m);
+  });
+  mediums.sort().forEach(function (m) {
+    var o = document.createElement('option');
+    o.value = m; o.textContent = m;
+    medEl.appendChild(o);
+  });
+
+  function val(w, key) { return w.getAttribute('data-' + key) || ''; }
+
+  /* A work with no year sorts to the end whichever way the list runs, rather
+     than pretending to be the oldest or the newest thing here. */
+  function byYear(dir) {
+    return function (a, b) {
+      var ya = parseInt(val(a, 'year'), 10),
+          yb = parseInt(val(b, 'year'), 10),
+          na = isNaN(ya), nb = isNaN(yb);
+      if (na && nb) return val(a, 'title').localeCompare(val(b, 'title'));
+      if (na) return 1;
+      if (nb) return -1;
+      return dir * (yb - ya);
+    };
+  }
+
+  var sorters = {
+    'year-desc':  byYear(1),
+    'year-asc':   byYear(-1),
+    'title-asc':  function (a, b) { return val(a,'title').localeCompare(val(b,'title')); },
+    'title-desc': function (a, b) { return val(b,'title').localeCompare(val(a,'title')); },
+    'medium-asc': function (a, b) { return val(a,'medium').localeCompare(val(b,'medium'))
+                                        || val(a,'title').localeCompare(val(b,'title')); }
+  };
+
+  function apply() {
+    var pick = medEl.value, n = 0;
+
+    works.forEach(function (w) {
+      var show = !pick || val(w, 'medium') === pick;
+      w.hidden = !show;
+      if (show) n++;
+    });
+
+    works.slice().sort(sorters[sortEl.value] || sorters['year-desc'])
+         .forEach(function (w) { grid.appendChild(w); });
+
+    /* A bare total is just decoration. While a medium is picked it says
+       what the filter did, so it appears only then. */
+    countEl.textContent = n + ' of ' + works.length;
+    countEl.hidden = !pick;
+    emptyEl.hidden = n > 0;
+  }
+
+  sortEl.addEventListener('change', apply);
+  medEl.addEventListener('change', apply);
+  apply();
+}());
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0b3e30f708cd4777957b92defbbdd859"}'></script><!-- End Cloudflare Web Analytics -->
+
+<!-- GoatCounter --><script data-goatcounter="https://crablord9001.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script><!-- End GoatCounter -->
+
+</body>
+</html>
