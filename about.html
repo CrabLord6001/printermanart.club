@@ -217,6 +217,82 @@
   footer a { color: var(--blurple-text); text-decoration: none; }
   footer a:hover { text-decoration: underline; }
 
+  /* ---- Long-form sections ----
+     Centered, like every heading on the lander. The accent sits on the larger
+     h2 and the smaller h3 runs white, so weight and color rise together. */
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--accent);
+    text-align: center;
+    margin: 0 0 18px;
+  }
+
+  h3 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text);
+    text-align: center;
+    margin: 0 0 16px;
+  }
+
+  /* A rule and a gap wherever one section hands off to the next. */
+  .section {
+    margin-top: 42px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+  }
+
+  .body a {
+    color: var(--blurple-text);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(153, 162, 247, 0.35);
+  }
+
+  .body a:hover { border-bottom-color: var(--blurple-text); }
+
+  /* ---- Server tour screenshots ----
+     max-width:100% only ever scales an image DOWN, so each capture renders at
+     its own pixel width or smaller and is never blown up past its detail. The
+     channel names live in the alt text as well as the picture, which is what
+     a screen reader and a crawler actually read. */
+  figure.shot {
+    margin: 26px 0;
+    text-align: center;
+  }
+
+  figure.shot img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  /* Join button — same treatment as the lander's */
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--blurple);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 14px 30px;
+    border-radius: 10px;
+    margin-top: 6px;
+  }
+
+  .cta svg { width: 20px; height: 20px; fill: currentColor; }
+  .cta:hover { background: #4653E0; }
+  .cta:focus-visible { outline: 2px solid var(--blurple-text); outline-offset: 3px; }
+
+  .cta-wrap { text-align: center; }
+
   @media (max-width: 480px) {
     .card-body { padding: 28px 22px 34px; }
   }
@@ -243,6 +319,8 @@
     </nav>
 
     <div class="card-body">
+    <h2>About</h2>
+
     <p class="body">I am the PrinterMan, the gracious ruler of this realm. I have created PrinterMan's Art Club as an extension of my iFunny presence and thereby as a suitable replacement for the vileness of it. Here, I welcome all to my sanctuary. Whether you are an artist or not, we all will benefit from the community through healthy dialogue, shared values of excellence, and good vibes forever.</p>
 
     <p class="body">This place is more than art appreciation. We are centered on encouraging each other through examples of brotherhood and honor, dedicated to the propositions of equality and justice.</p>
@@ -250,6 +328,83 @@
     <p class="body">I am grateful for all who visit. Share with us your doodles, masterpieces, and creative energies of all forms. But most of all, share your true self. Together, we will make the Internet great again.</p>
 
     <p class="body">Thank you and have a good day!</p>
+
+    <section class="section">
+    <h2>Server Tour</h2>
+
+    <p class="body">My Discord servers have always reflected my love of organization. Channels all have a specific purpose I try to make clear for everyone. Hopefully, a little tour will enlighten me as to my process and give you some ideas of your own Discord server. I don&rsquo;t suspect I&rsquo;ll change the server too drastically from what I am showing now, but if I do I&rsquo;ll update this page. If you have any questions, feel free to connect.</p>
+
+    <h3>Channels</h3>
+
+    <p class="body">First for channels, group them by recognizable categories. Then, people can collapse what they don&rsquo;t immediately need to see. I love symmetry too in designs, so it helps visually if there are an equal amount of channels grouped in categories. My main categories hold seven, somewhat of a spiritual number.</p>
+
+    <figure class="shot">
+      <img src="img/tour/tour-1-countdowns-tickets-updates.png" width="477" height="637" loading="lazy" decoding="async"
+           alt="The top of the server's channel list: a Countdowns category holding two holiday timers, then Open Tickets with a Create-Tickets channel, Closed Tickets with archived-tickets, and an Updates category holding Server-Updates and Website-Change-Log.">
+    </figure>
+
+    <p class="body">Yet, before those primary groups, I used <a href="https://statbot.net/" target="_blank" rel="noopener">Statbot</a> to create a countdown marker vc (what it calls a type of &ldquo;statdock&rdquo;). Not complicated to set up and pretty useful to hype us up for the holidays. I figure two events are plenty for the spacing.</p>
+
+    <p class="body">Then the ticket categories are for creating temporary channels for people who request to speak privately with admins. It uses a button programmed from <a href="https://mee6.xyz/dashboard" target="_blank" rel="noopener">MEE6</a>. It&rsquo;s never really been used but it&rsquo;s professional to have anyway in large servers. The cool thing is the bottom category is a private space for admin to view closed tickets. After some time you can delete it altogether, which actually stores the transcript from the ticket channel into your MEE6 account (becoming a hyperlinked message in my &ldquo;archive tickets&rdquo;). Drama brings down servers more than anything else. Whatever system you use, keep it consistent and orderly.</p>
+
+    <figure class="shot">
+      <img src="img/tour/tour-2-change-log.png" width="918" height="514" loading="lazy" decoding="async"
+           alt="The Website-Change-Log channel, with two dated entries posted by PrinterMan recording what changed on the site on 22 and 23 October 2026.">
+    </figure>
+
+    <p class="body">Updates category&hellip; well that&rsquo;s for updates. I have two channels, one for server announcements and another for a more technical journal of this website. Community servers are required to have at least one announcement channel.</p>
+
+    <figure class="shot">
+      <img src="img/tour/tour-3-administrative.png" width="465" height="421" loading="lazy" decoding="async"
+           alt="The Administrative category with seven channels: The-Council, LOG-BOOK, Rules-and-Information, welcome, Suggestions-Polls, cow-prison and meme-features.">
+    </figure>
+
+    <p class="body">The next group is the first main category, holding my idealized seven channels. Well, that&rsquo;s a bit misleading for most people. The Council is our admin chat and the Log Book is the audit log generated from MEE6. Both of them are hidden from the general public, the &ldquo;everyone&rdquo; permissions.</p>
+
+    <p class="body">Discord is great at setting controls over who can see what. Which is helpful for customizing the community experience. For example, people can subscribe to certain roles that give access to channels of their interests (game or shows) or you restrict the dudes from a lady&rsquo;s chat.</p>
+
+    <p class="body">Anyway, besides the first two in the category, Rules and Information simply states the rules, gives the above &ldquo;about&rdquo; intro, and defines the admins roles. Welcome is a where default join messages ping. Suggestions / Polls, as the name implies, is for everyone to give server feedback. The COW Prison is a special place we created for some Cranky Old Whackjob members who might be obnoxious in chat. Rather than mute, kick, or even ban them outright, they can live in this timeout channel for some remediation.</p>
+
+    <p class="body">Meme Features is our version of iFunny&rsquo;s feature system. It uses MEE6&rsquo;s &ldquo;Starboard&rdquo; plugin. Essentially, it tracks member reactions to meme channel posts and if it hits a certain benchmark, it will repost in the features channel. Democracy &ldquo;features&rdquo; the funny people! Isn&rsquo;t that swell? And that&rsquo;s how we get our Member Meme Features from the homepage here.</p>
+
+    <figure class="shot">
+      <img src="img/tour/tour-4-fun-channels.png" width="462" height="418" loading="lazy" decoding="async"
+           alt="The Fun Channels category with seven channels: general-chat, da-memes, iFunny-Stuff, Gaming, food, Music-Jams and media.">
+    </figure>
+
+    <p class="body">Next, we got the standard channels you might see in most Discord servers. People need a place to chat about generally, the General Chat. Having way too many narrowly defined channels can feel overwhelming for new people. General is fine to start for a while and only develop the rest as the need arises. Food, music, and gaming probably will make sense as a natural fit for communities. Media we have for social media posts and off topic YouTube shorts. Memes fit in the media or even in general channels. However, I am having the starboard tool watch the reactions in that specific channel, so it only features memes themselves.</p>
+
+    <p class="body">Oh, and some people come directly from iFunny or at least are familiar with the iFunny subculture we started in&hellip; so a dedicated channel for iFunny links makes sense for our niche.</p>
+
+    <figure class="shot">
+      <img src="img/tour/tour-5-art-posting.png" width="459" height="430" loading="lazy" decoding="async"
+           alt="The Art Posting category with seven channels: member-art, Found-Artwork, ART-PAGE-SHARING, church-of-printer, Psalm-19, Mature-Art and auto-art-feed-x. The last two carry a lock marking them as role-restricted.">
+    </figure>
+
+    <p class="body">Finally, the art channels! Art is the theme but I am careful not to cater only to professional artists. Anyone, amateur or expert in the craft, can post their creations in the Member Art channel. Art belonging to other people goes in Found Artwork. That is, art you found and want to share&hellip; Maybe that title needs work? You get the idea. Then, Art Page Sharing is for sharing online portfolios or generally webpages filled with art.</p>
+
+    <p class="body">We have some spiritually minded members, myself included, who requested a channel for religious art &ndash; the purpose of Church of Printer. And, Psalm 19 is a place for God&rsquo;s art, nature, animals, space, etc&hellip;</p>
+
+    <p class="body">Mature Art is one of those channels hidden behind a selectable role, so we protect kiddos and sensitive people to gore or artistic nudes.</p>
+
+    <figure class="shot">
+      <img src="img/tour/tour-6-mee6-x-alerts.png" width="1455" height="1296" loading="lazy" decoding="async"
+           alt="The MEE6 dashboard's X Alerts page, a red arrow pointing to it in the sidebar, listing followed art and history accounts that all post into the auto-art-feed-x channel.">
+    </figure>
+
+    <p class="body">The Auto Art Feed X is another channel customized by MEE6 where it creates a custom feed of posts from X pages (formerly Twitter). I chose a curation of art and history themed profiles. Similar feed bots exist too but MEE6 works best for me (with the one-time payment for premium. Is what it is). This channel is also only visible to a selectable role simply because it updates the feed quite often and for some its too much activity.</p>
+
+    <figure class="shot">
+      <img src="img/tour/tour-7-voice-channels.png" width="472" height="256" loading="lazy" decoding="async"
+           alt="The Talking Place category with three voice channels: Hangout, Gaming and Movie Theater.">
+    </figure>
+
+    <p class="body">And then&hellip; we got some VCs, voice channels as they are called. I am not a big fan of managing many that never get used. Three for our specific needs is a good constraint. Aesthetically pleasing Discord servers set them apart from the mass of similar ones.</p>
+
+    <p class="body">So now that you got a real look at the server itself, why not join the fun? We&rsquo;d love to meet you and see your creativity at work!</p>
+
+    <p class="cta-wrap"><a class="cta" href="https://discord.gg/nn3xjcS745"><svg viewBox="0 0 127.14 96.36" aria-hidden="true" focusable="false"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>Join Now</a></p>
+    </section>
 
     <footer>
       <a href="/">printermanart.club</a> &nbsp;·&nbsp; About &nbsp;·&nbsp; <a href="/faq.html">FAQ</a> &nbsp;·&nbsp; &copy; 2026 PrinterMan
