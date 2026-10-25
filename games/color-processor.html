@@ -11,15 +11,17 @@
 /* ============================================================
    Color Processor — step one, the rough board
    ============================================================
-   On purpose this is plain: flat tiles, no particles, no laser,
-   no artwork. It exists to answer one question, which is whether
-   swapping and cascading is fun with the scoring we picked. The
-   look comes later, over a loop we already know is good.
+   Falling pairs, Puyo rules: four or more of a color touching in
+   any shape clear, what is left falls, and anything that lands in
+   a new group clears again. Each pass through that loop is a link
+   of the chain and pays more than the last.
 
-   The logic below (matching, collapsing, scoring) is written to
-   be portable. When the real renderer arrives -- canvas, toner,
-   arcs from the hoppers -- it replaces the paint() function and
-   nothing else.
+   On purpose this is plain -- flat tiles, no toner, no laser, no
+   artwork. It is here to answer whether steering and chaining is
+   fun before any of the look is built on top of it.
+
+   The logic below is written to be portable. When the real
+   renderer arrives it replaces paint() and nothing else.
    ============================================================ */
 
 :root {
@@ -40,7 +42,6 @@
 }
 
 * { box-sizing: border-box; }
-
 html, body { margin: 0; padding: 0; height: 100%; }
 
 body {
@@ -50,35 +51,36 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 10px 16px;
+  padding: 8px 10px 12px;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
+  touch-action: none;
 }
 
-/* ---- the readout ---- */
+/* ---- readout ---- */
 
 .head {
   width: 100%;
-  max-width: 460px;
+  max-width: 430px;
   display: flex;
   align-items: baseline;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
-  padding: 2px 2px 8px;
+  padding: 0 2px 6px;
 }
 
 .title {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent);
   margin: 0;
-  flex: 1 1 auto;
+  flex: 1 1 100%;
 }
 
 .stat {
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -86,60 +88,51 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.stat b { color: var(--text); font-size: 0.95rem; margin-left: 5px; }
+.stat b { color: var(--text); font-size: 0.92rem; margin-left: 4px; }
 .stat.goal b { color: var(--accent); }
 
-/* ---- the four hoppers ---- */
+/* ---- the machine ---- */
 
-.hoppers {
-  width: 100%;
-  max-width: 460px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 8px;
+.rig {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
 }
 
-/* A tank with a tapered neck. Flat shapes, but enough of a silhouette
-   that the board reads as the inside of a machine rather than a puzzle
-   on a page. */
+.stack { display: flex; flex-direction: column; align-items: center; }
+
+/* four tanks across the top of the well */
+.hoppers {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
 .hopper {
   position: relative;
-  height: 46px;
-  border-radius: 7px 7px 3px 3px;
+  height: 34px;
+  border-radius: 6px 6px 3px 3px;
   border: 1px solid var(--border);
   background: #0C0E13;
   overflow: hidden;
 }
 
-/* Anchored to the bottom, because toner settles and the neck drains it from
-   underneath. It dips when that color clears and fills back up -- feedback
-   only, nothing in the rules depends on it. */
 .hopper .fill {
   position: absolute;
   left: 3px; right: 3px; bottom: 3px;
-  border-radius: 2px 2px 4px 4px;
+  border-radius: 2px 2px 3px 3px;
   transition: height 0.35s ease;
-}
-
-.hopper .neck {
-  position: absolute;
-  left: 50%;
-  bottom: -5px;
-  width: 12px;
-  height: 9px;
-  margin-left: -6px;
-  border-radius: 0 0 3px 3px;
-  background: var(--border);
 }
 
 .hopper .tag {
   position: absolute;
-  left: 0; right: 0; top: 4px;
+  left: 0; right: 0; top: 2px;
   text-align: center;
-  font-size: 0.6rem;
+  font-size: 0.54rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   color: var(--dim);
   z-index: 1;
 }
@@ -149,112 +142,145 @@ body {
 .hopper.y .fill { background: var(--yellow); }
 .hopper.k .fill { background: var(--key); }
 
+/* ---- the well ---- */
 
-/* ---- the board ---- */
-
-.tray {
-  width: min(94vw, 460px, (100vh - 250px) * 7 / 9);
+.well {
   background: #0C0E13;
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 6px;
-  touch-action: none;
+  padding: 5px;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  aspect-ratio: 7 / 9;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
 }
 
 .cell {
-  border-radius: 5px;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.1s linear;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
 }
 
-.cell.c { background: var(--cyan); }
-.cell.m { background: var(--magenta); }
-.cell.y { background: var(--yellow); }
-.cell.k { background: var(--key); }
+.cell.c { background: var(--cyan); box-shadow: none; }
+.cell.m { background: var(--magenta); box-shadow: none; }
+.cell.y { background: var(--yellow); box-shadow: none; }
+.cell.k { background: var(--key); box-shadow: none; }
 
-.cell.picked { transform: scale(0.86); box-shadow: 0 0 0 2px #fff inset; }
+/* A clump of four or more flashes before it goes, so you can see what you
+   did. The one concession to animation at this stage. */
+.cell.hit { background: #fff; box-shadow: none; }
 
-/* The one concession to animation at this stage: matched tiles go white
-   for a moment before they clear. Without it a cascade is a single frame
-   where the whole board silently changed and you cannot tell what you did. */
-.cell.hit { background: #fff; transform: scale(0.9); }
+/* the piece on its way down sits slightly proud of the pile */
+.cell.live { box-shadow: 0 0 0 2px rgba(255,255,255,0.22); }
 
-/* ---- the foot ---- */
+/* ---- side panel ---- */
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 40px;
+  min-width: 62px;
+}
+
+.nextbox {
+  background: #0C0E13;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px;
+}
+
+.nextbox .lbl {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.nextgrid { display: grid; grid-template-rows: repeat(2, 1fr); gap: 3px; justify-items: center; }
+.nextgrid div { width: 20px; height: 20px; border-radius: 50%; }
+
+.chainnow {
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  min-height: 1em;
+}
+
+/* ---- foot ---- */
 
 .foot {
   width: 100%;
-  max-width: 460px;
+  max-width: 430px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  padding-top: 10px;
+  padding-top: 8px;
 }
 
-.msg {
-  flex: 1 1 auto;
-  font-size: 0.8rem;
-  color: var(--muted);
-  min-height: 1.2em;
-  margin: 0;
-}
-
+.msg { flex: 1 1 100%; font-size: 0.78rem; color: var(--muted); min-height: 1.2em; margin: 0; }
 .msg b { color: var(--accent); }
 
 label.tune {
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dim);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 label.tune input {
-  width: 58px;
+  width: 56px;
   font-family: var(--font);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text);
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 5px 7px;
+  padding: 4px 6px;
 }
 
 button.go {
   font-family: var(--font);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text);
   background: #5865F2;
   border: 0;
   border-radius: 8px;
-  padding: 9px 16px;
+  padding: 8px 14px;
   cursor: pointer;
 }
 
 button.go:hover { background: #4653E0; }
 
-/* ---- the end of a print ---- */
+.hint {
+  flex: 1 1 100%;
+  font-size: 0.62rem;
+  color: var(--dim);
+  margin: 2px 0 0;
+}
+
+/* ---- end of a print ---- */
 
 .over {
   position: fixed;
   inset: 0;
-  background: rgba(10, 12, 17, 0.92);
+  background: rgba(10, 12, 17, 0.93);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -265,7 +291,6 @@ button.go:hover { background: #4653E0; }
 }
 
 .over[hidden] { display: none; }
-
 .over h2 { margin: 0; font-size: 1.4rem; color: var(--text); font-weight: 600; }
 .over p  { margin: 0; font-size: 0.95rem; max-width: 34ch; }
 </style>
@@ -275,26 +300,36 @@ button.go:hover { background: #4653E0; }
   <div class="head">
     <p class="title">Color Processor &mdash; rough board</p>
     <span class="stat">Points <b id="pts">0</b></span>
-    <span class="stat">Swaps <b id="mv">30</b></span>
     <span class="stat goal">Target <b id="tg">1000</b></span>
+    <span class="stat">Best chain <b id="bc">0</b></span>
   </div>
 
-  <div class="hoppers">
-    <div class="hopper c"><div class="fill" id="hop-c"></div><span class="tag">C</span><div class="neck"></div></div>
-    <div class="hopper m"><div class="fill" id="hop-m"></div><span class="tag">M</span><div class="neck"></div></div>
-    <div class="hopper y"><div class="fill" id="hop-y"></div><span class="tag">Y</span><div class="neck"></div></div>
-    <div class="hopper k"><div class="fill" id="hop-k"></div><span class="tag">K</span><div class="neck"></div></div>
-  </div>
+  <div class="rig">
+    <div class="stack">
+      <div class="hoppers">
+        <div class="hopper c"><div class="fill" id="hop-c"></div><span class="tag">C</span></div>
+        <div class="hopper m"><div class="fill" id="hop-m"></div><span class="tag">M</span></div>
+        <div class="hopper y"><div class="fill" id="hop-y"></div><span class="tag">Y</span></div>
+        <div class="hopper k"><div class="fill" id="hop-k"></div><span class="tag">K</span></div>
+      </div>
+      <div class="well"><div class="grid" id="grid"></div></div>
+    </div>
 
-  <div class="tray">
-    <div class="grid" id="grid"></div>
+    <div class="side">
+      <div class="nextbox">
+        <p class="lbl">Next</p>
+        <div class="nextgrid"><div id="nb"></div><div id="na"></div></div>
+      </div>
+      <p class="chainnow" id="chainnow">&nbsp;</p>
+    </div>
   </div>
 
   <div class="foot">
-    <p class="msg" id="msg">Swap two neighbors to line up three.</p>
-    <label class="tune">Target <input id="setTarget" type="number" min="50" step="50" value="1000"></label>
-    <label class="tune">Swaps <input id="setMoves" type="number" min="5" step="5" value="30"></label>
+    <p class="msg" id="msg">Four or more touching clears.</p>
+    <label class="tune">Target <input id="setTarget" type="number" min="100" step="100" value="1000"></label>
+    <label class="tune">Fall ms <input id="setFall" type="number" min="100" step="50" value="700"></label>
     <button class="go" id="again" type="button">New print</button>
+    <p class="hint" id="hint">Drag to steer &middot; tap to rotate &middot; swipe down to drop</p>
   </div>
 
   <div class="over" id="over" hidden>
@@ -308,334 +343,373 @@ button.go:hover { background: #4653E0; }
    Logic
    ============================================================ */
 
-const COLS = 7, ROWS = 9;
+const COLS = 6, ROWS = 12;
 const INKS = ['c', 'm', 'y', 'k'];
 
-/* Scoring as agreed: the longer the run, the steeper the reward, and a
-   cascade pays more with every link so that setting up a chain beats
-   taking the easy three in front of you. */
-const RUN_POINTS = { 3: 10, 4: 15, 5: 25 };
-const SIX_PLUS   = 50;
-const CHAIN_CAP  = 8;
+/* Puyo clears start at four, so the table shifts up one from the one we
+   drew for a swap board: the smallest clear pays 10, and it climbs the
+   same way from there. */
+const GROUP_POINTS = { 4: 10, 5: 15, 6: 25 };
+const BIG_GROUP    = 50;
+const CHAIN_CAP    = 8;
 
-const runPoints = (n) => (n >= 6 ? SIX_PLUS : RUN_POINTS[n] || 0);
+const groupPoints = (n) => (n >= 7 ? BIG_GROUP : GROUP_POINTS[n] || 0);
 
-const at   = (g, x, y) => g[y * COLS + x];
-const put  = (g, x, y, v) => { g[y * COLS + x] = v; };
+const idx  = (x, y) => y * COLS + x;
+const at   = (w, x, y) => w[idx(x, y)];
+const put  = (w, x, y, v) => { w[idx(x, y)] = v; };
 const rand = () => INKS[(Math.random() * INKS.length) | 0];
+const inside = (x, y) => x >= 0 && x < COLS && y >= 0 && y < ROWS;
 
-/* Every run of three or more, across and down, as its own group. A cell
-   can belong to two runs where they cross, and both are paid -- an L is
-   worth more than a line, which is the point of making one. */
-function findRuns(g) {
-  const runs = [];
+/* The second half of a pair, relative to the pivot. */
+const ROT = [ [0, -1], [1, 0], [0, 1], [-1, 0] ];
 
-  for (let y = 0; y < ROWS; y++) {
-    let x = 0;
-    while (x < COLS) {
-      const ink = at(g, x, y);
-      let end = x;
-      while (end + 1 < COLS && at(g, end + 1, y) === ink) end++;
-      if (ink && end - x + 1 >= 3) {
-        const cells = [];
-        for (let i = x; i <= end; i++) cells.push([i, y]);
-        runs.push(cells);
-      }
-      x = end + 1;
-    }
-  }
-
-  for (let x = 0; x < COLS; x++) {
-    let y = 0;
-    while (y < ROWS) {
-      const ink = at(g, x, y);
-      let end = y;
-      while (end + 1 < ROWS && at(g, x, end + 1) === ink) end++;
-      if (ink && end - y + 1 >= 3) {
-        const cells = [];
-        for (let i = y; i <= end; i++) cells.push([x, i]);
-        runs.push(cells);
-      }
-      y = end + 1;
-    }
-  }
-
-  return runs;
-}
-
-/* Clear the cells, let everything above fall into the holes, and fill the
-   top from the hoppers. */
-function collapse(g, cells) {
-  for (const [x, y] of cells) put(g, x, y, null);
-
+/* Everything floating settles. Each column compacts downward, which also
+   gives the Puyo rule for free: when a pair lands straddling a ledge, the
+   unsupported half keeps falling on its own. */
+function settle(w) {
   for (let x = 0; x < COLS; x++) {
     let write = ROWS - 1;
     for (let y = ROWS - 1; y >= 0; y--) {
-      const v = at(g, x, y);
-      if (v) { put(g, x, write, v); write--; }
+      const v = at(w, x, y);
+      if (v) { put(w, x, y, null); put(w, x, write, v); write--; }
     }
-    for (let y = write; y >= 0; y--) put(g, x, y, rand());
   }
 }
 
-function swapped(g, a, b) {
-  const copy = g.slice();
-  const t = at(copy, a[0], a[1]);
-  put(copy, a[0], a[1], at(copy, b[0], b[1]));
-  put(copy, b[0], b[1], t);
-  return copy;
-}
+/* Groups of four or more of a color, touching edge to edge in any shape. */
+function findClumps(w) {
+  const seen = new Uint8Array(COLS * ROWS);
+  const clumps = [];
 
-const adjacent = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) === 1;
-
-/* Is there anything left to do? If not the board is dead and wants a
-   reshuffle rather than letting someone stare at it. */
-function anyMove(g) {
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
-      if (x + 1 < COLS && findRuns(swapped(g, [x, y], [x + 1, y])).length) return true;
-      if (y + 1 < ROWS && findRuns(swapped(g, [x, y], [x, y + 1])).length) return true;
-    }
-  }
-  return false;
-}
+      const ink = at(w, x, y);
+      if (!ink || seen[idx(x, y)]) continue;
 
-/* A fresh board has no matches sitting in it -- those would pay out before
-   anyone touched anything -- and has at least one legal move. */
-function freshBoard() {
-  for (let attempt = 0; attempt < 60; attempt++) {
-    const g = new Array(COLS * ROWS);
-    for (let i = 0; i < g.length; i++) g[i] = rand();
+      const group = [];
+      const queue = [[x, y]];
+      seen[idx(x, y)] = 1;
 
-    let guard = 0;
-    while (findRuns(g).length && guard++ < 400) {
-      for (const run of findRuns(g)) {
-        const [x, y] = run[(Math.random() * run.length) | 0];
-        put(g, x, y, rand());
+      while (queue.length) {
+        const [cx, cy] = queue.pop();
+        group.push([cx, cy]);
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = cx + dx, ny = cy + dy;
+          if (!inside(nx, ny) || seen[idx(nx, ny)]) continue;
+          if (at(w, nx, ny) !== ink) continue;
+          seen[idx(nx, ny)] = 1;
+          queue.push([nx, ny]);
+        }
       }
-    }
 
-    if (!findRuns(g).length && anyMove(g)) return g;
+      if (group.length >= 4) clumps.push(group);
+    }
   }
-  return null;
+
+  return clumps;
 }
 
 /* ============================================================
    The board on the page
    ============================================================ */
 
-const elGrid = document.getElementById('grid');
-const elPts  = document.getElementById('pts');
-const elMv   = document.getElementById('mv');
-const elTg   = document.getElementById('tg');
-const elMsg  = document.getElementById('msg');
-const elOver = document.getElementById('over');
+const elGrid  = document.getElementById('grid');
+const elPts   = document.getElementById('pts');
+const elTg    = document.getElementById('tg');
+const elBc    = document.getElementById('bc');
+const elMsg   = document.getElementById('msg');
+const elOver  = document.getElementById('over');
+const elChain = document.getElementById('chainnow');
 
-let grid = [], points = 0, moves = 30, target = 1000, best = 0, picked = null, busy = false;
+let well = [], piece = null, next = null;
+let points = 0, target = 1000, bestChain = 0, fallMs = 700;
+let timer = null, busy = false, over = false;
 
 const tiles = [];
 for (let i = 0; i < COLS * ROWS; i++) {
-  const b = document.createElement('button');
-  b.type = 'button';
-  b.className = 'cell';
-  b.dataset.i = i;
-  elGrid.appendChild(b);
-  tiles.push(b);
+  const d = document.createElement('div');
+  d.className = 'cell';
+  elGrid.appendChild(d);
+  tiles.push(d);
 }
 
-function paint() {
-  for (let i = 0; i < tiles.length; i++) {
-    tiles[i].className = 'cell ' + (grid[i] || '');
-  }
-  if (picked) tiles[picked[1] * COLS + picked[0]].classList.add('picked');
+/* Cells are square and the whole rig has to fit the screen without
+   scrolling, so the size is worked out from whichever runs out first,
+   the width or the height. */
+function sizeBoard() {
+  // Measure what the rest of the page is actually taking rather than
+  // guessing at it, then give the well the remainder.
+  const used = document.querySelector('.head').offsetHeight
+             + document.querySelector('.hoppers').offsetHeight
+             + document.querySelector('.foot').offsetHeight
+             + 44;                       // body padding, well padding, gaps
+
+  const byH = (window.innerHeight - used - ROWS * 3) / ROWS;
+  const byW = (Math.min(window.innerWidth, 430) - 96 - COLS * 3) / COLS;
+  const cell = Math.max(14, Math.min(byH, byW, 44));
+
+  for (const t of tiles) { t.style.width = cell + 'px'; t.style.height = cell + 'px'; }
+  document.querySelectorAll('.nextgrid div').forEach((d) => {
+    d.style.width = Math.round(cell * 0.6) + 'px';
+    d.style.height = Math.round(cell * 0.6) + 'px';
+  });
 }
 
 const show = (html) => { elMsg.innerHTML = html; };
 
-/* The hoppers react to what gets used. Each tile of a color drains a little
-   from that tank and it fills back up a moment later. Decoration: nothing in
-   the rules reads these numbers. */
-const REST = 68;
+/* ---- the tanks ---- */
+
+const REST = 56;
 const level = { c: REST, m: REST, y: REST, k: REST };
-const hopEl = { c: null, m: null, y: null, k: null };
 let topUp = null;
 
 function paintHoppers() {
-  for (const ink of INKS) {
-    if (!hopEl[ink]) hopEl[ink] = document.getElementById('hop-' + ink);
-    if (hopEl[ink]) hopEl[ink].style.height = level[ink] + '%';
-  }
+  for (const ink of INKS) document.getElementById('hop-' + ink).style.height = level[ink] + '%';
 }
 
 function drawInk(counts) {
-  for (const ink of INKS) {
-    if (counts[ink]) level[ink] = Math.max(16, level[ink] - counts[ink] * 5);
-  }
+  for (const ink of INKS) if (counts[ink]) level[ink] = Math.max(16, level[ink] - counts[ink] * 4);
   paintHoppers();
-
   clearTimeout(topUp);
-  topUp = setTimeout(() => {
-    for (const ink of INKS) level[ink] = REST;
-    paintHoppers();
-  }, 520);
+  topUp = setTimeout(() => { for (const ink of INKS) level[ink] = REST; paintHoppers(); }, 600);
 }
 
-function newPrint() {
-  target = Math.max(50, Number(document.getElementById('setTarget').value) || 1000);
-  moves  = Math.max(5,  Number(document.getElementById('setMoves').value)  || 30);
-  points = 0; best = 0; picked = null; busy = false;
-  grid = freshBoard();
-  elTg.textContent = target;
-  elPts.textContent = '0';
-  elMv.textContent = moves;
-  elOver.hidden = true;
-  for (const ink of INKS) level[ink] = REST;
-  paintHoppers();
-  show('Swap two neighbors to line up three.');
+/* ---- painting ---- */
+
+function paint() {
+  for (let i = 0; i < tiles.length; i++) tiles[i].className = 'cell ' + (well[i] || '');
+
+  if (piece) {
+    for (const [x, y, ink] of pieceCells(piece)) {
+      if (inside(x, y)) tiles[idx(x, y)].className = 'cell ' + ink + ' live';
+    }
+  }
+
+  document.getElementById('na').style.background = next ? colorOf(next.a) : 'transparent';
+  document.getElementById('nb').style.background = next ? colorOf(next.b) : 'transparent';
+}
+
+const colorOf = (ink) => getComputedStyle(document.documentElement)
+  .getPropertyValue(ink === 'k' ? '--key' : ink === 'c' ? '--cyan' : ink === 'm' ? '--magenta' : '--yellow');
+
+function pieceCells(p) {
+  const [dx, dy] = ROT[p.rot];
+  return [[p.x, p.y, p.a], [p.x + dx, p.y + dy, p.b]];
+}
+
+function fits(p) {
+  for (const [x, y] of pieceCells(p)) {
+    if (x < 0 || x >= COLS || y >= ROWS) return false;
+    if (y >= 0 && at(well, x, y)) return false;      // above the lip is allowed
+  }
+  return true;
+}
+
+/* ---- the run of play ---- */
+
+const newPair = () => ({ x: 2, y: 1, rot: 0, a: rand(), b: rand() });
+
+function spawn() {
+  piece = next || newPair();
+  piece.x = 2; piece.y = 1; piece.rot = 0;
+  next = newPair();
+
+  if (!fits(piece)) { piece = null; finish(false); return; }
   paint();
+}
+
+function lock() {
+  for (const [x, y, ink] of pieceCells(piece)) {
+    if (inside(x, y)) put(well, x, y, ink);
+  }
+  piece = null;
+  resolve();
 }
 
 const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
-/* Resolve everything the swap set off: score the runs, flash them, clear,
-   let the board fall, and look again. Each pass through the loop is one
-   link of the chain and pays more than the last. */
+/* Clear, settle, look again. Every pass is one link of the chain and pays
+   more than the one before it. */
 async function resolve() {
-  let chain = 0, earned = 0;
+  busy = true;
+  stopTick();
+
+  settle(well);
+  paint();
+
+  let chain = 0;
 
   for (;;) {
-    const runs = findRuns(grid);
-    if (!runs.length) break;
+    const clumps = findClumps(well);
+    if (!clumps.length) break;
 
     chain++;
     const mult = Math.min(chain, CHAIN_CAP);
-    let thisPass = 0;
-    for (const run of runs) thisPass += runPoints(run.length) * mult;
-    earned += thisPass;
+    let pass = 0;
+    const used = { c: 0, m: 0, y: 0, k: 0 };
 
-    const cells = [];
-    const seen = new Set();
-    for (const run of runs) {
-      for (const [x, y] of run) {
-        const k = x + ',' + y;
-        if (!seen.has(k)) { seen.add(k); cells.push([x, y]); }
+    for (const group of clumps) {
+      pass += groupPoints(group.length) * mult;
+      for (const [x, y] of group) {
+        used[at(well, x, y)]++;
+        tiles[idx(x, y)].className = 'cell hit';
       }
     }
 
-    const used = { c: 0, m: 0, y: 0, k: 0 };
-    for (const [x, y] of cells) {
-      used[at(grid, x, y)]++;
-      tiles[y * COLS + x].classList.add('hit');
-    }
-    drawInk(used);
-    points += thisPass;
+    points += pass;
     elPts.textContent = points;
+    elChain.textContent = chain > 1 ? 'Chain ×' + mult : '';
+    drawInk(used);
     show(chain > 1
-      ? 'Chain <b>&times;' + mult + '</b> &mdash; ' + thisPass + ' points'
-      : runs.map(r => r.length + ' in a row').join(', ') + ' &mdash; <b>' + thisPass + '</b>');
+      ? 'Chain <b>&times;' + mult + '</b> &mdash; ' + pass + ' points'
+      : clumps.map(g => g.length + ' touching').join(', ') + ' &mdash; <b>' + pass + '</b>');
 
-    await wait(130);
-    collapse(grid, cells);
+    await wait(170);
+
+    for (const group of clumps) for (const [x, y] of group) put(well, x, y, null);
+    settle(well);
     paint();
-    await wait(60);
+    await wait(90);
   }
 
-  if (chain > best) best = chain;
-  return { chain, earned };
-}
-
-async function trySwap(a, b) {
-  if (busy || !adjacent(a, b)) return;
-
-  const next = swapped(grid, a, b);
-  if (!findRuns(next).length) {
-    show('That swap makes nothing. It costs you nothing either.');
-    return;
-  }
-
-  busy = true;
-  grid = next;
-  moves--;
-  elMv.textContent = moves;
-  paint();
-
-  const { chain } = await resolve();
-
-  if (!anyMove(grid)) {
-    grid = freshBoard();
-    paint();
-    show('Nothing left to match &mdash; the hoppers reloaded the page.');
-  }
-
+  if (chain > bestChain) { bestChain = chain; elBc.textContent = bestChain; }
+  elChain.textContent = '';
   busy = false;
 
-  if (points >= target) {
-    finish(true, chain);
-  } else if (moves <= 0) {
-    finish(false, chain);
+  if (points >= target) { finish(true); return; }
+
+  spawn();
+  startTick();
+}
+
+/* ---- gravity ---- */
+
+function tick() {
+  if (!piece || busy || over) return;
+  const down = { ...piece, y: piece.y + 1 };
+  if (fits(down)) { piece = down; paint(); }
+  else lock();
+}
+
+function startTick() { stopTick(); timer = setInterval(tick, fallMs); }
+function stopTick()  { clearInterval(timer); timer = null; }
+
+/* ---- steering ---- */
+
+function move(dx) {
+  if (!piece || busy || over) return;
+  const to = { ...piece, x: piece.x + dx };
+  if (fits(to)) { piece = to; paint(); }
+}
+
+/* A rotation that would run into the wall or the pile shoves itself over by
+   one and tries again, which is what stops the piece getting stuck in a
+   gutter. */
+function rotate(dir) {
+  if (!piece || busy || over) return;
+  const turned = { ...piece, rot: (piece.rot + (dir > 0 ? 1 : 3)) % 4 };
+  for (const kick of [0, -1, 1]) {
+    const k = { ...turned, x: turned.x + kick };
+    if (fits(k)) { piece = k; paint(); return; }
   }
 }
 
+function drop() {
+  if (!piece || busy || over) return;
+  for (;;) {
+    const down = { ...piece, y: piece.y + 1 };
+    if (!fits(down)) break;
+    piece = down;
+  }
+  paint();
+  lock();
+}
+
+/* ---- keyboard ---- */
+
+window.addEventListener('keydown', (e) => {
+  const k = e.key;
+  if (['ArrowLeft','ArrowRight','ArrowDown','ArrowUp',' '].includes(k)) e.preventDefault();
+  if (k === 'ArrowLeft'  || k === 'a' || k === 'A') move(-1);
+  if (k === 'ArrowRight' || k === 'd' || k === 'D') move(1);
+  if (k === 'ArrowDown'  || k === 's' || k === 'S') tick();
+  if (k === 'ArrowUp'    || k === 'x' || k === 'X') rotate(1);
+  if (k === 'z' || k === 'Z') rotate(-1);
+  if (k === ' ') drop();
+});
+
+/* ---- touch: drag to steer, tap to rotate, swipe down to drop ---- */
+
+let t0 = null, lastCol = 0, moved = false;
+
+function cellSize() { return tiles[0].getBoundingClientRect().width + 3; }
+
+document.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('.foot') || e.target.closest('.over')) return;
+  t0 = { x: e.clientX, y: e.clientY, t: Date.now() };
+  lastCol = 0; moved = false;
+});
+
+document.addEventListener('pointermove', (e) => {
+  if (!t0 || !piece) return;
+  const col = Math.round((e.clientX - t0.x) / cellSize());
+  if (col !== lastCol) {
+    const step = col > lastCol ? 1 : -1;
+    for (let i = 0; i < Math.abs(col - lastCol); i++) move(step);
+    lastCol = col;
+    moved = true;
+  }
+});
+
+document.addEventListener('pointerup', (e) => {
+  if (!t0) return;
+  const dx = e.clientX - t0.x, dy = e.clientY - t0.y;
+  const quick = Date.now() - t0.t < 400;
+  t0 = null;
+
+  if (dy > 48 && Math.abs(dy) > Math.abs(dx) * 1.4) { drop(); return; }
+  if (!moved && Math.abs(dx) < 14 && Math.abs(dy) < 14 && quick) rotate(1);
+});
+
+/* ---- a print ---- */
+
 function finish(won) {
-  document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Out of swaps';
+  over = true;
+  stopTick();
+  document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
   document.getElementById('overText').textContent = won
-    ? points + ' points with ' + moves + ' swap' + (moves === 1 ? '' : 's') +
-      ' to spare. Longest chain: ' + best + '.'
-    : 'You got to ' + points + ' of ' + target + '. Longest chain: ' + best + '.';
+    ? points + ' points. Longest chain: ' + bestChain + '.'
+    : 'The well filled up at ' + points + ' of ' + target + '. Longest chain: ' + bestChain + '.';
   elOver.hidden = false;
 }
 
-/* ---- picking ---- */
+function newPrint() {
+  target = Math.max(100, Number(document.getElementById('setTarget').value) || 1000);
+  fallMs = Math.max(100, Number(document.getElementById('setFall').value) || 700);
 
-function cellAt(target) {
-  if (!target || !target.dataset || target.dataset.i === undefined) return null;
-  const i = Number(target.dataset.i);
-  return [i % COLS, (i / COLS) | 0];
+  well = new Array(COLS * ROWS).fill(null);
+  points = 0; bestChain = 0; over = false; busy = false;
+  next = null; piece = null;
+
+  for (const ink of INKS) level[ink] = REST;
+  paintHoppers();
+
+  elPts.textContent = '0';
+  elTg.textContent = target;
+  elBc.textContent = '0';
+  elChain.textContent = '';
+  elOver.hidden = true;
+  show('Four or more touching clears.');
+
+  sizeBoard();
+  spawn();
+  startTick();
 }
-
-elGrid.addEventListener('click', (e) => {
-  const cell = cellAt(e.target);
-  if (!cell || busy) return;
-
-  if (!picked) { picked = cell; paint(); return; }
-  if (picked[0] === cell[0] && picked[1] === cell[1]) { picked = null; paint(); return; }
-
-  if (adjacent(picked, cell)) {
-    const from = picked;
-    picked = null;
-    paint();
-    trySwap(from, cell);
-  } else {
-    picked = cell;
-    paint();
-  }
-});
-
-/* Dragging from one tile to its neighbor, which is how everybody plays
-   these on a phone. */
-let dragFrom = null;
-
-elGrid.addEventListener('pointerdown', (e) => {
-  if (busy) return;
-  dragFrom = cellAt(e.target);
-});
-
-elGrid.addEventListener('pointerup', (e) => {
-  if (!dragFrom || busy) { dragFrom = null; return; }
-  const to = cellAt(document.elementFromPoint(e.clientX, e.clientY));
-  const from = dragFrom;
-  dragFrom = null;
-  if (to && adjacent(from, to)) {
-    picked = null;
-    paint();
-    trySwap(from, to);
-  }
-});
-
-elGrid.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
 
 document.getElementById('again').addEventListener('click', newPrint);
 document.getElementById('overBtn').addEventListener('click', newPrint);
+window.addEventListener('resize', sizeBoard);
 
 newPrint();
 </script>
