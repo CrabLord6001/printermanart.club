@@ -283,3 +283,47 @@ h1 {
 }
 .sr { position:absolute; width:1px; height:1px; padding:0; margin:-1px;
       overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+
+
+/* ---- back to top ----------------------------------------------------
+   A room page holds every work ever shown in it, and the game links to a
+   work rather than to the room, so people arrive partway down. This is a
+   plain anchor, always there and kept quiet: deciding when to show it
+   would mean a script, and these pages carry cite.js and nothing else. */
+
+.to-top {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  color: var(--muted);
+  text-decoration: none;
+  box-shadow: var(--shadow);
+  opacity: 0.6;
+  transition: opacity .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.to-top:hover,
+.to-top:focus-visible { opacity: 1; color: var(--accent); border-color: var(--accent); }
+.to-top:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@supports (padding: max(0px)) {
+  .to-top {
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .to-top { transition: none; }
+}

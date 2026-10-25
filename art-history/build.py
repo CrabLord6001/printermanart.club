@@ -90,11 +90,22 @@ def head(title, desc, canonical, og_alt):
 
 <div class="col">
 
-  <nav class="site-strip">
+  <nav class="site-strip" id="top">
     <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
     <a href="/news.html">News Briefing</a>
     <a class="site-join" href="{DISCORD}">Join</a>
   </nav>
+"""
+
+
+# A room holds every work ever shown in it, and the game now links straight
+# to one of them, so a visitor can arrive a long way down a long page. This
+# is a plain anchor -- no script decides when it appears, because the rooms
+# carry cite.js and nothing else.
+TO_TOP = """
+<a class="to-top" href="#top" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</a>
 """
 
 
@@ -256,7 +267,7 @@ def main():
         p += ("".join(plate(w) for w in mine) if mine
               else '\n  <p class="empty">Nothing hung in this room yet.</p>\n')
         p += cards(current=r["slug"], foot=True)
-        p += FOOT + '\n<script src="/art-history/cite.js"></script>\n' + ANALYTICS + "\n</body>\n</html>\n"
+        p += FOOT + TO_TOP + '\n<script src="/art-history/cite.js"></script>\n' + ANALYTICS + "\n</body>\n</html>\n"
         open(os.path.join(here, r["slug"] + ".html"), "w", encoding="utf-8").write(p)
 
     print(f"built index.html + {len(ROOMS)} rooms from {len(works)} works; "
