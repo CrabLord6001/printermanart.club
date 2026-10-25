@@ -459,6 +459,52 @@ html.embed .title { display: none; }
 
 /* The queue. One pair per row, soonest at the top, the rest a shade back
    so the order reads without having to be labeled. */
+/* Four standing tubes of ink, one per plate, drawn down by every clear.
+   Empty means that plate is finished and further clears of its color are
+   board work rather than print work. */
+.platebox { margin-top: 8px; }
+
+.tubes { display: flex; justify-content: center; gap: 6px; }
+
+.tubes .tube {
+  width: 10px;
+  height: 132px;
+  border-radius: 4px;
+  background: #141821;
+  box-shadow: inset 0 0 0 1px #242A35;
+  position: relative;
+  overflow: hidden;
+}
+
+.tubes .tube i {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  transition: height 0.35s ease;
+}
+
+.tubes .tube.spent { box-shadow: inset 0 0 0 1px var(--accent); }
+
+.tube.c i { background: var(--cyan); }
+.tube.m i { background: var(--magenta); }
+.tube.y i { background: var(--yellow); }
+.tube.k i { background: var(--key); }
+
+.tubetags { display: flex; justify-content: center; gap: 6px; margin-top: 5px; }
+
+.tubetags b {
+  width: 10px;
+  text-align: center;
+  font-size: 0.48rem;
+  font-weight: 700;
+  color: var(--dim);
+}
+
+.tubetags b.spent { color: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tubes .tube i { transition: none; }
+}
+
 .nextlist { display: flex; flex-direction: column; align-items: center; gap: 9px; }
 
 .nextlist .pair { display: flex; flex-direction: column; align-items: center; gap: 3px; }
@@ -945,6 +991,14 @@ h2[hidden] { display: none; }
       <div class="nextbox">
         <p class="lbl">Next</p>
         <div class="nextlist" id="nextlist"></div>
+      </div>
+      <!-- What each plate still wants. Every clear draws one of these down,
+           which is the only way to tell that a clear counted on a print
+           that has little of that ink to show for it. -->
+      <div class="nextbox platebox">
+        <p class="lbl">Plates</p>
+        <div class="tubes" id="tubes"></div>
+        <div class="tubetags" id="tubetags"></div>
       </div>
       <p class="chainnow" id="chainnow">&nbsp;</p>
     </div>
@@ -1614,6 +1668,34 @@ function paintHoppers() {
   }
 }
 
+/* The plate tubes in the rail. Shown in the hoppers' order rather than the
+   plate order, so the rail reads the same way as the tanks over the board. */
+const TUBE_ORDER = ['c', 'm', 'y', 'k'];
+
+function buildTubes() {
+  const tubes = document.getElementById('tubes');
+  const tags = document.getElementById('tubetags');
+  if (!tubes || !tags) return;
+  tubes.innerHTML = TUBE_ORDER.map(pl =>
+    '<span class="tube ' + pl + '" id="tube-' + pl + '"><i></i></span>').join('');
+  tags.innerHTML = TUBE_ORDER.map(pl =>
+    '<b id="tubetag-' + pl + '">' + TAGS[pl] + '</b>').join('');
+  paintTubes();
+}
+
+function paintTubes() {
+  for (const pl of TUBE_ORDER) {
+    const tube = document.getElementById('tube-' + pl);
+    if (!tube) continue;
+    const done = Math.min(cleared[pl] || 0, inkPer);
+    const spent = done >= inkPer;
+    tube.firstChild.style.height = (inkPer ? (1 - done / inkPer) * 100 : 0).toFixed(1) + '%';
+    tube.classList.toggle('spent', spent);
+    const tag = document.getElementById('tubetag-' + pl);
+    if (tag) tag.classList.toggle('spent', spent);
+  }
+}
+
 function drawInk(counts) {
   for (const ink of INKS) if (counts[ink]) level[ink] = Math.max(16, level[ink] - counts[ink] * 4);
   paintHoppers();
@@ -1866,6 +1948,7 @@ async function resolve() {
     if (pullMagnets()) settle(well);
     paint();
     layPlates();
+    paintTubes();
     await wait(90);
   }
 
@@ -2213,6 +2296,7 @@ function newPrint(face) {
 
   cleared = { c: 0, m: 0, y: 0, k: 0 };
   pieces = 0;
+  buildTubes();
   loadArtwork();
   blankPage();
 
