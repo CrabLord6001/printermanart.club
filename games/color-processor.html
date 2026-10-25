@@ -3,25 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gallery Printshop — rough board</title>
-<meta name="robots" content="noindex,nofollow">
+<title>Gallery Printshop</title>
 <link rel="icon" href="/img/favicon-32.png" sizes="32x32">
 
 <style>
 /* ============================================================
-   Gallery Printshop — step one, the rough board
+   Gallery Printshop
    ============================================================
    Falling pairs, Puyo rules: four or more of a color touching in
    any shape clear, what is left falls, and anything that lands in
    a new group clears again. Each pass through that loop is a link
    of the chain and pays more than the last.
 
-   On purpose this is plain -- flat tiles, no toner, no laser, no
-   artwork. It is here to answer whether steering and chaining is
-   fun before any of the look is built on top of it.
+   Every clear is ink. The painting behind the board is separated
+   into four plates and screened at rotated angles, and a clear
+   lays its share of that color onto the page -- so a print comes
+   up through the run rather than arriving at the end of it. Fill
+   all four and the print is finished.
 
-   The logic below is written to be portable. When the real
-   renderer arrives it replaces paint() and nothing else.
+   The gallery is twenty paintings in six chapters, printed in
+   order, each one harder than the last: faster drops, more clears
+   to fill a color, and a fifth and sixth ink along the way. That
+   is the scored series. The loose settings are practice, and
+   practice is not scored.
+
+   Scores go to the club's Supabase through club-auth.js, one row
+   per finished level. The board ranks on levels cleared, with
+   total time as the tiebreak.
    ============================================================ */
 
 :root {
@@ -1337,7 +1345,7 @@ ol.board li.none .nm {
 <body>
 
   <div class="head">
-    <p class="title" id="pageTitle"><a class="home" href="/">&larr; PrinterMan&rsquo;s Art Club</a> &middot; Gallery Printshop &mdash; rough board</p>
+    <p class="title" id="pageTitle"><a class="home" href="/">&larr; PrinterMan&rsquo;s Art Club</a> &middot; Gallery Printshop</p>
     <span class="stat">Points <b id="pts">0</b></span>
     <span class="stat goal">Plates <b id="tg">0/4</b></span>
     <span class="stat">Time <b id="tm">0:00</b></span>
