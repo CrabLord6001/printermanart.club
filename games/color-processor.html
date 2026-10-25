@@ -2801,7 +2801,10 @@ const elRules = () => document.getElementById('overRules');
 const elGallery = () => document.getElementById('overGallery');
 
 function faceOff() {
-  elOver.classList.remove('intro', 'menu');
+  /* won goes too. It trades the scrim for a gradient that is clear at the
+     top so the finished print shows through, which is right for the print
+     and unreadable for anything laid over it. closeRules puts it back. */
+  elOver.classList.remove('intro', 'menu', 'won');
   elRules().hidden = true;
   elSetup().hidden = true;
   elGallery().hidden = true;
@@ -2819,6 +2822,10 @@ function hideFace() {
    them back rather than somewhere arbitrary. Null whenever the rules are
    not the thing on screen. */
 let rulesFrom = null;
+
+/* Did the last run finish the print? A fact about the run, so it survives
+   a panel being opened over the top of it. */
+let wonLast = false;
 
 /* What the controls say right now, against what the board was built from. */
 /* The slider runs slow to fast, left to right, the way a speed reads. The
@@ -3139,11 +3146,14 @@ function buttons() {
     /* The one state with somewhere worth going besides back in: the
        painting just printed. Setup belongs before a print rather than after
        one, so it gives up the slot. */
-    menu.hidden = !(elOver.classList.contains('won') && artwork && artwork.room);
+    menu.hidden = !(wonLast && artwork && artwork.room);
     menu.textContent = 'View art';
     menu.classList.add('ghost');
     menu.classList.remove('on');
-    main.textContent = 'New print';
+    /* In the series the button goes somewhere: on to the next painting, or
+       back at the one that jammed. Practice has no next, so it keeps the
+       label it always had. */
+    main.textContent = !campOn ? 'New print' : (wonLast ? 'Next print' : 'Try again');
     return;
   }
 
@@ -3258,6 +3268,7 @@ function finish(won) {
       + ' &middot; chain&nbsp;&times;' + bestChain
     : down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
       + ' &middot; chain&nbsp;&times;' + bestChain;
+  wonLast = !!won;
   elOver.classList.toggle('won', !!won);
   elOver.hidden = false;
   buttons();
