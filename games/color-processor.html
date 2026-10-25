@@ -623,8 +623,9 @@ button.go:hover { background: #4653E0; }
 
 /* A short window can still run the copy past the bottom. The fade is the
    only cue that there is more, so it is painted on the panel itself and
-   pinned there while the text moves under it. */
-.over::after {
+   pinned there while the text moves under it. Intro only: the finished
+   print has its own gradient and sits against the painting. */
+.over.intro::after {
   content: '';
   position: sticky;
   display: block;
@@ -636,9 +637,32 @@ button.go:hover { background: #4653E0; }
   pointer-events: none;
 }
 
-/* An auto margin rather than justify-content: centred when there is room,
-   and nothing lopped off the top when there is not. */
-.over-in { margin: auto 0; }
+/* The intro fills the well: the worked example across the top, the copy
+   under it, both sized to the room they have. Standing a small block of
+   8pt type in the middle of a tall panel wasted most of it.
+
+   The finished print is the other case entirely -- it sits low, over the
+   painting it just made, and keeps the flex-end below. */
+.over.intro { justify-content: flex-start; }
+
+.over.intro .over-in {
+  margin: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+
+.over.intro .demo,
+.over.intro .rules { margin: 0 auto; }
+
+/* Never wider than the well, whatever 34rem works out to -- the panel is
+   only as wide as six columns of board. */
+.over.intro .rules { max-width: min(34rem, 100%); }
+.over.intro .demo { max-width: 100%; }
+
+.over.won .over-in { margin: 0; }
 
 .over[hidden] { display: none; }
 
@@ -711,9 +735,9 @@ button.go:hover { background: #4653E0; }
 .rules[hidden] { display: none; }
 
 .rules p {
-  margin: 0 0 7px;
-  font-size: 0.72rem;
-  line-height: 1.5;
+  margin: 0 0 var(--introLead, 0.7em);
+  font-size: var(--introFs, 0.72rem);
+  line-height: 1.55;
   color: var(--muted);
   text-align: left;
   text-wrap: normal;
@@ -727,6 +751,7 @@ button.go:hover { background: #4653E0; }
 .demo {
   display: flex;
   gap: 7px;
+  flex-wrap: nowrap;
   justify-content: center;
   align-items: flex-end;
   margin: 0 auto 10px;
@@ -758,12 +783,12 @@ button.go:hover { background: #4653E0; }
 
 .mg {
   display: grid;
-  grid-template-columns: repeat(4, 20px);
-  grid-auto-rows: 20px;
+  grid-template-columns: repeat(4, var(--mgCell, 20px));
+  grid-auto-rows: var(--mgCell, 20px);
   gap: 3px;
 }
 
-.magdemo .cell { width: 20px; height: 20px; }
+.magdemo .cell { width: var(--mgCell, 20px); height: var(--mgCell, 20px); }
 
 .magdemo .rest    { animation: mg-rest 3.6s ease-in-out infinite; }
 .magdemo .pull-src { animation: mg-slide 3.6s ease-in-out infinite; }
@@ -778,16 +803,16 @@ button.go:hover { background: #4653E0; }
 
 @keyframes mg-slide {
   0%, 20%   { transform: translateX(0);    opacity: 1; box-shadow: none; }
-  34%, 48%  { transform: translateX(23px); opacity: 1; box-shadow: none; }
-  54%       { transform: translateX(23px); opacity: 1; box-shadow: 0 0 0 3px #fff, 0 0 9px 2px rgba(255,255,255,0.55); }
-  60%       { transform: translateX(23px); opacity: 1; box-shadow: none; }
-  70%, 99%  { transform: translateX(23px); opacity: 0; box-shadow: none; }
+  34%, 48%  { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 1; box-shadow: none; }
+  54%       { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 1; box-shadow: 0 0 0 3px #fff, 0 0 9px 2px rgba(255,255,255,0.55); }
+  60%       { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 1; box-shadow: none; }
+  70%, 99%  { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 0; box-shadow: none; }
   100%      { transform: translateX(0);    opacity: 0; box-shadow: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .magdemo .rest, .magdemo .pull-src { animation: none; }
-  .magdemo .pull-src { transform: translateX(23px); }
+  .magdemo .pull-src { transform: translateX(calc(var(--mgCell, 20px) + 3px)); }
 }
 
 h2[hidden] { display: none; }
@@ -1153,6 +1178,34 @@ const DEMO_LABEL = ['1 ink', '2 inks', '3 inks', 'printed'];
 const DEMO_FILE = 'pandora.jpg';
 let demoSep = null;
 
+/* The intro is given the whole well: the example across the top, the copy
+   filling what is left. Backing store at twice the drawn size, so the
+   thumbnails stay sharp on a phone and survive being scaled down here. */
+const PANEL_PAD = 32, FADE_H = 26, DEMO_GAP = 7;
+
+function demoMetrics(panel) {
+  const room = Math.max(160, panel.clientHeight - PANEL_PAD);
+
+  /* Four across plus the gaps have to fit the width as well as the height.
+     Height alone put the fourth thumbnail over the edge of the well. */
+  const across = Math.floor((panel.clientWidth - PANEL_PAD - DEMO_GAP * 3) / 4);
+  const dw = Math.max(26, Math.min(Math.round(room * 0.44 * 0.5), across));
+  return { dw, dh: dw * 2, across };
+}
+
+/* The copy is set as large as will fit the space the example leaves, found
+   by trying sizes rather than guessing one: the panel is a different shape
+   on every screen, and a fixed size either overran it or left most of it
+   empty. */
+function fitCopy(panel, rules, room) {
+  for (let fs = 20; fs >= 11; fs--) {
+    panel.style.setProperty('--introFs', fs + 'px');
+    panel.style.setProperty('--mgCell', Math.round(Math.max(18, fs * 1.5)) + 'px');
+    if (rules.scrollHeight <= room) return fs;
+  }
+  return 11;
+}
+
 const demoArt = new Image();
 demoArt.onload = () => { demoSep = separate(demoArt, PW, PH); paintDemo(); };
 demoArt.onerror = () => { demoSep = null; };   // the panel simply goes without it
@@ -1171,7 +1224,7 @@ function demoOrder() {
   };
   return PLATES.slice().sort((a, b) => ink(b) - ink(a));
 }
-const DW = 40, DH = 80;
+
 
 function paintDemo() {
   const host = document.getElementById('demo');
@@ -1181,6 +1234,9 @@ function paintDemo() {
     return;
   }
   host.innerHTML = '';
+
+  const panel = document.getElementById('over');
+  const { dw, dh, across } = demoMetrics(panel);
 
   const off = document.createElement('canvas');
   off.width = PW; off.height = PH;
@@ -1206,8 +1262,9 @@ function paintDemo() {
     o.globalCompositeOperation = 'source-over';
 
     const cv = document.createElement('canvas');
-    cv.width = DW; cv.height = DH;
-    cv.getContext('2d').drawImage(off, 0, 0, DW, DH);
+    cv.width = dw * 2; cv.height = dh * 2;
+    cv.style.width = dw + 'px'; cv.style.height = dh + 'px';
+    cv.getContext('2d').drawImage(off, 0, 0, dw * 2, dh * 2);
 
     const fig = document.createElement('figure');
     fig.appendChild(cv);
@@ -1218,6 +1275,64 @@ function paintDemo() {
   });
 
   host.hidden = false;
+
+  /* Now that the example has a height, give the copy everything under it.
+     If the copy cannot be read at a decent size in what is left, the
+     example gives some back -- the words matter more than the pictures. */
+  /* The example sits inside the copy block, so one measurement covers
+     both -- subtracting its height as well counted it twice and nothing
+     ever fitted. The fade is a flex item of its own and takes its height
+     off the top. */
+  const rules = document.getElementById('overRules');
+  const left = () => panel.clientHeight - PANEL_PAD - FADE_H;
+
+  /* Set the copy as large as fits, and if that is too small to read, take
+     it out of the example until it is not. The words matter more than the
+     pictures, and a panel of 8pt type was the thing worth fixing. */
+  const shots = [...host.querySelectorAll('canvas')];
+  const sizeShots = (h) => shots.forEach((c) => {
+    c.style.height = Math.round(h) + 'px';
+    c.style.width  = Math.round(h * 0.5) + 'px';
+  });
+
+  let best = parseFloat(shots[0].style.height);
+  let fs = fitCopy(panel, rules, left());
+
+  /* Each step trades a little of the example for a larger size of copy,
+     and stops the moment a step stops buying anything -- on a narrow
+     phone the copy is simply long, and shrinking the pictures further
+     made them useless without making a single word bigger. */
+  for (let i = 0; i < 5 && fs < 14; i++) {
+    const next = best * 0.78;
+    if (next < 62) break;
+    sizeShots(next);
+    const got = fitCopy(panel, rules, left());
+    if (got <= fs) { sizeShots(best); fitCopy(panel, rules, left()); break; }
+    best = next; fs = got;
+  }
+
+  /* Whatever is still unused goes back into the example. The type sizes in
+     whole pixels, so settling on one almost always leaves a band of empty
+     panel under the copy, and a bigger picture is the best thing to spend
+     it on. */
+  panel.style.setProperty('--introLead', '0.7em');
+  for (let i = 0; i < 20; i++) {
+    const grown = parseFloat(shots[0].style.height) + 12;
+    if (grown * 0.5 > across || left() - rules.scrollHeight <= 16) break;
+    sizeShots(grown);
+    if (rules.scrollHeight > left()) { sizeShots(grown - 12); break; }
+  }
+
+  /* Four pages across a panel this narrow caps how tall each one can be,
+     so on a tall window the example runs out of growth before the panel
+     runs out of height. The rest goes into the spacing between paragraphs
+     rather than being left as a dead band under the copy. */
+  const spare = left() - rules.scrollHeight;
+  const gaps = rules.querySelectorAll('p').length + 1;
+  if (spare > 14 && gaps > 1) {
+    const add = Math.min(26, Math.floor(spare / gaps));
+    panel.style.setProperty('--introLead', 'calc(0.7em + ' + add + 'px)');
+  }
 }
 
 const platesDown = () => PLATES.filter(pl => laid[pl]).length;
@@ -1327,6 +1442,9 @@ function sizeBoard() {
     d.style.width = Math.round(cell * 0.6) + 'px';
     d.style.height = Math.round(cell * 0.6) + 'px';
   });
+
+  // the intro is measured off the well, so it is redrawn when the well moves
+  if (elOver && !elOver.hidden && elOver.classList.contains('intro')) paintDemo();
 }
 
 const show = (html) => { elMsg.innerHTML = html; };
@@ -1709,6 +1827,7 @@ function ready() {
   over = true;                                  // nothing falls while it is up
   stopTick();
   elOver.classList.remove('won');
+  elOver.classList.add('intro');
   // the copy opens with its own welcome, so a heading above it would only
   // say the same thing twice
   document.getElementById('overTitle').hidden = true;
@@ -1722,6 +1841,7 @@ function ready() {
 
 function begin() {
   document.getElementById('overRules').hidden = true;
+  elOver.classList.remove('intro');
   document.getElementById('again').textContent = 'New print';
   elOver.hidden = true;
   over = false;
@@ -1764,6 +1884,7 @@ function finish(won) {
   }
 
   document.getElementById('overRules').hidden = true;
+  elOver.classList.remove('intro');
   document.getElementById('again').textContent = 'New print';
   document.getElementById('overTitle').hidden = false;
   document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
