@@ -763,13 +763,13 @@ button.go:hover { background: #4653E0; }
 
 /* what was printed */
 .plate-line {
-  font-size: 0.74rem !important;
+  font-size: 0.86rem !important;
   color: var(--accent) !important;
   margin: 0 auto 16px !important;
   text-align: center;
 }
 
-.plate-line b { color: var(--text); font-weight: 600; font-size: 0.95rem; }
+.plate-line b { color: var(--text); font-weight: 600; font-size: 1.2rem; line-height: 1.25; }
 .plate-line .inst { color: var(--dim); font-size: 0.68rem; }
 .plate-line a { color: var(--accent); }
 .plate-line a:hover { color: #fff; }
@@ -1092,6 +1092,7 @@ h2[hidden] { display: none; }
     <p class="msg" id="msg">&nbsp;</p>
     <button class="go ghost" id="menuBtn" type="button">Setup</button>
     <button class="go" id="again" type="button">New print</button>
+    <button class="go ghost" id="rulesBtn" type="button">Rules</button>
     <p class="hint" id="hint">Drag to steer &middot; tap to rotate &middot; swipe down to drop</p>
   </div>
 
@@ -2163,7 +2164,14 @@ function ready(face) {
   stopTick();
   stopClock();
   elOver.classList.remove('won');
-  showFace(face || 'rules');
+
+  /* The rules come up once a visit and live behind their own button after
+     that. Reprinting them over every new print made the quickest way back
+     into a game a wall of text already read, which only teaches people to
+     dismiss the panel without looking -- the habit you least want on the
+     one occasion they need it. */
+  if (face) { showFace(face); return; }
+  hideFace();
 }
 
 function begin() {
@@ -2190,6 +2198,13 @@ function faceOff() {
   elOver.classList.remove('intro', 'menu');
   elRules().hidden = true;
   elSetup().hidden = true;
+}
+
+/* No face at all: the board as it stands, with the buttons under it. */
+function hideFace() {
+  faceOff();
+  elOver.hidden = true;
+  buttons();
 }
 
 /* What the controls say right now, against what the board was built from. */
@@ -2244,9 +2259,13 @@ function buttons() {
   main.classList.remove('ghost');
 
   if (phase === 'done') {
-    // the print is finished and the panel is telling you about it; the only
-    // thing left to do is start another
-    menu.hidden = true;
+    /* The one state with somewhere worth going besides back in: the
+       painting just printed. Setup belongs before a print rather than after
+       one, so it gives up the slot. */
+    menu.hidden = !(elOver.classList.contains('won') && artwork && artwork.room);
+    menu.textContent = 'View art';
+    menu.classList.add('ghost');
+    menu.classList.remove('on');
     main.textContent = 'New print';
     return;
   }
@@ -2327,15 +2346,12 @@ function finish(won) {
   const credit = document.getElementById('overCredit');
 
   if (won && artwork) {
-    const room = artwork.room
-      ? '<br><a target="_top" href="/art-history/' + artwork.room + '.html'
-        + (artwork.id ? '#' + artwork.id : '') + '">More from ' + artwork.roomName + '</a>'
-      : '';
-    // Three lines and no more: what it is, who made it and when, and the way
-    // to the rest. Everything in here is public domain, so saying so on every
-    // print is a line nobody reads twice.
+    /* Two lines and no more. The way into the room is a button under the
+       board now, so the print itself carries only the part worth reading
+       the moment it finishes: what it is, who made it, and when. The room
+       it came from is one tap away and does not need saying here. */
     credit.innerHTML = '<b>' + artwork.title + '</b><br>' + artwork.artist
-                     + ' &middot; ' + artwork.date + room;
+                     + ' &middot; ' + artwork.date;
     credit.hidden = false;
   } else {
     credit.hidden = true;
@@ -2476,15 +2492,36 @@ sndBtn.addEventListener('click', async () => {
 
 /* The right-hand button: start the first print, or start the next one. */
 document.getElementById('again').addEventListener('click', () => {
-  if (!started && !elRules().hidden) begin();
+  // the rules are no longer always up, so the state says what this does
+  if (phase === 'ready') begin();
   else newPrint();
 });
 
 /* The left-hand one, wearing whichever name the state gave it. */
 document.getElementById('menuBtn').addEventListener('click', () => {
+  if (phase === 'done') { viewArt(); return; }
   if (paused) { resume(); return; }
   if (started) { pause(); return; }
-  showFace(onSetup() ? 'rules' : 'setup');
+  if (onSetup()) { hideFace(); return; }     // the settings close back to the board
+  showFace('setup');
+});
+
+/* Out to the room the print came from. Breaks the embedded copy out to the
+   top window rather than loading the whole site inside the game, and falls
+   back to this window where the top one is another origin. */
+function viewArt() {
+  if (!artwork || !artwork.room) return;
+  const to = '/art-history/' + artwork.room + '.html' + (artwork.id ? '#' + artwork.id : '');
+  try { (window.top || window).location.href = to; }
+  catch (e) { window.location.href = to; }
+}
+
+/* A refresher, on request rather than on every print. Mid-run it stops the
+   clock first, the way opening the settings does, so reading does not cost
+   you the board. */
+document.getElementById('rulesBtn').addEventListener('click', () => {
+  if (started && !paused) pause();
+  showFace('rules');
 });
 
 /* A setting changes the print it describes. Before the first drop that can
@@ -2523,7 +2560,7 @@ document.addEventListener('visibilitychange', () => {
 
 window.addEventListener('resize', sizeBoard);
 
-newPrint();
+newPrint('rules');
 </script>
 
 </body>
