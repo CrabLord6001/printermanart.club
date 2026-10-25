@@ -330,17 +330,56 @@ html.embed .title { display: none; }
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
 }
 
-.cell.c  { background: var(--cyan); box-shadow: none; }
-.cell.m  { background: var(--magenta); box-shadow: none; }
-.cell.y  { background: var(--yellow); box-shadow: none; }
-.cell.k  { background: var(--key); box-shadow: none; }
-.cell.lc { background: var(--lcyan); box-shadow: none; }
-.cell.lm { background: var(--lmagenta); box-shadow: none; }
-.cell.w  { background: var(--white); box-shadow: none; }
+.cell.c  { background: var(--cyan); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
+.cell.m  { background: var(--magenta); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
+.cell.y  { background: var(--yellow); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
+.cell.k  { background: var(--key); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
+.cell.lc { background: var(--lcyan); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
+.cell.lm { background: var(--lmagenta); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
+.cell.w  { background: var(--white); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
 
 /* A clump of four or more flashes before it goes. A ring rather than a white
    fill, so it still reads when white is one of the inks on the board. */
 .cell.hit { box-shadow: 0 0 0 3px #fff, 0 0 10px 2px rgba(255,255,255,0.6); }
+
+/* Colorblind: the four plates are printed at four different screen angles
+   -- cyan 15, magenta 75, yellow 0, black 45 -- and the same angles drawn
+   inside the drop tell them apart with no color at all. Off by default,
+   since it makes a busy board busier for anyone who does not need it. */
+body.angles .cell, body.angles .nextlist .dot { position: relative; }
+
+body.angles .cell.c::before,  body.angles .nextlist .dot.c::before,
+body.angles .cell.m::before,  body.angles .nextlist .dot.m::before,
+body.angles .cell.y::before,  body.angles .nextlist .dot.y::before,
+body.angles .cell.k::before,  body.angles .nextlist .dot.k::before,
+body.angles .cell.lc::before, body.angles .nextlist .dot.lc::before,
+body.angles .cell.lm::before, body.angles .nextlist .dot.lm::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+body.angles .cell.c::before,  body.angles .nextlist .dot.c::before,
+body.angles .cell.lc::before, body.angles .nextlist .dot.lc::before {
+  background: repeating-linear-gradient(15deg, rgba(0,0,0,0.42) 0 2px, transparent 2px 6px);
+}
+body.angles .cell.m::before,  body.angles .nextlist .dot.m::before,
+body.angles .cell.lm::before, body.angles .nextlist .dot.lm::before {
+  background: repeating-linear-gradient(75deg, rgba(0,0,0,0.42) 0 2px, transparent 2px 6px);
+}
+body.angles .cell.y::before, body.angles .nextlist .dot.y::before {
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.42) 0 2px, transparent 2px 6px);
+}
+body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.40) 0 2px, transparent 2px 6px);
+}
+
+.tune2 input[type="checkbox"] {
+  width: 16px; height: 16px; justify-self: start;
+  accent-color: var(--accent);
+}
 
 /* Magnetic ink: an ordinary colored drop wearing a gold ring, rather than a
    color of its own. Nothing new to tell apart, and the ring reads at any
@@ -1016,6 +1055,8 @@ h2[hidden] { display: none; }
                 <input id="setTarget" type="number" min="3" step="1" value="10"></label>
               <label class="tune2"><span class="lab">Fall ms</span>
                 <input id="setFall" type="number" min="100" step="50" value="700"></label>
+              <label class="tune2"><span class="lab">Colorblind</span>
+                <input id="setAngles" type="checkbox"></label>
             </div>
           </div>
         </div>
@@ -2447,6 +2488,21 @@ for (const id of ['setInks', 'setTarget', 'setFall']) {
     newPrint('setup');
   });
   el.addEventListener('input', () => { if (started) buttons(); });
+}
+
+/* The screen angles change nothing about the board, only how it reads, so
+   they take effect at once rather than waiting for a new print. Remembered
+   too: an accessibility setting you have to find again every visit is not
+   much of one. */
+const elAngles = document.getElementById('setAngles');
+if (elAngles) {
+  try { elAngles.checked = localStorage.getItem('cp-angles') === '1'; } catch (e) {}
+  const useAngles = () => {
+    document.body.classList.toggle('angles', elAngles.checked);
+    try { localStorage.setItem('cp-angles', elAngles.checked ? '1' : '0'); } catch (e) {}
+  };
+  elAngles.addEventListener('change', useAngles);
+  useAngles();
 }
 
 /* Coming back to a jammed board because the phone went to sleep is nobody's
