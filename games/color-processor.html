@@ -416,14 +416,15 @@ const isBug  = (v) => v === VIRUS || v === VIRUS_NEW;
 
 /* How often the machine misbehaves. The magnet is the reward and stays put;
    the virus is the punishment and gets worse as the printer gets harder. */
-const MAG_RATE = 0.10;
-const VIRUS_RATE = { 'office': 0.05, 'five-lc': 0.08, 'five-w': 0.08, 'photo': 0.12 };
+const MAG_RATE = 0.12;
+const VIRUS_RATE = { 'office': 0.03, 'five-lc': 0.05, 'five-w': 0.05, 'photo': 0.07 };
 
-/* A chain this long burns every virus off the board. Chains are already the
-   skill the game is built on; this makes them the cleanup as well, so a
-   corrupted supply is a reason to build something big rather than a reason
-   to lose. */
-const CURE_AT = { 'office': 2, 'five-lc': 2, 'five-w': 2, 'photo': 3 };
+/* Two ways to burn the corruption off, because one was not enough: a chain
+   of this many links, or a single clump of this size. The second matters --
+   it gives a player who cannot chain yet a route that is only about
+   patience, and on six inks a three link chain was a wall. */
+const CURE_AT = { 'office': 2, 'five-lc': 2, 'five-w': 2, 'photo': 2 };
+const CURE_CLUMP = 6;
 
 let mode = 'office', virusRate = 0.05, cureAt = 2;
 
@@ -752,7 +753,8 @@ async function resolve() {
     /* A chain this long burns the corruption off the board along with the
        clump that earned it. */
     let cured = 0;
-    if (chain >= cureAt) {
+    const bigClump = clumps.some(g => g.length >= CURE_CLUMP);
+    if (chain >= cureAt || bigClump) {
       for (let i = 0; i < well.length; i++) {
         if (isBug(well[i])) { tiles[i].className = 'cell hit'; cured++; }
       }
@@ -912,7 +914,7 @@ function newPrint() {
   elChain.textContent = '';
   elOver.hidden = true;
   show('Four or more touching clears. Gold ring pulls its own color into line; '
-     + 'a chain of ' + cureAt + ' burns off the green.');
+     + 'a chain of ' + cureAt + ', or one clump of ' + CURE_CLUMP + ', burns off the green.');
 
   sizeBoard();
   spawn();
