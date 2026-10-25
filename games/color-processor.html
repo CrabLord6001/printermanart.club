@@ -159,13 +159,71 @@ body {
 
 /* ---- the well ---- */
 
+/* ============================================================
+   The casing
+   ============================================================
+   Plate steel with rivets along the rails and a bolted corner at
+   each end, drawn in CSS rather than loaded as an image so it
+   scales with the board and costs nothing to fetch. It is the
+   same cold grey as the toner tanks, so the whole rig reads as
+   one machine with the page in the middle of it.
+   ============================================================ */
+
+.frame {
+  position: relative;
+  padding: 13px;
+  border-radius: 7px;
+  background:
+    linear-gradient(145deg, #4A5162 0%, #353B49 18%, #272C38 50%, #343A48 82%, #474D5E 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    inset 0 -1px 0 rgba(0,0,0,0.5),
+    0 2px 10px rgba(0,0,0,0.45);
+}
+
+/* the rivets: one run down each rail */
+.frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 7px;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 50% 6.5px,  #9BA3B4 0 1.4px, #6E7686 1.9px, #22262F 2.9px, transparent 3.4px),
+    radial-gradient(circle at 50% calc(100% - 6.5px), #9BA3B4 0 1.4px, #6E7686 1.9px, #22262F 2.9px, transparent 3.4px),
+    radial-gradient(circle at 6.5px 50%,  #9BA3B4 0 1.4px, #6E7686 1.9px, #22262F 2.9px, transparent 3.4px),
+    radial-gradient(circle at calc(100% - 6.5px) 50%, #9BA3B4 0 1.4px, #6E7686 1.9px, #22262F 2.9px, transparent 3.4px);
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  background-size: 34px 100%, 34px 100%, 100% 34px, 100% 34px;
+  background-position: 17px 0, 17px 0, 0 17px, 0 17px;
+}
+
+/* a bolted plate over each corner */
+.frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 7px;
+  pointer-events: none;
+  background-image:
+    linear-gradient(135deg, #5A6273 0 11px, transparent 11px),
+    linear-gradient(-135deg, #5A6273 0 11px, transparent 11px),
+    linear-gradient(45deg,  #5A6273 0 11px, transparent 11px),
+    linear-gradient(-45deg, #5A6273 0 11px, transparent 11px);
+  background-repeat: no-repeat;
+  background-size: 26px 26px;
+  background-position: top left, top right, bottom left, bottom right;
+  opacity: 0.85;
+}
+
 .well {
   position: relative;
   background: #0C0E13;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1px solid #10131A;
+  border-radius: 3px;
   padding: 5px;
   overflow: hidden;
+  box-shadow: inset 0 2px 9px rgba(0,0,0,0.75);
 }
 
 /* The page being printed, behind the toner. Dim and out of focus while you
@@ -335,6 +393,34 @@ label.tune {
 .snd[aria-pressed="true"] .snd-off { display: none; }
 .snd[aria-pressed="false"] .snd-on { display: none; }
 
+.setup { flex: 0 0 auto; }
+
+.setup summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  background: #11131A;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.setup summary::-webkit-details-marker { display: none; }
+.setup summary:hover { color: var(--accent); border-color: var(--accent); }
+.setup[open] summary { color: var(--accent); }
+
+.setup-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+}
+
 label.tune select {
   font-family: var(--font);
   font-size: 0.74rem;
@@ -472,6 +558,7 @@ button.go:hover { background: #4653E0; }
   <div class="rig">
     <div class="stack">
       <div class="hoppers" id="hoppers"></div>
+      <div class="frame">
       <div class="well">
         <canvas id="page"></canvas>
         <div class="grid" id="grid"></div>
@@ -484,6 +571,7 @@ button.go:hover { background: #4653E0; }
             <button class="go" id="overBtn" type="button">New print</button>
           </div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -502,6 +590,9 @@ button.go:hover { background: #4653E0; }
       <span class="chip green"></span> <span id="keyCure">corrupt &mdash; chain 2 or a clump of 6 clears it</span>
     </p>
     <p class="msg" id="msg">Four or more touching clears.</p>
+    <details class="setup">
+    <summary>Setup</summary>
+    <div class="setup-row">
     <label class="tune">Width
       <select id="setWidth">
         <option value="6" selected>6</option>
@@ -519,6 +610,8 @@ button.go:hover { background: #4653E0; }
     </label>
     <label class="tune">Ink per plate <input id="setTarget" type="number" min="3" step="1" value="10"></label>
     <label class="tune">Fall ms <input id="setFall" type="number" min="100" step="50" value="700"></label>
+    </div>
+    </details>
     <button class="go" id="again" type="button">New print</button>
     <p class="hint" id="hint">Drag to steer &middot; tap to rotate &middot; swipe down to drop</p>
   </div>
@@ -857,10 +950,10 @@ function sizeBoard() {
   const used = document.querySelector('.head').offsetHeight
              + document.querySelector('.hoppers').offsetHeight
              + document.querySelector('.foot').offsetHeight
-             + 44;                       // body padding, well padding, gaps
+             + 70;                       // body padding, the casing, the well, gaps
 
   const byH = (window.innerHeight - used - ROWS * 3) / ROWS;
-  const byW = (Math.min(window.innerWidth, 430) - 96 - COLS * 3) / COLS;
+  const byW = (Math.min(window.innerWidth, 430) - 122 - COLS * 3) / COLS;
   const cell = Math.max(14, Math.min(byH, byW, 44));
 
   for (const t of tiles) { t.style.width = cell + 'px'; t.style.height = cell + 'px'; }
@@ -1278,9 +1371,9 @@ function finish(won) {
     ? '<b>' + stamp(Date.now() - startedAt) + '</b>'
       + ' &middot; ' + points + '&nbsp;pts'
       + ' &middot; ' + pieces + '&nbsp;drops'
-      + ' &middot; ' + bestChain + '&nbsp;chain'
+      + ' &middot; chain&nbsp;&times;' + bestChain
     : down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
-      + ' &middot; ' + bestChain + '&nbsp;chain';
+      + ' &middot; chain&nbsp;&times;' + bestChain;
   elOver.classList.toggle('won', !!won);
   elOver.hidden = false;
 }
