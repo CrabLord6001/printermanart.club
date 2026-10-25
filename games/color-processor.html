@@ -38,6 +38,11 @@
   --yellow:  #E8C53D;
   --key:     #4A5162;
 
+  /* the extra cartridges */
+  --lcyan:   #8FD9F0;
+  --lmagenta:#F5A3CE;
+  --white:   #EDEAE0;
+
   --font: 'Poppins', system-ui, -apple-system, sans-serif;
 }
 
@@ -102,10 +107,10 @@ body {
 .stack { display: flex; flex-direction: column; align-items: center; }
 
 /* four tanks across the top of the well */
+/* One tank per cartridge, so the count is visible before you start. */
 .hoppers {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 5px;
   margin-bottom: 6px;
 }
@@ -137,10 +142,13 @@ body {
   z-index: 1;
 }
 
-.hopper.c .fill { background: var(--cyan); }
-.hopper.m .fill { background: var(--magenta); }
-.hopper.y .fill { background: var(--yellow); }
-.hopper.k .fill { background: var(--key); }
+.hopper.c  .fill { background: var(--cyan); }
+.hopper.m  .fill { background: var(--magenta); }
+.hopper.y  .fill { background: var(--yellow); }
+.hopper.k  .fill { background: var(--key); }
+.hopper.lc .fill { background: var(--lcyan); }
+.hopper.lm .fill { background: var(--lmagenta); }
+.hopper.w  .fill { background: var(--white); }
 
 /* ---- the well ---- */
 
@@ -163,14 +171,17 @@ body {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
 }
 
-.cell.c { background: var(--cyan); box-shadow: none; }
-.cell.m { background: var(--magenta); box-shadow: none; }
-.cell.y { background: var(--yellow); box-shadow: none; }
-.cell.k { background: var(--key); box-shadow: none; }
+.cell.c  { background: var(--cyan); box-shadow: none; }
+.cell.m  { background: var(--magenta); box-shadow: none; }
+.cell.y  { background: var(--yellow); box-shadow: none; }
+.cell.k  { background: var(--key); box-shadow: none; }
+.cell.lc { background: var(--lcyan); box-shadow: none; }
+.cell.lm { background: var(--lmagenta); box-shadow: none; }
+.cell.w  { background: var(--white); box-shadow: none; }
 
-/* A clump of four or more flashes before it goes, so you can see what you
-   did. The one concession to animation at this stage. */
-.cell.hit { background: #fff; box-shadow: none; }
+/* A clump of four or more flashes before it goes. A ring rather than a white
+   fill, so it still reads when white is one of the inks on the board. */
+.cell.hit { box-shadow: 0 0 0 3px #fff, 0 0 10px 2px rgba(255,255,255,0.6); }
 
 /* the piece on its way down sits slightly proud of the pile */
 .cell.live { box-shadow: 0 0 0 2px rgba(255,255,255,0.22); }
@@ -241,6 +252,16 @@ label.tune {
   gap: 4px;
 }
 
+label.tune select {
+  font-family: var(--font);
+  font-size: 0.74rem;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+
 label.tune input {
   width: 56px;
   font-family: var(--font);
@@ -306,12 +327,7 @@ button.go:hover { background: #4653E0; }
 
   <div class="rig">
     <div class="stack">
-      <div class="hoppers">
-        <div class="hopper c"><div class="fill" id="hop-c"></div><span class="tag">C</span></div>
-        <div class="hopper m"><div class="fill" id="hop-m"></div><span class="tag">M</span></div>
-        <div class="hopper y"><div class="fill" id="hop-y"></div><span class="tag">Y</span></div>
-        <div class="hopper k"><div class="fill" id="hop-k"></div><span class="tag">K</span></div>
-      </div>
+      <div class="hoppers" id="hoppers"></div>
       <div class="well"><div class="grid" id="grid"></div></div>
     </div>
 
@@ -326,6 +342,14 @@ button.go:hover { background: #4653E0; }
 
   <div class="foot">
     <p class="msg" id="msg">Four or more touching clears.</p>
+    <label class="tune">Cartridges
+      <select id="setInks">
+        <option value="office" selected>4 &mdash; CMYK</option>
+        <option value="five-lc">5 &mdash; + light cyan</option>
+        <option value="five-w">5 &mdash; + white</option>
+        <option value="photo">6 &mdash; photo</option>
+      </select>
+    </label>
     <label class="tune">Target <input id="setTarget" type="number" min="100" step="100" value="1000"></label>
     <label class="tune">Fall ms <input id="setFall" type="number" min="100" step="50" value="700"></label>
     <button class="go" id="again" type="button">New print</button>
@@ -344,7 +368,23 @@ button.go:hover { background: #4653E0; }
    ============================================================ */
 
 const COLS = 6, ROWS = 12;
-const INKS = ['c', 'm', 'y', 'k'];
+
+/* How many cartridges the machine has. Four is an office printer and it is
+   the beginner setting -- with only four, clumps half assemble themselves.
+   More inks means fewer accidents and more planning, which is the real
+   difficulty dial; fall speed only adds panic. */
+const PALETTES = {
+  'office':   { label: 'Office',  inks: ['c', 'm', 'y', 'k'] },
+  'five-lc':  { label: 'Five',    inks: ['c', 'm', 'y', 'k', 'lc'] },
+  'five-w':   { label: 'Five',    inks: ['c', 'm', 'y', 'k', 'w'] },
+  'photo':    { label: 'Photo',   inks: ['c', 'm', 'y', 'k', 'lc', 'lm'] }
+};
+
+const TAGS = { c: 'C', m: 'M', y: 'Y', k: 'K', lc: 'LC', lm: 'LM', w: 'W' };
+const VARS = { c: '--cyan', m: '--magenta', y: '--yellow', k: '--key',
+               lc: '--lcyan', lm: '--lmagenta', w: '--white' };
+
+let INKS = PALETTES.office.inks;
 
 /* Puyo clears start at four, so the table shifts up one from the one we
    drew for a swap board: the smallest clear pays 10, and it climbs the
@@ -461,11 +501,30 @@ const show = (html) => { elMsg.innerHTML = html; };
 /* ---- the tanks ---- */
 
 const REST = 56;
-const level = { c: REST, m: REST, y: REST, k: REST };
+let level = {};
 let topUp = null;
 
+function buildHoppers() {
+  const box = document.getElementById('hoppers');
+  box.innerHTML = '';
+  box.style.gridTemplateColumns = 'repeat(' + INKS.length + ', 1fr)';
+  level = {};
+
+  for (const ink of INKS) {
+    level[ink] = REST;
+    const tank = document.createElement('div');
+    tank.className = 'hopper ' + ink;
+    tank.innerHTML = '<div class="fill" id="hop-' + ink + '"></div>' +
+                     '<span class="tag">' + TAGS[ink] + '</span>';
+    box.appendChild(tank);
+  }
+}
+
 function paintHoppers() {
-  for (const ink of INKS) document.getElementById('hop-' + ink).style.height = level[ink] + '%';
+  for (const ink of INKS) {
+    const el = document.getElementById('hop-' + ink);
+    if (el) el.style.height = level[ink] + '%';
+  }
 }
 
 function drawInk(counts) {
@@ -491,7 +550,7 @@ function paint() {
 }
 
 const colorOf = (ink) => getComputedStyle(document.documentElement)
-  .getPropertyValue(ink === 'k' ? '--key' : ink === 'c' ? '--cyan' : ink === 'm' ? '--magenta' : '--yellow');
+  .getPropertyValue(VARS[ink] || '--key');
 
 function pieceCells(p) {
   const [dx, dy] = ROT[p.rot];
@@ -547,7 +606,8 @@ async function resolve() {
     chain++;
     const mult = Math.min(chain, CHAIN_CAP);
     let pass = 0;
-    const used = { c: 0, m: 0, y: 0, k: 0 };
+    const used = {};
+    for (const ink of INKS) used[ink] = 0;
 
     for (const group of clumps) {
       pass += groupPoints(group.length) * mult;
@@ -685,6 +745,9 @@ function finish(won) {
 }
 
 function newPrint() {
+  const pick = PALETTES[document.getElementById('setInks').value] || PALETTES.office;
+  INKS = pick.inks;
+
   target = Math.max(100, Number(document.getElementById('setTarget').value) || 1000);
   fallMs = Math.max(100, Number(document.getElementById('setFall').value) || 700);
 
@@ -692,7 +755,7 @@ function newPrint() {
   points = 0; bestChain = 0; over = false; busy = false;
   next = null; piece = null;
 
-  for (const ink of INKS) level[ink] = REST;
+  buildHoppers();
   paintHoppers();
 
   elPts.textContent = '0';
