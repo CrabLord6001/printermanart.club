@@ -976,67 +976,51 @@ button.go:hover { background: #4653E0; }
 .tune.check { flex-direction: row; align-items: center; gap: 9px; cursor: pointer; }
 .tune.check input { width: 18px; height: 18px; accent-color: var(--accent); }
 
-/* The cartridge sets, shown as the inks they hold rather than named. The
-   count says how many, the swatches say which, and neither needs reading. */
-.inkset { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+/* Three modes, each showing the inks it runs on. One choice instead of
+   three dials, so every time on a board was set the same way. */
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 
-.inkset button {
+.modes button {
   font-family: var(--font);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 6px;
+  border-radius: 9px;
+  padding: 14px 6px;
   cursor: pointer;
 }
 
-.inkset button:hover { border-color: #3A4152; }
-.inkset button.on { border-color: var(--accent); background: #171A22; }
-.inkset .n { font-size: 1rem; font-weight: 700; letter-spacing: 0; color: var(--dim); }
-.inkset button.on .n { color: var(--accent); }
-.inkset .swatches { display: flex; gap: 2px; }
-.inkset .sw { width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(8,10,14,0.5); }
+.modes button:hover { border-color: #3A4152; }
+.modes button.on { border-color: var(--accent); background: #171A22; }
 
-/* A speed reads as a position on a line. Nobody knows what 700 was. */
-.tune input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: #242A35;
-  outline: none;
-  cursor: pointer;
-}
-
-.tune input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer;
-}
-
-.tune input[type="range"]::-moz-range-thumb {
-  width: 20px; height: 20px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer;
-}
-
-.ends {
-  display: flex;
-  justify-content: space-between;
-  margin: 0;
-  font-size: 0.56rem;
+.modes .mname {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--dim);
 }
+
+.modes button.on .mname { color: var(--accent); }
+.modes .swatches { display: flex; gap: 2px; }
+.modes .sw { width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(8,10,14,0.5); }
+
+/* What the mode you are looking at actually sets. */
+.modeline {
+  margin: 0;
+  font-size: 0.62rem;
+  line-height: 1.5;
+  color: var(--dim);
+  text-align: center;
+}
+
+/* The two presentation switches, side by side at the head of the rail. */
+.switches { display: flex; justify-content: center; gap: 4px; }
+.switches .snd { width: 28px; height: 28px; }
 
 /* What the three of them add up to, falling. Built from the same drops the
    board uses, so the edge and the screen angles come with them. */
@@ -1172,30 +1156,14 @@ h2[hidden] { display: none; }
                  a cramped strip under the board and the whole of this was
                  sitting empty. -->
             <div class="rules setupface" id="overSetup" hidden>
-              <!-- The set is chosen by the buttons below; this carries the
-                   value the rest of the game reads. -->
+              <!-- A mode sets all three at once. These carry the values, so
+                   nothing else in the game has to know a mode exists. -->
               <input id="setInks" type="hidden" value="office">
+              <input id="setTarget" type="hidden" value="10">
+              <input id="setFall" type="hidden" value="38">
 
-              <div class="tune">
-                <span class="lab">Cartridges</span>
-                <div class="inkset" id="inkset"></div>
-              </div>
-
-              <div class="tune">
-                <span class="lab">Clears to Finish a Color</span>
-                <input id="setTarget" type="number" min="3" step="1" value="10">
-              </div>
-
-              <div class="tune">
-                <span class="lab">Fall speed</span>
-                <input id="setFall" type="range" min="0" max="100" step="5" value="48">
-                <p class="ends"><span>Slow</span><span>Fast</span></p>
-              </div>
-
-              <label class="tune check">
-                <input id="setAngles" type="checkbox">
-                <span class="lab">Colorblind</span>
-              </label>
+              <div class="modes" id="modes"></div>
+              <p class="modeline" id="modeline"></p>
 
               <!-- Every control above shows its work here: which inks will
                    fall, how fast, and whether they carry their plate's
@@ -1209,6 +1177,7 @@ h2[hidden] { display: none; }
     </div>
 
     <div class="side">
+      <div class="switches">
       <button class="snd" id="snd" type="button" aria-pressed="false" aria-label="Turn sound on">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M11 5 6 9H2v6h4l5 4z"/>
@@ -1216,6 +1185,15 @@ h2[hidden] { display: none; }
           <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
         </svg>
       </button>
+      <!-- Not a difficulty: whether the board can be read at all. It sits
+           with the mute rather than in a mode, so no one pays for it. -->
+      <button class="snd" id="cbBtn" type="button" aria-pressed="false" aria-label="Turn colorblind marks on">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M5.2 13.8 13.8 5.2M8.4 17.6 17.6 8.4"/>
+        </svg>
+      </button>
+      </div>
       <div class="nextbox">
         <p class="lbl">Next</p>
         <div class="nextlist" id="nextlist"></div>
@@ -2405,40 +2383,71 @@ function showFace(which) {
      right on the first load because the demo image was still arriving and
      painted again once it had, by which time the panel was up. */
   if (intro) paintDemo();
-  else { buildInkset(); buildPeek(); }
+  else { buildModes(); buildPeek(); }
 
   buttons();
 }
 
 const onSetup = () => !elOver.hidden && !elSetup().hidden;
 
-/* The cartridge sets as buttons. A row of swatches says which inks are in
-   the set and the number says how many, so "photo" does not have to be a
-   word anyone already knows. */
-function buildInkset() {
-  const host = document.getElementById('inkset');
+/* Three modes instead of loose dials, so a recorded time means the same
+   thing whoever set it.
+
+   The ink count carries most of the difficulty on its own. The same
+   stand-in player lasts about 359 drops on four inks, 113 on five and 60
+   on six, and clears 1.83, 1.44 and 0.95 of a color per drop, so six inks
+   is already something like six times the game four is. The clears per
+   color climb gently on top of that rather than doubling, which would put
+   the far end out of anyone's reach. The virus rate rides along with the
+   ink set and is not turned up further: a virus can end a run with no
+   mistake in it, and a board that rewards luck is worse than no board. */
+const MODES = {
+  easy:   { label: 'Easy',   mode: 'office',  inkPer: 10, fall: 38 },
+  medium: { label: 'Medium', mode: 'five-lc', inkPer: 12, fall: 60 },
+  hard:   { label: 'Hard',   mode: 'photo',   inkPer: 14, fall: 76 }
+};
+
+let modeKey = 'easy';
+
+function buildModes() {
+  const host = document.getElementById('modes');
   if (!host) return;
-  const now = document.getElementById('setInks').value;
   host.innerHTML = '';
 
-  for (const key of Object.keys(PALETTES)) {
-    const set = PALETTES[key];
+  for (const key of Object.keys(MODES)) {
+    const m = MODES[key];
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = key === now ? 'on' : '';
-    b.innerHTML = '<span class="n">' + set.inks.length + '</span><span class="swatches">'
-      + set.inks.map((i) => '<span class="sw" style="background:var(' + VARS[i] + ')"></span>').join('')
+    b.className = key === modeKey ? 'on' : '';
+    b.innerHTML = '<span class="mname">' + m.label + '</span><span class="swatches">'
+      + PALETTES[m.mode].inks.map((i) => '<span class="sw" style="background:var(' + VARS[i] + ')"></span>').join('')
       + '</span>';
-    b.addEventListener('click', () => {
-      const el = document.getElementById('setInks');
-      if (el.value === key) return;
-      el.value = key;
-      buildInkset();
-      buildPeek();
-      el.dispatchEvent(new Event('change'));
-    });
+    b.addEventListener('click', () => pickMode(key));
     host.appendChild(b);
   }
+
+  sayMode();
+}
+
+function sayMode() {
+  const line = document.getElementById('modeline');
+  if (!line) return;
+  const m = MODES[modeKey];
+  const pace = m.fall >= 70 ? 'fast' : (m.fall >= 50 ? 'brisk' : 'steady');
+  line.textContent = PALETTES[m.mode].inks.length + ' inks \u00b7 '
+    + m.inkPer + ' clears to finish each color \u00b7 ' + pace + ' fall';
+}
+
+function pickMode(key) {
+  if (!MODES[key] || key === modeKey) return;
+  modeKey = key;
+  const m = MODES[key];
+  document.getElementById('setInks').value = m.mode;
+  document.getElementById('setTarget').value = String(m.inkPer);
+  document.getElementById('setFall').value = String(m.fall);
+  buildModes();
+  buildPeek();
+  document.getElementById('setInks').dispatchEvent(new Event('change'));
 }
 
 /* Whatever the chosen set added comes down first, so a bigger set shows
@@ -2834,22 +2843,23 @@ for (const id of ['setInks', 'setTarget', 'setFall']) {
   el.addEventListener('input', () => { if (started) buttons(); });
 }
 
-// dragging the speed shows the new speed at once, rather than on release
-document.getElementById('setFall').addEventListener('input', buildPeek);
 
 /* The screen angles change nothing about the board, only how it reads, so
    they take effect at once rather than waiting for a new print. Remembered
    too: an accessibility setting you have to find again every visit is not
    much of one. */
-const elAngles = document.getElementById('setAngles');
+const elAngles = document.getElementById('cbBtn');
 if (elAngles) {
-  try { elAngles.checked = localStorage.getItem('cp-angles') === '1'; } catch (e) {}
+  let marks = false;
+  try { marks = localStorage.getItem('cp-angles') === '1'; } catch (e) {}
   const useAngles = () => {
-    document.body.classList.toggle('angles', elAngles.checked);
+    document.body.classList.toggle('angles', marks);
+    elAngles.setAttribute('aria-pressed', marks ? 'true' : 'false');
+    elAngles.setAttribute('aria-label', marks ? 'Turn colorblind marks off' : 'Turn colorblind marks on');
     buildPeek();                                // show it on the drops at once
-    try { localStorage.setItem('cp-angles', elAngles.checked ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem('cp-angles', marks ? '1' : '0'); } catch (e) {}
   };
-  elAngles.addEventListener('change', useAngles);
+  elAngles.addEventListener('click', () => { marks = !marks; useAngles(); });
   useAngles();
 }
 
