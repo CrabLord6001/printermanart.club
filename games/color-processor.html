@@ -443,7 +443,6 @@ html.embed .title { display: none; }
 }
 
 .foot.center { justify-content: center; }
-.foot.center .setup-row { justify-content: center; }
 
 .msg {
   flex: 1 1 100%;
@@ -480,7 +479,6 @@ html.embed .title { display: none; }
     repeating-linear-gradient(90deg, rgba(232,57,79,0.22) 0 1px, transparent 1px 4px),
     #12161D;
   box-shadow: inset 0 0 0 3px #E8394F;
-  margin-left: 10px;
 }
 .msg b { color: var(--accent); }
 
@@ -491,8 +489,10 @@ label.tune {
   text-transform: uppercase;
   color: var(--dim);
   display: flex;
-  align-items: center;
-  gap: 4px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  min-width: 0;
 }
 
 /* Off by default: nobody wants a browser tab that starts singing. */
@@ -512,7 +512,11 @@ label.tune {
 .snd[aria-pressed="true"] .snd-off { display: none; }
 .snd[aria-pressed="false"] .snd-on { display: none; }
 
-.setup { flex: 0 0 auto; }
+.setup { flex: 0 0 auto; min-width: 0; }
+
+/* Open, it needs the whole width: as an auto-width flex item the row of
+   controls simply ran off the side of the box. */
+.setup[open] { flex: 1 1 100%; }
 
 .setup summary {
   list-style: none;
@@ -532,15 +536,21 @@ label.tune {
 .setup summary:hover { color: var(--accent); border-color: var(--accent); }
 .setup[open] summary { color: var(--accent); }
 
+/* Two by two, each control under its own label rather than beside it. Four
+   labelled controls on one line never fit the 430px the box is allowed, and
+   that box is the same width on a desktop, so auto-fitting only ever left
+   one control stranded on a row of its own. */
 .setup-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 10px;
+  text-align: left;
 }
 
 label.tune select {
+  width: 100%;
+  min-width: 0;
   font-family: var(--font);
   font-size: 0.74rem;
   color: var(--text);
@@ -551,7 +561,8 @@ label.tune select {
 }
 
 label.tune input {
-  width: 56px;
+  width: 100%;
+  min-width: 0;
   font-family: var(--font);
   font-size: 0.78rem;
   color: var(--text);
@@ -733,7 +744,6 @@ button.go:hover { background: #4653E0; }
               <li>Feed each ink until its plate lays down. Four plates and the
                   page is printed.</li>
             </ul>
-            <button class="go" id="overBtn" type="button">New print</button>
           </div>
         </div>
       </div>
@@ -1523,13 +1533,13 @@ function ready() {
   document.getElementById('overCredit').hidden = true;
   document.getElementById('overText').innerHTML = '';
   document.getElementById('overRules').hidden = false;
-  document.getElementById('overBtn').textContent = 'Play';
+  document.getElementById('again').textContent = 'Play';
   elOver.hidden = false;
 }
 
 function begin() {
   document.getElementById('overRules').hidden = true;
-  document.getElementById('overBtn').textContent = 'New print';
+  document.getElementById('again').textContent = 'New print';
   elOver.hidden = true;
   over = false;
   startedAt = Date.now();                       // the clock starts here
@@ -1557,7 +1567,8 @@ function finish(won) {
 
   if (won && artwork) {
     const room = artwork.room
-      ? '<br><a href="/art-history/' + artwork.room + '.html">More from ' + artwork.roomName + '</a>'
+      ? '<br><a target="_top" href="/art-history/' + artwork.room + '.html">More from '
+        + artwork.roomName + '</a>'
       : '';
     // Three lines and no more: what it is, who made it and when, and the way
     // to the rest. Everything in here is public domain, so saying so on every
@@ -1570,7 +1581,7 @@ function finish(won) {
   }
 
   document.getElementById('overRules').hidden = true;
-  document.getElementById('overBtn').textContent = 'New print';
+  document.getElementById('again').textContent = 'New print';
   document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
   /* Non breaking spaces inside each token, so a wrap can only ever fall
      between them -- no more "longest" on one line and "chain 2" on the next. */
@@ -1653,7 +1664,11 @@ const ARTWORKS = [
   { file: 'twilight.jpg',    room: 'landscape',   roomName: 'Landscape',
     title: 'Twilight in the Wilderness', artist: 'Frederic Edwin Church', date: '1860' },
   { file: 'orion.jpg',       room: 'classics',    roomName: 'Classics',
-    title: 'Blind Orion Searching for the Rising Sun', artist: 'Nicolas Poussin', date: '1658' }
+    title: 'Blind Orion Searching for the Rising Sun', artist: 'Nicolas Poussin', date: '1658' },
+  { file: 'rest.jpg',        room: 'faith',       roomName: 'Faith',
+    title: 'The Rest on the Flight into Egypt', artist: 'Gerard David', date: 'ca. 1512\u201315' },
+  { file: 'pandora.jpg',     room: 'fantasy',     roomName: 'Fantasy',
+    title: 'Pandora', artist: 'Odilon Redon', date: 'ca. 1914' }
 ];
 
 let artwork = null;
@@ -1680,9 +1695,10 @@ sndBtn.addEventListener('click', async () => {
   sndBtn.setAttribute('aria-label', next ? 'Turn sound off' : 'Turn sound on');
 });
 
-document.getElementById('again').addEventListener('click', newPrint);
-document.getElementById('overBtn').addEventListener('click', () => {
-  // the same button starts the first print and sets up the next one
+/* One button, under the box rather than over it, so nothing covers the
+   title and painter of the print that was just finished. It starts the
+   first print and sets up every one after. */
+document.getElementById('again').addEventListener('click', () => {
   if (!document.getElementById('overRules').hidden) begin();
   else newPrint();
 });
