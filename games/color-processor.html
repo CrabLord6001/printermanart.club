@@ -64,6 +64,15 @@ body {
 
 /* ---- readout ---- */
 
+/* In the window the readout has the whole width to work with, and has to
+   keep clear of the buttons floating over the corner. */
+html.embed .head {
+  max-width: none;
+  padding-right: 84px;
+}
+
+html.embed .snd { margin-left: 4px; }
+
 .head {
   width: 100%;
   max-width: 430px;
@@ -339,6 +348,9 @@ body {
   padding-top: 8px;
 }
 
+.foot.center { justify-content: center; }
+.foot.center .setup-row { justify-content: center; }
+
 .msg { flex: 1 1 100%; font-size: 0.78rem; color: var(--muted); min-height: 2.4em; margin: 0; }
 
 /* The message line is where the game talks, and it gets overwritten the
@@ -533,6 +545,38 @@ button.go:hover { background: #4653E0; }
 .plate-line .inst { color: var(--dim); font-size: 0.68rem; }
 .plate-line a { color: var(--accent); }
 .plate-line a:hover { color: #fff; }
+
+/* The rules, read once before the first drop rather than sitting under the
+   board for the whole run. */
+.rules {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  text-align: left;
+  max-width: 30rem;
+}
+
+.rules[hidden] { display: none; }
+
+.rules li {
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0 0 7px;
+  padding-left: 14px;
+  position: relative;
+}
+
+.rules li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0.52em;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--dim);
+}
+
+.rules .chip { vertical-align: -2px; margin-right: 2px; }
 .plate-line[hidden] { display: none; }
 .over h2 { margin: 0; font-size: 1.4rem; color: var(--text); font-weight: 600; }
 .over p  { margin: 0; font-size: 0.95rem; max-width: 34ch; }
@@ -541,7 +585,7 @@ button.go:hover { background: #4653E0; }
 <body>
 
   <div class="head">
-    <p class="title"><a class="home" href="/">&larr; PrinterMan&rsquo;s Art Club</a> &middot; Color Processor &mdash; rough board</p>
+    <p class="title" id="pageTitle"><a class="home" href="/">&larr; PrinterMan&rsquo;s Art Club</a> &middot; Color Processor &mdash; rough board</p>
     <span class="stat">Points <b id="pts">0</b></span>
     <span class="stat goal">Plates <b id="tg">0/4</b></span>
     <span class="stat">Time <b id="tm">0:00</b></span>
@@ -568,6 +612,18 @@ button.go:hover { background: #4653E0; }
             <h2 id="overTitle">&nbsp;</h2>
             <p class="plate-line" id="overCredit" hidden></p>
             <p id="overText"></p>
+            <ul class="rules" id="overRules" hidden>
+              <li>Four or more of a color touching, in any shape, clears.</li>
+              <li>A clear drops what was above it. Land in another group and
+                  that is a chain, worth more every link.</li>
+              <li><span class="chip gold"></span> pulls its own color out of a
+                  diagonal and into line.</li>
+              <li><span class="chip green"></span> never matches, and rewrites
+                  what it lands against. A chain of two, or one clump of six,
+                  burns it off.</li>
+              <li>Feed each ink until its plate lays down. Four plates and the
+                  page is printed.</li>
+            </ul>
             <button class="go" id="overBtn" type="button">New print</button>
           </div>
         </div>
@@ -584,12 +640,8 @@ button.go:hover { background: #4653E0; }
     </div>
   </div>
 
-  <div class="foot">
-    <p class="key">
-      <span class="chip gold"></span> pulls its own color into line
-      <span class="chip green"></span> <span id="keyCure">corrupt &mdash; chain 2 or a clump of 6 clears it</span>
-    </p>
-    <p class="msg" id="msg">Four or more touching clears.</p>
+  <div class="foot center">
+    <p class="msg" id="msg">&nbsp;</p>
     <details class="setup">
     <summary>Setup</summary>
     <div class="setup-row">
@@ -644,6 +696,16 @@ const sayMusic = (fn, ...args) => { if (music && music.isOn()) music[fn](...args
 /* ============================================================
    Logic
    ============================================================ */
+
+/* Inside the window on the lander the page needs neither its own title nor
+   its own way home: the window has an X. It does need to keep clear of the
+   buttons floating over its top right corner. */
+const EMBED = new URLSearchParams(location.search).has('embed');
+if (EMBED) {
+  document.documentElement.classList.add('embed');
+  const t = document.getElementById('pageTitle');
+  if (t) t.remove();
+}
 
 let COLS = 6; const ROWS = 12;
 
@@ -1335,6 +1397,33 @@ document.addEventListener('pointerup', (e) => {
 
 /* ---- a print ---- */
 
+/* The rules panel, before the first drop. Nothing moves until it is
+   dismissed, so reading it costs nothing. */
+function ready() {
+  over = true;                                  // nothing falls while it is up
+  stopTick();
+  elOver.classList.remove('won');
+  document.getElementById('overTitle').textContent = 'Color Processor';
+  document.getElementById('overCredit').hidden = true;
+  document.getElementById('overText').innerHTML = '';
+  document.getElementById('overRules').hidden = false;
+  document.getElementById('overBtn').textContent = 'Play';
+  elOver.hidden = false;
+}
+
+function begin() {
+  document.getElementById('overRules').hidden = true;
+  document.getElementById('overBtn').textContent = 'New print';
+  elOver.hidden = true;
+  over = false;
+  startedAt = Date.now();                       // the clock starts here
+  elTm.textContent = '0:00';
+  startClock();
+  startTick();
+  sayMusic('startMusic');
+  show('');
+}
+
 function stamp(ms) {
   const sec = Math.round(ms / 1000);
   return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
@@ -1364,6 +1453,8 @@ function finish(won) {
     credit.hidden = true;
   }
 
+  document.getElementById('overRules').hidden = true;
+  document.getElementById('overBtn').textContent = 'New print';
   document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
   /* Non breaking spaces inside each token, so a wrap can only ever fall
      between them -- no more "longest" on one line and "chain 2" on the next. */
@@ -1401,9 +1492,7 @@ function newPrint() {
   cleared = { c: 0, m: 0, y: 0, k: 0 };
   pieces = 0;
   loadArtwork();
-  startedAt = Date.now();
   blankPage();
-  startClock();
 
   elPts.textContent = '0';
   elTg.textContent = '0/4';
@@ -1411,15 +1500,11 @@ function newPrint() {
   elBc.textContent = '0';
   elChain.textContent = '';
   elOver.hidden = true;
-  document.getElementById('keyCure').innerHTML =
-    'corrupt &mdash; chain ' + cureAt + ' or a clump of ' + CURE_CLUMP + ' clears it';
-  show('Four or more touching clears. Feed each ink until its plate lays down &mdash; '
-     + 'four plates and the page is printed.');
+  show('');
 
   sizeBoard();
   spawn();
-  startTick();
-  sayMusic('startMusic');
+  ready();
 }
 
 /* ------------------------------------------------------------
@@ -1472,7 +1557,11 @@ sndBtn.addEventListener('click', async () => {
 });
 
 document.getElementById('again').addEventListener('click', newPrint);
-document.getElementById('overBtn').addEventListener('click', newPrint);
+document.getElementById('overBtn').addEventListener('click', () => {
+  // the same button starts the first print and sets up the next one
+  if (!document.getElementById('overRules').hidden) begin();
+  else newPrint();
+});
 window.addEventListener('resize', sizeBoard);
 
 newPrint();

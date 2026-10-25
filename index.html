@@ -746,6 +746,25 @@
       </div>
     </section>
 
+    <!-- Color Processor keeps its own page; this window just holds it, so
+         both games open the same way without either being rewritten. -->
+    <dialog id="cpbox" aria-label="Color Processor">
+      <div class="cp-wrap">
+        <iframe id="cpframe" title="Color Processor" allow="autoplay"></iframe>
+        <div class="cp-bar">
+          <button class="snd grow" id="cpFull" type="button" aria-pressed="false" aria-label="Full screen">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path class="grow-out" d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>
+              <path class="grow-in" d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"/>
+            </svg>
+          </button>
+          <button class="box-close" id="cpClose" type="button" aria-label="Close">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </dialog>
+
     <dialog id="playbox" aria-label="Paper Trail">
       <div class="play-wrap">
 
@@ -1393,11 +1412,43 @@ if (track) {
     setFull(false);
   });
 
+  /* ---- the second game ----
+     It has a page of its own, and this opens that page inside a window
+     here rather than sending anybody away from the lander. The frame has
+     no src until somebody asks for it, so nothing downloads otherwise,
+     and emptying it on close stops the game and its music dead. */
+  const cpBox   = document.getElementById('cpbox');
+  const cpFrame = document.getElementById('cpframe');
+  const cpFullBtn = document.getElementById('cpFull');
+
+  function cpSetFull(on) {
+    cpBox.classList.toggle('full', on);
+    cpFullBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    cpFullBtn.setAttribute('aria-label', on ? 'Leave full screen' : 'Full screen');
+  }
+
+  function openCp(href) {
+    if (!cpBox || !cpBox.showModal) { location.href = href; return; }
+    cpFrame.src = href + (href.indexOf('?') < 0 ? '?' : '&') + 'embed=1';
+    cpSetFull(COARSE.matches);
+    document.body.classList.add('play-open');
+    cpBox.showModal();
+  }
+
+  if (cpBox) {
+    cpFullBtn.addEventListener('click', () => cpSetFull(!cpBox.classList.contains('full')));
+    document.getElementById('cpClose').addEventListener('click', () => cpBox.close());
+    cpBox.addEventListener('close', () => {
+      cpFrame.removeAttribute('src');
+      document.body.classList.remove('play-open');
+      cpSetFull(false);
+    });
+  }
+
   document.querySelectorAll('.arc-card[data-game]').forEach((card) => {
     card.addEventListener('click', () => {
       if (card.dataset.game === GAME) { openGame(); return; }
-      // a game with its own page rather than a panel on this one
-      if (card.dataset.href) location.href = card.dataset.href;
+      if (card.dataset.href) openCp(card.dataset.href);
     });
   });
 

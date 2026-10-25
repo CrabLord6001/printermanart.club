@@ -11,7 +11,8 @@
    is ever opened from a page that does not set them.
    ============================================================ */
 
-#playbox {
+#playbox,
+#cpbox {
   border: 0;
   padding: 0;
   background: transparent;
@@ -22,7 +23,8 @@
   font-family: 'Poppins', system-ui, -apple-system, sans-serif;
 }
 
-#playbox::backdrop { background: rgba(8, 9, 13, 0.9); }
+#playbox::backdrop,
+#cpbox::backdrop { background: rgba(8, 9, 13, 0.9); }
 
 /* Width drives everything: the canvas is 4:3, so capping width by viewport
    height is what stops the board running off the bottom of a laptop screen. */
@@ -100,7 +102,8 @@
 .snd[aria-pressed="true"] .snd-off { display: none; }
 .snd[aria-pressed="false"] .snd-on { display: none; }
 
-#playbox .box-close {
+#playbox .box-close,
+#cpbox .box-close {
   position: absolute;
   top: -14px;
   right: -14px;
@@ -116,7 +119,8 @@
   cursor: pointer;
 }
 
-#playbox .box-close:hover { color: #D4A24C; border-color: #D4A24C; }
+#playbox .box-close:hover,
+#cpbox .box-close:hover { color: #D4A24C; border-color: #D4A24C; }
 
 /* ---- the tray the paper comes out of ---- */
 
@@ -443,7 +447,8 @@ ol.board li.none .nm { color: var(--text-dim, #7A8094); font-size: 0.8rem; font-
 
 body.play-open { overflow: hidden; }
 
-#playbox.full {
+#playbox.full,
+#cpbox.full {
   width: 100%;
   height: 100%;
   max-width: none;
@@ -470,7 +475,8 @@ body.play-open { overflow: hidden; }
 
 /* The close button hangs off the corner of the floating card. With no card
    to hang off it comes inside the sheet. */
-#playbox.full .box-close {
+#playbox.full .box-close,
+#cpbox.full .box-close {
   top: max(8px, env(safe-area-inset-top));
   right: max(8px, env(safe-area-inset-right));
 }
@@ -507,8 +513,10 @@ body.play-open { overflow: hidden; }
 /* ---- the expand button ---- */
 
 .grow .grow-in { display: none; }
-#playbox.full .grow .grow-out { display: none; }
-#playbox.full .grow .grow-in { display: block; }
+#playbox.full .grow .grow-out,
+#cpbox.full .grow .grow-out { display: none; }
+#playbox.full .grow .grow-in,
+#cpbox.full .grow .grow-in { display: block; }
 
 /* Touch is always full screen, so there is nothing to toggle. */
 @media (hover: none) and (pointer: coarse) {
@@ -520,4 +528,57 @@ body.play-open { overflow: hidden; }
   .who-row .nm { display: none; }
   .play-head { padding-right: 40px; }
   .rules li { font-size: 0.8rem; }
+}
+
+
+/* ============================================================
+   Color Processor
+   ============================================================
+   The game keeps its own page; this window just holds it, so
+   nothing had to be rewritten to put it beside Paper Trail. The
+   frame is only loaded when somebody opens it and is emptied
+   again on close, which stops the game and its music dead.
+   ============================================================ */
+
+.cp-wrap {
+  position: relative;
+  width: min(520px, 94vw);
+  height: min(880px, 90vh);
+  background: var(--panel, #171A22);
+  border: 1px solid var(--border, #272B36);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.cp-wrap iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* The buttons sit over the frame rather than in it: the page inside has no
+   idea it is in a window. */
+.cp-bar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 7px;
+  z-index: 4;
+}
+
+#cpbox .box-close,
+#cpbox.full .box-close { position: static; }
+
+#cpbox.full .cp-wrap {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+#cpbox.full .cp-bar {
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
 }
