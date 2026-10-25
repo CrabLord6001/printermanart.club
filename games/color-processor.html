@@ -183,8 +183,23 @@ body {
    fill, so it still reads when white is one of the inks on the board. */
 .cell.hit { box-shadow: 0 0 0 3px #fff, 0 0 10px 2px rgba(255,255,255,0.6); }
 
-/* the piece on its way down sits slightly proud of the pile */
-.cell.live { box-shadow: 0 0 0 2px rgba(255,255,255,0.22); }
+/* Magnetic ink: an ordinary colored drop wearing a gold ring, rather than a
+   color of its own. Nothing new to tell apart, and the ring reads at any
+   size. When it lands it pulls its own color out of a diagonal and into
+   line -- the near miss that makes people swear at the screen. */
+.cell.mag { box-shadow: inset 0 0 0 3px var(--accent), 0 0 6px rgba(212,162,76,0.5); }
+
+/* A corrupted supply. Green appears nowhere in CMYK, so there is no chance
+   of reading it as ink. */
+.cell.virus {
+  background: #11161C;
+  box-shadow: inset 0 0 0 3px #43D98B, 0 0 7px rgba(67,217,139,0.4);
+}
+
+/* The piece on its way down sits slightly proud of the pile. A filter rather
+   than a shadow, so it does not paint over the gold or green ring a wildcard
+   is wearing. */
+.cell.live { filter: brightness(1.12) drop-shadow(0 0 5px rgba(255,255,255,0.4)); }
 
 /* ---- side panel ---- */
 
@@ -386,6 +401,32 @@ const VARS = { c: '--cyan', m: '--magenta', y: '--yellow', k: '--key',
 
 let INKS = PALETTES.office.inks;
 
+/* A cell holds a short code rather than a bare color, so a drop can carry a
+   property without becoming a seventh thing to tell apart:
+     'c'    plain cyan
+     'c*'   cyan, magnetic
+     '#'    a virus
+     '#!'   a virus that has just landed and has not corrupted yet          */
+const VIRUS = '#', VIRUS_NEW = '#!';
+
+const inkOf  = (v) => (!v || v === VIRUS || v === VIRUS_NEW) ? null
+                    : (v.endsWith('*') ? v.slice(0, -1) : v);
+const isMag  = (v) => !!v && v.endsWith('*');
+const isBug  = (v) => v === VIRUS || v === VIRUS_NEW;
+
+/* How often the machine misbehaves. The magnet is the reward and stays put;
+   the virus is the punishment and gets worse as the printer gets harder. */
+const MAG_RATE = 0.10;
+const VIRUS_RATE = { 'office': 0.05, 'five-lc': 0.08, 'five-w': 0.08, 'photo': 0.12 };
+
+/* A chain this long burns every virus off the board. Chains are already the
+   skill the game is built on; this makes them the cleanup as well, so a
+   corrupted supply is a reason to build something big rather than a reason
+   to lose. */
+const CURE_AT = { 'office': 2, 'five-lc': 2, 'five-w': 2, 'photo': 3 };
+
+let mode = 'office', virusRate = 0.05, cureAt = 2;
+
 /* Puyo clears start at four, so the table shifts up one from the one we
    drew for a swap board: the smallest clear pays 10, and it climbs the
    same way from there. */
@@ -424,7 +465,7 @@ function findClumps(w) {
 
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
-      const ink = at(w, x, y);
+      const ink = inkOf(at(w, x, y));
       if (!ink || seen[idx(x, y)]) continue;
 
       const group = [];
@@ -437,7 +478,7 @@ function findClumps(w) {
         for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
           const nx = cx + dx, ny = cy + dy;
           if (!inside(nx, ny) || seen[idx(nx, ny)]) continue;
-          if (at(w, nx, ny) !== ink) continue;
+          if (inkOf(at(w, nx, ny)) !== ink) continue;
           seen[idx(nx, ny)] = 1;
           queue.push([nx, ny]);
         }
@@ -536,17 +577,34 @@ function drawInk(counts) {
 
 /* ---- painting ---- */
 
+function classFor(code) {
+  if (!code) return 'cell';
+  if (isBug(code)) return 'cell virus';
+  return 'cell ' + inkOf(code) + (isMag(code) ? ' mag' : '');
+}
+
 function paint() {
-  for (let i = 0; i < tiles.length; i++) tiles[i].className = 'cell ' + (well[i] || '');
+  for (let i = 0; i < tiles.length; i++) tiles[i].className = classFor(well[i]);
 
   if (piece) {
-    for (const [x, y, ink] of pieceCells(piece)) {
-      if (inside(x, y)) tiles[idx(x, y)].className = 'cell ' + ink + ' live';
+    for (const [x, y, code] of pieceCells(piece)) {
+      if (inside(x, y)) tiles[idx(x, y)].className = classFor(code) + ' live';
     }
   }
 
-  document.getElementById('na').style.background = next ? colorOf(next.a) : 'transparent';
-  document.getElementById('nb').style.background = next ? colorOf(next.b) : 'transparent';
+  paintNext();
+}
+
+function paintNext() {
+  for (const [id, code] of [['na', next && next.a], ['nb', next && next.b]]) {
+    const el = document.getElementById(id);
+    el.className = code ? classFor(code).replace('cell', '').trim() : '';
+    if (!code) { el.style.background = 'transparent'; el.style.boxShadow = 'none'; return; }
+    el.style.background = isBug(code) ? '#11161C' : colorOf(inkOf(code));
+    el.style.boxShadow = isBug(code) ? 'inset 0 0 0 3px #43D98B'
+                       : isMag(code) ? 'inset 0 0 0 3px ' + getComputedStyle(document.documentElement).getPropertyValue('--accent')
+                       : 'none';
+  }
 }
 
 const colorOf = (ink) => getComputedStyle(document.documentElement)
@@ -567,7 +625,18 @@ function fits(p) {
 
 /* ---- the run of play ---- */
 
-const newPair = () => ({ x: 2, y: 1, rot: 0, a: rand(), b: rand() });
+/* One drop. Mostly plain ink; sometimes magnetic, sometimes a virus. */
+function roll() {
+  if (Math.random() < virusRate) return VIRUS_NEW;
+  return rand() + (Math.random() < MAG_RATE ? '*' : '');
+}
+
+function newPair() {
+  const p = { x: 2, y: 1, rot: 0, a: roll(), b: roll() };
+  // never both halves corrupted -- two at once is a punishment nobody can read
+  if (isBug(p.a) && isBug(p.b)) p.b = rand();
+  return p;
+}
 
 function spawn() {
   piece = next || newPair();
@@ -578,9 +647,65 @@ function spawn() {
   paint();
 }
 
+/* A virus rewrites the cells it is touching, once, at the moment it settles.
+   Only its four neighbours and never again after -- enough to hurt, bounded
+   enough that you can look at the board and see what it cost you. */
+function corruptNew() {
+  let bit = false;
+
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (at(well, x, y) !== VIRUS_NEW) continue;
+      put(well, x, y, VIRUS);
+      bit = true;
+
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (!inside(nx, ny)) continue;
+        const v = at(well, nx, ny);
+        if (!v || isBug(v)) continue;
+        put(well, nx, ny, rand());          // the magnet mark is lost with it
+      }
+    }
+  }
+
+  return bit;
+}
+
+/* Magnetic ink drags its own color out of a diagonal and into line: if the
+   square above the magnet is free and a matching drop sits diagonally above
+   it, that drop slides across. */
+function pullMagnets() {
+  let moved = false;
+
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      const here = at(well, x, y);
+      if (!isMag(here)) continue;
+
+      const ink = inkOf(here);
+      if (y - 1 < 0 || at(well, x, y - 1)) continue;      // no room above it
+
+      for (const dx of [-1, 1]) {
+        const nx = x + dx, ny = y - 1;
+        if (!inside(nx, ny)) continue;
+        const v = at(well, nx, ny);
+        if (!v || isBug(v) || inkOf(v) !== ink) continue;
+
+        put(well, nx, ny, null);
+        put(well, x, y - 1, v);
+        moved = true;
+        break;
+      }
+    }
+  }
+
+  return moved;
+}
+
 function lock() {
-  for (const [x, y, ink] of pieceCells(piece)) {
-    if (inside(x, y)) put(well, x, y, ink);
+  for (const [x, y, code] of pieceCells(piece)) {
+    if (inside(x, y)) put(well, x, y, code);
   }
   piece = null;
   resolve();
@@ -595,6 +720,12 @@ async function resolve() {
   stopTick();
 
   settle(well);
+
+  // a virus bites where it came to rest, not where it was dropped
+  if (corruptNew()) { paint(); await wait(150); }
+
+  if (pullMagnets()) { settle(well); paint(); await wait(150); }
+
   paint();
 
   let chain = 0;
@@ -612,8 +743,18 @@ async function resolve() {
     for (const group of clumps) {
       pass += groupPoints(group.length) * mult;
       for (const [x, y] of group) {
-        used[at(well, x, y)]++;
+        const ink = inkOf(at(well, x, y));
+        if (ink in used) used[ink]++;
         tiles[idx(x, y)].className = 'cell hit';
+      }
+    }
+
+    /* A chain this long burns the corruption off the board along with the
+       clump that earned it. */
+    let cured = 0;
+    if (chain >= cureAt) {
+      for (let i = 0; i < well.length; i++) {
+        if (isBug(well[i])) { tiles[i].className = 'cell hit'; cured++; }
       }
     }
 
@@ -621,14 +762,18 @@ async function resolve() {
     elPts.textContent = points;
     elChain.textContent = chain > 1 ? 'Chain ×' + mult : '';
     drawInk(used);
-    show(chain > 1
+    show((chain > 1
       ? 'Chain <b>&times;' + mult + '</b> &mdash; ' + pass + ' points'
-      : clumps.map(g => g.length + ' touching').join(', ') + ' &mdash; <b>' + pass + '</b>');
+      : clumps.map(g => g.length + ' touching').join(', ') + ' &mdash; <b>' + pass + '</b>')
+      + (cured ? ' &middot; burned off ' + cured + ' virus' + (cured === 1 ? '' : 'es') : ''));
 
     await wait(170);
 
     for (const group of clumps) for (const [x, y] of group) put(well, x, y, null);
+    if (cured) for (let i = 0; i < well.length; i++) if (isBug(well[i])) well[i] = null;
+
     settle(well);
+    if (pullMagnets()) settle(well);
     paint();
     await wait(90);
   }
@@ -745,8 +890,11 @@ function finish(won) {
 }
 
 function newPrint() {
-  const pick = PALETTES[document.getElementById('setInks').value] || PALETTES.office;
+  mode = document.getElementById('setInks').value;
+  const pick = PALETTES[mode] || PALETTES.office;
   INKS = pick.inks;
+  virusRate = VIRUS_RATE[mode] || 0.05;
+  cureAt = CURE_AT[mode] || 2;
 
   target = Math.max(100, Number(document.getElementById('setTarget').value) || 1000);
   fallMs = Math.max(100, Number(document.getElementById('setFall').value) || 700);
@@ -763,7 +911,8 @@ function newPrint() {
   elBc.textContent = '0';
   elChain.textContent = '';
   elOver.hidden = true;
-  show('Four or more touching clears.');
+  show('Four or more touching clears. Gold ring pulls its own color into line; '
+     + 'a chain of ' + cureAt + ' burns off the green.');
 
   sizeBoard();
   spawn();
