@@ -2095,8 +2095,8 @@ function finish(won) {
 
   if (won && artwork) {
     const room = artwork.room
-      ? '<br><a target="_top" href="/art-history/' + artwork.room + '.html">More from '
-        + artwork.roomName + '</a>'
+      ? '<br><a target="_top" href="/art-history/' + artwork.room + '.html'
+        + (artwork.id ? '#' + artwork.id : '') + '">More from ' + artwork.roomName + '</a>'
       : '';
     // Three lines and no more: what it is, who made it and when, and the way
     // to the rest. Everything in here is public domain, so saying so on every
@@ -2182,37 +2182,37 @@ function newPrint(face) {
    now it is a handful by hand.
    ------------------------------------------------------------ */
 const ARTWORKS = [
-  { file: 'harvesters.jpg',  room: 'classics',    roomName: 'Classics',
+  { file: 'harvesters.jpg',  id: 'the-harvesters', room: 'classics',    roomName: 'Classics',
     title: 'The Harvesters', artist: 'Pieter Bruegel the Elder', date: '1565' },
-  { file: 'wheatfields.jpg', room: 'landscape',   roomName: 'Landscape',
+  { file: 'wheatfields.jpg', id: 'wheat-fields', room: 'landscape',   roomName: 'Landscape',
     title: 'Wheat Fields', artist: 'Jacob van Ruisdael', date: 'ca. 1670' },
-  { file: 'knitting.jpg',    room: 'figures',     roomName: 'Figures',
+  { file: 'knitting.jpg',    id: 'young-woman-knitting', room: 'figures',     roomName: 'Figures',
     title: 'Young Woman Knitting', artist: 'Berthe Morisot', date: 'ca. 1883' },
-  { file: 'crucifixion.jpg', room: 'faith',       roomName: 'Faith',
+  { file: 'crucifixion.jpg', id: 'the-crucifixion-fra-angelico', room: 'faith',       roomName: 'Faith',
     title: 'The Crucifixion', artist: 'Fra Angelico', date: 'ca. 1420\u201323' },
-  { file: 'oedipus.jpg',     room: 'fantasy',     roomName: 'Fantasy',
+  { file: 'oedipus.jpg',     id: 'oedipus-and-the-sphinx', room: 'fantasy',     roomName: 'Fantasy',
     title: 'Oedipus and the Sphinx', artist: 'Gustave Moreau', date: '1864' },
-  { file: 'rooster.jpg',     room: 'non-western', roomName: 'Non-Western',
+  { file: 'rooster.jpg',     id: 'hen-and-rooster-with-grapevine', room: 'non-western', roomName: 'Non-Western',
     title: 'Hen and Rooster with Grapevine', artist: 'It\u014d Jakuch\u016b', date: '1792' },
-  { file: 'wave.jpg',        room: 'non-western', roomName: 'Non-Western',
+  { file: 'wave.jpg',        id: 'under-the-wave-off-kanagawa', room: 'non-western', roomName: 'Non-Western',
     title: 'Under the Wave off Kanagawa', artist: 'Katsushika Hokusai', date: 'ca. 1830\u201332' },
-  { file: 'venus.jpg',       room: 'figures',     roomName: 'Figures',
+  { file: 'venus.jpg',       id: 'the-birth-of-venus', room: 'figures',     roomName: 'Figures',
     title: 'The Birth of Venus', artist: 'Alexandre Cabanel', date: '1875' },
-  { file: 'streams.jpg',     room: 'non-western', roomName: 'Non-Western',
+  { file: 'streams.jpg',     id: 'streams-and-mountains', room: 'non-western', roomName: 'Non-Western',
     title: 'Streams and Mountains', artist: 'Xu Ben', date: '1372' },
-  { file: 'twilight.jpg',    room: 'landscape',   roomName: 'Landscape',
+  { file: 'twilight.jpg',    id: 'twilight-in-the-wilderness', room: 'landscape',   roomName: 'Landscape',
     title: 'Twilight in the Wilderness', artist: 'Frederic Edwin Church', date: '1860' },
-  { file: 'orion.jpg',       room: 'classics',    roomName: 'Classics',
+  { file: 'orion.jpg',       id: 'blind-orion-searching-for-the-rising-sun', room: 'classics',    roomName: 'Classics',
     title: 'Blind Orion Searching for the Rising Sun', artist: 'Nicolas Poussin', date: '1658' },
-  { file: 'rest.jpg',        room: 'faith',       roomName: 'Faith',
+  { file: 'rest.jpg',        id: 'rest-on-the-flight-into-egypt', room: 'faith',       roomName: 'Faith',
     title: 'The Rest on the Flight into Egypt', artist: 'Gerard David', date: 'ca. 1512\u201315' },
-  { file: 'pandora.jpg',     room: 'fantasy',     roomName: 'Fantasy',
+  { file: 'pandora.jpg',     id: 'pandora', room: 'fantasy',     roomName: 'Fantasy',
     title: 'Pandora', artist: 'Odilon Redon', date: 'ca. 1914' },
-  { file: 'plum.jpg',        room: 'non-western', roomName: 'Non-Western',
+  { file: 'plum.jpg',        id: 'plum-garden-at-kamata', room: 'non-western', roomName: 'Non-Western',
     title: 'Plum Garden at Kamata', artist: 'Utagawa Hiroshige', date: '1857' },
-  { file: 'oriole.jpg',      room: 'non-western', roomName: 'Non-Western',
+  { file: 'oriole.jpg',      id: 'black-naped-oriole', room: 'non-western', roomName: 'Non-Western',
     title: 'Black-naped Oriole on a Stem of Rose Mallow', artist: 'Utagawa Hiroshige', date: 'ca. 1834' },
-  { file: 'julie-le-brun.jpg', room: 'figures',   roomName: 'Figures',
+  { file: 'julie-le-brun.jpg', id: 'julie-le-brun-looking-in-a-mirror', room: 'figures',   roomName: 'Figures',
     title: 'Julie Le Brun Looking in a Mirror', artist: 'Elisabeth Louise Vig\u00e9e Le Brun', date: '1787' }
 ];
 
