@@ -948,8 +948,8 @@ button.go:hover { background: #4653E0; }
 .over.menu { justify-content: center; }
 .over.menu .rules { margin-left: auto; margin-right: auto; }
 
-/* "Setup" and "Paused" are a label for the face you are on, not the
-   announcement that "Print complete" is. */
+/* "Settings" is a label for the face you are on, not the announcement
+   that "Print complete" is. */
 .over.menu h2 {
   font-size: 0.72rem;
   font-weight: 600;
@@ -1090,7 +1090,7 @@ h2[hidden] { display: none; }
 
   <div class="foot center">
     <p class="msg" id="msg">&nbsp;</p>
-    <button class="go ghost" id="menuBtn" type="button">Setup</button>
+    <button class="go ghost" id="menuBtn" type="button">Settings</button>
     <button class="go" id="again" type="button">New print</button>
     <button class="go ghost" id="rulesBtn" type="button">Rules</button>
     <p class="hint" id="hint">Drag to steer &middot; tap to rotate &middot; swipe down to drop</p>
@@ -2238,7 +2238,7 @@ function showFace(which) {
     elOver.classList.add('menu');
     elSetup().hidden = false;
     document.getElementById('overTitle').hidden = false;
-    document.getElementById('overTitle').textContent = paused ? 'Paused' : 'Setup';
+    document.getElementById('overTitle').textContent = 'Settings';
   }
 
   document.getElementById('overCredit').hidden = true;
@@ -2284,7 +2284,7 @@ function buttons() {
 
   if (phase === 'ready') {
     menu.hidden = false;
-    menu.textContent = 'Setup';
+    menu.textContent = 'Settings';
     menu.classList.toggle('on', onSetup());
     menu.classList.add('ghost');
     main.textContent = 'Play';
@@ -2311,8 +2311,10 @@ function buttons() {
     return;
   }
 
+  /* Opening the settings stops the clock, which is what a pause is, so the
+     button says the thing it does rather than the side effect. */
   menu.hidden = false;
-  menu.textContent = 'Pause';
+  menu.textContent = 'Settings';
   menu.classList.add('ghost');
   menu.classList.remove('on');
   main.textContent = 'New print';
