@@ -1375,7 +1375,7 @@ ol.board li.none .nm {
                    and the panel sizes each page for itself. -->
               <div class="pg" id="rulesPg1">
               <div class="demo" id="demo" hidden></div>
-              <p>Welcome to the Gallery Printshop! The background image file needs to be printed. Clear a color set by matching four in a row. Each color you clear adds that color plate to the image. The goal is to add every color to the image and "print" it. The side tubes empty as you fill the image to track your progress of that color.</p>
+              <p>Welcome to the Gallery Printshop! The background image file needs to be printed. Clear a color set by having them fall and touch in any grouping of four. Each color you clear adds that color plate to the image. The goal is to add every color to the image and "print" it. The side tubes empty as you fill the image to track your progress of that color.</p>
               </div>
 
               <div class="pg" id="rulesPg2" hidden>
@@ -3323,7 +3323,16 @@ function record(ran) {
   if (was && campDone.indexOf(was.id) === -1) campDone.push(was.id);
   campAt = campFind();
 
-  if (!board || !window.CPBoard || !window.CPBoard.signedIn()) return;
+  if (!board) return;
+
+  if (!window.CPBoard || !window.CPBoard.signedIn()) {
+    /* It still counted for this visit -- the level is printed and the
+       series moves on. It just has nowhere to be written down, and saying
+       nothing at all read as the board being broken. */
+    board.textContent = 'Not signed in \u00b7 this run is not on the board';
+    board.hidden = false;
+    return;
+  }
 
   board.textContent = 'Saving the run\u2026';
   board.hidden = false;
@@ -3337,7 +3346,11 @@ function record(ran) {
     art: was ? was.id : null,
     level: i + 1
   }).then((r) => {
-    if (!r || !r.ok) { board.textContent = 'That run did not save.'; return; }
+    if (!r || !r.ok) {
+      if (r && r.reason) console.warn('[printshop] the run did not save:', r.reason);
+      board.textContent = 'That run did not save.';
+      return;
+    }
     const st = r.standing;
     board.innerHTML = campDone.length + ' of ' + list.length + ' printed'
       + (st ? ' \u00b7 <b>' + clockSecs(st.total_seconds) + '</b> total'
@@ -3686,7 +3699,7 @@ newPrint('rules');
       if (!member) return null;
 
       const posted = await postScore(GAME, seconds, detail, variant);
-      if (!posted.ok) return { ok: false };
+      if (!posted.ok) return { ok: false, reason: posted.reason };
 
       /* Where the run leaves them in the series, which is levels first and
          total time only as a tiebreak. The old readout asked for their
