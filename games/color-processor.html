@@ -68,15 +68,13 @@ body {
   align-items: center;
   padding: 8px 10px 12px;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* While the setup is open the page may legitimately be taller than the
-   window, so it is allowed to scroll. */
-body.tuning {
-  overflow-y: auto;
-  -webkit-font-smoothing: antialiased;
-  touch-action: none;
-}
+/* touch-action deliberately does NOT live here. It used to, and it works,
+   but it is intersected down the tree: with none on the body nothing
+   inside can pan either, and the intro panel has to be able to scroll.
+   It sits on .rig instead, which is the part you steer on. */
 
 /* ---- readout ---- */
 
@@ -513,19 +511,6 @@ html.embed .title { display: none; }
 }
 .msg b { color: var(--accent); }
 
-label.tune {
-  font-size: 0.58rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--dim);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 5px;
-  min-width: 0;
-}
-
 /* Off by default: nobody wants a browser tab that starts singing. */
 .snd {
   margin-left: auto;
@@ -543,73 +528,8 @@ label.tune {
 .snd[aria-pressed="true"] .snd-off { display: none; }
 .snd[aria-pressed="false"] .snd-on { display: none; }
 
-.setup { flex: 0 0 auto; min-width: 0; }
-
 /* Open, it needs the whole width: as an auto-width flex item the row of
    controls simply ran off the side of the box. */
-.setup[open] { flex: 1 1 100%; }
-
-.setup summary {
-  list-style: none;
-  cursor: pointer;
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--dim);
-  background: #11131A;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 12px;
-
-  /* Open, the details takes the full width so the controls can lay out
-     across it -- but the button itself should not stretch with it. It
-     keeps its own width and centres, in line with New print below. */
-  width: fit-content;
-  margin: 0 auto;
-}
-
-.setup summary::-webkit-details-marker { display: none; }
-.setup summary:hover { color: var(--accent); border-color: var(--accent); }
-.setup[open] summary { color: var(--accent); }
-
-/* Two by two, each control under its own label rather than beside it. Four
-   labelled controls on one line never fit the 430px the box is allowed, and
-   that box is the same width on a desktop, so auto-fitting only ever left
-   one control stranded on a row of its own. */
-.setup-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: end;
-  gap: 10px;
-  padding-top: 10px;
-  text-align: left;
-}
-
-label.tune select {
-  width: 100%;
-  min-width: 0;
-  font-family: var(--font);
-  font-size: 0.74rem;
-  color: var(--text);
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px 6px;
-}
-
-label.tune input {
-  width: 100%;
-  min-width: 0;
-  font-family: var(--font);
-  font-size: 0.78rem;
-  color: var(--text);
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px 6px;
-}
-
 button.go {
   font-family: var(--font);
   font-size: 0.68rem;
@@ -752,10 +672,6 @@ button.go:hover { background: #4653E0; }
 
 /* The rules, read once before the first drop rather than sitting under the
    board for the whole run. */
-/* Cartridges carries the longest option text, so it takes the full width
-   and the two short number fields pair off underneath. */
-.setup-row label.tune:first-child { grid-column: 1 / -1; }
-
 .rules {
   margin: 0 auto 4px;
   padding: 0;
@@ -854,6 +770,73 @@ button.go:hover { background: #4653E0; }
   user-select: text;
 }
 
+/* The settings, as the panel's other face. A label column wide enough for
+   the longest of them, so the three controls line up down one edge. */
+.setupface {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  text-align: left;
+}
+
+.tune2 {
+  display: grid;
+  grid-template-columns: 8.4em 1fr;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.tune2 select,
+.tune2 input {
+  font-family: var(--font);
+  font-size: 0.82rem;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 9px;
+  min-width: 0;
+  width: 100%;
+}
+
+/* A number needs room for three digits, not for the panel. */
+.tune2 input { width: 5.2em; }
+
+.over.menu { justify-content: center; }
+.over.menu .rules { margin-left: auto; margin-right: auto; }
+
+/* "Setup" and "Paused" are a label for the face you are on, not the
+   announcement that "Print complete" is. */
+.over.menu h2 {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 22px;
+}
+
+/* The left-hand button is the quiet one everywhere except paused, where
+   carrying on is the thing you most likely want. */
+.go.ghost {
+  background: #11131A;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.go.ghost:hover { background: #171A22; }
+
+/* Filled while its face is the one showing, so which side you are on is
+   readable from the button itself. */
+.go.ghost.on { background: var(--accent); color: #11131A; }
+.go.ghost.on:hover { background: #E0B160; }
+.go[hidden] { display: none; }
+
 h2[hidden] { display: none; }
 
 
@@ -915,6 +898,24 @@ h2[hidden] { display: none; }
               </div>
               <p>In the setup, you can adjust the fall speed, add additional colors for more challenge, and change the number of clears of a color needed to complete it on the background image.</p>
             </div>
+
+            <!-- The panel's other face. Same box, same room: the controls were
+                 a cramped strip under the board and the whole of this was
+                 sitting empty. -->
+            <div class="rules setupface" id="overSetup" hidden>
+              <label class="tune2"><span class="lab">Cartridges</span>
+                <select id="setInks">
+                  <option value="office" selected>4 &mdash; CMYK</option>
+                  <option value="five-lc">5 &mdash; + light cyan</option>
+                  <option value="five-w">5 &mdash; + white</option>
+                  <option value="photo">6 &mdash; photo</option>
+                </select>
+              </label>
+              <label class="tune2"><span class="lab">Ink per plate</span>
+                <input id="setTarget" type="number" min="3" step="1" value="10"></label>
+              <label class="tune2"><span class="lab">Fall ms</span>
+                <input id="setFall" type="number" min="100" step="50" value="700"></label>
+            </div>
           </div>
         </div>
       </div>
@@ -932,21 +933,7 @@ h2[hidden] { display: none; }
 
   <div class="foot center">
     <p class="msg" id="msg">&nbsp;</p>
-    <details class="setup">
-    <summary>Setup</summary>
-    <div class="setup-row">
-    <label class="tune">Cartridges
-      <select id="setInks">
-        <option value="office" selected>4 &mdash; CMYK</option>
-        <option value="five-lc">5 &mdash; + light cyan</option>
-        <option value="five-w">5 &mdash; + white</option>
-        <option value="photo">6 &mdash; photo</option>
-      </select>
-    </label>
-    <label class="tune">Ink per plate <input id="setTarget" type="number" min="3" step="1" value="10"></label>
-    <label class="tune">Fall ms <input id="setFall" type="number" min="100" step="50" value="700"></label>
-    </div>
-    </details>
+    <button class="go ghost" id="menuBtn" type="button">Setup</button>
     <button class="go" id="again" type="button">New print</button>
     <p class="hint" id="hint">Drag to steer &middot; tap to rotate &middot; swipe down to drop</p>
   </div>
@@ -1455,6 +1442,22 @@ let queue = [], shownNext = 3, cellPx = 20;
 let points = 0, bestChain = 0, fallMs = 700, pieces = 0, startedAt = 0;
 let timer = null, busy = false, over = false;
 
+/* Four states, and one pair of buttons that says the right thing in each:
+   before the first drop (Setup / Play), printing (Pause / New print),
+   paused (Resume / New print) and finished (New print).
+
+   `applied` is what the board in front of you was actually built from.
+   Comparing the controls against it is how the game knows whether a
+   setting has been changed since, which is the difference between
+   resuming a print and having to start a new one. */
+let started = false, paused = false, pausedAt = 0;
+let applied = null;
+
+/* Which of the four we are in. `started` and `paused` alone could not tell
+   the panel before the first drop from the panel after the last one --
+   both have nothing falling -- and they want different buttons. */
+let phase = 'ready';            // ready | playing | paused | done
+
 let tiles = [];
 
 function buildGrid() {
@@ -1814,11 +1817,13 @@ function tick() {
 let clock = null;
 
 function startClock() {
-  clearInterval(clock);
+  stopClock();
   clock = setInterval(() => {
-    if (!over) elTm.textContent = stamp(Date.now() - startedAt);
+    if (!over && !paused) elTm.textContent = stamp(Date.now() - startedAt);
   }, 500);
 }
+
+function stopClock() { clearInterval(clock); clock = null; }
 
 function startTick() { stopTick(); timer = setInterval(tick, fallMs); }
 function stopTick()  { clearInterval(timer); timer = null; }
@@ -1909,28 +1914,20 @@ document.addEventListener('pointerup', (e) => {
 
 /* ---- a print ---- */
 
-/* The rules panel, before the first drop. Nothing moves until it is
-   dismissed, so reading it costs nothing. */
-function ready() {
+/* The panel before the first drop, on whichever face was last asked for.
+   Nothing moves until it is dismissed, so reading it costs nothing. */
+function ready(face) {
   over = true;                                  // nothing falls while it is up
+  started = false; paused = false; phase = 'ready';
   stopTick();
+  stopClock();
   elOver.classList.remove('won');
-  elOver.classList.add('intro');
-  // the copy opens with its own welcome, so a heading above it would only
-  // say the same thing twice
-  document.getElementById('overTitle').hidden = true;
-  document.getElementById('overCredit').hidden = true;
-  document.getElementById('overText').innerHTML = '';
-  document.getElementById('overRules').hidden = false;
-  document.getElementById('again').textContent = 'Play';
-  elOver.hidden = false;
-  paintDemo();
+  showFace(face || 'rules');
 }
 
 function begin() {
-  document.getElementById('overRules').hidden = true;
-  elOver.classList.remove('intro');
-  document.getElementById('again').textContent = 'New print';
+  faceOff();
+  started = true; paused = false; phase = 'playing';
   elOver.hidden = true;
   over = false;
   startedAt = Date.now();                       // the clock starts here
@@ -1939,6 +1936,118 @@ function begin() {
   startTick();
   sayMusic('startMusic');
   show('');
+  buttons();
+}
+
+/* ---- the panel's two faces, and the pause ---- */
+
+const elSetup = () => document.getElementById('overSetup');
+const elRules = () => document.getElementById('overRules');
+
+function faceOff() {
+  elOver.classList.remove('intro', 'menu');
+  elRules().hidden = true;
+  elSetup().hidden = true;
+}
+
+/* What the controls say right now, against what the board was built from. */
+function reading() {
+  return {
+    mode: document.getElementById('setInks').value,
+    inkPer: Math.max(3, Number(document.getElementById('setTarget').value) || 10),
+    fallMs: Math.max(100, Number(document.getElementById('setFall').value) || 700)
+  };
+}
+
+const changed = () => !applied || JSON.stringify(reading()) !== JSON.stringify(applied);
+
+function showFace(which) {
+  faceOff();
+  if (which === 'setup') {
+    elOver.classList.add('menu');
+    elSetup().hidden = false;
+    document.getElementById('overTitle').hidden = false;
+    document.getElementById('overTitle').textContent = paused ? 'Paused' : 'Setup';
+  } else {
+    elOver.classList.add('intro');
+    elRules().hidden = false;
+    document.getElementById('overTitle').hidden = true;
+    paintDemo();
+  }
+  document.getElementById('overCredit').hidden = true;
+  document.getElementById('overText').innerHTML = '';
+  elOver.hidden = false;
+  buttons();
+}
+
+const onSetup = () => !elOver.hidden && !elSetup().hidden;
+
+/* The two buttons under the board, named for the state they are in. */
+function buttons() {
+  const menu = document.getElementById('menuBtn');
+  const main = document.getElementById('again');
+  main.hidden = false;
+
+  main.classList.toggle('ghost', phase === 'paused');
+
+  if (phase === 'done') {
+    // the print is finished and the panel is telling you about it; the only
+    // thing left to do is start another
+    menu.hidden = true;
+    main.textContent = 'New print';
+    return;
+  }
+
+  if (phase === 'ready') {
+    menu.hidden = false;
+    menu.textContent = 'Setup';
+    menu.classList.toggle('on', onSetup());
+    menu.classList.add('ghost');
+    main.textContent = 'Play';
+    return;
+  }
+
+  if (phase === 'paused') {
+    /* Change a setting and there is no resuming this board -- it was built
+       from the old numbers. Rather than quietly throwing the print away,
+       the way back simply stops being offered until the setting is put
+       back. */
+    menu.hidden = changed();
+    menu.textContent = 'Resume';
+    menu.classList.remove('ghost', 'on');
+    main.textContent = 'New print';
+    return;
+  }
+
+  menu.hidden = false;
+  menu.textContent = 'Pause';
+  menu.classList.add('ghost');
+  menu.classList.remove('on');
+  main.textContent = 'New print';
+}
+
+function pause() {
+  if (!started || paused || over) return;
+  paused = true; phase = 'paused';
+  pausedAt = Date.now();
+  stopTick();
+  stopClock();
+  sayMusic('stopMusic');
+  showFace('setup');
+}
+
+function resume() {
+  if (!paused) return;
+  // the clock owes back whatever the pause took, so the finished print
+  // reports time spent playing rather than time since you pressed Play
+  startedAt += Date.now() - pausedAt;
+  paused = false; phase = 'playing';
+  elOver.hidden = true;
+  faceOff();
+  startClock();
+  startTick();
+  sayMusic('startMusic');
+  buttons();
 }
 
 function stamp(ms) {
@@ -1971,9 +2080,9 @@ function finish(won) {
     credit.hidden = true;
   }
 
-  document.getElementById('overRules').hidden = true;
-  elOver.classList.remove('intro');
-  document.getElementById('again').textContent = 'New print';
+  faceOff();
+  started = false; paused = false; phase = 'done';
+  stopClock();
   document.getElementById('overTitle').hidden = false;
   document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
   /* Non breaking spaces inside each token, so a wrap can only ever fall
@@ -1987,9 +2096,10 @@ function finish(won) {
       + ' &middot; chain&nbsp;&times;' + bestChain;
   elOver.classList.toggle('won', !!won);
   elOver.hidden = false;
+  buttons();
 }
 
-function newPrint() {
+function newPrint(face) {
   /* Six columns, fixed. Width used to be a setting and was never a real
      dial: a wider board gives more room to place a piece and spreads each
      ink thinner over it, and the two all but cancel. The cartridge count
@@ -2004,6 +2114,9 @@ function newPrint() {
 
   inkPer = Math.max(3, Number(document.getElementById('setTarget').value) || 10);
   fallMs = Math.max(100, Number(document.getElementById('setFall').value) || 700);
+
+  // what this board is built from, for telling later whether it still matches
+  applied = reading();
 
   well = new Array(COLS * ROWS).fill(null);
   points = 0; bestChain = 0; over = false; busy = false;
@@ -2029,7 +2142,7 @@ function newPrint() {
 
   sizeBoard();
   spawn();
-  ready();
+  ready(face);
 }
 
 /* ------------------------------------------------------------
@@ -2097,21 +2210,36 @@ sndBtn.addEventListener('click', async () => {
   sndBtn.setAttribute('aria-label', next ? 'Turn sound off' : 'Turn sound on');
 });
 
-/* One button, under the box rather than over it, so nothing covers the
-   title and painter of the print that was just finished. It starts the
-   first print and sets up every one after. */
+/* The right-hand button: start the first print, or start the next one. */
 document.getElementById('again').addEventListener('click', () => {
-  if (!document.getElementById('overRules').hidden) begin();
+  if (!started && !elRules().hidden) begin();
   else newPrint();
 });
-/* Opening the setup grows the foot, and sizeBoard measures the foot, so
-   the board has to be told to give the panel its room back. Without this
-   the controls simply ran off the bottom of the popup. The scroll is the
-   belt to that braces, for a window too short to fit both. */
-const tune = document.querySelector('.setup');
-tune.addEventListener('toggle', () => {
-  document.body.classList.toggle('tuning', tune.open);
-  sizeBoard();
+
+/* The left-hand one, wearing whichever name the state gave it. */
+document.getElementById('menuBtn').addEventListener('click', () => {
+  if (paused) { resume(); return; }
+  if (started) { pause(); return; }
+  showFace(onSetup() ? 'rules' : 'setup');
+});
+
+/* A setting changes the print it describes. Before the first drop that can
+   simply happen -- the board is rebuilt behind the panel, so the cartridges
+   above it always match the control. Mid print it cannot, so the buttons
+   say so instead. */
+for (const id of ['setInks', 'setTarget', 'setFall']) {
+  const el = document.getElementById(id);
+  el.addEventListener('change', () => {
+    if (started) { buttons(); return; }
+    newPrint('setup');
+  });
+  el.addEventListener('input', () => { if (started) buttons(); });
+}
+
+/* Coming back to a jammed board because the phone went to sleep is nobody's
+   idea of a fair loss. */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pause();
 });
 
 window.addEventListener('resize', sizeBoard);
