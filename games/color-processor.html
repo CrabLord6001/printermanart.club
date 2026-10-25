@@ -2205,20 +2205,30 @@ const changed = () => !applied || JSON.stringify(reading()) !== JSON.stringify(a
 
 function showFace(which) {
   faceOff();
-  if (which === 'setup') {
+  const intro = which !== 'setup';
+
+  if (intro) {
+    elOver.classList.add('intro');
+    elRules().hidden = false;
+    document.getElementById('overTitle').hidden = true;
+  } else {
     elOver.classList.add('menu');
     elSetup().hidden = false;
     document.getElementById('overTitle').hidden = false;
     document.getElementById('overTitle').textContent = paused ? 'Paused' : 'Setup';
-  } else {
-    elOver.classList.add('intro');
-    elRules().hidden = false;
-    document.getElementById('overTitle').hidden = true;
-    paintDemo();
   }
+
   document.getElementById('overCredit').hidden = true;
   document.getElementById('overText').innerHTML = '';
   elOver.hidden = false;
+
+  /* Sized last, with the panel on screen and nothing left to add to it. A
+     hidden panel measures nothing, which drove the copy to its smallest
+     size and the example to its smallest thumbnails. It only ever looked
+     right on the first load because the demo image was still arriving and
+     painted again once it had, by which time the panel was up. */
+  if (intro) paintDemo();
+
   buttons();
 }
 
