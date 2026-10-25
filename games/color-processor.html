@@ -568,9 +568,10 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 .rankbtn.on .rankdial { color: var(--accent); border-color: var(--accent); }
 .rankbtn.on .lbl { color: var(--accent); }
 
-/* Nothing is falling on the title screen, so the line about steering it
-   has nothing to say there. */
-body.titleup .hint { visibility: hidden; }
+/* On a screen somebody is reading, nothing is falling, so the line about
+   how to steer it has nothing to say. The level card keeps it: there the
+   next thing is Play. */
+body.reading .hint { visibility: hidden; }
 
 .tubes { display: flex; justify-content: center; gap: 6px; }
 
@@ -3326,7 +3327,6 @@ const elRules = () => document.getElementById('overRules');
 const elGallery = () => document.getElementById('overGallery');
 
 function faceOff() {
-  document.body.classList.remove('titleup');
   /* won goes too. It trades the scrim for a gradient that is clear at the
      top so the finished print shows through, which is right for the print
      and unreadable for anything laid over it. closeRules puts it back. */
@@ -3410,7 +3410,7 @@ function showFace(which) {
     document.getElementById('overText').innerHTML = '';
     document.getElementById('overBoard').hidden = true;
     elOver.hidden = false;
-    document.body.classList.add('titleup');
+
     paintTitle();
     whereInSeries();
     buttons();
@@ -3710,6 +3710,9 @@ function buttons() {
   const main = document.getElementById('again');
   const rules = document.getElementById('rulesBtn');
 
+  const reading = onHome() || (!elOver.hidden && !elRules().hidden);
+  document.body.classList.toggle('reading', reading);
+
   /* On the title screen the options are the interface. Three more buttons
      under the board would only be a second way to say the same four
      things, so they stand down until there is a board to act on. */
@@ -3724,23 +3727,35 @@ function buttons() {
 
   main.hidden = false;
 
-  /* Filled while the rules are the page showing, the way Settings is --
-     except on the opening screen, where they came up by themselves and
-     closing them would only reveal a board nobody has started yet. There
-     the way on is Play, not a toggle that appears to do nothing. */
-  if (rules) {
-    const up = !elOver.hidden && !elRules().hidden;
-    rules.textContent = 'Rules';
-    rules.hidden = up && !rulesFrom;
-    rules.classList.toggle('on', up);
-  }
+  const rulesUp = !elOver.hidden && !elRules().hidden;
 
   /* The rail button lights only while the board itself is up, so it goes
      out wherever the panel closes rather than only where it opened. */
   const rank = document.getElementById('rankBtn');
-  if (rank) {
-    const up = !elOver.hidden && !elRules().hidden;
-    rank.classList.toggle('on', up && rulesPage === boardPage());
+  if (rank) rank.classList.toggle('on', rulesUp && rulesPage === boardPage());
+
+  /* While the instructions are open there is one thing to do down here,
+     and it is leaving. Play belonged to a screen that had already chosen
+     a lane, and a Rules button on the rules is a button for the page you
+     are reading. The pager moves between pages; this names the way out
+     and says where it goes. */
+  if (rulesUp) {
+    menu.hidden = true;
+    main.hidden = true;
+    if (rules) {
+      rules.hidden = !rulesFrom;
+      rules.classList.remove('on');
+      rules.textContent = !rulesFrom ? 'Back'
+        : (rulesFrom.wasPlaying ? 'Resume'
+          : (rulesFrom.face === 'home' ? 'Menu' : 'Back'));
+    }
+    return;
+  }
+
+  if (rules) {
+    rules.textContent = 'Rules';
+    rules.hidden = false;
+    rules.classList.remove('on');
   }
 
 
