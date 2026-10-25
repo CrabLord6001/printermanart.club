@@ -58,6 +58,12 @@ body {
   align-items: center;
   padding: 8px 10px 12px;
   overflow: hidden;
+}
+
+/* While the setup is open the page may legitimately be taller than the
+   window, so it is allowed to scroll. */
+body.tuning {
+  overflow-y: auto;
   -webkit-font-smoothing: antialiased;
   touch-action: none;
 }
@@ -609,9 +615,29 @@ button.go:hover { background: #4653E0; }
   background: rgba(10, 12, 17, 0.9);
   display: flex;
   flex-direction: column;
-  justify-content: center;
   padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
+
+/* A short window can still run the copy past the bottom. The fade is the
+   only cue that there is more, so it is painted on the panel itself and
+   pinned there while the text moves under it. */
+.over::after {
+  content: '';
+  position: sticky;
+  display: block;
+  bottom: -16px;
+  margin: 0 -16px -16px;
+  height: 26px;
+  flex: none;
+  background: linear-gradient(rgba(10, 12, 17, 0), rgba(10, 12, 17, 0.96));
+  pointer-events: none;
+}
+
+/* An auto margin rather than justify-content: centred when there is room,
+   and nothing lopped off the top when there is not. */
+.over-in { margin: auto 0; }
 
 .over[hidden] { display: none; }
 
@@ -671,8 +697,7 @@ button.go:hover { background: #4653E0; }
 /* The rules, read once before the first drop rather than sitting under the
    board for the whole run. */
 .rules {
-  list-style: none;
-  margin: 0 auto 14px;
+  margin: 0 auto 4px;
   padding: 0;
   text-align: left;
   max-width: 30rem;
@@ -680,25 +705,49 @@ button.go:hover { background: #4653E0; }
 
 .rules[hidden] { display: none; }
 
-.rules li {
-  font-size: 0.76rem;
+.rules p {
+  margin: 0 0 7px;
+  font-size: 0.72rem;
   line-height: 1.5;
   color: var(--muted);
-  margin: 0 0 7px;
-  padding-left: 14px;
-  position: relative;
+  text-align: left;
+  text-wrap: normal;
 }
 
-.rules li::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0.52em;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--dim);
+.rules p:last-child { margin-bottom: 0; }
+
+/* The worked example: the same page after one ink, two, three, and
+   finished. Small on purpose -- it shows what happens without handing
+   over the painting. */
+.demo {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  align-items: flex-end;
+  margin: 0 auto 10px;
 }
 
-.rules .chip { vertical-align: -2px; margin-right: 2px; }
+.demo[hidden] { display: none; }
+.demo figure { margin: 0; text-align: center; }
+
+.demo canvas {
+  display: block;
+  border-radius: 2px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.55);
+}
+
+.demo figcaption {
+  margin-top: 4px;
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+h2[hidden] { display: none; }
+
+
 .plate-line[hidden] { display: none; }
 </style>
 </head>
@@ -732,18 +781,16 @@ button.go:hover { background: #4653E0; }
             <h2 id="overTitle">&nbsp;</h2>
             <p class="plate-line" id="overCredit" hidden></p>
             <p id="overText"></p>
-            <ul class="rules" id="overRules" hidden>
-              <li>Four or more of a color touching, in any shape, clears.</li>
-              <li>A clear drops what was above it. Land in another group and
-                  that is a chain, worth more every link.</li>
-              <li><span class="chip gold"></span> pulls its own color out of a
-                  diagonal and into line.</li>
-              <li><span class="chip bug"></span> never matches, and rewrites
-                  what it lands against. A chain of two, or one clump of six,
-                  burns it off.</li>
-              <li>Feed each ink until its plate lays down. Four plates and the
-                  page is printed.</li>
-            </ul>
+            <div class="rules" id="overRules" hidden>
+              <!-- Built from the print the player is about to make, small
+                   enough to show the idea without handing them the painting
+                   before they have earned it. -->
+              <div class="demo" id="demo" hidden></div>
+              <p>Welcome to Color Processor! The background image file needs to be printed. Clear a color set by matching four in a row. Each color you clear adds that color plate to the image. The goal is to add every color to the image and "print" it.</p>
+              <p>Beware of virus colors that cannot match and randomize colors they touch. You need to combo clear (one set after another) or match six of one color to clear viruses.</p>
+              <p>Magnetic inks has a gold shine and work like the others but also help you by clearing diagonally.</p>
+              <p>In the setup, you can adjust the fall speed, add additional colors for more challenge, and change the number of clears of a color needed to complete it on the background image.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -1038,6 +1085,86 @@ function blankPage() {
 function preparePrint(img) {
   separated = separate(img, PW, PH);
   blankPage();
+}
+
+/* The same page after one ink, two, three, and finished. Four thumbnails
+   say what a paragraph of rules cannot.
+
+   Always Redon's Pandora, never the print being set up, so the example
+   cannot hand anybody the painting they are about to earn. It is in the
+   library too, so the browser usually has it already.
+
+   The first three are screened coarse, as they are during play; the last
+   is redrawn fine on fresh paper, as the finished print is. */
+const DEMO_LABEL = ['1 ink', '2 inks', '3 inks', 'printed'];
+const DEMO_FILE = 'pandora.jpg';
+let demoSep = null;
+
+const demoArt = new Image();
+demoArt.onload = () => { demoSep = separate(demoArt, PW, PH); paintDemo(); };
+demoArt.onerror = () => { demoSep = null; };   // the panel simply goes without it
+
+/* Heaviest plate first. A fixed order kept putting a plate the painting
+   barely uses in step two -- most of these works want almost no cyan --
+   so two thumbnails side by side looked identical and the example taught
+   nothing. Sorted by what the page actually asks for, every step visibly
+   changes. Sampled every 16th pixel; this only decides an order. */
+function demoOrder() {
+  const ink = (pl) => {
+    const arr = demoSep[pl];
+    let t = 0;
+    for (let i = 0; i < arr.length; i += 16) t += arr[i];
+    return t;
+  };
+  return PLATES.slice().sort((a, b) => ink(b) - ink(a));
+}
+const DW = 40, DH = 80;
+
+function paintDemo() {
+  const host = document.getElementById('demo');
+  if (!demoSep) {
+    host.hidden = true;
+    if (!demoArt.src) demoArt.src = '/games/img/' + DEMO_FILE;
+    return;
+  }
+  host.innerHTML = '';
+
+  const off = document.createElement('canvas');
+  off.width = PW; off.height = PH;
+  const o = off.getContext('2d');
+  o.fillStyle = '#F2EFE6';
+  o.fillRect(0, 0, PW, PH);
+
+  const order = demoOrder();
+
+  order.forEach((pl, i) => {
+    const last = i === order.length - 1;
+    if (last) {
+      // the finished print is a fresh sheet with all four laid fine
+      o.globalCompositeOperation = 'source-over';
+      o.fillStyle = '#F2EFE6';
+      o.fillRect(0, 0, PW, PH);
+      o.globalCompositeOperation = 'multiply';
+      for (const q of PLATES) screenPlate(o, demoSep[q], PW, PH, FINE, ANGLE[q], DOT[q]);
+    } else {
+      o.globalCompositeOperation = 'multiply';
+      screenPlate(o, demoSep[pl], PW, PH, COARSE, ANGLE[pl], DOT[pl]);
+    }
+    o.globalCompositeOperation = 'source-over';
+
+    const cv = document.createElement('canvas');
+    cv.width = DW; cv.height = DH;
+    cv.getContext('2d').drawImage(off, 0, 0, DW, DH);
+
+    const fig = document.createElement('figure');
+    fig.appendChild(cv);
+    const cap = document.createElement('figcaption');
+    cap.textContent = DEMO_LABEL[i];
+    fig.appendChild(cap);
+    host.appendChild(fig);
+  });
+
+  host.hidden = false;
 }
 
 const platesDown = () => PLATES.filter(pl => laid[pl]).length;
@@ -1529,12 +1656,15 @@ function ready() {
   over = true;                                  // nothing falls while it is up
   stopTick();
   elOver.classList.remove('won');
-  document.getElementById('overTitle').textContent = 'Color Processor';
+  // the copy opens with its own welcome, so a heading above it would only
+  // say the same thing twice
+  document.getElementById('overTitle').hidden = true;
   document.getElementById('overCredit').hidden = true;
   document.getElementById('overText').innerHTML = '';
   document.getElementById('overRules').hidden = false;
   document.getElementById('again').textContent = 'Play';
   elOver.hidden = false;
+  paintDemo();
 }
 
 function begin() {
@@ -1582,6 +1712,7 @@ function finish(won) {
 
   document.getElementById('overRules').hidden = true;
   document.getElementById('again').textContent = 'New print';
+  document.getElementById('overTitle').hidden = false;
   document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
   /* Non breaking spaces inside each token, so a wrap can only ever fall
      between them -- no more "longest" on one line and "chain 2" on the next. */
@@ -1668,7 +1799,11 @@ const ARTWORKS = [
   { file: 'rest.jpg',        room: 'faith',       roomName: 'Faith',
     title: 'The Rest on the Flight into Egypt', artist: 'Gerard David', date: 'ca. 1512\u201315' },
   { file: 'pandora.jpg',     room: 'fantasy',     roomName: 'Fantasy',
-    title: 'Pandora', artist: 'Odilon Redon', date: 'ca. 1914' }
+    title: 'Pandora', artist: 'Odilon Redon', date: 'ca. 1914' },
+  { file: 'plum.jpg',        room: 'non-western', roomName: 'Non-Western',
+    title: 'Plum Garden at Kamata', artist: 'Utagawa Hiroshige', date: '1857' },
+  { file: 'oriole.jpg',      room: 'non-western', roomName: 'Non-Western',
+    title: 'Black-naped Oriole on a Stem of Rose Mallow', artist: 'Utagawa Hiroshige', date: 'ca. 1834' }
 ];
 
 let artwork = null;
@@ -1702,6 +1837,16 @@ document.getElementById('again').addEventListener('click', () => {
   if (!document.getElementById('overRules').hidden) begin();
   else newPrint();
 });
+/* Opening the setup grows the foot, and sizeBoard measures the foot, so
+   the board has to be told to give the panel its room back. Without this
+   the controls simply ran off the bottom of the popup. The scroll is the
+   belt to that braces, for a window too short to fit both. */
+const tune = document.querySelector('.setup');
+tune.addEventListener('toggle', () => {
+  document.body.classList.toggle('tuning', tune.open);
+  sizeBoard();
+});
+
 window.addEventListener('resize', sizeBoard);
 
 newPrint();
