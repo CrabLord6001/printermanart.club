@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Color Processor — rough board</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+
+<style>
+/* ============================================================
+   Color Processor — step one, the rough board
+   ============================================================
+   On purpose this is plain: flat tiles, no particles, no laser,
+   no artwork. It exists to answer one question, which is whether
+   swapping and cascading is fun with the scoring we picked. The
+   look comes later, over a loop we already know is good.
+
+   The logic below (matching, collapsing, scoring) is written to
+   be portable. When the real renderer arrives -- canvas, toner,
+   arcs from the hoppers -- it replaces the paint() function and
+   nothing else.
+   ============================================================ */
+
+:root {
+  --ground: #101218;
+  --panel:  #171A22;
+  --border: #272B36;
+  --text:   #FFFFFF;
+  --muted:  #9BA0AE;
+  --dim:    #7A8094;
+  --accent: #D4A24C;
+
+  --cyan:    #22B8E6;
+  --magenta: #E8459B;
+  --yellow:  #E8C53D;
+  --key:     #4A5162;
+
+  --font: 'Poppins', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; height: 100%; }
+
+body {
+  background: var(--ground);
+  color: var(--muted);
+  font-family: var(--font);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 10px 16px;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- the readout ---- */
+
+.head {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 2px 2px 8px;
+}
+
+.title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+.stat {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat b { color: var(--text); font-size: 0.95rem; margin-left: 5px; }
+.stat.goal b { color: var(--accent); }
+
+/* ---- the four hoppers ---- */
+
+.hoppers {
+  width: 100%;
+  max-width: 460px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* A tank with a tapered neck. Flat shapes, but enough of a silhouette
+   that the board reads as the inside of a machine rather than a puzzle
+   on a page. */
+.hopper {
+  position: relative;
+  height: 46px;
+  border-radius: 7px 7px 3px 3px;
+  border: 1px solid var(--border);
+  background: #0C0E13;
+  overflow: hidden;
+}
+
+/* Anchored to the bottom, because toner settles and the neck drains it from
+   underneath. It dips when that color clears and fills back up -- feedback
+   only, nothing in the rules depends on it. */
+.hopper .fill {
+  position: absolute;
+  left: 3px; right: 3px; bottom: 3px;
+  border-radius: 2px 2px 4px 4px;
+  transition: height 0.35s ease;
+}
+
+.hopper .neck {
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 12px;
+  height: 9px;
+  margin-left: -6px;
+  border-radius: 0 0 3px 3px;
+  background: var(--border);
+}
+
+.hopper .tag {
+  position: absolute;
+  left: 0; right: 0; top: 4px;
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  z-index: 1;
+}
+
+.hopper.c .fill { background: var(--cyan); }
+.hopper.m .fill { background: var(--magenta); }
+.hopper.y .fill { background: var(--yellow); }
+.hopper.k .fill { background: var(--key); }
+
+
+/* ---- the board ---- */
+
+.tray {
+  width: min(94vw, 460px, (100vh - 250px) * 7 / 9);
+  background: #0C0E13;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  touch-action: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  aspect-ratio: 7 / 9;
+}
+
+.cell {
+  border-radius: 5px;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.1s linear;
+}
+
+.cell.c { background: var(--cyan); }
+.cell.m { background: var(--magenta); }
+.cell.y { background: var(--yellow); }
+.cell.k { background: var(--key); }
+
+.cell.picked { transform: scale(0.86); box-shadow: 0 0 0 2px #fff inset; }
+
+/* The one concession to animation at this stage: matched tiles go white
+   for a moment before they clear. Without it a cascade is a single frame
+   where the whole board silently changed and you cannot tell what you did. */
+.cell.hit { background: #fff; transform: scale(0.9); }
+
+/* ---- the foot ---- */
+
+.foot {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+}
+
+.msg {
+  flex: 1 1 auto;
+  font-size: 0.8rem;
+  color: var(--muted);
+  min-height: 1.2em;
+  margin: 0;
+}
+
+.msg b { color: var(--accent); }
+
+label.tune {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+label.tune input {
+  width: 58px;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 7px;
+}
+
+button.go {
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: #5865F2;
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 16px;
+  cursor: pointer;
+}
+
+button.go:hover { background: #4653E0; }
+
+/* ---- the end of a print ---- */
+
+.over {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 17, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 24px;
+}
+
+.over[hidden] { display: none; }
+
+.over h2 { margin: 0; font-size: 1.4rem; color: var(--text); font-weight: 600; }
+.over p  { margin: 0; font-size: 0.95rem; max-width: 34ch; }
+</style>
+</head>
+<body>
+
+  <div class="head">
+    <p class="title">Color Processor &mdash; rough board</p>
+    <span class="stat">Points <b id="pts">0</b></span>
+    <span class="stat">Swaps <b id="mv">30</b></span>
+    <span class="stat goal">Target <b id="tg">1000</b></span>
+  </div>
+
+  <div class="hoppers">
+    <div class="hopper c"><div class="fill" id="hop-c"></div><span class="tag">C</span><div class="neck"></div></div>
+    <div class="hopper m"><div class="fill" id="hop-m"></div><span class="tag">M</span><div class="neck"></div></div>
+    <div class="hopper y"><div class="fill" id="hop-y"></div><span class="tag">Y</span><div class="neck"></div></div>
+    <div class="hopper k"><div class="fill" id="hop-k"></div><span class="tag">K</span><div class="neck"></div></div>
+  </div>
+
+  <div class="tray">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="foot">
+    <p class="msg" id="msg">Swap two neighbors to line up three.</p>
+    <label class="tune">Target <input id="setTarget" type="number" min="50" step="50" value="1000"></label>
+    <label class="tune">Swaps <input id="setMoves" type="number" min="5" step="5" value="30"></label>
+    <button class="go" id="again" type="button">New print</button>
+  </div>
+
+  <div class="over" id="over" hidden>
+    <h2 id="overTitle">&nbsp;</h2>
+    <p id="overText"></p>
+    <button class="go" id="overBtn" type="button">New print</button>
+  </div>
+
+<script>
+/* ============================================================
+   Logic
+   ============================================================ */
+
+const COLS = 7, ROWS = 9;
+const INKS = ['c', 'm', 'y', 'k'];
+
+/* Scoring as agreed: the longer the run, the steeper the reward, and a
+   cascade pays more with every link so that setting up a chain beats
+   taking the easy three in front of you. */
+const RUN_POINTS = { 3: 10, 4: 15, 5: 25 };
+const SIX_PLUS   = 50;
+const CHAIN_CAP  = 8;
+
+const runPoints = (n) => (n >= 6 ? SIX_PLUS : RUN_POINTS[n] || 0);
+
+const at   = (g, x, y) => g[y * COLS + x];
+const put  = (g, x, y, v) => { g[y * COLS + x] = v; };
+const rand = () => INKS[(Math.random() * INKS.length) | 0];
+
+/* Every run of three or more, across and down, as its own group. A cell
+   can belong to two runs where they cross, and both are paid -- an L is
+   worth more than a line, which is the point of making one. */
+function findRuns(g) {
+  const runs = [];
+
+  for (let y = 0; y < ROWS; y++) {
+    let x = 0;
+    while (x < COLS) {
+      const ink = at(g, x, y);
+      let end = x;
+      while (end + 1 < COLS && at(g, end + 1, y) === ink) end++;
+      if (ink && end - x + 1 >= 3) {
+        const cells = [];
+        for (let i = x; i <= end; i++) cells.push([i, y]);
+        runs.push(cells);
+      }
+      x = end + 1;
+    }
+  }
+
+  for (let x = 0; x < COLS; x++) {
+    let y = 0;
+    while (y < ROWS) {
+      const ink = at(g, x, y);
+      let end = y;
+      while (end + 1 < ROWS && at(g, x, end + 1) === ink) end++;
+      if (ink && end - y + 1 >= 3) {
+        const cells = [];
+        for (let i = y; i <= end; i++) cells.push([x, i]);
+        runs.push(cells);
+      }
+      y = end + 1;
+    }
+  }
+
+  return runs;
+}
+
+/* Clear the cells, let everything above fall into the holes, and fill the
+   top from the hoppers. */
+function collapse(g, cells) {
+  for (const [x, y] of cells) put(g, x, y, null);
+
+  for (let x = 0; x < COLS; x++) {
+    let write = ROWS - 1;
+    for (let y = ROWS - 1; y >= 0; y--) {
+      const v = at(g, x, y);
+      if (v) { put(g, x, write, v); write--; }
+    }
+    for (let y = write; y >= 0; y--) put(g, x, y, rand());
+  }
+}
+
+function swapped(g, a, b) {
+  const copy = g.slice();
+  const t = at(copy, a[0], a[1]);
+  put(copy, a[0], a[1], at(copy, b[0], b[1]));
+  put(copy, b[0], b[1], t);
+  return copy;
+}
+
+const adjacent = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) === 1;
+
+/* Is there anything left to do? If not the board is dead and wants a
+   reshuffle rather than letting someone stare at it. */
+function anyMove(g) {
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (x + 1 < COLS && findRuns(swapped(g, [x, y], [x + 1, y])).length) return true;
+      if (y + 1 < ROWS && findRuns(swapped(g, [x, y], [x, y + 1])).length) return true;
+    }
+  }
+  return false;
+}
+
+/* A fresh board has no matches sitting in it -- those would pay out before
+   anyone touched anything -- and has at least one legal move. */
+function freshBoard() {
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const g = new Array(COLS * ROWS);
+    for (let i = 0; i < g.length; i++) g[i] = rand();
+
+    let guard = 0;
+    while (findRuns(g).length && guard++ < 400) {
+      for (const run of findRuns(g)) {
+        const [x, y] = run[(Math.random() * run.length) | 0];
+        put(g, x, y, rand());
+      }
+    }
+
+    if (!findRuns(g).length && anyMove(g)) return g;
+  }
+  return null;
+}
+
+/* ============================================================
+   The board on the page
+   ============================================================ */
+
+const elGrid = document.getElementById('grid');
+const elPts  = document.getElementById('pts');
+const elMv   = document.getElementById('mv');
+const elTg   = document.getElementById('tg');
+const elMsg  = document.getElementById('msg');
+const elOver = document.getElementById('over');
+
+let grid = [], points = 0, moves = 30, target = 1000, best = 0, picked = null, busy = false;
+
+const tiles = [];
+for (let i = 0; i < COLS * ROWS; i++) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'cell';
+  b.dataset.i = i;
+  elGrid.appendChild(b);
+  tiles.push(b);
+}
+
+function paint() {
+  for (let i = 0; i < tiles.length; i++) {
+    tiles[i].className = 'cell ' + (grid[i] || '');
+  }
+  if (picked) tiles[picked[1] * COLS + picked[0]].classList.add('picked');
+}
+
+const show = (html) => { elMsg.innerHTML = html; };
+
+/* The hoppers react to what gets used. Each tile of a color drains a little
+   from that tank and it fills back up a moment later. Decoration: nothing in
+   the rules reads these numbers. */
+const REST = 68;
+const level = { c: REST, m: REST, y: REST, k: REST };
+const hopEl = { c: null, m: null, y: null, k: null };
+let topUp = null;
+
+function paintHoppers() {
+  for (const ink of INKS) {
+    if (!hopEl[ink]) hopEl[ink] = document.getElementById('hop-' + ink);
+    if (hopEl[ink]) hopEl[ink].style.height = level[ink] + '%';
+  }
+}
+
+function drawInk(counts) {
+  for (const ink of INKS) {
+    if (counts[ink]) level[ink] = Math.max(16, level[ink] - counts[ink] * 5);
+  }
+  paintHoppers();
+
+  clearTimeout(topUp);
+  topUp = setTimeout(() => {
+    for (const ink of INKS) level[ink] = REST;
+    paintHoppers();
+  }, 520);
+}
+
+function newPrint() {
+  target = Math.max(50, Number(document.getElementById('setTarget').value) || 1000);
+  moves  = Math.max(5,  Number(document.getElementById('setMoves').value)  || 30);
+  points = 0; best = 0; picked = null; busy = false;
+  grid = freshBoard();
+  elTg.textContent = target;
+  elPts.textContent = '0';
+  elMv.textContent = moves;
+  elOver.hidden = true;
+  for (const ink of INKS) level[ink] = REST;
+  paintHoppers();
+  show('Swap two neighbors to line up three.');
+  paint();
+}
+
+const wait = (ms) => new Promise(r => setTimeout(r, ms));
+
+/* Resolve everything the swap set off: score the runs, flash them, clear,
+   let the board fall, and look again. Each pass through the loop is one
+   link of the chain and pays more than the last. */
+async function resolve() {
+  let chain = 0, earned = 0;
+
+  for (;;) {
+    const runs = findRuns(grid);
+    if (!runs.length) break;
+
+    chain++;
+    const mult = Math.min(chain, CHAIN_CAP);
+    let thisPass = 0;
+    for (const run of runs) thisPass += runPoints(run.length) * mult;
+    earned += thisPass;
+
+    const cells = [];
+    const seen = new Set();
+    for (const run of runs) {
+      for (const [x, y] of run) {
+        const k = x + ',' + y;
+        if (!seen.has(k)) { seen.add(k); cells.push([x, y]); }
+      }
+    }
+
+    const used = { c: 0, m: 0, y: 0, k: 0 };
+    for (const [x, y] of cells) {
+      used[at(grid, x, y)]++;
+      tiles[y * COLS + x].classList.add('hit');
+    }
+    drawInk(used);
+    points += thisPass;
+    elPts.textContent = points;
+    show(chain > 1
+      ? 'Chain <b>&times;' + mult + '</b> &mdash; ' + thisPass + ' points'
+      : runs.map(r => r.length + ' in a row').join(', ') + ' &mdash; <b>' + thisPass + '</b>');
+
+    await wait(130);
+    collapse(grid, cells);
+    paint();
+    await wait(60);
+  }
+
+  if (chain > best) best = chain;
+  return { chain, earned };
+}
+
+async function trySwap(a, b) {
+  if (busy || !adjacent(a, b)) return;
+
+  const next = swapped(grid, a, b);
+  if (!findRuns(next).length) {
+    show('That swap makes nothing. It costs you nothing either.');
+    return;
+  }
+
+  busy = true;
+  grid = next;
+  moves--;
+  elMv.textContent = moves;
+  paint();
+
+  const { chain } = await resolve();
+
+  if (!anyMove(grid)) {
+    grid = freshBoard();
+    paint();
+    show('Nothing left to match &mdash; the hoppers reloaded the page.');
+  }
+
+  busy = false;
+
+  if (points >= target) {
+    finish(true, chain);
+  } else if (moves <= 0) {
+    finish(false, chain);
+  }
+}
+
+function finish(won) {
+  document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Out of swaps';
+  document.getElementById('overText').textContent = won
+    ? points + ' points with ' + moves + ' swap' + (moves === 1 ? '' : 's') +
+      ' to spare. Longest chain: ' + best + '.'
+    : 'You got to ' + points + ' of ' + target + '. Longest chain: ' + best + '.';
+  elOver.hidden = false;
+}
+
+/* ---- picking ---- */
+
+function cellAt(target) {
+  if (!target || !target.dataset || target.dataset.i === undefined) return null;
+  const i = Number(target.dataset.i);
+  return [i % COLS, (i / COLS) | 0];
+}
+
+elGrid.addEventListener('click', (e) => {
+  const cell = cellAt(e.target);
+  if (!cell || busy) return;
+
+  if (!picked) { picked = cell; paint(); return; }
+  if (picked[0] === cell[0] && picked[1] === cell[1]) { picked = null; paint(); return; }
+
+  if (adjacent(picked, cell)) {
+    const from = picked;
+    picked = null;
+    paint();
+    trySwap(from, cell);
+  } else {
+    picked = cell;
+    paint();
+  }
+});
+
+/* Dragging from one tile to its neighbor, which is how everybody plays
+   these on a phone. */
+let dragFrom = null;
+
+elGrid.addEventListener('pointerdown', (e) => {
+  if (busy) return;
+  dragFrom = cellAt(e.target);
+});
+
+elGrid.addEventListener('pointerup', (e) => {
+  if (!dragFrom || busy) { dragFrom = null; return; }
+  const to = cellAt(document.elementFromPoint(e.clientX, e.clientY));
+  const from = dragFrom;
+  dragFrom = null;
+  if (to && adjacent(from, to)) {
+    picked = null;
+    paint();
+    trySwap(from, to);
+  }
+});
+
+elGrid.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+
+document.getElementById('again').addEventListener('click', newPrint);
+document.getElementById('overBtn').addEventListener('click', newPrint);
+
+newPrint();
+</script>
+
+</body>
+</html>
