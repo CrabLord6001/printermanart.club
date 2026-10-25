@@ -447,6 +447,17 @@ ol.board li.none .nm { color: var(--text-dim, #7A8094); font-size: 0.8rem; font-
 
 body.play-open { overflow: hidden; }
 
+/* Both games are steered by dragging, and a drag across a page is how you
+   select things: on iOS it was catching the board in a selection, handles
+   and all. Nothing inside a game is meant to be selected by dragging. */
+#playbox,
+#cpbox {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 #playbox.full,
 #cpbox.full {
   width: 100%;

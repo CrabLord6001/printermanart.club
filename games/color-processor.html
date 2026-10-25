@@ -53,6 +53,15 @@ body {
   background: var(--ground);
   color: var(--muted);
   font-family: var(--font);
+
+  /* Steering is a drag across the board, and a drag across a page is how
+     you select things: on iOS it was catching the board in a selection,
+     handles and all. Nothing here is meant to be selected by dragging, and
+     the long-press callout and tap flash go with it. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -316,13 +325,13 @@ html.embed .title { display: none; }
    The ring brightens and a highlight travels across the face, which is what
    makes it read as polished metal rather than a drop with a border drawn
    round it. Both halves run on one 2.4s clock so they stay in step. */
-.cell.mag, .nextgrid div.mag {
+.cell.mag, .nextlist .dot.mag {
   position: relative;
   overflow: hidden;
   animation: mag-ring 2.4s ease-in-out infinite;
 }
 
-.cell.mag::after, .nextgrid div.mag::after {
+.cell.mag::after, .nextlist .dot.mag::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -360,7 +369,7 @@ html.embed .title { display: none; }
    never a flat disc, so it cannot be taken for magenta however red it goes,
    and the steps are hard cuts rather than fades because a glitch does not
    ease. */
-.cell.virus, .nextgrid div.virus {
+.cell.virus, .nextlist .dot.virus {
   background:
     repeating-linear-gradient(90deg, rgba(232,57,79,0.20) 0 1px, transparent 1px 4px),
     repeating-linear-gradient(0deg,  rgba(34,184,230,0.13) 0 1px, transparent 1px 3px),
@@ -386,10 +395,10 @@ html.embed .title { display: none; }
 .cell.hit::after { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cell.mag, .nextgrid div.mag, .cell.virus, .nextgrid div.virus { animation: none; }
-  .cell.mag::after, .nextgrid div.mag::after { animation: none; transform: translateX(-130%); }
-  .cell.mag, .nextgrid div.mag { box-shadow: inset 0 0 0 3px #D4A24C, 0 0 5px rgba(212,162,76,0.45); }
-  .cell.virus, .nextgrid div.virus { box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 5px rgba(232,57,79,0.3); }
+  .cell.mag, .nextlist .dot.mag, .cell.virus, .nextlist .dot.virus { animation: none; }
+  .cell.mag::after, .nextlist .dot.mag::after { animation: none; transform: translateX(-130%); }
+  .cell.mag, .nextlist .dot.mag { box-shadow: inset 0 0 0 3px #D4A24C, 0 0 5px rgba(212,162,76,0.45); }
+  .cell.virus, .nextlist .dot.virus { box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 5px rgba(232,57,79,0.3); }
 }
 
 /* The piece on its way down sits slightly proud of the pile. A filter rather
@@ -423,8 +432,13 @@ html.embed .title { display: none; }
   margin-bottom: 5px;
 }
 
-.nextgrid { display: grid; grid-template-rows: repeat(2, 1fr); gap: 3px; justify-items: center; }
-.nextgrid div { width: 20px; height: 20px; border-radius: 50%; }
+/* The queue. One pair per row, soonest at the top, the rest a shade back
+   so the order reads without having to be labelled. */
+.nextlist { display: flex; flex-direction: column; align-items: center; gap: 9px; }
+
+.nextlist .pair { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.nextlist .pair.later { opacity: 0.72; }
+.nextlist .dot { width: 20px; height: 20px; border-radius: 50%; }
 
 .chainnow {
   text-align: center;
@@ -821,6 +835,14 @@ button.go:hover { background: #4653E0; }
   .magdemo .pull-src { transform: translateX(calc(var(--mgCell, 20px) + 3px)); }
 }
 
+/* The two places with something worth copying -- the rules before play
+   and the title of the print after it -- keep selection. Neither is a
+   surface you steer on. */
+.rules, .plate-line, .over h2, .over p {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 h2[hidden] { display: none; }
 
 
@@ -891,7 +913,7 @@ h2[hidden] { display: none; }
     <div class="side">
       <div class="nextbox">
         <p class="lbl">Next</p>
-        <div class="nextgrid"><div id="nb"></div><div id="na"></div></div>
+        <div class="nextlist" id="nextlist"></div>
       </div>
       <p class="chainnow" id="chainnow">&nbsp;</p>
     </div>
@@ -1405,7 +1427,20 @@ const elMsg   = document.getElementById('msg');
 const elOver  = document.getElementById('over');
 const elChain = document.getElementById('chainnow');
 
-let well = [], piece = null, next = null;
+let well = [], piece = null;
+
+/* Three. Deep enough to build a chain toward rather than only place well,
+   shallow enough that the tail still means something -- pieces are drawn at
+   random, so the further out you look the less the order is worth knowing.
+
+   Three are kept whatever the screen shows, so turning the phone or opening
+   the setup never rewrites a sequence the player has already read. How many
+   are on screen is a separate question, settled by the room beside the
+   board: a short landscape window shows fewer, and the ones it leaves off
+   are still the ones that will arrive. */
+const QUEUE_LEN = 3;
+const NEXT_CHROME = 58;          // the Next label, the chain line, the box padding
+let queue = [], shownNext = 3, cellPx = 20;
 let points = 0, bestChain = 0, fallMs = 700, pieces = 0, startedAt = 0;
 let timer = null, busy = false, over = false;
 
@@ -1442,12 +1477,19 @@ function sizeBoard() {
   const byH = (window.innerHeight - used - ROWS * 3) / ROWS;
   const byW = (window.innerWidth - 150 - COLS * 3) / COLS;
   const cell = Math.max(14, Math.min(byH, byW, 72));
+  cellPx = cell;
 
   for (const t of tiles) { t.style.width = cell + 'px'; t.style.height = cell + 'px'; }
-  document.querySelectorAll('.nextgrid div').forEach((d) => {
-    d.style.width = Math.round(cell * 0.6) + 'px';
-    d.style.height = Math.round(cell * 0.6) + 'px';
-  });
+
+  /* How much of the queue is on screen is decided by the column beside the
+     board, which is as tall as the board itself. Whatever does not fit is
+     still in the queue -- it is simply not shown. */
+  const dot = Math.max(10, Math.round(cell * 0.6));
+  const pairH = dot * 2 + 3;
+  const room = ROWS * (cell + 3) - NEXT_CHROME;
+  shownNext = Math.max(1, Math.min(QUEUE_LEN, Math.floor(room / (pairH + 9))));
+
+  paintNext();
 
   // the intro is measured off the well, so it is redrawn when the well moves
   if (elOver && !elOver.hidden && elOver.classList.contains('intro')) paintDemo();
@@ -1512,17 +1554,34 @@ function paint() {
 }
 
 function paintNext() {
-  for (const [id, code] of [['na', next && next.a], ['nb', next && next.b]]) {
-    const el = document.getElementById(id);
-    el.className = code ? classFor(code).replace('cell', '').trim() : '';
-    if (!code) { el.style.background = 'transparent'; el.style.boxShadow = 'none'; return; }
+  const host = document.getElementById('nextlist');
+  if (!host) return;
+  host.innerHTML = '';
 
-    /* Only the plain ink color is set here. A wildcard's face and ring are
-       animated, which an inline style would override, so the stylesheet is
-       left to dress those by class. */
-    el.style.background = isBug(code) ? '' : colorOf(inkOf(code));
-    el.style.boxShadow = '';
-  }
+  const dot = Math.max(10, Math.round(cellPx * 0.6));
+
+  queue.slice(0, shownNext).forEach((pc, i) => {
+    const row = document.createElement('div');
+    row.className = 'pair' + (i ? ' later' : '');
+
+    // b sits above a, the way the piece stands when it arrives
+    for (const code of [pc.b, pc.a]) {
+      const el = document.createElement('div');
+      el.className = ('dot ' + classFor(code).replace('cell', '')).trim();
+      el.style.width = dot + 'px';
+      el.style.height = dot + 'px';
+
+      /* Only the plain ink color is set here. A wildcard's face and ring
+         are animated, which an inline style would override, so the
+         stylesheet is left to dress those by class. */
+      if (!isBug(code)) el.style.background = colorOf(inkOf(code));
+      row.appendChild(el);
+    }
+
+    // the one actually coming next is full size; the rest step down a little
+    if (i) row.style.transform = 'scale(0.82)';
+    host.appendChild(row);
+  });
 }
 
 const colorOf = (ink) => getComputedStyle(document.documentElement)
@@ -1556,10 +1615,15 @@ function newPair() {
   return p;
 }
 
+function fillQueue() {
+  while (queue.length < QUEUE_LEN) queue.push(newPair());
+}
+
 function spawn() {
-  piece = next || newPair();
+  fillQueue();
+  piece = queue.shift();
   piece.x = (COLS >> 1) - 1; piece.y = 1; piece.rot = 0;
-  next = newPair();
+  fillQueue();
 
   if (!fits(piece)) { piece = null; finish(false); return; }
   paint();
@@ -1925,7 +1989,8 @@ function newPrint() {
 
   well = new Array(COLS * ROWS).fill(null);
   points = 0; bestChain = 0; over = false; busy = false;
-  next = null; piece = null;
+  queue = []; piece = null;
+  fillQueue();
 
   buildGrid();
   buildHoppers();
