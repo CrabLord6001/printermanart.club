@@ -153,11 +153,30 @@ body {
 /* ---- the well ---- */
 
 .well {
+  position: relative;
   background: #0C0E13;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 5px;
+  overflow: hidden;
 }
+
+/* The page being printed, behind the toner. Dim and out of focus while you
+   play -- which is what an undeveloped print looks like anyway -- so it
+   never fights the drops for legibility. The finish brings both up. */
+#page {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  filter: brightness(0.42) blur(1.6px);
+  transition: opacity 0.5s ease, filter 0.6s ease;
+  pointer-events: none;
+}
+
+.grid { position: relative; }
 
 .grid {
   display: grid;
@@ -368,7 +387,7 @@ button.go:hover { background: #4653E0; }
   <div class="rig">
     <div class="stack">
       <div class="hoppers" id="hoppers"></div>
-      <div class="well"><div class="grid" id="grid"></div></div>
+      <div class="well"><canvas id="page"></canvas><div class="grid" id="grid"></div></div>
     </div>
 
     <div class="side">
@@ -526,6 +545,135 @@ function findClumps(w) {
   }
 
   return clumps;
+}
+
+/* ============================================================
+   The print
+   ============================================================
+   A real four colour halftone: each plate is a grid of dots on
+   its own rotated screen, each dot sized by how much of that ink
+   the picture wants there. The angles are the trade's, chosen so
+   the screens interfere as little as possible.
+
+   The plate you feed is the plate that lays down. Clear cyan and
+   the cyan plate prints; clear black and the black plate does.
+   The tanks above the well, the drops you are matching and the
+   plates of the print are the same four things.
+   ============================================================ */
+
+const ANGLE = { c: 15, m: 75, y: 0, k: 45 };
+const DOT   = { c: '#0093D3', m: '#E6007E', y: '#F3E500', k: '#1A1A1A' };
+
+/* Light cyan and light magenta feed their full strength plates; white is
+   the paper and feeds nothing. */
+const PLATE_OF = { c: 'c', lc: 'c', m: 'm', lm: 'm', y: 'y', k: 'k', w: null };
+
+const PLATE_ORDER = ['k', 'c', 'm', 'y'];
+const PER_PLATE = 7;                        // drops of an ink before its plate lands
+
+const STAGES = [
+  { cell: 9,   inks: ['k'] },
+  { cell: 7,   inks: ['k', 'c'] },
+  { cell: 5,   inks: ['k', 'c', 'm'] },
+  { cell: 4,   inks: ['k', 'c', 'm', 'y'] },
+  { cell: 3.2, inks: ['k', 'c', 'm', 'y'] }
+];
+
+function separate(img, w, h) {
+  const off = document.createElement('canvas');
+  off.width = w; off.height = h;
+  const o = off.getContext('2d');
+
+  // cover: fill the well and crop, rather than letterbox a landscape print
+  const scale = Math.max(w / img.width, h / img.height);
+  const dw = img.width * scale, dh = img.height * scale;
+  o.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+
+  const d = o.getImageData(0, 0, w, h).data;
+  const out = { c: new Float32Array(w * h), m: new Float32Array(w * h),
+                y: new Float32Array(w * h), k: new Float32Array(w * h) };
+
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+    const r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255;
+    const k = 1 - Math.max(r, g, b);
+    const inv = 1 - k;
+    out.k[p] = k;
+    out.c[p] = inv > 0.001 ? (1 - r - k) / inv : 0;
+    out.m[p] = inv > 0.001 ? (1 - g - k) / inv : 0;
+    out.y[p] = inv > 0.001 ? (1 - b - k) / inv : 0;
+  }
+  return out;
+}
+
+function screenPlate(ctx, plate, w, h, cell, angleDeg, color) {
+  const a = angleDeg * Math.PI / 180;
+  const cos = Math.cos(a), sin = Math.sin(a);
+  const reach = Math.ceil((w + h) / cell) + 2;
+  ctx.fillStyle = color;
+
+  for (let v = -reach; v <= reach; v++) {
+    for (let u = -reach; u <= reach; u++) {
+      const x = (u * cos - v * sin) * cell + w / 2;
+      const y = (u * sin + v * cos) * cell + h / 2;
+      if (x < -cell || y < -cell || x > w + cell || y > h + cell) continue;
+
+      const px = Math.min(w - 1, Math.max(0, Math.round(x)));
+      const py = Math.min(h - 1, Math.max(0, Math.round(y)));
+      const density = plate[py * w + px];
+      if (density <= 0.03) continue;
+
+      ctx.beginPath();
+      ctx.arc(x, y, Math.sqrt(density) * cell * 0.72, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+let printStages = [];        // one offscreen canvas per stage
+let printStage = -1;
+let cleared = { c: 0, m: 0, y: 0, k: 0 };
+
+/* Rendering is heavy, so every stage is drawn once at load and then just
+   swapped in -- never redrawn while the game is running. */
+function preparePrint(img) {
+  const W = 300, H = 600;
+  printStages = STAGES.map((st) => {
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#F2EFE6';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'multiply';
+    const pl = separate(img, W, H);
+    for (const ink of st.inks) screenPlate(ctx, pl[ink], W, H, st.cell, ANGLE[ink], DOT[ink]);
+    return c;
+  });
+}
+
+function showStage(n) {
+  if (n === printStage || n < 0 || !printStages[n]) return;
+  printStage = n;
+
+  const page = document.getElementById('page');
+  page.width = printStages[n].width;
+  page.height = printStages[n].height;
+  page.getContext('2d').drawImage(printStages[n], 0, 0);
+
+  // it comes up and comes into focus as it develops
+  const t = n / (STAGES.length - 1);
+  page.style.opacity = '1';
+  page.style.filter = 'brightness(' + (0.34 + t * 0.26).toFixed(2) + ') blur(' + (2.0 - t * 1.2).toFixed(2) + 'px)';
+}
+
+/* How far along the print is: each plate needs its own ink fed to it, in
+   order, and the fine screen comes when all four have had plenty. */
+function printProgress() {
+  let n = 0;
+  for (const plate of PLATE_ORDER) {
+    if (cleared[plate] >= PER_PLATE) n++; else break;
+  }
+  if (n === 4 && PLATE_ORDER.every(pl => cleared[pl] >= PER_PLATE * 2)) n = 5;
+  return n - 1;                                  // -1 means nothing printed yet
 }
 
 /* ============================================================
@@ -803,6 +951,8 @@ async function resolve() {
       for (const [x, y] of group) {
         const ink = inkOf(at(well, x, y));
         if (ink in used) used[ink]++;
+        const plate = PLATE_OF[ink];
+        if (plate) cleared[plate]++;
         tiles[idx(x, y)].className = 'cell hit';
       }
     }
@@ -834,6 +984,7 @@ async function resolve() {
     settle(well);
     if (pullMagnets()) settle(well);
     paint();
+    showStage(printProgress());
     await wait(90);
   }
 
@@ -941,6 +1092,14 @@ document.addEventListener('pointerup', (e) => {
 function finish(won) {
   over = true;
   stopTick();
+
+  if (won) {
+    const page = document.getElementById('page');
+    showStage(STAGES.length - 1);
+    page.style.opacity = '1';
+    page.style.filter = 'brightness(1) blur(0px)';     // the print comes into focus
+  }
+
   document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
   document.getElementById('overText').textContent = won
     ? points + ' points. Longest chain: ' + bestChain + '.'
@@ -968,6 +1127,12 @@ function newPrint() {
   buildHoppers();
   paintHoppers();
 
+  cleared = { c: 0, m: 0, y: 0, k: 0 };
+  printStage = -1;
+  const page = document.getElementById('page');
+  page.style.opacity = '0';
+  page.style.filter = 'brightness(0.42) blur(1.6px)';
+
   elPts.textContent = '0';
   elTg.textContent = target;
   elBc.textContent = '0';
@@ -981,6 +1146,13 @@ function newPrint() {
   spawn();
   startTick();
 }
+
+/* The plates take a moment to screen, so the game starts without them and
+   the page appears as soon as they are ready. */
+const art = new Image();
+art.onload = () => { preparePrint(art); showStage(printProgress()); };
+art.onerror = () => { /* no page behind the well; the game is unaffected */ };
+art.src = '/games/img/wave.jpg';
 
 document.getElementById('again').addEventListener('click', newPrint);
 document.getElementById('overBtn').addEventListener('click', newPrint);
