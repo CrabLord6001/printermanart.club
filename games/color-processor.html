@@ -32,6 +32,13 @@
    total time as the tiebreak.
    ============================================================ */
 
+/* Hidden means gone, everywhere, once and for all. Three separate things
+   in this file have set display on a class and quietly outranked the
+   browser's own rule for [hidden], and each time the result was an
+   invisible element still holding its height in the middle of a panel.
+   This is the one place to stop that happening again. */
+[hidden] { display: none !important; }
+
 :root {
   --ground: #101218;
   --panel:  #171A22;
@@ -1452,7 +1459,26 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   box-shadow: 0 0 0 4px #15181F, 0 0 0 5px #39404E, 0 10px 26px rgba(0,0,0,0.55);
 }
 
-.homeface .plate canvas { display: block; width: 100%; height: auto; }
+.homeface .plate canvas,
+.campface .plate canvas { display: block; width: 100%; height: auto; }
+
+/* The same sheet and frame as the title screen, since it is the same
+   press -- a little smaller, because it is announcing a level rather
+   than naming the game. */
+.campface .finaleplate {
+  width: 100%;
+  max-width: 22rem;
+  margin: 0 auto 4px;
+  padding: 9px;
+  background: #F2EFE6;
+  border: 1px solid #2E333F;
+  border-radius: 3px;
+  box-shadow: 0 0 0 4px #15181F, 0 0 0 5px #39404E, 0 10px 26px rgba(0,0,0,0.55);
+}
+
+/* With the chapter, the number and the dots gone there is little left to
+   hold the screen down, so the card takes the middle of it. */
+.rules.campface.finale { justify-content: center; }
 
 .rules.homeface .gameover {
   margin: 0 0 13px !important;
@@ -1465,7 +1491,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   text-shadow: 0 2px 16px rgba(232,69,155,0.4);
 }
 
-.rules.homeface .jamline {
+.rules.homeface .faceline {
   margin: 11px 0 0 !important;
   font-size: 0.64rem !important;
   letter-spacing: 0.08em;
@@ -1686,6 +1712,9 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
                  named here: finding out what you printed is the reward for
                  printing it. -->
             <div class="rules campface" id="overGallery" hidden>
+              <!-- The last level does not get a chapter and a number; it
+                   gets a card, printed the same way the title is. -->
+              <div class="plate finaleplate" id="galPlateWrap" hidden><canvas id="galPlate"></canvas></div>
               <p class="chap" id="galChap"></p>
               <p class="lvl" id="galNum"></p>
               <p class="of" id="galOf"></p>
@@ -1702,7 +1731,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
             <div class="rules homeface" id="overHome" hidden>
               <p class="gameover" id="gameOver" hidden>Game Over</p>
               <div class="plate"><canvas id="titleArt"></canvas></div>
-              <p class="jamline" id="jamLine" hidden></p>
+              <p class="faceline" id="faceLine" hidden></p>
               <nav class="menu" id="titleMenu">
                 <button class="mi" type="button" data-go="gallery">Play through Gallery<span class="sub" id="miWhere"></span></button>
                 <button class="mi" type="button" data-go="practice">Practice</button>
@@ -2931,10 +2960,12 @@ function titlePlate(w, h, lines, fs, lead, dx, dy, dens) {
   return arr;
 }
 
-let titleFor = '';                 // the width this was last printed at
-
-function paintTitle(force) {
-  const cv = document.getElementById('titleArt');
+/* Any words, onto any sheet, through the same four plates. The title
+   screen asks for the name of the game, the last level announces itself,
+   and the end says YOU WIN -- all off the press the player spends the
+   whole series feeding. Each sheet remembers what it last printed so a
+   repaint costs nothing. */
+function paintPlate(cv, lines, force) {
   if (!cv || !cv.parentElement) return;
 
   /* The content box of the paper, not the padded box: measured the easy
@@ -2945,17 +2976,19 @@ function paintTitle(force) {
                        - parseFloat(cs.paddingLeft || 0)
                        - parseFloat(cs.paddingRight || 0));
   if (W < 60) return;                        // the panel has no size yet
-  if (!force && String(W) === titleFor) return;
-  titleFor = String(W);
-
-  const lines = ['GALLERY', 'PRINTSHOP'];
+  const key = W + '|' + lines.join(' ');
+  if (!force && key === cv.dataset.printed) return;
+  cv.dataset.printed = key;
 
   // set the type as wide as the plate will take
   const probe = document.createElement('canvas').getContext('2d');
   probe.font = '700 100px ' + TITLE_FONT;
   try { probe.letterSpacing = '6px'; } catch (e) {}
   const widest = Math.max.apply(null, lines.map((l) => probe.measureText(l).width));
-  const fs = Math.max(14, Math.floor(100 * (W * 0.9) / widest));
+  /* Capped, or two short words set themselves enormous and the plate
+     takes over the screen: GALLERY PRINTSHOP earns its size by being long,
+     YOU WIN does not. */
+  const fs = Math.min(88, Math.max(14, Math.floor(100 * (W * 0.9) / widest)));
   const lead = Math.round(fs * 1.02);
   const H = Math.round(lead * lines.length + fs * 0.5);
 
@@ -2967,7 +3000,10 @@ function paintTitle(force) {
 
   /* Coarse enough that the screen is the point. Finer than this and it is
      just type; coarser and the letters stop being letters. */
-  const cell = Math.max(2.6, fs * 0.085) * dpr;
+  /* And the ruling is a property of the press, not of how big the type
+     is. Left to scale with the letters, three big ones came out in dots
+     the size of marbles. */
+  const cell = Math.min(6.4, Math.max(2.6, fs * 0.085)) * dpr;
 
   const ctx = cv.getContext('2d');
   ctx.globalCompositeOperation = 'source-over';
@@ -2986,8 +3022,19 @@ function paintTitle(force) {
 
 /* Poppins may still be on its way when the title is first printed, and the
    letters are a different width once it lands. */
+/* What the title sheet currently says. */
+let titleWords = ['GALLERY', 'PRINTSHOP'];
+const TITLE_WORDS  = ['GALLERY', 'PRINTSHOP'];
+const WIN_WORDS    = ['YOU', 'WIN'];
+const FINALE_WORDS = ['THE LAST', 'PRINT'];
+
+const paintTitle = (force) => paintPlate(document.getElementById('titleArt'), titleWords, force);
+
 if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(() => paintTitle(true)).catch(() => {});
+  document.fonts.ready.then(() => {
+    paintTitle(true);
+    paintPlate(document.getElementById('galPlate'), FINALE_WORDS, true);
+  }).catch(() => {});
 }
 
 /* ---- the instructions, in three pages ---- */
@@ -3221,7 +3268,8 @@ function whereInSeries() {
   const lv = list[at];
   el.textContent = campDone.length >= list.length
     ? 'All ' + list.length + ' printed'
-    : 'Level ' + (at + 1) + ' of ' + list.length + (lv ? ' \u00b7 ' + lv.art.roomName : '');
+    : 'Level ' + (at + 1) + ' of ' + list.length
+      + (lv ? ' \u00b7 ' + (lv.finale ? 'The last print' : lv.art.roomName) : '');
 }
 
 /* Where each option goes. The two that open a panel remember they came
@@ -3333,6 +3381,12 @@ const changed = () => !applied || JSON.stringify(reading()) !== JSON.stringify(a
    and is gone the next time anybody opens the menu. */
 let fromJam = false;
 
+/* Set on the way to the title screen after the last print, so the plate
+   says YOU WIN once and goes back to saying the name of the game. */
+let fromWin = false;
+
+const isFinale = (a) => !!a && a.id === FINALE.id;
+
 function showFace(which) {
   faceOff();
   const intro = which === 'rules';
@@ -3343,11 +3397,13 @@ function showFace(which) {
     /* The hub. Everything a run can end in comes back here, so it carries
        the whole interface and the row under the board stands down. */
     elOver.classList.add('home');
-    if (!fromJam) {
+    if (!fromJam && !fromWin) {
       document.getElementById('gameOver').hidden = true;
-      document.getElementById('jamLine').hidden = true;
+      document.getElementById('faceLine').hidden = true;
     }
+    if (!fromWin) titleWords = TITLE_WORDS;
     fromJam = false;
+    fromWin = false;
     elHome().hidden = false;
     document.getElementById('overTitle').hidden = true;
     document.getElementById('overCredit').hidden = true;
@@ -3434,6 +3490,14 @@ const CHAPTERS = [
 
 const ORDINAL_WORD = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
 
+/* The last level, and the only painting in the game nobody can reach any
+   other way. It is deliberately not in ARTWORKS: practice deals from that
+   list, and a finale you can stumble into during practice is not one. */
+const FINALE = {
+  file: 'mona.jpg', id: 'mona-lisa', room: 'classics', roomName: 'Classics',
+  title: 'Mona Lisa', artist: 'Leonardo da Vinci', date: 'ca. 1503\u201319'
+};
+
 function gallery() {
   const out = [];
   CHAPTERS.forEach((ch, ci) => {
@@ -3443,6 +3507,7 @@ function gallery() {
   for (const a of ARTWORKS) {
     if (!CHAPTERS.some((c) => c.room === a.room)) out.push({ art: a, chapter: CHAPTERS.length });
   }
+  out.push({ art: FINALE, chapter: -1, finale: true });   // last, always
   return out;
 }
 
@@ -3511,9 +3576,28 @@ function buildGallery() {
   const ch = CHAPTERS[here.chapter];
 
   const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  const show = (id, on) => { const el = document.getElementById(id); if (el) el.hidden = !on; };
 
-  set('galChap', 'Chapter ' + (ORDINAL_WORD[here.chapter] || (here.chapter + 1))
-    + ' \u00b7 ' + (ch ? ch.name : here.art.roomName));
+  /* The last one trades the chapter, the big number and the row of dots
+     for a printed card. Twenty of these screens have counted up to it;
+     the twenty first should not look like the twentieth. */
+  show('galPlateWrap', !!here.finale);
+  elGallery().classList.toggle('finale', !!here.finale);
+
+  /* Nothing above the card. "The Gallery" is the name of the twenty that
+     led here; the last one announces itself. */
+  const ttl = document.getElementById('overTitle');
+  if (ttl && onGallery()) ttl.hidden = !!here.finale;
+  show('galChap', !here.finale);
+  show('galNum', !here.finale);
+  show('galOf', !here.finale);
+  show('galDots', !here.finale);
+  if (here.finale) paintPlate(document.getElementById('galPlate'), FINALE_WORDS);
+
+  set('galChap', here.finale
+    ? 'The last print'
+    : 'Chapter ' + (ORDINAL_WORD[here.chapter] || (here.chapter + 1))
+      + ' \u00b7 ' + (ch ? ch.name : here.art.roomName));
   set('galNum', String(i + 1));
   set('galOf', 'Level ' + (i + 1) + ' of ' + list.length);
 
@@ -3676,7 +3760,10 @@ function buttons() {
     /* In the series the button goes somewhere: on to the next painting, or
        back at the one that jammed. Practice has no next, so it keeps the
        label it always had. */
-    main.textContent = !campOn ? 'New print' : (wonLast ? 'Next print' : 'Try again');
+    /* After the last print there is no next one, so the button carries
+       them off the painting rather than pretending the series goes on. */
+    main.textContent = !campOn ? 'New print'
+      : (wonLast ? (isFinale(artwork) ? 'Finish' : 'Next print') : 'Try again');
     /* A jam and a mid print restart do the same thing. They are named
        differently because the moment is different: one is an offer after
        a loss, the other is abandoning a deal that is going badly. */
@@ -3803,7 +3890,7 @@ function finish(won) {
        so losing lands somewhere instead of stopping. */
     fromJam = true;
     document.getElementById('gameOver').hidden = false;
-    const jam = document.getElementById('jamLine');
+    const jam = document.getElementById('faceLine');
     jam.innerHTML = down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
                   + ' &middot; chain&nbsp;&times;' + bestChain;
     jam.hidden = false;
@@ -3827,6 +3914,24 @@ function finish(won) {
   elOver.hidden = false;
   buttons();
   if (won && campOn) record(ran);
+}
+
+/* The end of the series. The painting itself is the reward and it has
+   already been looked at by the time this runs -- this is the press
+   saying so, in the only two words it has to say. */
+function showWin() {
+  const list = campList();
+  const line = document.getElementById('faceLine');
+
+  titleWords = WIN_WORDS;
+  fromWin = true;
+
+  document.getElementById('gameOver').hidden = true;
+  line.innerHTML = 'All ' + list.length + ' printed \u00b7 ' + FINALE.title
+                 + ' \u00b7 ' + FINALE.artist;
+  line.hidden = false;
+
+  showFace('home');
 }
 
 function ordinal(n) {
@@ -4050,8 +4155,9 @@ sndBtn.addEventListener('click', async () => {
 /* The right-hand button: start the first print, or start the next one. */
 document.getElementById('again').addEventListener('click', () => {
   // the rules are no longer always up, so the state says what this does
-  if (phase === 'ready') begin();
-  else newPrint();
+  if (phase === 'ready') { begin(); return; }
+  if (phase === 'done' && campOn && wonLast && isFinale(artwork)) { showWin(); return; }
+  newPrint();
 });
 
 /* The left-hand one, wearing whichever name the state gave it. */
