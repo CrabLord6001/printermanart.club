@@ -2175,6 +2175,7 @@ function ready(face) {
 }
 
 function begin() {
+  rulesFrom = null;
   faceOff();
   started = true; paused = false; phase = 'playing';
   elOver.hidden = true;
@@ -2202,10 +2203,16 @@ function faceOff() {
 
 /* No face at all: the board as it stands, with the buttons under it. */
 function hideFace() {
+  rulesFrom = null;
   faceOff();
   elOver.hidden = true;
   buttons();
 }
+
+/* Where the reader was when they opened the rules, so closing them puts
+   them back rather than somewhere arbitrary. Null whenever the rules are
+   not the thing on screen. */
+let rulesFrom = null;
 
 /* What the controls say right now, against what the board was built from. */
 function reading() {
@@ -2221,6 +2228,7 @@ const changed = () => !applied || JSON.stringify(reading()) !== JSON.stringify(a
 function showFace(which) {
   faceOff();
   const intro = which !== 'setup';
+  if (!intro) rulesFrom = null;
 
   if (intro) {
     elOver.classList.add('intro');
@@ -2253,7 +2261,11 @@ const onSetup = () => !elOver.hidden && !elSetup().hidden;
 function buttons() {
   const menu = document.getElementById('menuBtn');
   const main = document.getElementById('again');
+  const rules = document.getElementById('rulesBtn');
   main.hidden = false;
+
+  // filled while the rules are the page showing, the way Setup is
+  if (rules) rules.classList.toggle('on', !elOver.hidden && !elRules().hidden);
 
 
   main.classList.remove('ghost');
@@ -2516,12 +2528,62 @@ function viewArt() {
   catch (e) { window.location.href = to; }
 }
 
-/* A refresher, on request rather than on every print. Mid-run it stops the
-   clock first, the way opening the settings does, so reading does not cost
-   you the board. */
-document.getElementById('rulesBtn').addEventListener('click', () => {
-  if (started && !paused) pause();
+/* A refresher, on request rather than on every print, and the same button
+   closes it again. Mid-run it stops the clock first, the way opening the
+   settings does, so reading does not cost you the board. */
+function openRules() {
+  const title = document.getElementById('overTitle');
+  const credit = document.getElementById('overCredit');
+  const text = document.getElementById('overText');
+
+  /* The finished panel is not a face -- it is written straight into the
+     same elements showFace clears -- so it has to be kept by hand or
+     reading the rules would throw the result away. */
+  const from = {
+    wasPlaying: started && !paused,
+    face: onSetup() ? 'setup' : null,
+    done: phase === 'done' ? {
+      won: elOver.classList.contains('won'),
+      titleText: title.textContent, titleHidden: title.hidden,
+      creditHTML: credit.innerHTML, creditHidden: credit.hidden,
+      textHTML: text.innerHTML
+    } : null
+  };
+
+  if (from.wasPlaying) pause();                 // pause clears it, so set after
   showFace('rules');
+  rulesFrom = from;
+  buttons();
+}
+
+function closeRules() {
+  const from = rulesFrom;
+  rulesFrom = null;
+
+  if (from && from.wasPlaying) { resume(); return; }
+
+  if (from && from.done) {
+    const d = from.done;
+    faceOff();
+    const title = document.getElementById('overTitle');
+    const credit = document.getElementById('overCredit');
+    const text = document.getElementById('overText');
+    title.textContent = d.titleText; title.hidden = d.titleHidden;
+    credit.innerHTML = d.creditHTML; credit.hidden = d.creditHidden;
+    text.innerHTML = d.textHTML;
+    elOver.classList.toggle('won', d.won);
+    elOver.hidden = false;
+    buttons();
+    return;
+  }
+
+  if (from && from.face === 'setup') { showFace('setup'); return; }
+  hideFace();
+}
+
+document.getElementById('rulesBtn').addEventListener('click', () => {
+  const up = !elOver.hidden && !elRules().hidden;
+  if (up) closeRules(); else openRules();
 });
 
 /* A setting changes the print it describes. Before the first drop that can
