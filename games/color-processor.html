@@ -2085,9 +2085,12 @@ let queue = [], shownNext = 3, cellPx = 20;
 let points = 0, bestChain = 0, fallMs = 700, pieces = 0, startedAt = 0;
 let timer = null, busy = false, over = false;
 
-/* Four states, and one pair of buttons that says the right thing in each:
-   before the first drop (Setup / Play), printing (Pause / New print),
-   paused (Resume / New print) and finished (New print).
+/* Four states, and buttons that say the right thing in each. The series
+   and practice want different words, so each state asks which lane it is
+   in: before the first drop (Practice / Play, or Gallery / Practice),
+   printing (Pause / Restart level, or Settings / New print), paused
+   (Resume / the same), and finished (View art / Next print, Try again
+   after a jam, or New print in practice).
 
    `applied` is what the board in front of you was actually built from.
    Comparing the controls against it is how the game knows whether a
@@ -3162,6 +3165,9 @@ function buttons() {
        back at the one that jammed. Practice has no next, so it keeps the
        label it always had. */
     main.textContent = !campOn ? 'New print' : (wonLast ? 'Next print' : 'Try again');
+    /* A jam and a mid print restart do the same thing. They are named
+       differently because the moment is different: one is an offer after
+       a loss, the other is abandoning a deal that is going badly. */
     return;
   }
 
@@ -3175,6 +3181,15 @@ function buttons() {
     main.textContent = campOn ? 'Play' : 'Practice';
     return;
   }
+
+  /* Re-dealing means something different in each lane, so the button says
+     which. In the series it arms the same level again -- nothing is lost,
+     since a run that does not finish never posts anything, and nothing is
+     gained, since a level counts at the best time it was ever printed in.
+     In practice there is no level to be on, so it deals another painting.
+     "New print" was from before the series existed and read, in the
+     series, as though it would throw the whole gallery away. */
+  const redeal = () => campOn ? 'Restart level' : 'New print';
 
   if (phase === 'paused') {
     /* Both ways out, always, the way the first panel offers both Setup and
@@ -3191,7 +3206,7 @@ function buttons() {
     menu.textContent = 'Resume';
     menu.classList.remove('on');
     menu.classList.toggle('ghost', moved);
-    main.textContent = 'New print';
+    main.textContent = redeal();
     main.classList.toggle('ghost', !moved);
     return;
   }
@@ -3202,7 +3217,7 @@ function buttons() {
   menu.textContent = campOn ? 'Pause' : 'Settings';
   menu.classList.add('ghost');
   menu.classList.remove('on');
-  main.textContent = 'New print';
+  main.textContent = redeal();
 }
 
 function pause() {
