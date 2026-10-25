@@ -1107,9 +1107,10 @@ h2[hidden] { display: none; }
 
 /* The gallery screen: which level is next and how much of the series is
    behind you. */
-/* .rules sets its text left and is declared after this, so the class has
-   to carry both to win. */
-.rules.campface { display: flex; flex-direction: column; gap: 12px; text-align: center; flex: 1 1 auto; }
+/* .rules sets its own text left, and its paragraphs left again, which
+   beats anything inherited -- so both have to be answered by name. */
+.rules.campface { display: flex; flex-direction: column; gap: 12px; flex: 1 1 auto; }
+.rules.campface p { text-align: center; }
 
 .campface .chap {
   margin: 0;
