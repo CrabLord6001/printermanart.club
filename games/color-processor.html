@@ -544,8 +544,11 @@ button.go:hover { background: #4653E0; }
 
 /* Every line centred explicitly rather than by inheritance, and balanced so
    a wrap splits it evenly instead of leaving two words stranded. */
+/* text-wrap: balance shrinks the element to balance its lines, which left
+   the text centred inside a narrow box that was itself flush left. The auto
+   margins centre the box. */
 .over p {
-  margin: 0 0 12px;
+  margin: 0 auto 12px;
   font-size: 0.82rem;
   line-height: 1.55;
   text-align: center;
@@ -572,7 +575,7 @@ button.go:hover { background: #4653E0; }
 .plate-line {
   font-size: 0.74rem !important;
   color: var(--accent) !important;
-  margin: 0 0 16px !important;
+  margin: 0 auto 16px !important;
   text-align: center;
 }
 
@@ -585,7 +588,7 @@ button.go:hover { background: #4653E0; }
    board for the whole run. */
 .rules {
   list-style: none;
-  margin: 0 0 14px;
+  margin: 0 auto 14px;
   padding: 0;
   text-align: left;
   max-width: 30rem;
@@ -613,8 +616,6 @@ button.go:hover { background: #4653E0; }
 
 .rules .chip { vertical-align: -2px; margin-right: 2px; }
 .plate-line[hidden] { display: none; }
-.over h2 { margin: 0; font-size: 1.4rem; color: var(--text); font-weight: 600; }
-.over p  { margin: 0; font-size: 0.95rem; max-width: 34ch; }
 </style>
 </head>
 <body>
@@ -1569,7 +1570,15 @@ const ARTWORKS = [
   { file: 'rooster.jpg',     room: 'non-western', roomName: 'Non-Western',
     title: 'Hen and Rooster with Grapevine', artist: 'It\u014d Jakuch\u016b', date: '1792' },
   { file: 'wave.jpg',        room: 'non-western', roomName: 'Non-Western',
-    title: 'Under the Wave off Kanagawa', artist: 'Katsushika Hokusai', date: 'ca. 1830\u201332' }
+    title: 'Under the Wave off Kanagawa', artist: 'Katsushika Hokusai', date: 'ca. 1830\u201332' },
+  { file: 'venus.jpg',       room: 'figures',     roomName: 'Figures',
+    title: 'The Birth of Venus', artist: 'Alexandre Cabanel', date: '1875' },
+  { file: 'streams.jpg',     room: 'non-western', roomName: 'Non-Western',
+    title: 'Streams and Mountains', artist: 'Xu Ben', date: '1372' },
+  { file: 'twilight.jpg',    room: 'landscape',   roomName: 'Landscape',
+    title: 'Twilight in the Wilderness', artist: 'Frederic Edwin Church', date: '1860' },
+  { file: 'orion.jpg',       room: 'classics',    roomName: 'Classics',
+    title: 'Blind Orion Searching for the Rising Sun', artist: 'Nicolas Poussin', date: '1658' }
 ];
 
 let artwork = null;
