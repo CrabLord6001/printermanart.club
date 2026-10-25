@@ -1092,6 +1092,18 @@ h2[hidden] { display: none; }
 
 
 .plate-line[hidden] { display: none; }
+
+/* Where the run landed, under the result. Quiet on purpose: the print is
+   the thing, the standing is a footnote to it. */
+.board-line {
+  margin: 12px 0 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+
+.board-line b { color: var(--accent); font-weight: 700; }
+.board-line[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -1117,6 +1129,7 @@ h2[hidden] { display: none; }
             <h2 id="overTitle">&nbsp;</h2>
             <p class="plate-line" id="overCredit" hidden></p>
             <p id="overText"></p>
+            <p class="board-line" id="overBoard" hidden></p>
             <div class="rules" id="overRules" hidden>
               <!-- Built from the print the player is about to make, small
                    enough to show the idea without handing them the painting
@@ -2375,6 +2388,7 @@ function showFace(which) {
 
   document.getElementById('overCredit').hidden = true;
   document.getElementById('overText').innerHTML = '';
+  document.getElementById('overBoard').hidden = true;
   elOver.hidden = false;
 
   /* Sized last, with the panel on screen and nothing left to add to it. A
@@ -2598,8 +2612,14 @@ function finish(won) {
   sayMusic(won ? 'done' : 'jam');
   if (won) finishPrint();
 
+  const ran = Date.now() - startedAt;            // read once, used twice
   const down = platesDown();
   const credit = document.getElementById('overCredit');
+
+  // last run's standing belongs to last run, whatever this one did
+  const board = document.getElementById('overBoard');
+  board.innerHTML = '';
+  board.hidden = true;
 
   if (won && artwork) {
     /* Two lines and no more. The way into the room is a button under the
@@ -2621,7 +2641,7 @@ function finish(won) {
   /* Non breaking spaces inside each token, so a wrap can only ever fall
      between them -- no more "longest" on one line and "chain 2" on the next. */
   document.getElementById('overText').innerHTML = won
-    ? '<b>' + stamp(Date.now() - startedAt) + '</b>'
+    ? '<b>' + stamp(ran) + '</b>'
       + ' &middot; ' + points + '&nbsp;pts'
       + ' &middot; ' + pieces + '&nbsp;drops'
       + ' &middot; chain&nbsp;&times;' + bestChain
@@ -2630,6 +2650,40 @@ function finish(won) {
   elOver.classList.toggle('won', !!won);
   elOver.hidden = false;
   buttons();
+  if (won) record(ran);
+}
+
+function ordinal(n) {
+  const t = n % 100;
+  if (t >= 11 && t <= 13) return n + 'th';
+  return n + (['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+}
+
+/* A finished print is the only run worth keeping. A jam has no time in it
+   worth comparing, and posting one would stand a fast failure at the top
+   of a board sorted by time.
+
+   The bridge is set up by a module further down, which loads after this
+   script, so everything here checks that it arrived. Signed out there is
+   nothing to say: the sign-in lives on the arcade page. */
+function record(ran) {
+  const board = document.getElementById('overBoard');
+  if (!board || !window.CPBoard || !window.CPBoard.signedIn()) return;
+
+  board.textContent = 'Saving the run\u2026';
+  board.hidden = false;
+
+  window.CPBoard.record(modeKey, Math.max(1, Math.round(ran / 1000)), {
+    ms: ran,
+    points: points,
+    drops: pieces,
+    chain: bestChain,
+    art: artwork ? artwork.id : null
+  }).then((r) => {
+    if (!r || !r.ok) { board.textContent = 'That run did not save.'; return; }
+    board.innerHTML = MODES[modeKey].label + ' best <b>' + stamp(r.best * 1000) + '</b>'
+      + (r.place ? ' \u00b7 <b>' + ordinal(r.place) + '</b> on the board' : '');
+  }).catch(() => { board.textContent = 'That run did not save.'; });
 }
 
 function newPrint(face) {
@@ -2790,7 +2844,9 @@ function openRules() {
       won: elOver.classList.contains('won'),
       titleText: title.textContent, titleHidden: title.hidden,
       creditHTML: credit.innerHTML, creditHidden: credit.hidden,
-      textHTML: text.innerHTML
+      textHTML: text.innerHTML,
+      boardHTML: document.getElementById('overBoard').innerHTML,
+      boardHidden: document.getElementById('overBoard').hidden
     } : null
   };
 
@@ -2815,6 +2871,8 @@ function closeRules() {
     title.textContent = d.titleText; title.hidden = d.titleHidden;
     credit.innerHTML = d.creditHTML; credit.hidden = d.creditHidden;
     text.innerHTML = d.textHTML;
+    const board = document.getElementById('overBoard');
+    board.innerHTML = d.boardHTML; board.hidden = d.boardHidden;
     elOver.classList.toggle('won', d.won);
     elOver.hidden = false;
     buttons();
@@ -2872,6 +2930,39 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('resize', sizeBoard);
 
 newPrint('rules');
+</script>
+
+<!-- The arcade's sign-in and its score table, reached from the game's own
+     script through one small bridge. Same origin as the arcade page, so
+     anyone signed in there is already signed in here. -->
+<script type="module">
+  import { onMember, postScore, leaderboardLow, myBestLow } from '/games/club-auth.js';
+
+  const GAME = 'color-processor';
+  let member = null;
+  onMember((m) => { member = m; });
+
+  window.CPBoard = {
+    signedIn: () => !!member,
+
+    async record(variant, seconds, detail) {
+      if (!member) return null;
+
+      const posted = await postScore(GAME, seconds, detail, variant);
+      if (!posted.ok) return { ok: false };
+
+      const best = await myBestLow(GAME, variant);
+      const rows = await leaderboardLow(GAME, variant, 10);
+
+      // only a place they can actually see on the board, not a rank in the air
+      let place = 0;
+      if (rows && best != null) {
+        const at = rows.findIndex((r) => r.display_name === member.displayName && r.score === best);
+        place = at >= 0 ? at + 1 : 0;
+      }
+      return { ok: true, best, place };
+    }
+  };
 </script>
 
 </body>

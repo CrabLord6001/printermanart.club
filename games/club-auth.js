@@ -178,6 +178,23 @@ export async function postScore(game, score, detail, variant) {
   return { ok: true };
 }
 
+/* The same board for a game where the lowest number wins -- a time. It is
+   a second function rather than a flag on the first because the one above
+   is what the arcade already depends on. */
+export async function leaderboardLow(game, variant, limit) {
+  const { data, error } = await db.rpc('club_leaderboard_low', {
+    p_game: game,
+    p_variant: variant || 'classic',
+    p_limit: limit || 10
+  });
+
+  if (error) {
+    console.warn('[club-auth] leaderboard failed:', error.message);
+    return null;
+  }
+  return data || [];
+}
+
 export async function leaderboard(game, variant, limit) {
   const { data, error } = await db.rpc('club_leaderboard', {
     p_game: game,
@@ -194,6 +211,23 @@ export async function leaderboard(game, variant, limit) {
 
 /* Your own best for this game, so the page can show it whether or not
    you are on the top ten. */
+/* Your own best where lowest wins, for the same reason. */
+export async function myBestLow(game, variant) {
+  if (!member) return null;
+
+  const { data, error } = await db
+    .from('club_scores')
+    .select('score')
+    .eq('user_id', member.id)
+    .eq('game', game)
+    .eq('variant', variant || 'classic')
+    .order('score', { ascending: true })
+    .limit(1);
+
+  if (error || !data || !data.length) return null;
+  return data[0].score;
+}
+
 export async function myBest(game, variant) {
   if (!member) return null;
 
