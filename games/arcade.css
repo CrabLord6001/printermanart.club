@@ -456,6 +456,11 @@ body.play-open { overflow: hidden; }
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+
+  /* A swipe meant for the game must not rubber-band the lander behind it.
+     body.play-open already stops the page scrolling; this stops the
+     overscroll that iOS does anyway. */
+  overscroll-behavior: contain;
 }
 
 #playbox.full,
