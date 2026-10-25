@@ -561,6 +561,10 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 .rankbtn.on .rankdial { color: var(--accent); border-color: var(--accent); }
 .rankbtn.on .lbl { color: var(--accent); }
 
+/* Nothing is falling on the title screen, so the line about steering it
+   has nothing to say there. */
+body.titleup .hint { visibility: hidden; }
+
 .tubes { display: flex; justify-content: center; gap: 6px; }
 
 .tubes .tube {
@@ -1280,12 +1284,22 @@ ol.board .pl {
   color: var(--dim);
 }
 
-/* The medal places, in metal rather than in pictures: three images at this
-   size turn to mush, and the colour alone is read instantly. */
+/* The medal places get medals. The number stays, inside the disc, which
+   is what keeps them readable at this size -- a medal shape alone is a
+   blob once it is twenty pixels wide. */
 ol.board li.p1 { border-color: rgba(212,162,76,0.55); background: #191a1b; }
-ol.board li.p1 .pl { color: #E8B65C; }
-ol.board li.p2 .pl { color: #C7CBD4; }
-ol.board li.p3 .pl { color: #BE803F; }
+
+ol.board .pl.medal {
+  width: 22px;
+  height: 25px;
+  padding: 0;
+  display: block;
+  flex: none;
+}
+
+ol.board .pl.medal svg { display: block; width: 100%; height: 100%; }
+
+ol.board.tight .pl.medal { width: 19px; height: 21px; }
 
 /* The Discord picture, or their first letter when they have none. */
 ol.board .face {
@@ -1365,7 +1379,7 @@ ol.board li.me {
 }
 
 ol.board li.me .nm, ol.board li.me .lv, ol.board li.me .sc { color: var(--accent); }
-ol.board li.me .pl { color: var(--accent); }
+ol.board li.me .pl:not(.medal) { color: var(--accent); }
 
 /* A break above the player's own row, so nobody reads tenth and thirty
    fourth as though they were next to each other. */
@@ -1415,6 +1429,115 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    is right for a paragraph and wrong for a list. */
 .over.intro.boardface .over-in { justify-content: flex-start; }
 
+/* ---- the title screen ---- */
+
+.rules.homeface {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  max-width: 32rem;
+  width: 100%;
+}
+
+/* The printed name, in a frame, the way the room it is named after hangs
+   things. Paper white behind it because that is what it was printed on. */
+.homeface .plate {
+  width: 100%;
+  max-width: 26rem;
+  padding: 10px;
+  background: #F2EFE6;
+  border: 1px solid #2E333F;
+  border-radius: 3px;
+  box-shadow: 0 0 0 4px #15181F, 0 0 0 5px #39404E, 0 10px 26px rgba(0,0,0,0.55);
+}
+
+.homeface .plate canvas { display: block; width: 100%; height: auto; }
+
+.rules.homeface .gameover {
+  margin: 0 0 13px !important;
+  font-size: clamp(1.1rem, 5.6vw, 1.9rem) !important;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--magenta);
+  text-align: center !important;
+  text-shadow: 0 2px 16px rgba(232,69,155,0.4);
+}
+
+.rules.homeface .jamline {
+  margin: 11px 0 0 !important;
+  font-size: 0.64rem !important;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  text-align: center !important;
+}
+
+/* The options. Big enough to be the interface, since on this screen they
+   are the only one -- the row under the board steps aside here. */
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  width: 100%;
+  max-width: 21rem;
+  margin-top: 20px;
+}
+
+.menu .mi {
+  position: relative;
+  padding: 8px 12px 8px 26px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: clamp(0.84rem, 3.6vw, 1.12rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s, border-color 0.12s;
+}
+
+/* The pointer every one of these screens has had since 1985. */
+.menu .mi::before {
+  content: '\25B8';
+  position: absolute;
+  left: 11px;
+  opacity: 0;
+  color: var(--accent);
+  transition: opacity 0.12s, transform 0.12s;
+  transform: translateX(-3px);
+}
+
+.menu .mi:hover,
+.menu .mi:focus-visible {
+  color: var(--text);
+  background: rgba(255,255,255,0.035);
+  border-color: var(--border);
+  outline: none;
+}
+
+.menu .mi:hover::before,
+.menu .mi:focus-visible::before { opacity: 1; transform: translateX(0); }
+
+.menu .mi .sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* The title screen is the whole panel, so it sits against the full scrim
+   and keeps the buttons under the board out of it. */
+.over.home { justify-content: center; }
+.over.home .over-in { margin: 0; gap: 0; }
+
 /* The gallery screen: which level is next and how much of the series is
    behind you. */
 /* .rules sets its own text left, and its paragraphs left again, which
@@ -1426,7 +1549,8 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    same weight and later in the sheet, so a hidden gallery face went on
    holding its height and the intro lost that much of the panel. */
 .rules.campface[hidden],
-.rules.setupface[hidden] { display: none; }
+.rules.setupface[hidden],
+.rules.homeface[hidden] { display: none; }
 
 .campface .chap {
   margin: 0;
@@ -1568,6 +1692,23 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
               <div class="dots" id="galDots"></div>
               <p class="spec" id="galSpec"></p>
               <p class="saved" id="galSaved"></p>
+            </div>
+
+            <!-- The title screen, and the place every run comes back to.
+                 The name is printed rather than drawn: the same four plates
+                 and the same screens that print the paintings, run slightly
+                 out of register so the letters carry colour at their edges
+                 the way a cheap press would leave them. -->
+            <div class="rules homeface" id="overHome" hidden>
+              <p class="gameover" id="gameOver" hidden>Game Over</p>
+              <div class="plate"><canvas id="titleArt"></canvas></div>
+              <p class="jamline" id="jamLine" hidden></p>
+              <nav class="menu" id="titleMenu">
+                <button class="mi" type="button" data-go="gallery">Play through Gallery<span class="sub" id="miWhere"></span></button>
+                <button class="mi" type="button" data-go="practice">Practice</button>
+                <button class="mi" type="button" data-go="intro">Introduction</button>
+                <button class="mi" type="button" data-go="board">Leaderboard</button>
+              </nav>
             </div>
 
             <div class="rules setupface" id="overSetup" hidden>
@@ -1985,6 +2126,11 @@ function fitCopy(panel, rules, room) {
 }
 
 const demoArt = new Image();
+
+/* Fetched on load rather than when the instructions first open. The page
+   count depends on how tall the example is, so leaving it until somebody
+   opens the rules meant the first answer was worked out without it. */
+setTimeout(() => { if (!demoArt.src) demoArt.src = '/games/img/' + DEMO_FILE; }, 0);
 demoArt.onload = () => {
   demoSep = separate(demoArt, PW, PH);
   /* The page break was never worked out without this, so work it out now
@@ -2747,6 +2893,103 @@ function begin() {
   buttons();
 }
 
+/* ---- the title, printed ----------------------------------------
+   The name goes through the same press as the paintings: four plates,
+   four screens at the trade's angles, laid in multiply on paper white.
+   The plates are nudged a little off true, which is the one thing a
+   cheap print always shows and the reason the letters carry colour at
+   their edges instead of being flat black type. */
+
+const TITLE_FONT = "'Poppins', system-ui, -apple-system, sans-serif";
+
+// how far each plate misses, as a share of the dot pitch
+const TITLE_OFF = {
+  k: { x:  0.00, y:  0.00, d: 0.92 },
+  c: { x: -0.55, y: -0.30, d: 0.80 },
+  m: { x:  0.55, y:  0.26, d: 0.80 },
+  y: { x:  0.08, y:  0.62, d: 0.85 }
+};
+
+/* One plate's worth of the title: the letters drawn into a scratch canvas
+   and read back as ink density, which is the shape screenPlate wants. */
+function titlePlate(w, h, lines, fs, lead, dx, dy, dens) {
+  const off = document.createElement('canvas');
+  off.width = w; off.height = h;
+  const o = off.getContext('2d');
+  o.fillStyle = '#000';
+  o.textAlign = 'center';
+  o.textBaseline = 'middle';
+  o.font = '700 ' + fs + 'px ' + TITLE_FONT;
+  try { o.letterSpacing = Math.round(fs * 0.06) + 'px'; } catch (e) { /* older browsers set it in the font */ }
+
+  const top = h / 2 - (lines.length * lead) / 2;
+  lines.forEach((ln, i) => o.fillText(ln, w / 2 + dx, top + lead * (i + 0.5) + dy));
+
+  const d = o.getImageData(0, 0, w, h).data;
+  const arr = new Float32Array(w * h);
+  for (let i = 3, p = 0; i < d.length; i += 4, p++) arr[p] = (d[i] / 255) * dens;
+  return arr;
+}
+
+let titleFor = '';                 // the width this was last printed at
+
+function paintTitle(force) {
+  const cv = document.getElementById('titleArt');
+  if (!cv || !cv.parentElement) return;
+
+  /* The content box of the paper, not the padded box: measured the easy
+     way the type ran off the right edge of the sheet it was printed on. */
+  const plate = cv.parentElement;
+  const cs = getComputedStyle(plate);
+  const W = Math.round(plate.clientWidth
+                       - parseFloat(cs.paddingLeft || 0)
+                       - parseFloat(cs.paddingRight || 0));
+  if (W < 60) return;                        // the panel has no size yet
+  if (!force && String(W) === titleFor) return;
+  titleFor = String(W);
+
+  const lines = ['GALLERY', 'PRINTSHOP'];
+
+  // set the type as wide as the plate will take
+  const probe = document.createElement('canvas').getContext('2d');
+  probe.font = '700 100px ' + TITLE_FONT;
+  try { probe.letterSpacing = '6px'; } catch (e) {}
+  const widest = Math.max.apply(null, lines.map((l) => probe.measureText(l).width));
+  const fs = Math.max(14, Math.floor(100 * (W * 0.9) / widest));
+  const lead = Math.round(fs * 1.02);
+  const H = Math.round(lead * lines.length + fs * 0.5);
+
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(W * dpr);
+  cv.height = Math.round(H * dpr);
+  cv.style.width = W + 'px';
+  cv.style.height = H + 'px';
+
+  /* Coarse enough that the screen is the point. Finer than this and it is
+     just type; coarser and the letters stop being letters. */
+  const cell = Math.max(2.6, fs * 0.085) * dpr;
+
+  const ctx = cv.getContext('2d');
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#F2EFE6';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.globalCompositeOperation = 'multiply';
+
+  for (const pl of PLATES) {
+    const o = TITLE_OFF[pl];
+    const mask = titlePlate(cv.width, cv.height, lines, fs * dpr, lead * dpr,
+                            o.x * cell, o.y * cell, o.d);
+    screenPlate(ctx, mask, cv.width, cv.height, cell, ANGLE[pl], DOT[pl]);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/* Poppins may still be on its way when the title is first printed, and the
+   letters are a different width once it lands. */
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => paintTitle(true)).catch(() => {});
+}
+
 /* ---- the instructions, in three pages ---- */
 
 /* The instructions run to three pages where there is room for them and
@@ -2831,10 +3074,34 @@ function boardFace(r) {
        + ' onerror="this.outerHTML=\'<span class=&quot;face letter&quot;>' + letter + '</span>\'">';
 }
 
+/* Gold, silver, bronze. Drawn rather than fetched, so they cost nothing
+   and take the panel's own colours. */
+const MEDALS = {
+  1: { face: '#E8B65C', rim: '#A9761F', lit: '#F8E3AE', ink: '#4A3406' },
+  2: { face: '#C9CDD6', rim: '#848A97', lit: '#F0F2F6', ink: '#343941' },
+  3: { face: '#C98B50', rim: '#8A5A2B', lit: '#E8BA8C', ink: '#43280F' }
+};
+
+function medal(place) {
+  const m = MEDALS[place];
+  if (!m) return '<span class="pl">' + place + '</span>';
+  return '<span class="pl medal"><svg viewBox="0 0 24 26" aria-hidden="true">'
+    + '<path d="M6.4 1h3.3l3.1 8.6-3.4 1.2z" fill="' + m.rim + '"/>'
+    + '<path d="M17.6 1h-3.3l-3.1 8.6 3.4 1.2z" fill="' + m.rim + '" opacity=".72"/>'
+    + '<circle cx="12" cy="17.3" r="8" fill="' + m.rim + '"/>'
+    + '<circle cx="12" cy="17.3" r="6.5" fill="' + m.face + '"/>'
+    + '<path d="M12 10.8a6.5 6.5 0 0 1 4.6 1.9 6.5 6.5 0 0 0-9.2 9.2A6.5 6.5 0 0 1 12 10.8z"'
+    + ' fill="' + m.lit + '" opacity=".5"/>'
+    + '<text x="12" y="17.3" text-anchor="middle" dominant-baseline="central"'
+    + ' font-size="8.4" font-weight="700" fill="' + m.ink + '"'
+    + ' font-family="Poppins, system-ui, sans-serif">' + place + '</text>'
+    + '</svg></span>';
+}
+
 function boardRow(r, mine) {
   const cls = [r.place <= 3 ? 'p' + r.place : '', mine ? 'me' : ''].filter(Boolean).join(' ');
   return '<li' + (cls ? ' class="' + cls + '"' : '') + '>'
-    + '<span class="pl">' + r.place + '</span>'
+    + medal(r.place)
     + boardFace(r)
     + '<span class="nm">' + escHTML(r.display_name) + '</span>'
     + '<span class="lv">' + r.levels + '</span>'
@@ -2905,6 +3172,7 @@ function fitBoard() {
 function paintRules() {
   layoutRules();
   const n = rulesPages();
+  if (wantBoard) rulesPage = n - 1;
   if (rulesPage > n - 1) rulesPage = n - 1;
 
   for (let i = 1; i <= 4; i++) {
@@ -2943,8 +3211,36 @@ function paintRules() {
   else fitCopy(panel, rules, panel.clientHeight - PANEL_PAD - FADE_H);
 }
 
+/* What "Play through Gallery" will actually do, said under it, so the
+   first option is not a guess about where they left off. */
+function whereInSeries() {
+  const el = document.getElementById('miWhere');
+  if (!el) return;
+  const list = campList();
+  const at = Math.min(campFind(), list.length - 1);
+  const lv = list[at];
+  el.textContent = campDone.length >= list.length
+    ? 'All ' + list.length + ' printed'
+    : 'Level ' + (at + 1) + ' of ' + list.length + (lv ? ' \u00b7 ' + lv.art.roomName : '');
+}
+
+/* Where each option goes. The two that open a panel remember they came
+   from here, so closing it comes back rather than dropping them on a
+   board they have not started. */
+function homeGo(go) {
+  if (go === 'gallery')  { campOn = true;  hideFace(); newPrint('gallery'); return; }
+  if (go === 'practice') { campOn = false; hideFace(); newPrint('setup');   return; }
+
+  rulesFrom = null;
+  showFace('rules');
+  rulesFrom = { face: 'home', wasPlaying: false };
+  if (go === 'board') goBoard(); else { wantBoard = false; goRules(0); }
+  buttons();
+}
+
 function goRules(i) {
   rulesPage = Math.min(rulesPages() - 1, Math.max(0, i));
+  if (rulesPage !== rulesPages() - 1) wantBoard = false;
   paintRules();
   buttons();
 }
@@ -2952,11 +3248,22 @@ function goRules(i) {
 /* The board is the last page whichever way the mechanics fell. */
 const boardPage = () => rulesPages() - 1;
 
+/* Somebody who asked for the board wants the board, not page three. The
+   page count can still change under them -- the example settles the
+   split, and it may land after the request -- so the wish is held rather
+   than resolved once into a number. */
+let wantBoard = false;
+
+function goBoard() {
+  wantBoard = true;
+  goRules(boardPage());
+}
+
 document.getElementById('rankBtn').addEventListener('click', () => {
   const up = !elOver.hidden && !elRules().hidden;
   if (up && rulesPage === boardPage()) { closeRules(); return; }
   if (!up) openRules();
-  goRules(boardPage());
+  goBoard();
 });
 
 document.getElementById('rulesBack').addEventListener('click', () => goRules(rulesPage - 1));
@@ -2965,17 +3272,22 @@ document.getElementById('rulesNext').addEventListener('click', () => goRules(rul
 /* ---- the panel's two faces, and the pause ---- */
 
 const elSetup = () => document.getElementById('overSetup');
+const elHome = () => document.getElementById('overHome');
+const onHome = () => !elOver.hidden && !elHome().hidden;
 const elRules = () => document.getElementById('overRules');
 const elGallery = () => document.getElementById('overGallery');
 
 function faceOff() {
+  document.body.classList.remove('titleup');
   /* won goes too. It trades the scrim for a gradient that is clear at the
      top so the finished print shows through, which is right for the print
      and unreadable for anything laid over it. closeRules puts it back. */
   elOver.classList.remove('intro', 'menu', 'won', 'boardface');
+  elOver.classList.remove('home');
   elRules().hidden = true;
   elSetup().hidden = true;
   elGallery().hidden = true;
+  elHome().hidden = true;
 }
 
 /* No face at all: the board as it stands, with the buttons under it. */
@@ -3017,11 +3329,37 @@ function reading() {
 
 const changed = () => !applied || JSON.stringify(reading()) !== JSON.stringify(applied);
 
+/* Set by a jam on its way to the title screen, so Game Over shows once
+   and is gone the next time anybody opens the menu. */
+let fromJam = false;
+
 function showFace(which) {
   faceOff();
   const intro = which === 'rules';
   if (!intro) rulesFrom = null;
-  if (intro) rulesPage = 0;              // always opened at the front
+  if (intro) { rulesPage = 0; wantBoard = false; }   // always opened at the front
+
+  if (which === 'home') {
+    /* The hub. Everything a run can end in comes back here, so it carries
+       the whole interface and the row under the board stands down. */
+    elOver.classList.add('home');
+    if (!fromJam) {
+      document.getElementById('gameOver').hidden = true;
+      document.getElementById('jamLine').hidden = true;
+    }
+    fromJam = false;
+    elHome().hidden = false;
+    document.getElementById('overTitle').hidden = true;
+    document.getElementById('overCredit').hidden = true;
+    document.getElementById('overText').innerHTML = '';
+    document.getElementById('overBoard').hidden = true;
+    elOver.hidden = false;
+    document.body.classList.add('titleup');
+    paintTitle();
+    whereInSeries();
+    buttons();
+    return;
+  }
 
   if (intro) {
     elOver.classList.add('intro');
@@ -3287,6 +3625,19 @@ function buttons() {
   const menu = document.getElementById('menuBtn');
   const main = document.getElementById('again');
   const rules = document.getElementById('rulesBtn');
+
+  /* On the title screen the options are the interface. Three more buttons
+     under the board would only be a second way to say the same four
+     things, so they stand down until there is a board to act on. */
+  if (onHome()) {
+    menu.hidden = true;
+    main.hidden = true;
+    if (rules) rules.hidden = true;
+    const rank0 = document.getElementById('rankBtn');
+    if (rank0) rank0.classList.remove('on');
+    return;
+  }
+
   main.hidden = false;
 
   /* Filled while the rules are the page showing, the way Settings is --
@@ -3295,6 +3646,7 @@ function buttons() {
      the way on is Play, not a toggle that appears to do nothing. */
   if (rules) {
     const up = !elOver.hidden && !elRules().hidden;
+    rules.textContent = 'Rules';
     rules.hidden = up && !rulesFrom;
     rules.classList.toggle('on', up);
   }
@@ -3318,6 +3670,9 @@ function buttons() {
     menu.textContent = 'View art';
     menu.classList.add('ghost');
     menu.classList.remove('on');
+    /* Rules are one of the four options on the title screen now, and from
+       a finished print the way out matters more than the way back in. */
+    if (rules) { rules.hidden = false; rules.textContent = 'Menu'; rules.classList.remove('on'); }
     /* In the series the button goes somewhere: on to the next painting, or
        back at the one that jammed. Practice has no next, so it keeps the
        label it always had. */
@@ -3331,9 +3686,11 @@ function buttons() {
   if (phase === 'ready') {
     /* Two lanes. The left button names the one you are not in, so it reads
        as the way across rather than as a settings drawer. */
+    /* Which lane you are in is chosen on the title screen now, so this
+       slot is the way back to it rather than a second place to switch. */
     menu.hidden = false;
-    menu.textContent = campOn ? 'Practice' : 'Gallery';
-    menu.classList.toggle('on', !campOn);
+    menu.textContent = 'Menu';
+    menu.classList.remove('on');
     menu.classList.add('ghost');
     main.textContent = campOn ? 'Play' : 'Practice';
     return;
@@ -3437,6 +3794,23 @@ function finish(won) {
   faceOff();
   started = false; paused = false; phase = 'done';
   stopClock();
+  wonLast = !!won;
+
+  if (!won) {
+    /* A jam used to leave them looking at a dead board with a plate count
+       on it and nowhere to go. The sound is the same; what follows it is
+       the title screen with Game Over over it and the same four options,
+       so losing lands somewhere instead of stopping. */
+    fromJam = true;
+    document.getElementById('gameOver').hidden = false;
+    const jam = document.getElementById('jamLine');
+    jam.innerHTML = down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
+                  + ' &middot; chain&nbsp;&times;' + bestChain;
+    jam.hidden = false;
+    showFace('home');
+    return;
+  }
+
   document.getElementById('overTitle').hidden = false;
   document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
   /* Non breaking spaces inside each token, so a wrap can only ever fall
@@ -3525,7 +3899,13 @@ window.CPArrived = function (p) {
   campAt = campFind();
 
   if (onGallery()) buildGallery();
-  if (campOn && !started && phase === 'ready' && elRules().hidden) newPrint('gallery');
+  if (onHome()) whereInSeries();
+
+  /* Only when they are already looking at a board waiting to start. The
+     title screen and the instructions are both somewhere they chose to
+     be, and an account settling in the background is no reason to move
+     them off it. */
+  if (campOn && !started && phase === 'ready' && elRules().hidden && !onHome()) newPrint('gallery');
 };
 
 function newPrint(face) {
@@ -3679,9 +4059,7 @@ document.getElementById('menuBtn').addEventListener('click', () => {
   if (phase === 'done') { viewArt(); return; }
   if (paused) { resume(); return; }
   if (started) { pause(); return; }
-  // ready: cross between the series and practice, and rebuild for the lane
-  campOn = !campOn;
-  newPrint(campOn ? 'gallery' : 'setup');
+  showFace('home');            // ready: back to the title screen
 });
 
 /* Out to the room the print came from. Breaks the embedded copy out to the
@@ -3747,14 +4125,23 @@ function closeRules() {
     return;
   }
 
+  if (from && from.face === 'home') { showFace('home'); return; }
   if (from && from.face === 'setup') { showFace('setup'); return; }
   if (from && from.face === 'gallery') { showFace('gallery'); return; }
   hideFace();
 }
 
 document.getElementById('rulesBtn').addEventListener('click', () => {
+  // on a finished print this button is the way back to the title screen
+  if (phase === 'done' && (elOver.hidden || elRules().hidden)) { showFace('home'); return; }
   const up = !elOver.hidden && !elRules().hidden;
   if (up) closeRules(); else openRules();
+});
+
+/* The title screen's four options. */
+document.getElementById('titleMenu').addEventListener('click', (e) => {
+  const item = e.target.closest('.mi');
+  if (item) homeGo(item.dataset.go);
 });
 
 /* A setting changes the print it describes. Before the first drop that can
@@ -3803,7 +4190,9 @@ window.addEventListener('resize', () => {
   if (!elOver.hidden && !elRules().hidden) { rulesFitFor = ''; paintRules(); }
 });
 
-newPrint('rules');
+/* Built behind the title screen, so the first thing anyone sees is the
+   name of the game rather than a board they have not asked for yet. */
+newPrint('home');
 </script>
 
 <!-- The arcade's sign-in and its score table, reached from the game's own
