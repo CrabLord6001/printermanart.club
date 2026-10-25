@@ -74,6 +74,13 @@ body {
   padding: 0 2px 6px;
 }
 
+.title a.home {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.title a.home:hover { color: #fff; }
+
 .title {
   font-size: 0.66rem;
   font-weight: 600;
@@ -394,15 +401,25 @@ button.go:hover { background: #4653E0; }
 .over-in { text-align: center; }
 
 .over h2 {
-  margin: 0 0 6px;
+  margin: 0 0 14px;
   font-size: 1.25rem;
   color: var(--text);
   font-weight: 600;
   letter-spacing: -0.01em;
+  text-align: center;
 }
 
-.over p { margin: 0 0 12px; font-size: 0.82rem; line-height: 1.5; }
-.over .go { margin-top: 2px; }
+/* Every line centred explicitly rather than by inheritance, and balanced so
+   a wrap splits it evenly instead of leaving two words stranded. */
+.over p {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.over .go { margin-top: 4px; }
 
 /* A finished print is the thing you played for, so the panel gets out of
    its way: the scrim falls to the bottom of the board and the words sit on
@@ -422,7 +439,8 @@ button.go:hover { background: #4653E0; }
 .plate-line {
   font-size: 0.74rem !important;
   color: var(--accent) !important;
-  margin: 0 0 10px !important;
+  margin: 0 0 16px !important;
+  text-align: center;
 }
 
 .plate-line b { color: var(--text); font-weight: 600; font-size: 0.95rem; }
@@ -437,7 +455,7 @@ button.go:hover { background: #4653E0; }
 <body>
 
   <div class="head">
-    <p class="title">Color Processor &mdash; rough board</p>
+    <p class="title"><a class="home" href="/">&larr; PrinterMan&rsquo;s Art Club</a> &middot; Color Processor &mdash; rough board</p>
     <span class="stat">Points <b id="pts">0</b></span>
     <span class="stat goal">Plates <b id="tg">0/4</b></span>
     <span class="stat">Time <b id="tm">0:00</b></span>
@@ -1254,12 +1272,15 @@ function finish(won) {
   }
 
   document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
+  /* Non breaking spaces inside each token, so a wrap can only ever fall
+     between them -- no more "longest" on one line and "chain 2" on the next. */
   document.getElementById('overText').innerHTML = won
-    ? '<b>' + stamp(Date.now() - startedAt) + '</b> &middot; ' + points + ' points &middot; '
-      + pieces + ' drops &middot; longest chain ' + bestChain
-    : 'The well filled up with ' + down + ' of 4 plates down'
-      + (down ? '' : ' &mdash; nothing printed') + '. '
-      + points + ' points, longest chain ' + bestChain + '.';
+    ? '<b>' + stamp(Date.now() - startedAt) + '</b>'
+      + ' &middot; ' + points + '&nbsp;pts'
+      + ' &middot; ' + pieces + '&nbsp;drops'
+      + ' &middot; ' + bestChain + '&nbsp;chain'
+    : down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
+      + ' &middot; ' + bestChain + '&nbsp;chain';
   elOver.classList.toggle('won', !!won);
   elOver.hidden = false;
 }
@@ -1329,7 +1350,7 @@ const ARTWORKS = [
     title: 'Oedipus and the Sphinx', artist: 'Gustave Moreau', date: '1864' },
   { file: 'rooster.jpg',     room: 'non-western', roomName: 'Non-Western',
     title: 'Hen and Rooster with Grapevine', artist: 'It\u014d Jakuch\u016b', date: '1792' },
-  { file: 'wave.jpg',        room: '',            roomName: '',
+  { file: 'wave.jpg',        room: 'non-western', roomName: 'Non-Western',
     title: 'Under the Wave off Kanagawa', artist: 'Katsushika Hokusai', date: 'ca. 1830\u201332' }
 ];
 
