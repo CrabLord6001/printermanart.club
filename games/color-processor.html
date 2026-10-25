@@ -2264,8 +2264,15 @@ function buttons() {
   const rules = document.getElementById('rulesBtn');
   main.hidden = false;
 
-  // filled while the rules are the page showing, the way Setup is
-  if (rules) rules.classList.toggle('on', !elOver.hidden && !elRules().hidden);
+  /* Filled while the rules are the page showing, the way Settings is --
+     except on the opening screen, where they came up by themselves and
+     closing them would only reveal a board nobody has started yet. There
+     the way on is Play, not a toggle that appears to do nothing. */
+  if (rules) {
+    const up = !elOver.hidden && !elRules().hidden;
+    rules.hidden = up && !rulesFrom;
+    rules.classList.toggle('on', up);
+  }
 
 
   main.classList.remove('ghost');
