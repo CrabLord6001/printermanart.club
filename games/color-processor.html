@@ -945,6 +945,117 @@ button.go:hover { background: #4653E0; }
 /* A number needs room for three digits, not for the panel. */
 .tune2 input { width: 5.2em; }
 
+/* One control to a row, its name above it, now that a dropdown has become
+   four buttons and a delay in milliseconds has become a speed. Nothing is
+   fighting for a label column any more, so a name can be as long as it
+   needs to be. */
+.tune {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.tune input[type="number"] {
+  font-family: var(--font);
+  font-size: 0.82rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 9px;
+  width: 5.2em;
+}
+
+.tune.check { flex-direction: row; align-items: center; gap: 9px; cursor: pointer; }
+.tune.check input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+/* The cartridge sets, shown as the inks they hold rather than named. The
+   count says how many, the swatches say which, and neither needs reading. */
+.inkset { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+
+.inkset button {
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 8px;
+  cursor: pointer;
+}
+
+.inkset button:hover { border-color: #3A4152; }
+.inkset button.on { border-color: var(--accent); background: #171A22; }
+.inkset .n { font-size: 0.78rem; font-weight: 700; letter-spacing: 0; color: var(--dim); }
+.inkset button.on .n { color: var(--accent); }
+.inkset .swatches { display: flex; gap: 3px; flex-wrap: wrap; }
+.inkset .sw { width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(8,10,14,0.5); }
+
+/* A speed reads as a position on a line. Nobody knows what 700 was. */
+.tune input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 3px;
+  background: #242A35;
+  outline: none;
+  cursor: pointer;
+}
+
+.tune input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.tune input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.ends {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 0.5rem;
+  color: var(--dim);
+}
+
+/* What the three of them add up to, falling. Built from the same drops the
+   board uses, so the edge and the screen angles come with them. */
+.peek {
+  position: relative;
+  height: 112px;
+  border-radius: 8px;
+  background: #0C0E13;
+  box-shadow: inset 0 0 0 1px var(--border);
+  overflow: hidden;
+}
+
+/* Wins against the rule that makes a drop relative for its angle overlay. */
+body .peek .cell { position: absolute; }
+
+@keyframes peek-fall { to { transform: translateY(var(--peekTo)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .peek .cell { animation: none !important; }
+}
+
 .over.menu { justify-content: center; }
 .over.menu .rules { margin-left: auto; margin-right: auto; }
 
@@ -1043,20 +1154,35 @@ h2[hidden] { display: none; }
                  a cramped strip under the board and the whole of this was
                  sitting empty. -->
             <div class="rules setupface" id="overSetup" hidden>
-              <label class="tune2"><span class="lab">Cartridges</span>
-                <select id="setInks">
-                  <option value="office" selected>4 &mdash; CMYK</option>
-                  <option value="five-lc">5 &mdash; + light cyan</option>
-                  <option value="five-w">5 &mdash; + white</option>
-                  <option value="photo">6 &mdash; photo</option>
-                </select>
+              <!-- The set is chosen by the buttons below; this carries the
+                   value the rest of the game reads. -->
+              <input id="setInks" type="hidden" value="office">
+
+              <div class="tune">
+                <span class="lab">Cartridges</span>
+                <div class="inkset" id="inkset"></div>
+              </div>
+
+              <div class="tune">
+                <span class="lab">Clears to Finish a Color</span>
+                <input id="setTarget" type="number" min="3" step="1" value="10">
+              </div>
+
+              <div class="tune">
+                <span class="lab">Fall speed</span>
+                <input id="setFall" type="range" min="0" max="100" step="5" value="48">
+                <p class="ends"><span>Slow</span><span>Fast</span></p>
+              </div>
+
+              <label class="tune check">
+                <input id="setAngles" type="checkbox">
+                <span class="lab">Colorblind</span>
               </label>
-              <label class="tune2"><span class="lab">Ink per plate</span>
-                <input id="setTarget" type="number" min="3" step="1" value="10"></label>
-              <label class="tune2"><span class="lab">Fall ms</span>
-                <input id="setFall" type="number" min="100" step="50" value="700"></label>
-              <label class="tune2"><span class="lab">Colorblind</span>
-                <input id="setAngles" type="checkbox"></label>
+
+              <!-- Every control above shows its work here: which inks will
+                   fall, how fast, and whether they carry their plate's
+                   screen angle. -->
+              <div class="peek" id="peek" aria-hidden="true"></div>
             </div>
           </div>
         </div>
@@ -2215,11 +2341,22 @@ function hideFace() {
 let rulesFrom = null;
 
 /* What the controls say right now, against what the board was built from. */
+/* The slider runs slow to fast, left to right, the way a speed reads. The
+   game still wants the delay between steps, so one is turned into the
+   other in a single place. */
+const FALL_SLOW = 1200, FALL_FAST = 150;
+
+function fallMsNow() {
+  const v = Number(document.getElementById('setFall').value);
+  const t = Math.min(100, Math.max(0, isFinite(v) ? v : 50)) / 100;
+  return Math.round(FALL_SLOW - t * (FALL_SLOW - FALL_FAST));
+}
+
 function reading() {
   return {
     mode: document.getElementById('setInks').value,
     inkPer: Math.max(3, Number(document.getElementById('setTarget').value) || 10),
-    fallMs: Math.max(100, Number(document.getElementById('setFall').value) || 700)
+    fallMs: fallMsNow()
   };
 }
 
@@ -2251,11 +2388,80 @@ function showFace(which) {
      right on the first load because the demo image was still arriving and
      painted again once it had, by which time the panel was up. */
   if (intro) paintDemo();
+  else { buildInkset(); buildPeek(); }
 
   buttons();
 }
 
 const onSetup = () => !elOver.hidden && !elSetup().hidden;
+
+/* The cartridge sets as buttons. A row of swatches says which inks are in
+   the set and the number says how many, so "photo" does not have to be a
+   word anyone already knows. */
+function buildInkset() {
+  const host = document.getElementById('inkset');
+  if (!host) return;
+  const now = document.getElementById('setInks').value;
+  host.innerHTML = '';
+
+  for (const key of Object.keys(PALETTES)) {
+    const set = PALETTES[key];
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = key === now ? 'on' : '';
+    b.innerHTML = '<span class="n">' + set.inks.length + '</span><span class="swatches">'
+      + set.inks.map((i) => '<span class="sw" style="background:var(' + VARS[i] + ')"></span>').join('')
+      + '</span>';
+    b.addEventListener('click', () => {
+      const el = document.getElementById('setInks');
+      if (el.value === key) return;
+      el.value = key;
+      buildInkset();
+      buildPeek();
+      el.dispatchEvent(new Event('change'));
+    });
+    host.appendChild(b);
+  }
+}
+
+/* Whatever the chosen set added comes down first, so a bigger set shows
+   you what it bought rather than leaving you to count swatches. */
+function peekInks() {
+  const key = document.getElementById('setInks').value;
+  const inks = (PALETTES[key] || PALETTES.office).inks;
+  const base = PALETTES.office.inks;
+  return inks.filter((i) => !base.includes(i)).concat(inks.filter((i) => base.includes(i)));
+}
+
+const PEEK_ROWS = 7, PEEK_CELL = 16;
+
+function buildPeek() {
+  const host = document.getElementById('peek');
+  if (!host) return;
+  host.innerHTML = '';
+
+  const w = host.clientWidth;
+  if (!w) return;                               // not on screen yet
+
+  const inks = peekInks();
+  const lanes = Math.max(3, Math.min(inks.length, Math.floor(w / 44)));
+  const ms = fallMsNow();
+  const span = host.clientHeight + PEEK_CELL * 2;
+
+  inks.forEach((ink, i) => {
+    const d = document.createElement('div');
+    d.className = 'cell ' + ink;
+    d.style.width = PEEK_CELL + 'px';
+    d.style.height = PEEK_CELL + 'px';
+    d.style.top = -PEEK_CELL + 'px';
+    d.style.left = Math.round((w / (lanes + 1)) * ((i % lanes) + 1) - PEEK_CELL / 2) + 'px';
+    d.style.setProperty('--peekTo', span + 'px');
+    // the same stepping the board falls with, so the speed is the real one
+    d.style.animation = 'peek-fall ' + (PEEK_ROWS * ms) + 'ms steps(' + PEEK_ROWS + ', end) infinite';
+    d.style.animationDelay = Math.round(-(i * PEEK_ROWS * ms) / inks.length) + 'ms';
+    host.appendChild(d);
+  });
+}
 
 /* The two buttons under the board, named for the state they are in. */
 function buttons() {
@@ -2411,7 +2617,7 @@ function newPrint(face) {
   cureAt = CURE_AT[mode] || 2;
 
   inkPer = Math.max(3, Number(document.getElementById('setTarget').value) || 10);
-  fallMs = Math.max(100, Number(document.getElementById('setFall').value) || 700);
+  fallMs = fallMsNow();
 
   // what this board is built from, for telling later whether it still matches
   applied = reading();
@@ -2608,6 +2814,9 @@ for (const id of ['setInks', 'setTarget', 'setFall']) {
   el.addEventListener('input', () => { if (started) buttons(); });
 }
 
+// dragging the speed shows the new speed at once, rather than on release
+document.getElementById('setFall').addEventListener('input', buildPeek);
+
 /* The screen angles change nothing about the board, only how it reads, so
    they take effect at once rather than waiting for a new print. Remembered
    too: an accessibility setting you have to find again every visit is not
@@ -2617,6 +2826,7 @@ if (elAngles) {
   try { elAngles.checked = localStorage.getItem('cp-angles') === '1'; } catch (e) {}
   const useAngles = () => {
     document.body.classList.toggle('angles', elAngles.checked);
+    buildPeek();                                // show it on the drops at once
     try { localStorage.setItem('cp-angles', elAngles.checked ? '1' : '0'); } catch (e) {}
   };
   elAngles.addEventListener('change', useAngles);
