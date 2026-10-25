@@ -1244,6 +1244,12 @@ ol.board li.none .nm {
 .rules.campface { display: flex; flex-direction: column; gap: 12px; flex: 1 1 auto; }
 .rules.campface p { text-align: center; }
 
+/* Hiding has to be said again here: the line above sets display at the
+   same weight and later in the sheet, so a hidden gallery face went on
+   holding its height and the intro lost that much of the panel. */
+.rules.campface[hidden],
+.rules.setupface[hidden] { display: none; }
+
 .campface .chap {
   margin: 0;
   font-size: 0.6rem; font-weight: 700;
@@ -1344,17 +1350,13 @@ ol.board li.none .nm {
               </div>
 
               <div class="pg" id="rulesPg3" hidden>
-              <p>In the setup, you can adjust the fall speed, add additional colors for more challenge, and change the number of clears of a color needed to complete it on the background image.</p>
-              </div>
-
-              <div class="pg" id="rulesPg4" hidden>
                 <p>The Gallery is twenty paintings in six chapters, printed in order. Each painting you print is a level.</p>
                 <p>Every level is harder than the one before it. The drops fall faster, each color takes more clears to fill, and new inks join the set along the way.</p>
                 <p>The board ranks you by levels printed. Total time only breaks a tie, and each level counts at your best time on it, so going back to beat one can only move you up.</p>
                 <p>Sign in on the arcade page to keep your place between visits.</p>
               </div>
 
-              <div class="pg" id="rulesPg5" hidden>
+              <div class="pg" id="rulesPg4" hidden>
                 <div class="board-wrap">
                   <h3>The Board</h3>
                   <ol class="board" id="cpBoard">
@@ -2546,7 +2548,7 @@ function begin() {
 
 /* ---- the instructions, in three pages ---- */
 
-const RULES_PAGES = 5;
+const RULES_PAGES = 4;
 let rulesPage = 0;
 let boardLoaded = false;
 
