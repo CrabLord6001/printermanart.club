@@ -1104,6 +1104,45 @@ h2[hidden] { display: none; }
 
 .board-line b { color: var(--accent); font-weight: 700; }
 .board-line[hidden] { display: none; }
+
+/* The gallery screen: which level is next and how much of the series is
+   behind you. */
+/* .rules sets its text left and is declared after this, so the class has
+   to carry both to win. */
+.rules.campface { display: flex; flex-direction: column; gap: 12px; text-align: center; flex: 1 1 auto; }
+
+.campface .chap {
+  margin: 0;
+  font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--dim);
+}
+
+.campface .lvl { margin: 0; font-size: 2.4rem; font-weight: 700; line-height: 1; color: var(--text); }
+
+.campface .of {
+  margin: 0;
+  font-size: 0.62rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--dim);
+}
+
+.campface .dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+
+.campface .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #171B22; box-shadow: inset 0 0 0 1px #262C36;
+}
+
+.campface .dot.done { background: var(--accent); box-shadow: none; }
+.campface .dot.now { background: transparent; box-shadow: inset 0 0 0 2px var(--accent); }
+
+.campface .spec { margin: 0; font-size: 0.62rem; letter-spacing: 0.04em; color: var(--dim); }
+
+.campface .saved {
+  margin: auto 0 0;
+  font-size: 0.56rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--dim);
+}
 </style>
 </head>
 <body>
@@ -1168,6 +1207,18 @@ h2[hidden] { display: none; }
             <!-- The panel's other face. Same box, same room: the controls were
                  a cramped strip under the board and the whole of this was
                  sitting empty. -->
+            <!-- Where you are in the series. The painting itself is never
+                 named here: finding out what you printed is the reward for
+                 printing it. -->
+            <div class="rules campface" id="overGallery" hidden>
+              <p class="chap" id="galChap"></p>
+              <p class="lvl" id="galNum"></p>
+              <p class="of" id="galOf"></p>
+              <div class="dots" id="galDots"></div>
+              <p class="spec" id="galSpec"></p>
+              <p class="saved" id="galSaved"></p>
+            </div>
+
             <div class="rules setupface" id="overSetup" hidden>
               <!-- A mode sets all three at once. These carry the values, so
                    nothing else in the game has to know a mode exists. -->
@@ -2305,6 +2356,7 @@ function ready(face) {
      dismiss the panel without looking -- the habit you least want on the
      one occasion they need it. */
   if (face) { showFace(face); return; }
+  if (campOn) { showFace('gallery'); return; }   // where you are in the series
   hideFace();
 }
 
@@ -2328,11 +2380,13 @@ function begin() {
 
 const elSetup = () => document.getElementById('overSetup');
 const elRules = () => document.getElementById('overRules');
+const elGallery = () => document.getElementById('overGallery');
 
 function faceOff() {
   elOver.classList.remove('intro', 'menu');
   elRules().hidden = true;
   elSetup().hidden = true;
+  elGallery().hidden = true;
 }
 
 /* No face at all: the board as it stands, with the buttons under it. */
@@ -2372,18 +2426,23 @@ const changed = () => !applied || JSON.stringify(reading()) !== JSON.stringify(a
 
 function showFace(which) {
   faceOff();
-  const intro = which !== 'setup';
+  const intro = which === 'rules';
   if (!intro) rulesFrom = null;
 
   if (intro) {
     elOver.classList.add('intro');
     elRules().hidden = false;
     document.getElementById('overTitle').hidden = true;
+  } else if (which === 'gallery') {
+    elOver.classList.add('menu');
+    elGallery().hidden = false;
+    document.getElementById('overTitle').hidden = false;
+    document.getElementById('overTitle').textContent = 'The Gallery';
   } else {
     elOver.classList.add('menu');
     elSetup().hidden = false;
     document.getElementById('overTitle').hidden = false;
-    document.getElementById('overTitle').textContent = 'Settings';
+    document.getElementById('overTitle').textContent = 'Practice';
   }
 
   document.getElementById('overCredit').hidden = true;
@@ -2397,12 +2456,14 @@ function showFace(which) {
      right on the first load because the demo image was still arriving and
      painted again once it had, by which time the panel was up. */
   if (intro) paintDemo();
+  else if (which === 'gallery') buildGallery();
   else { buildModes(); buildPeek(); }
 
   buttons();
 }
 
 const onSetup = () => !elOver.hidden && !elSetup().hidden;
+const onGallery = () => !elOver.hidden && !elGallery().hidden;
 
 /* Three modes instead of loose dials, so a recorded time means the same
    thing whoever set it.
@@ -2422,6 +2483,126 @@ const MODES = {
 };
 
 let modeKey = 'easy';
+
+/* ============================================================
+   The gallery: the series, in order
+   ============================================================
+   A chapter is an Art History room, played in the order PrinterMan posts
+   them. A room gains a level the moment a painting is added to it, so the
+   series grows with the gallery rather than being a list kept by hand.
+   ============================================================ */
+const CHAPTERS = [
+  { room: 'classics',    name: 'Classics' },
+  { room: 'landscape',   name: 'Landscape' },
+  { room: 'figures',     name: 'Figures' },
+  { room: 'faith',       name: 'Faith' },
+  { room: 'fantasy',     name: 'Fantasy' },
+  { room: 'non-western', name: 'Non-Western' }
+];
+
+const ORDINAL_WORD = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
+
+function gallery() {
+  const out = [];
+  CHAPTERS.forEach((ch, ci) => {
+    for (const a of ARTWORKS) if (a.room === ch.room) out.push({ art: a, chapter: ci });
+  });
+  // a painting in a room the order has not heard of still gets a place
+  for (const a of ARTWORKS) {
+    if (!CHAPTERS.some((c) => c.room === a.room)) out.push({ art: a, chapter: CHAPTERS.length });
+  }
+  return out;
+}
+
+/* Difficulty is read off where a level sits in the series rather than
+   written out per level, so adding a painting re-spaces the curve instead
+   of leaving a hole in it.
+
+   An ink is worth far more than a clear: against the same stand-in player,
+   five inks is about three times the game four is and six about six. So a
+   new cartridge arrives instead of a rise in clears, not on top of one --
+   the clears step back when it lands and climb again from there. */
+function levelSetup(i, n) {
+  const t = n > 1 ? i / (n - 1) : 0;
+  const band = t < 1 / 3 ? 0 : (t < 2 / 3 ? 1 : 2);
+  const within = Math.min(1, Math.max(0, t * 3 - band));
+  const from = [8, 10, 12][band];
+  const to   = [13, 15, 20][band];
+  return {
+    mode: ['office', 'five-lc', 'photo'][band],
+    inkPer: Math.round(from + (to - from) * within),
+    fallMs: Math.round(900 - 570 * t)
+  };
+}
+
+/* The campaign, or practice. Practice never posts and never touches where
+   you are in the series. */
+let campOn = true;
+let campDone = [];                              // artwork ids already printed
+let campAt = 0;                                 // the level up next
+let campSaved = false;                          // is there an account behind it
+
+function campList() { return gallery(); }
+
+function campFind() {
+  const list = campList();
+  for (let i = 0; i < list.length; i++) {
+    if (campDone.indexOf(list[i].art.id) === -1) return i;
+  }
+  return list.length - 1;                       // the whole gallery is printed
+}
+
+/* The slider scale, backwards, so a level can be written in milliseconds
+   and still arrive where the game reads it. */
+function fallToSlider(ms) {
+  const t = (FALL_SLOW - ms) / (FALL_SLOW - FALL_FAST);
+  return String(Math.round(Math.min(100, Math.max(0, t * 100))));
+}
+
+/* The series sets the dials for its own level. They land in the same three
+   inputs the practice panel writes, so nothing downstream has to know
+   which of the two it is playing. */
+function armLevel() {
+  const list = campList();
+  const i = Math.min(campAt, list.length - 1);
+  const s = levelSetup(i, list.length);
+  document.getElementById('setInks').value = s.mode;
+  document.getElementById('setTarget').value = String(s.inkPer);
+  document.getElementById('setFall').value = fallToSlider(s.fallMs);
+}
+
+function buildGallery() {
+  const list = campList();
+  const i = Math.min(campAt, list.length - 1);
+  const here = list[i];
+  const s = levelSetup(i, list.length);
+  const ch = CHAPTERS[here.chapter];
+
+  const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+
+  set('galChap', 'Chapter ' + (ORDINAL_WORD[here.chapter] || (here.chapter + 1))
+    + ' \u00b7 ' + (ch ? ch.name : here.art.roomName));
+  set('galNum', String(i + 1));
+  set('galOf', 'Level ' + (i + 1) + ' of ' + list.length);
+
+  const pace = s.fallMs > 740 ? 'slow' : (s.fallMs > 560 ? 'steady' : (s.fallMs > 430 ? 'brisk' : 'fast'));
+  set('galSpec', PALETTES[s.mode].inks.length + ' inks \u00b7 ' + s.inkPer
+    + ' clears to finish each color \u00b7 ' + pace + ' fall');
+
+  set('galSaved', campSaved
+    ? 'Saved to your account'
+    : 'Sign in on the arcade page to keep your place');
+
+  const dots = document.getElementById('galDots');
+  if (dots) {
+    dots.innerHTML = '';
+    for (let d = 0; d < list.length; d++) {
+      const el = document.createElement('span');
+      el.className = 'dot' + (campDone.indexOf(list[d].art.id) !== -1 ? ' done' : (d === i ? ' now' : ''));
+      dots.appendChild(el);
+    }
+  }
+}
 
 function buildModes() {
   const host = document.getElementById('modes');
@@ -2454,6 +2635,7 @@ function sayMode() {
 
 function pickMode(key) {
   if (!MODES[key] || key === modeKey) return;
+  campOn = false;                               // picking a mode is practising
   modeKey = key;
   const m = MODES[key];
   document.getElementById('setInks').value = m.mode;
@@ -2539,11 +2721,13 @@ function buttons() {
   }
 
   if (phase === 'ready') {
+    /* Two lanes. The left button names the one you are not in, so it reads
+       as the way across rather than as a settings drawer. */
     menu.hidden = false;
-    menu.textContent = 'Settings';
-    menu.classList.toggle('on', onSetup());
+    menu.textContent = campOn ? 'Practice' : 'Gallery';
+    menu.classList.toggle('on', !campOn);
     menu.classList.add('ghost');
-    main.textContent = 'Play';
+    main.textContent = campOn ? 'Play' : 'Practice';
     return;
   }
 
@@ -2570,7 +2754,7 @@ function buttons() {
   /* Opening the settings stops the clock, which is what a pause is, so the
      button says the thing it does rather than the side effect. */
   menu.hidden = false;
-  menu.textContent = 'Settings';
+  menu.textContent = campOn ? 'Pause' : 'Settings';
   menu.classList.add('ghost');
   menu.classList.remove('on');
   main.textContent = 'New print';
@@ -2583,7 +2767,7 @@ function pause() {
   stopTick();
   stopClock();
   sayMusic('stopMusic');
-  showFace('setup');
+  showFace(campOn ? 'gallery' : 'setup');
 }
 
 function resume() {
@@ -2650,7 +2834,7 @@ function finish(won) {
   elOver.classList.toggle('won', !!won);
   elOver.hidden = false;
   buttons();
-  if (won) record(ran);
+  if (won && campOn) record(ran);
 }
 
 function ordinal(n) {
@@ -2668,23 +2852,48 @@ function ordinal(n) {
    nothing to say: the sign-in lives on the arcade page. */
 function record(ran) {
   const board = document.getElementById('overBoard');
+  const list = campList();
+  const i = Math.min(campAt, list.length - 1);
+  const was = list[i] ? list[i].art : artwork;
+
+  /* The series moves on whether or not there is an account behind it. A
+     signed-out run is a real printed level for as long as the tab is open;
+     it just has nowhere to be written down. */
+  if (was && campDone.indexOf(was.id) === -1) campDone.push(was.id);
+  campAt = campFind();
+
   if (!board || !window.CPBoard || !window.CPBoard.signedIn()) return;
 
   board.textContent = 'Saving the run\u2026';
   board.hidden = false;
 
-  window.CPBoard.record(modeKey, Math.max(1, Math.round(ran / 1000)), {
+  window.CPBoard.record('campaign', Math.max(1, Math.round(ran / 1000)), {
     ms: ran,
     points: points,
     drops: pieces,
     chain: bestChain,
-    art: artwork ? artwork.id : null
+    art: was ? was.id : null,
+    level: i + 1
   }).then((r) => {
     if (!r || !r.ok) { board.textContent = 'That run did not save.'; return; }
-    board.innerHTML = MODES[modeKey].label + ' best <b>' + stamp(r.best * 1000) + '</b>'
+    board.innerHTML = campDone.length + ' of ' + list.length + ' printed'
+      + ' \u00b7 <b>' + stamp(r.best * 1000) + '</b>'
       + (r.place ? ' \u00b7 <b>' + ordinal(r.place) + '</b> on the board' : '');
   }).catch(() => { board.textContent = 'That run did not save.'; });
 }
+
+/* The account arriving, which is the moment the series learns where it is.
+   Called by the bridge once the session has settled, and again if it
+   changes. The intro is left alone: nobody wants their first sight of the
+   game replaced halfway through reading the rules. */
+window.CPArrived = function (p) {
+  campSaved = !!p;
+  campDone = (p && p.done) ? p.done.slice() : [];
+  campAt = campFind();
+
+  if (onGallery()) buildGallery();
+  if (campOn && !started && phase === 'ready' && elRules().hidden) newPrint('gallery');
+};
 
 function newPrint(face) {
   /* Six columns, fixed. Width used to be a setting and was never a real
@@ -2692,6 +2901,9 @@ function newPrint(face) {
      ink thinner over it, and the two all but cancel. The cartridge count
      is the difficulty, so that is the one left to turn. */
   COLS = 6;
+
+  // the series sets its own dials; the practice panel keeps the ones it was left on
+  if (campOn) armLevel();
 
   mode = document.getElementById('setInks').value;
   const pick = PALETTES[mode] || PALETTES.office;
@@ -2786,7 +2998,21 @@ art.onerror = () => { separated = null; };   // no page behind the well; the gam
 
 function loadArtwork() {
   separated = null;
-  artwork = ARTWORKS[(Math.random() * ARTWORKS.length) | 0];
+
+  if (campOn) {
+    const list = campList();
+    const here = list[Math.min(campAt, list.length - 1)];
+    artwork = here ? here.art : ARTWORKS[0];
+  } else {
+    /* Practice never hands out the last painting in the series. It is the
+       one the gallery is keeping for the end, and a practice run would
+       spend it for nothing. */
+    const list = campList();
+    const held = list.length ? list[list.length - 1].art.file : null;
+    const open = ARTWORKS.filter((a) => a.file !== held);
+    artwork = open[(Math.random() * open.length) | 0] || ARTWORKS[0];
+  }
+
   art.src = '/games/img/' + artwork.file;
 }
 
@@ -2812,8 +3038,9 @@ document.getElementById('menuBtn').addEventListener('click', () => {
   if (phase === 'done') { viewArt(); return; }
   if (paused) { resume(); return; }
   if (started) { pause(); return; }
-  if (onSetup()) { hideFace(); return; }     // the settings close back to the board
-  showFace('setup');
+  // ready: cross between the series and practice, and rebuild for the lane
+  campOn = !campOn;
+  newPrint(campOn ? 'gallery' : 'setup');
 });
 
 /* Out to the room the print came from. Breaks the embedded copy out to the
@@ -2839,7 +3066,7 @@ function openRules() {
      reading the rules would throw the result away. */
   const from = {
     wasPlaying: started && !paused,
-    face: onSetup() ? 'setup' : null,
+    face: onSetup() ? 'setup' : (onGallery() ? 'gallery' : null),
     done: phase === 'done' ? {
       won: elOver.classList.contains('won'),
       titleText: title.textContent, titleHidden: title.hidden,
@@ -2880,6 +3107,7 @@ function closeRules() {
   }
 
   if (from && from.face === 'setup') { showFace('setup'); return; }
+  if (from && from.face === 'gallery') { showFace('gallery'); return; }
   hideFace();
 }
 
@@ -2936,14 +3164,36 @@ newPrint('rules');
      script through one small bridge. Same origin as the arcade page, so
      anyone signed in there is already signed in here. -->
 <script type="module">
-  import { onMember, postScore, leaderboardLow, myBestLow } from '/games/club-auth.js';
+  import { db, onMember, postScore, leaderboardLow, myBestLow } from '/games/club-auth.js';
 
   const GAME = 'color-processor';
   let member = null;
-  onMember((m) => { member = m; });
 
   window.CPBoard = {
     signedIn: () => !!member,
+
+    /* Which paintings this account has already printed. The progress is
+       the runs themselves -- there is nothing separate to save, and
+       nothing to lose by forgetting to. */
+    async progress() {
+      if (!member) return null;
+
+      const { data, error } = await db
+        .from('club_scores')
+        .select('detail')
+        .eq('user_id', member.id)
+        .eq('game', GAME)
+        .eq('variant', 'campaign');
+
+      if (error || !data) return null;
+
+      const done = [];
+      for (const row of data) {
+        const id = row.detail && row.detail.art;
+        if (id && done.indexOf(id) === -1) done.push(id);
+      }
+      return { done };
+    },
 
     async record(variant, seconds, detail) {
       if (!member) return null;
@@ -2963,6 +3213,13 @@ newPrint('rules');
       return { ok: true, best, place };
     }
   };
+
+  onMember(async (m) => {
+    member = m;
+    let p = null;
+    try { p = m ? await window.CPBoard.progress() : null; } catch (e) { p = null; }
+    if (window.CPArrived) window.CPArrived(p);
+  });
 </script>
 
 </body>
