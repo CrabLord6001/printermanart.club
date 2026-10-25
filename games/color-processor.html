@@ -311,6 +311,23 @@ label.tune {
   gap: 4px;
 }
 
+/* Off by default: nobody wants a browser tab that starts singing. */
+.snd {
+  margin-left: auto;
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--muted);
+  background: #11131A;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.snd:hover { color: var(--accent); border-color: var(--accent); }
+.snd[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+.snd[aria-pressed="true"] .snd-off { display: none; }
+.snd[aria-pressed="false"] .snd-on { display: none; }
+
 label.tune select {
   font-family: var(--font);
   font-size: 0.74rem;
@@ -425,6 +442,13 @@ button.go:hover { background: #4653E0; }
     <span class="stat goal">Plates <b id="tg">0/4</b></span>
     <span class="stat">Time <b id="tm">0:00</b></span>
     <span class="stat">Chain <b id="bc">0</b></span>
+    <button class="snd" id="snd" type="button" aria-pressed="false" aria-label="Turn sound on">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 5 6 9H2v6h4l5 4z"/>
+        <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+        <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
+      </svg>
+    </button>
   </div>
 
   <div class="rig">
@@ -484,6 +508,28 @@ button.go:hover { background: #4653E0; }
 
 
 <script>
+/* ============================================================
+   Sound
+   ============================================================
+   Loaded only when somebody asks for it, so a visitor who never
+   presses the speaker downloads nothing.
+   ============================================================ */
+
+let music = null;
+
+async function wantSound(next) {
+  if (!music) {
+    try { music = await import('/games/organ.js'); }
+    catch (e) { return false; }
+  }
+  music.setOn(next);
+  if (next && !over) music.startMusic();
+  else music.stopMusic();
+  return true;
+}
+
+const sayMusic = (fn, ...args) => { if (music && music.isOn()) music[fn](...args); };
+
 /* ============================================================
    Logic
    ============================================================ */
@@ -728,6 +774,7 @@ function layPlates() {
   if (did) {
     const el = document.getElementById('tg');
     if (el) el.textContent = platesDown() + '/4';
+    sayMusic('lay');
     const page = pageEl();
     const t = platesDown() / PLATES.length;
     page.style.opacity = '1';
@@ -1047,6 +1094,7 @@ async function resolve() {
 
     points += pass;
     elPts.textContent = points;
+    sayMusic('clear', chain);
     elChain.textContent = chain > 1 ? 'Chain ×' + mult : '';
     drawInk(used);
     show((chain > 1
@@ -1184,6 +1232,8 @@ function stamp(ms) {
 function finish(won) {
   over = true;
   stopTick();
+  sayMusic('stopMusic');
+  sayMusic(won ? 'done' : 'jam');
   if (won) finishPrint();
 
   const down = platesDown();
@@ -1193,10 +1243,11 @@ function finish(won) {
     const room = artwork.room
       ? '<br><a href="/art-history/' + artwork.room + '.html">More from ' + artwork.roomName + '</a>'
       : '';
+    // Three lines and no more: what it is, who made it and when, and the way
+    // to the rest. Everything in here is public domain, so saying so on every
+    // print is a line nobody reads twice.
     credit.innerHTML = '<b>' + artwork.title + '</b><br>' + artwork.artist
-                     + ' &middot; ' + artwork.date
-                     + '<br><span class="inst">The Metropolitan Museum of Art, Open Access</span>'
-                     + room;
+                     + ' &middot; ' + artwork.date + room;
     credit.hidden = false;
   } else {
     credit.hidden = true;
@@ -1254,6 +1305,7 @@ function newPrint() {
   sizeBoard();
   spawn();
   startTick();
+  sayMusic('startMusic');
 }
 
 /* ------------------------------------------------------------
@@ -1294,6 +1346,16 @@ function loadArtwork() {
   artwork = ARTWORKS[(Math.random() * ARTWORKS.length) | 0];
   art.src = '/games/img/' + artwork.file;
 }
+
+const sndBtn = document.getElementById('snd');
+
+sndBtn.addEventListener('click', async () => {
+  const next = sndBtn.getAttribute('aria-pressed') !== 'true';
+  const ok = await wantSound(next);
+  if (!ok) return;
+  sndBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
+  sndBtn.setAttribute('aria-label', next ? 'Turn sound off' : 'Turn sound on');
+});
 
 document.getElementById('again').addEventListener('click', newPrint);
 document.getElementById('overBtn').addEventListener('click', newPrint);
