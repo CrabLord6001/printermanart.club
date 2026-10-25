@@ -536,6 +536,12 @@ label.tune {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 12px;
+
+  /* Open, the details takes the full width so the controls can lay out
+     across it -- but the button itself should not stretch with it. It
+     keeps its own width and centres, in line with New print below. */
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .setup summary::-webkit-details-marker { display: none; }
