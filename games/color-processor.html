@@ -158,6 +158,22 @@ html.embed .title { display: none; }
 @media (max-width: 619px) {
   .head, .foot { padding-right: 72px; }
   html.embed .head { padding-right: 72px; }
+
+  /* That padding is what the readout pays to line up with the board, and
+     it left too little for four stats: Chain dropped to a line of its own
+     and held the whole board down for two words. Tighter tracking, a
+     smaller gap and a step down in size fit all four across. */
+  .head { gap: 7px; }
+  .stat { font-size: 0.56rem; letter-spacing: 0.06em; }
+  .stat b { font-size: 0.82rem; margin-left: 3px; }
+}
+
+/* A long print on a small phone -- a five figure score and a time past ten
+   minutes -- is the case that still wrapped. */
+@media (max-width: 389px) {
+  .head { gap: 5px; }
+  .stat { font-size: 0.52rem; letter-spacing: 0.04em; }
+  .stat b { font-size: 0.76rem; margin-left: 3px; }
 }
 
 /* Steering is a drag across the board, so the browser must not read that
