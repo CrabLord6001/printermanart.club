@@ -305,22 +305,89 @@ html.embed .title { display: none; }
 /* Magnetic ink: an ordinary colored drop wearing a gold ring, rather than a
    color of its own. Nothing new to tell apart, and the ring reads at any
    size. When it lands it pulls its own color out of a diagonal and into
-   line -- the near miss that makes people swear at the screen. */
-.cell.mag { box-shadow: inset 0 0 0 3px var(--accent), 0 0 6px rgba(212,162,76,0.5); }
+   line -- the near miss that makes people swear at the screen.
 
-/* A corrupted supply. Green appears nowhere in CMYK, so there is no chance
-   of reading it as ink. */
-/* a pull, announced */
-.cell.pull { box-shadow: inset 0 0 0 3px var(--accent), 0 0 14px 4px rgba(212,162,76,0.85); }
+   The ring brightens and a highlight travels across the face, which is what
+   makes it read as polished metal rather than a drop with a border drawn
+   round it. Both halves run on one 2.4s clock so they stay in step. */
+.cell.mag, .nextgrid div.mag {
+  position: relative;
+  overflow: hidden;
+  animation: mag-ring 2.4s ease-in-out infinite;
+}
 
-.cell.virus {
-  background: #11161C;
-  box-shadow: inset 0 0 0 3px #43D98B, 0 0 7px rgba(67,217,139,0.4);
+.cell.mag::after, .nextgrid div.mag::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(112deg,
+              transparent 34%,
+              rgba(255,255,255,0.5) 44%,
+              rgba(255,248,224,0.92) 50%,
+              rgba(255,255,255,0.45) 56%,
+              transparent 66%);
+  transform: translateX(-130%);
+  animation: mag-shine 2.4s ease-in-out infinite;
+}
+
+@keyframes mag-ring {
+  0%, 100% { box-shadow: inset 0 0 0 3px #D4A24C, 0 0 5px rgba(212,162,76,0.45); }
+  58%      { box-shadow: inset 0 0 0 3px #F5DC92, 0 0 13px rgba(245,220,146,0.85); }
+}
+
+@keyframes mag-shine {
+  0%, 42%   { transform: translateX(-130%); }
+  70%, 100% { transform: translateX(130%); }
+}
+
+/* A pull, announced: the ring opens up for a moment as the magnet drags a
+   diagonal into line. It has to beat the idle animation to be seen. */
+.cell.pull {
+  animation: none;
+  box-shadow: inset 0 0 0 3px var(--accent), 0 0 14px 4px rgba(212,162,76,0.85);
+}
+
+/* A corrupted supply: a dead cell with a circuit etched into it, the ring
+   sitting red and tearing to cyan every couple of seconds -- the split
+   between the two that reads as a glitch rather than as a color. The face is
+   never a flat disc, so it cannot be taken for magenta however red it goes,
+   and the steps are hard cuts rather than fades because a glitch does not
+   ease. */
+.cell.virus, .nextgrid div.virus {
+  background:
+    repeating-linear-gradient(90deg, rgba(232,57,79,0.20) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(0deg,  rgba(34,184,230,0.13) 0 1px, transparent 1px 3px),
+    #12161D;
+  animation: bug 2.2s steps(1, end) infinite;
+}
+
+@keyframes bug {
+  0%,  40%  { box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 5px rgba(232,57,79,0.3);
+              transform: none; }
+  44%       { box-shadow: inset 0 0 0 2.5px #22B8E6, 0 0 12px rgba(232,57,79,0.65);
+              transform: translate(0.9px, -0.7px); }
+  48%       { box-shadow: inset 0 0 0 2.5px #FF6B7D, 0 0 16px rgba(232,57,79,0.9);
+              transform: translate(-0.9px, 0.6px); }
+  52%       { box-shadow: inset 0 0 0 2.5px #22B8E6, 0 0 9px rgba(34,184,230,0.55);
+              transform: translate(0.5px, 0.5px); }
+  56%, 100% { box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 5px rgba(232,57,79,0.3);
+              transform: none; }
+}
+
+/* A cell on its way out stops performing, so the white flash reads. */
+.cell.hit { animation: none; }
+.cell.hit::after { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cell.mag, .nextgrid div.mag, .cell.virus, .nextgrid div.virus { animation: none; }
+  .cell.mag::after, .nextgrid div.mag::after { animation: none; transform: translateX(-130%); }
+  .cell.mag, .nextgrid div.mag { box-shadow: inset 0 0 0 3px #D4A24C, 0 0 5px rgba(212,162,76,0.45); }
+  .cell.virus, .nextgrid div.virus { box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 5px rgba(232,57,79,0.3); }
 }
 
 /* The piece on its way down sits slightly proud of the pile. A filter rather
-   than a shadow, so it does not paint over the gold or green ring a wildcard
-   is wearing. */
+   than a shadow, so it does not paint over the ring a wildcard is wearing. */
 .cell.live { filter: brightness(1.12) drop-shadow(0 0 5px rgba(255,255,255,0.4)); }
 
 /* ---- side panel ---- */
@@ -408,7 +475,13 @@ html.embed .title { display: none; }
 }
 
 .chip.gold  { background: #2A2E3A; box-shadow: inset 0 0 0 3px var(--accent); }
-.chip.green { background: #11161C; box-shadow: inset 0 0 0 3px #43D98B; margin-left: 10px; }
+.chip.bug   {
+  background:
+    repeating-linear-gradient(90deg, rgba(232,57,79,0.22) 0 1px, transparent 1px 4px),
+    #12161D;
+  box-shadow: inset 0 0 0 3px #E8394F;
+  margin-left: 10px;
+}
 .msg b { color: var(--accent); }
 
 label.tune {
@@ -654,7 +727,7 @@ button.go:hover { background: #4653E0; }
                   that is a chain, worth more every link.</li>
               <li><span class="chip gold"></span> pulls its own color out of a
                   diagonal and into line.</li>
-              <li><span class="chip green"></span> never matches, and rewrites
+              <li><span class="chip bug"></span> never matches, and rewrites
                   what it lands against. A chain of two, or one clump of six,
                   burns it off.</li>
               <li>Feed each ink until its plate lays down. Four plates and the
@@ -1129,10 +1202,12 @@ function paintNext() {
     const el = document.getElementById(id);
     el.className = code ? classFor(code).replace('cell', '').trim() : '';
     if (!code) { el.style.background = 'transparent'; el.style.boxShadow = 'none'; return; }
-    el.style.background = isBug(code) ? '#11161C' : colorOf(inkOf(code));
-    el.style.boxShadow = isBug(code) ? 'inset 0 0 0 3px #43D98B'
-                       : isMag(code) ? 'inset 0 0 0 3px ' + getComputedStyle(document.documentElement).getPropertyValue('--accent')
-                       : 'none';
+
+    /* Only the plain ink color is set here. A wildcard's face and ring are
+       animated, which an inline style would override, so the stylesheet is
+       left to dress those by class. */
+    el.style.background = isBug(code) ? '' : colorOf(inkOf(code));
+    el.style.boxShadow = '';
   }
 }
 
