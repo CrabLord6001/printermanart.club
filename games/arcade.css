@@ -133,7 +133,10 @@ canvas#play {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 4 / 3;
+  /* The board sets this when it starts: 24/18 on a desktop, 16/24 on a
+     phone. A custom property rather than an inline style, so the
+     full-screen rule below can still override it. */
+  aspect-ratio: var(--board, 4 / 3);
   border-radius: 5px;
   background: #15171F;
   touch-action: none;
@@ -281,7 +284,7 @@ canvas#play {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: var(--board, 4 / 3);
   background: #15171F;
 }
 
@@ -324,6 +327,13 @@ canvas#play {
 
 @media (max-width: 560px) {
   .room-card { width: 140px; }
+}
+
+/* An upright board makes a tall still, so the chooser cards come in to
+   keep three of them on a phone screen rather than one and a half. */
+@media (hover: none) and (pointer: coarse) {
+  .room-card { width: 108px; }
+  .rooms { gap: 8px; }
 }
 
 /* ---- who is playing ---- */
@@ -423,38 +433,86 @@ ol.board li.none .nm { color: var(--text-dim, #7A8094); font-size: 0.8rem; font-
 .msg.good { color: var(--accent, #D4A24C); }
 .msg[hidden] { display: none; }
 
-/* ---- touch pad, phones only ---- */
+/* ============================================================
+   Full screen
+   The same shape the reading overlay uses on the other site: a
+   fixed sheet, and the document behind it locked. On a phone the
+   game opens straight into it, because a swipe that lands an inch
+   off the board should still steer rather than scroll the page.
+   ============================================================ */
 
-.pad {
-  display: none;
-  grid-template-columns: repeat(3, 56px);
-  grid-template-rows: repeat(2, 56px);
-  justify-content: center;
-  gap: 7px;
-  margin: 12px auto 0;
+body.play-open { overflow: hidden; }
+
+#playbox.full {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  inset: 0;
+  margin: 0;
+  overscroll-behavior: none;
 }
 
-.pad button {
-  font-size: 1.1rem;
-  color: var(--text-muted, #9BA0AE);
-  background: #11131A;
-  border: 1px solid var(--border, #272B36);
-  border-radius: 10px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+#playbox.full .play-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 0;
+  border-radius: 0;
+  background: var(--ground, #101218);
+
+  /* env() keeps the head bar clear of a phone's notch and the home bar; it
+     is zero everywhere else, so the max() is what sets the normal padding. */
+  padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+           max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
 }
 
-.pad button:active { background: var(--blurple, #5865F2); color: #fff; border-color: var(--blurple, #5865F2); }
+/* The close button hangs off the corner of the floating card. With no card
+   to hang off it comes inside the sheet. */
+#playbox.full .box-close {
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+}
 
-.pad .up    { grid-column: 2; grid-row: 1; }
-.pad .left  { grid-column: 1; grid-row: 2; }
-.pad .down  { grid-column: 2; grid-row: 2; }
-.pad .right { grid-column: 3; grid-row: 2; }
+/* and the bar leaves it room rather than running under it */
+#playbox.full .play-head { padding-right: 44px; }
 
+/* The board takes whatever the head bar leaves and the 4:3 picture is fitted
+   inside it, so an upright phone shows the room centred rather than stretched.
+   The paper tray's frame comes off here: it would be a tall empty box around a
+   short picture. The board draws its own background, so what is left is the
+   room itself on the sheet. */
+#playbox.full .tray {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+#playbox.full canvas#play {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: contain;
+  background: transparent;
+  border-radius: 0;
+}
+
+#playbox.full .veil { inset: 0; }
+
+/* ---- the expand button ---- */
+
+.grow .grow-in { display: none; }
+#playbox.full .grow .grow-out { display: none; }
+#playbox.full .grow .grow-in { display: block; }
+
+/* Touch is always full screen, so there is nothing to toggle. */
 @media (hover: none) and (pointer: coarse) {
-  .pad { display: grid; }
-  /* The pad needs its own room, so the board gives some back. */
-  .play-wrap { width: min(740px, 94vw, 62vh); }
+  .grow { display: none; }
 }
 
 @media (max-width: 560px) {

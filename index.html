@@ -747,8 +747,15 @@
             </svg>
           </button>
 
+          <button class="snd grow" id="pFull" type="button" aria-pressed="false" aria-label="Full screen">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path class="grow-out" d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>
+              <path class="grow-in" d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"/>
+            </svg>
+          </button>
+
           <div class="play-stats">
-            <span>Sheets <b id="pScore">0</b></span>
+            <span>Prints <b id="pScore">0</b></span>
             <span class="best">Best <b id="pBest">&mdash;</b></span>
           </div>
         </div>
@@ -780,13 +787,6 @@
 
             <p class="msg" id="pMsg" hidden></p>
           </div>
-        </div>
-
-        <div class="pad" aria-label="Direction pad">
-          <button class="up"    type="button" aria-label="Up">&#9650;</button>
-          <button class="left"  type="button" aria-label="Left">&#9664;</button>
-          <button class="down"  type="button" aria-label="Down">&#9660;</button>
-          <button class="right" type="button" aria-label="Right">&#9654;</button>
         </div>
 
         <button class="box-close" id="pClose" type="button" aria-label="Close">
@@ -1000,6 +1000,8 @@ if (track) {
   const elWhere = document.getElementById('pWhere');
   const elWho   = document.getElementById('pWho');
   const elMsg   = document.getElementById('pMsg');
+  const elTray  = box ? box.querySelector('.tray') : null;
+  const fullBtn = document.getElementById('pFull');
 
   // The rules sit in the markup, so they are there for anyone with no
   // scripting at all. Keep a copy to put back between runs.
@@ -1070,6 +1072,11 @@ if (track) {
 
     game = mods.startPaperTrail({
       canvas,
+
+      // Swipes are read from the whole tray, not just the board, so a
+      // gesture that lands a little wide still steers.
+      surface: elTray,
+      shape: SHAPE,
 
       onScore(sheets) {
         elScore.textContent = sheets;
@@ -1158,7 +1165,7 @@ if (track) {
       card.addEventListener('click', () => startRoom(key));
       elRooms.appendChild(card);
 
-      mods.drawPreview(shot, key);
+      mods.drawPreview(shot, key, SHAPE);
     });
   }
 
@@ -1300,6 +1307,8 @@ if (track) {
     veil(LORE, '', 'Loading\u2026');
     say(null);
     loadBest(room);
+    setFull(COARSE.matches);
+    document.body.classList.add('play-open');
     box.showModal();
 
     try {
@@ -1314,6 +1323,35 @@ if (track) {
     elBtn.textContent = 'Play';
     makeGame();
   }
+
+  /* ---- full screen ----
+     A phone opens straight into it: the board is bigger and, more to the
+     point, a swipe that misses the board no longer scrolls the page behind
+     the game. On a desktop the window stays a window, with this button to
+     fill the screen. */
+  const COARSE = window.matchMedia('(hover: none) and (pointer: coarse)');
+
+  /* Which board. A phone gets the tall one whichever way it is being held,
+     so nothing has to reflow mid-run when somebody tilts it on the couch.
+     Decided once, when the page loads. */
+  const SHAPE = (COARSE.matches && Math.min(window.innerWidth, window.innerHeight) < 820)
+    ? 'tall' : 'wide';
+
+  function setFull(on) {
+    box.classList.toggle('full', on);
+    fullBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    fullBtn.setAttribute('aria-label', on ? 'Leave full screen' : 'Full screen');
+  }
+
+  fullBtn.addEventListener('click', () => setFull(!box.classList.contains('full')));
+
+  /* The document is locked while the game is open, which is what stops the
+     page scrolling under a swipe. This stops the sheet itself rubber-banding
+     on top of that. The chooser panel scrolls, so touches there are let by. */
+  box.addEventListener('touchmove', (e) => {
+    if (!elVeil.hidden && e.target.closest && e.target.closest('.veil')) return;
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
 
   const sndBtn = document.getElementById('pSound');
 
@@ -1337,6 +1375,8 @@ if (track) {
   box.addEventListener('close', () => {
     if (game) { game.destroy(); game = null; }
     if (mods) mods.sound.stopMusic();
+    document.body.classList.remove('play-open');
+    setFull(false);
   });
 
   document.querySelectorAll('.arc-card[data-game]').forEach((card) => {
@@ -1355,13 +1395,6 @@ if (track) {
   });
 
   elBack.addEventListener('click', () => { if (game) showChooser(); });
-
-  document.querySelectorAll('.pad button').forEach((b) => {
-    b.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      if (game) game.turn(b.className);
-    });
-  });
 
   showBest();
 }

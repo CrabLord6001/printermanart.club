@@ -15,10 +15,33 @@
    rather than one generic dot.
    ============================================================ */
 
-const COLS = 24;
-const ROWS = 18;
 const CELL = 32;                    // internal pixels per cell
 const U = CELL / 24;                // glyphs are drawn in a 24-unit box
+
+/* ============================================================
+   The two boards
+   ============================================================
+   Not one board scaled. A phone is held upright, so it gets a
+   grid of its own shape rather than a wide one shrunk into a
+   letterbox. The cells stay square on both, which is what keeps
+   a gap honest: two cells across has to look like two cells
+   down, or you cannot judge whether you fit.
+
+   She starts along the long axis, so there is runway either way,
+   and the cells she starts on are kept clear in every room.
+   ============================================================ */
+
+export const SHAPES = {
+  wide: { cols: 24, rows: 18, start: { x: 11, y: 16 }, dir: 'right', back: { x: -1, y: 0 }, probe: { x: 18, y:  8 } },
+  tall: { cols: 16, rows: 24, start: { x:  8, y: 20 }, dir: 'up',    back: { x:  0, y: 1 }, probe: { x:  7, y: 12 } }
+};
+
+const shapeKeyOf = (s) => (SHAPES[s] ? s : 'wide');
+const shapeOf    = (s) => SHAPES[shapeKeyOf(s)];
+const itemsOf    = (roomKey, s) => {
+  const room = ROOMS[roomKey] || ROOMS.classic;
+  return room.items[shapeKeyOf(s)] || [];
+};
 
 const START_MS = 125;               // ms per step at the start
 const FLOOR_MS = 62;                // fastest it ever gets
@@ -66,56 +89,119 @@ const INKS = [
    ============================================================ */
 
 export const ROOMS = {
-  classic: { name: 'Classic', items: [] },
+  classic: { name: 'Classic', items: { wide: [], tall: [] } },
 
   lobby: {
     name: 'Corporate Lobby',
-    items: [
-      { x: 8,  y: 4,  w: 8, h: 1, k: 'desk' },
-      { x: 5,  y: 9,  w: 1, h: 1, k: 'pillar' },
-      { x: 18, y: 9,  w: 1, h: 1, k: 'pillar' },
-      { x: 5,  y: 13, w: 1, h: 1, k: 'pillar' },
-      { x: 18, y: 13, w: 1, h: 1, k: 'pillar' },
-      { x: 10, y: 12, w: 3, h: 1, k: 'bench' }
-    ]
+    items: {
+      wide: [
+        { x: 8,  y: 4,  w: 8, h: 1, k: 'desk' },
+        { x: 5,  y: 9,  w: 1, h: 1, k: 'pillar' },
+        { x: 18, y: 9,  w: 1, h: 1, k: 'pillar' },
+        { x: 5,  y: 13, w: 1, h: 1, k: 'pillar' },
+        { x: 18, y: 13, w: 1, h: 1, k: 'pillar' },
+        { x: 10, y: 12, w: 3, h: 1, k: 'bench' }
+      ],
+      /* Upright, the reception desk reads better across the top of the
+         room and the pillars march down the sides, which is what a lobby
+         looks like when you walk into it rather than past it. */
+      tall: [
+        { x: 4,  y: 3,  w: 8, h: 1, k: 'desk' },
+        { x: 3,  y: 7,  w: 1, h: 1, k: 'pillar' },
+        { x: 12, y: 7,  w: 1, h: 1, k: 'pillar' },
+        { x: 6,  y: 9,  w: 4, h: 1, k: 'bench' },
+        { x: 3,  y: 11, w: 1, h: 1, k: 'pillar' },
+        { x: 12, y: 11, w: 1, h: 1, k: 'pillar' },
+        { x: 3,  y: 15, w: 1, h: 1, k: 'pillar' },
+        { x: 12, y: 15, w: 1, h: 1, k: 'pillar' },
+        { x: 2,  y: 17, w: 4, h: 1, k: 'bench' },
+        { x: 10, y: 17, w: 4, h: 1, k: 'bench' }
+      ]
+    }
   },
 
   office: {
     name: 'Executive Office',
-    items: [
-      { x: 9,  y: 7,  w: 6, h: 2, k: 'desk' },
-      { x: 1,  y: 3,  w: 1, h: 8, k: 'shelf' },
-      { x: 20, y: 4,  w: 1, h: 3, k: 'cabinet' },
-      { x: 11, y: 11, w: 1, h: 1, k: 'cart' },
-      { x: 13, y: 11, w: 1, h: 1, k: 'cart' },
-      { x: 17, y: 13, w: 2, h: 1, k: 'bench' }
-    ]
+    items: {
+      wide: [
+        { x: 9,  y: 7,  w: 6, h: 2, k: 'desk' },
+        { x: 1,  y: 3,  w: 1, h: 8, k: 'shelf' },
+        { x: 20, y: 4,  w: 1, h: 3, k: 'cabinet' },
+        { x: 11, y: 11, w: 1, h: 1, k: 'cart' },
+        { x: 13, y: 11, w: 1, h: 1, k: 'cart' },
+        { x: 17, y: 13, w: 2, h: 1, k: 'bench' }
+      ],
+      /* The big desk still sits in the middle of the floor with the
+         bookcase along one wall; there is just more floor above and below
+         it than beside it now. */
+      tall: [
+        { x: 1,  y: 3,  w: 1, h: 9, k: 'shelf' },
+        { x: 14, y: 3,  w: 1, h: 9, k: 'shelf' },
+        { x: 5,  y: 7,  w: 6, h: 2, k: 'desk' },
+        { x: 5,  y: 12, w: 1, h: 1, k: 'cart' },
+        { x: 10, y: 12, w: 1, h: 1, k: 'cart' },
+        { x: 1,  y: 14, w: 1, h: 4, k: 'cabinet' },
+        { x: 14, y: 14, w: 1, h: 4, k: 'cabinet' },
+        { x: 5,  y: 18, w: 1, h: 1, k: 'cart' },
+        { x: 10, y: 18, w: 1, h: 1, k: 'cart' }
+      ]
+    }
   },
 
   mail: {
     name: 'Mail Room',
-    items: [
-      { x: 2,  y: 2,  w: 5, h: 1, k: 'shelf' },
-      { x: 9,  y: 2,  w: 5, h: 1, k: 'shelf' },
-      { x: 16, y: 2,  w: 5, h: 1, k: 'shelf' },
-      { x: 5,  y: 7,  w: 4, h: 1, k: 'desk' },
-      { x: 13, y: 7,  w: 4, h: 1, k: 'desk' },
-      { x: 9,  y: 11, w: 4, h: 1, k: 'desk' },
-      { x: 3,  y: 12, w: 1, h: 1, k: 'cart' },
-      { x: 19, y: 10, w: 1, h: 1, k: 'cart' },
-      { x: 21, y: 13, w: 1, h: 1, k: 'cart' }
-    ]
+    items: {
+      wide: [
+        { x: 2,  y: 2,  w: 5, h: 1, k: 'shelf' },
+        { x: 9,  y: 2,  w: 5, h: 1, k: 'shelf' },
+        { x: 16, y: 2,  w: 5, h: 1, k: 'shelf' },
+        { x: 5,  y: 7,  w: 4, h: 1, k: 'desk' },
+        { x: 13, y: 7,  w: 4, h: 1, k: 'desk' },
+        { x: 9,  y: 11, w: 4, h: 1, k: 'desk' },
+        { x: 3,  y: 12, w: 1, h: 1, k: 'cart' },
+        { x: 19, y: 10, w: 1, h: 1, k: 'cart' },
+        { x: 21, y: 13, w: 1, h: 1, k: 'cart' }
+      ],
+      /* Four banks of pigeonholes stacked down the room with the sorting
+         benches between them, and the carts left where they were dumped. */
+      tall: [
+        { x: 1,  y: 2,  w: 6, h: 1, k: 'shelf' },
+        { x: 9,  y: 2,  w: 6, h: 1, k: 'shelf' },
+        { x: 4,  y: 5,  w: 8, h: 1, k: 'desk' },
+        /* The middle bank of pigeonholes is deliberately missing: with it
+           there the room was a corridor of furniture with nowhere to breathe,
+           and the open middle gives you somewhere to make a mistake. */
+        { x: 4,  y: 11, w: 8, h: 1, k: 'desk' },
+        { x: 1,  y: 14, w: 6, h: 1, k: 'shelf' },
+        { x: 9,  y: 14, w: 6, h: 1, k: 'shelf' },
+        { x: 2,  y: 17, w: 1, h: 1, k: 'cart' },
+        { x: 13, y: 17, w: 1, h: 1, k: 'cart' },
+        { x: 3,  y: 19, w: 4, h: 1, k: 'desk' },
+        { x: 10, y: 19, w: 4, h: 1, k: 'desk' }
+      ]
+    }
   },
 
   data: {
     name: 'Data Center',
-    items: [
-      { x: 4,  y: 2, w: 1, h: 6, k: 'rack' }, { x: 4,  y: 10, w: 1, h: 5, k: 'rack' },
-      { x: 8,  y: 2, w: 1, h: 6, k: 'rack' }, { x: 8,  y: 10, w: 1, h: 5, k: 'rack' },
-      { x: 12, y: 2, w: 1, h: 6, k: 'rack' }, { x: 12, y: 10, w: 1, h: 5, k: 'rack' },
-      { x: 16, y: 2, w: 1, h: 6, k: 'rack' }, { x: 16, y: 10, w: 1, h: 5, k: 'rack' },
-      { x: 20, y: 2, w: 1, h: 6, k: 'rack' }, { x: 20, y: 10, w: 1, h: 5, k: 'rack' }
-    ]
+    items: {
+      wide: [
+        { x: 4,  y: 2, w: 1, h: 6, k: 'rack' }, { x: 4,  y: 10, w: 1, h: 5, k: 'rack' },
+        { x: 8,  y: 2, w: 1, h: 6, k: 'rack' }, { x: 8,  y: 10, w: 1, h: 5, k: 'rack' },
+        { x: 12, y: 2, w: 1, h: 6, k: 'rack' }, { x: 12, y: 10, w: 1, h: 5, k: 'rack' },
+        { x: 16, y: 2, w: 1, h: 6, k: 'rack' }, { x: 16, y: 10, w: 1, h: 5, k: 'rack' },
+        { x: 20, y: 2, w: 1, h: 6, k: 'rack' }, { x: 20, y: 10, w: 1, h: 5, k: 'rack' }
+      ],
+      /* The same hall turned a quarter: racks in long rows with a cold
+         aisle straight up the middle and a lap around the outside. */
+      tall: [
+        { x: 1, y: 3,  w: 6, h: 1, k: 'rack' }, { x: 9, y: 3,  w: 6, h: 1, k: 'rack' },
+        { x: 1, y: 7,  w: 6, h: 1, k: 'rack' }, { x: 9, y: 7,  w: 6, h: 1, k: 'rack' },
+        { x: 1, y: 11, w: 6, h: 1, k: 'rack' }, { x: 9, y: 11, w: 6, h: 1, k: 'rack' },
+        { x: 1, y: 15, w: 6, h: 1, k: 'rack' }, { x: 9, y: 15, w: 6, h: 1, k: 'rack' },
+        { x: 1, y: 19, w: 6, h: 1, k: 'rack' }, { x: 9, y: 19, w: 6, h: 1, k: 'rack' }
+      ]
+    }
   }
 };
 
@@ -167,25 +253,24 @@ function rr(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function paintTray(ctx) {
+function paintTray(ctx, shape) {
+  const S = shapeOf(shape);
   ctx.fillStyle = TRAY;
-  ctx.fillRect(0, 0, COLS * CELL, ROWS * CELL);
+  ctx.fillRect(0, 0, S.cols * CELL, S.rows * CELL);
 
   // A dot at each cell corner. Faint enough to read as texture, but it
   // gives the eye a grid to judge distance against, which matters when
   // you are deciding whether a gap is one cell or two.
   ctx.fillStyle = TRAY_DOT;
-  for (let y = 1; y < ROWS; y++) {
-    for (let x = 1; x < COLS; x++) ctx.fillRect(x * CELL - 1, y * CELL - 1, 2, 2);
+  for (let y = 1; y < S.rows; y++) {
+    for (let x = 1; x < S.cols; x++) ctx.fillRect(x * CELL - 1, y * CELL - 1, 2, 2);
   }
 }
 
 /* The furniture. Grey throughout and told apart by what is etched on it:
    vents on a rack, pigeonholes on a shelf, a lighter top on a desk. */
-function paintRoom(ctx, roomKey) {
-  const room = ROOMS[roomKey] || ROOMS.classic;
-
-  for (const it of room.items) {
+function paintRoom(ctx, roomKey, shape) {
+  for (const it of itemsOf(roomKey, shape)) {
     const x = it.x * CELL + 2;
     const y = it.y * CELL + 2;
     const w = it.w * CELL - 4;
@@ -445,31 +530,45 @@ function makeBlob(x, y, ink, salt) {
 /* A still of a room, for the chooser. Her and a couple of print-offs are in
    it on purpose: without something of known size the picture says nothing
    about how tight the gaps actually are. */
-export function drawPreview(canvas, roomKey) {
-  canvas.width = COLS * CELL;
-  canvas.height = ROWS * CELL;
+export function drawPreview(canvas, roomKey, shape) {
+  const key = shapeKeyOf(shape);
+  const S = SHAPES[key];
+
+  canvas.width = S.cols * CELL;
+  canvas.height = S.rows * CELL;
+  // The card follows the board rather than the other way round.
+  canvas.style.setProperty('--board', S.cols + ' / ' + S.rows);
 
   const ctx = canvas.getContext('2d');
-  paintTray(ctx);
-  paintRoom(ctx, roomKey);
+  paintTray(ctx, key);
+  paintRoom(ctx, roomKey, key);
 
-  const row = 16;
-  const ink = INKS[3];
-  paintStack(ctx, { x: 9,  y: row, ink }, true);
-  paintStack(ctx, { x: 10, y: row, ink }, false);
-  paintSplat(ctx, makeBlob(18, 8, INKS[0], 7), 0);
-  paintPrinter(ctx, { x: 11, y: row }, 'right', false, 2.3);
+  // She is in the still on purpose, on the squares she really starts from.
+  // Without something of known size the picture says nothing about how
+  // tight the gaps are.
+  const st = S.start, bk = S.back, ink = INKS[3];
+  paintStack(ctx, { x: st.x + bk.x * 2, y: st.y + bk.y * 2, ink }, true);
+  paintStack(ctx, { x: st.x + bk.x,     y: st.y + bk.y,     ink }, false);
+  paintSplat(ctx, makeBlob(S.probe.x, S.probe.y, INKS[0], 7), 0);
+  paintPrinter(ctx, { x: st.x, y: st.y }, S.dir, false, 2.3);
 }
 
 export function startPaperTrail(options) {
   const canvas = options.canvas;
   const ctx = canvas.getContext('2d');
 
+  // Which board this run is played on. Fixed for the life of the game: a
+  // board cannot change shape under a run.
+  const SHAPE = shapeKeyOf(options.shape);
+  const S = SHAPES[SHAPE];
+  const COLS = S.cols, ROWS = S.rows;
+
   // Backing store at device resolution so the sheets have crisp edges on a
   // phone, while the CSS box stays fluid.
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width = COLS * CELL * dpr;
   canvas.height = ROWS * CELL * dpr;
+  canvas.style.setProperty('--board', COLS + ' / ' + ROWS);
   ctx.scale(dpr, dpr);
 
   let snake, dir, queued, blob, ink, sheets, running, over, acc, last, raf;
@@ -500,21 +599,21 @@ export function startPaperTrail(options) {
     roomKey = (room && ROOMS[room]) ? room : 'classic';
 
     walls = new Set();
-    for (const it of ROOMS[roomKey].items) {
+    for (const it of itemsOf(roomKey, SHAPE)) {
       for (let y = it.y; y < it.y + it.h; y++) {
         for (let x = it.x; x < it.x + it.w; x++) walls.add(x + ',' + y);
       }
     }
 
-    // Row 16 is kept clear in every room, so one start works for all of them.
-    const row = 16;
+    // These cells are kept clear in every room, so one start works for all.
+    const st = S.start, bk = S.back;
     ink = INKS[3];                                  // loaded with black to begin
     snake = [
-      { x: 11, y: row, ink },
-      { x: 10, y: row, ink },
-      { x: 9,  y: row, ink }
+      { x: st.x,            y: st.y,            ink },
+      { x: st.x + bk.x,     y: st.y + bk.y,     ink },
+      { x: st.x + bk.x * 2, y: st.y + bk.y * 2, ink }
     ];
-    dir = 'right';
+    dir = S.dir;
     queued = [];
     sheets = 0;
     over = false;
@@ -584,9 +683,9 @@ export function startPaperTrail(options) {
   /* Thin now: the painting itself lives at module level so the chooser can
      use it too. These only supply what the game knows. */
 
-  function drawTray() { paintTray(ctx); }
+  function drawTray() { paintTray(ctx, SHAPE); }
 
-  function drawRoom() { paintRoom(ctx, roomKey); }
+  function drawRoom() { paintRoom(ctx, roomKey, SHAPE); }
 
   function drawSheet(cell, index) { paintStack(ctx, cell, index === snake.length - 1); }
 
@@ -648,7 +747,11 @@ export function startPaperTrail(options) {
     turn(next);
   }
 
-  // Swipe, horizontal or vertical, whichever the gesture favors.
+  /* Swipe, horizontal or vertical, whichever the gesture favors. Bound to
+     whatever element the page hands over rather than the canvas itself, so
+     a gesture that starts just off the board still steers. */
+  const surface = options.surface || canvas;
+
   let t0 = null;
   function onTouchStart(e) {
     const t = e.changedTouches[0];
@@ -664,11 +767,16 @@ export function startPaperTrail(options) {
     turn(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
   }
 
+  // A swipe over the board is a steer, never a scroll, so the browser is
+  // told to keep its hands off once one is under way.
+  function onTouchMove(e) { if (t0 && e.cancelable) e.preventDefault(); }
+
   function onHide() { if (document.hidden && running) pause(); }
 
   window.addEventListener('keydown', onKey);
-  canvas.addEventListener('touchstart', onTouchStart, { passive: true });
-  canvas.addEventListener('touchend', onTouchEnd, { passive: true });
+  surface.addEventListener('touchstart', onTouchStart, { passive: true });
+  surface.addEventListener('touchmove', onTouchMove, { passive: false });
+  surface.addEventListener('touchend', onTouchEnd, { passive: true });
   document.addEventListener('visibilitychange', onHide);
 
   /* ---- outside controls --------------------------------------- */
@@ -710,8 +818,9 @@ export function startPaperTrail(options) {
       cancelAnimationFrame(raf);
       raf = null;
       window.removeEventListener('keydown', onKey);
-      canvas.removeEventListener('touchstart', onTouchStart);
-      canvas.removeEventListener('touchend', onTouchEnd);
+      surface.removeEventListener('touchstart', onTouchStart);
+      surface.removeEventListener('touchmove', onTouchMove);
+      surface.removeEventListener('touchend', onTouchEnd);
       document.removeEventListener('visibilitychange', onHide);
     }
   };
