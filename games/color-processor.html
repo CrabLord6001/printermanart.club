@@ -420,7 +420,7 @@ html.embed .title { display: none; }
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-top: 40px;
+  padding-top: 2px;
   min-width: 62px;
 }
 
@@ -512,8 +512,11 @@ html.embed .title { display: none; }
 .msg b { color: var(--accent); }
 
 /* Off by default: nobody wants a browser tab that starts singing. */
+/* Tucked into the corner between the toner canisters and Next, where there
+   was already a gap, rather than taking a row of its own above them. */
 .snd {
-  margin-left: auto;
+  align-self: center;
+  flex: none;
   width: 30px; height: 30px;
   display: inline-flex; align-items: center; justify-content: center;
   color: var(--muted);
@@ -851,13 +854,6 @@ h2[hidden] { display: none; }
     <span class="stat goal">Plates <b id="tg">0/4</b></span>
     <span class="stat">Time <b id="tm">0:00</b></span>
     <span class="stat">Chain <b id="bc">0</b></span>
-    <button class="snd" id="snd" type="button" aria-pressed="false" aria-label="Turn sound on">
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M11 5 6 9H2v6h4l5 4z"/>
-        <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
-        <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
-      </svg>
-    </button>
   </div>
 
   <div class="rig">
@@ -923,6 +919,13 @@ h2[hidden] { display: none; }
     </div>
 
     <div class="side">
+      <button class="snd" id="snd" type="button" aria-pressed="false" aria-label="Turn sound on">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M11 5 6 9H2v6h4l5 4z"/>
+          <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+          <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
+        </svg>
+      </button>
       <div class="nextbox">
         <p class="lbl">Next</p>
         <div class="nextlist" id="nextlist"></div>
@@ -1988,7 +1991,8 @@ function buttons() {
   const main = document.getElementById('again');
   main.hidden = false;
 
-  main.classList.toggle('ghost', phase === 'paused');
+
+  main.classList.remove('ghost');
 
   if (phase === 'done') {
     // the print is finished and the panel is telling you about it; the only
@@ -2008,14 +2012,22 @@ function buttons() {
   }
 
   if (phase === 'paused') {
-    /* Change a setting and there is no resuming this board -- it was built
-       from the old numbers. Rather than quietly throwing the print away,
-       the way back simply stops being offered until the setting is put
-       back. */
-    menu.hidden = changed();
+    /* Both ways out, always, the way the first panel offers both Setup and
+       Play. A button that disappears reads as broken even when it is being
+       careful.
+
+       The board in front of you was built from the old numbers, so a
+       changed setting cannot reach it -- it lands on the next print. That
+       is said by which button is the loud one rather than by taking one
+       away: untouched, carrying on is the obvious move; changed, starting
+       over is. */
+    const moved = changed();
+    menu.hidden = false;
     menu.textContent = 'Resume';
-    menu.classList.remove('ghost', 'on');
+    menu.classList.remove('on');
+    menu.classList.toggle('ghost', moved);
     main.textContent = 'New print';
+    main.classList.toggle('ghost', !moved);
     return;
   }
 
