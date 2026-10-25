@@ -1210,81 +1210,181 @@ h2[hidden] { display: none; }
 
 .pg-dots button.on { background: var(--accent); }
 
-/* The same shape as the arcade's board so the club reads as one thing.
-   Places are printed rather than counted, because a player outside the ten
-   appears under a break at whatever place they actually hold. */
-.board-wrap { margin: 0 auto; width: 100%; max-width: 22rem; }
-
-.board-wrap h3 {
-  margin: 0 0 8px;
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--dim);
-  text-align: center;
+/* The board. It opens at the top of the panel rather than floating in the
+   middle of it, because a ranking is a list you read down, and a title
+   sitting in dead centre with empty board under it read as an error. Rows
+   are bars with a face on them: a name alone says who holds a place, a
+   face says who they are. */
+.board-wrap {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
-ol.board { list-style: none; margin: 0; padding: 0; text-align: left; }
+.board-wrap h3 {
+  margin: 0 0 3px;
+  font-size: clamp(0.92rem, 4.4vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* A gold rule under the title, the width of the list, so the board reads
+   as a plate rather than as loose text on the panel. */
+.board-wrap h3::after {
+  content: '';
+  display: block;
+  width: 56px;
+  height: 2px;
+  margin: 7px auto 0;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+ol.board {
+  list-style: none;
+  margin: 11px 0 0;
+  padding: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
 ol.board li {
   display: flex;
-  align-items: baseline;
-  gap: 9px;
-  padding: 5px 2px;
-  border-top: 1px solid var(--border);
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px 5px 6px;
+  background: #13161D;
+  border: 1px solid var(--border);
+  border-radius: 999px;
 }
-
-ol.board li:first-child { border-top: 0; }
 
 ol.board .pl,
 ol.board .lv,
 ol.board .sc { font-variant-numeric: tabular-nums; }
 
-ol.board .pl { flex: none; width: 1.9em; font-size: 0.72rem; font-weight: 600; color: var(--dim); }
+ol.board .pl {
+  flex: none;
+  width: 1.7em;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--dim);
+}
+
+/* The medal places, in metal rather than in pictures: three images at this
+   size turn to mush, and the colour alone is read instantly. */
+ol.board li.p1 { border-color: rgba(212,162,76,0.55); background: #191a1b; }
+ol.board li.p1 .pl { color: #E8B65C; }
+ol.board li.p2 .pl { color: #C7CBD4; }
+ol.board li.p3 .pl { color: #BE803F; }
+
+/* The Discord picture, or their first letter when they have none. */
+ol.board .face {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #0C0E13;
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+ol.board .face.letter {
+  display: grid;
+  place-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+ol.board li.p1 .face { box-shadow: 0 0 0 1.5px #E8B65C; }
 
 ol.board .nm {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
+  font-weight: 500;
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-ol.board .lv { flex: none; width: 2.4em; text-align: right; font-size: 0.84rem; font-weight: 600; color: var(--text); }
-ol.board .sc { flex: none; width: 4.2em; text-align: right; font-size: 0.78rem; color: var(--muted); }
+ol.board .lv {
+  flex: none;
+  min-width: 1.6em;
+  text-align: right;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
 
-/* The column labels, which have to sit over the numbers they name. */
-ol.board li.hd { padding-bottom: 3px; border-top: 0; }
+ol.board .sc {
+  flex: none;
+  min-width: 3.4em;
+  text-align: right;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
 
-ol.board li.hd span {
-  font-size: 0.52rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+/* The column labels, outside the bars so they read as headings. */
+.board-head {
+  display: flex;
+  gap: 8px;
+  padding: 0 9px 0 6px;
+  margin: 0 0 2px;
+}
+
+.board-head .sp { flex: 1 1 auto; }
+
+.board-head b {
+  flex: none;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--dim);
 }
 
-ol.board li.me .pl,
-ol.board li.me .nm,
-ol.board li.me .lv,
-ol.board li.me .sc { color: var(--accent); font-weight: 600; }
+.board-head .h-lv { min-width: 1.6em; text-align: right; }
+.board-head .h-sc { min-width: 3.4em; text-align: right; }
+
+ol.board li.me {
+  border-color: var(--accent);
+  background: rgba(212,162,76,0.10);
+}
+
+ol.board li.me .nm, ol.board li.me .lv, ol.board li.me .sc { color: var(--accent); }
+ol.board li.me .pl { color: var(--accent); }
 
 /* A break above the player's own row, so nobody reads tenth and thirty
    fourth as though they were next to each other. */
 ol.board li.gap {
   justify-content: center;
-  padding: 1px 2px;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--border);
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   letter-spacing: 0.34em;
+  min-height: 11px;
 }
 
-ol.board.long li { padding: 3px 2px; }
-
-ol.board li.none { justify-content: center; border-top: 0; }
+ol.board li.none {
+  justify-content: center;
+  background: none;
+  border: 0;
+}
 
 ol.board li.none .nm {
   flex: 0 1 auto;
@@ -1294,6 +1394,26 @@ ol.board li.none .nm {
   font-weight: 300;
   white-space: normal;
 }
+
+/* Ten bars at this size do not fit a phone, and a board is a list worth
+   keeping whole rather than cutting to nine. So it measures itself and
+   tightens if it has to -- the places all stay, they just sit closer. */
+ol.board.tight { gap: 2px; }
+ol.board.tight li { padding: 2px 8px 2px 4px; }
+ol.board.tight .face { width: 20px; height: 20px; }
+ol.board.tight .nm { font-size: 0.76rem; }
+ol.board.tight .lv { font-size: 0.82rem; }
+ol.board.tight .sc { font-size: 0.68rem; }
+ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
+
+/* The title pays first, before the rows get any smaller than that. */
+.board-wrap.tight h3 { font-size: 0.95rem; letter-spacing: 0.15em; }
+.board-wrap.tight h3::after { width: 44px; height: 1.5px; margin-top: 5px; }
+.board-wrap.tight ol.board { margin-top: 7px; }
+
+/* The board page reads from the top. Every other page is centred, which
+   is right for a paragraph and wrong for a list. */
+.over.intro.boardface .over-in { justify-content: flex-start; }
 
 /* The gallery screen: which level is next and how much of the series is
    behind you. */
@@ -1417,6 +1537,9 @@ ol.board li.none .nm {
               <div class="pg" id="rulesPg4" hidden>
                 <div class="board-wrap">
                   <h3>The Board</h3>
+                  <div class="board-head" id="cpBoardHead" hidden>
+                    <span class="sp"></span><b class="h-lv">Lv</b><b class="h-sc">Time</b>
+                  </div>
                   <ol class="board" id="cpBoard">
                     <li class="none"><span class="nm">Loading&hellip;</span></li>
                   </ol>
@@ -2698,17 +2821,26 @@ function escHTML(t) {
   })[c]);
 }
 
+/* Their Discord picture when there is one. It is a remote image on a
+   board anyone can open, so it is never trusted to load: a first letter
+   stands in, and a picture that fails swaps itself for one. */
+function boardFace(r) {
+  const letter = escHTML((r.display_name || '?').trim().charAt(0) || '?');
+  if (!r.avatar_url) return '<span class="face letter">' + letter + '</span>';
+  return '<img class="face" alt="" loading="lazy" src="' + escHTML(r.avatar_url) + '"'
+       + ' onerror="this.outerHTML=\'<span class=&quot;face letter&quot;>' + letter + '</span>\'">';
+}
+
 function boardRow(r, mine) {
-  return '<li' + (mine ? ' class="me"' : '') + '>'
+  const cls = [r.place <= 3 ? 'p' + r.place : '', mine ? 'me' : ''].filter(Boolean).join(' ');
+  return '<li' + (cls ? ' class="' + cls + '"' : '') + '>'
     + '<span class="pl">' + r.place + '</span>'
+    + boardFace(r)
     + '<span class="nm">' + escHTML(r.display_name) + '</span>'
     + '<span class="lv">' + r.levels + '</span>'
     + '<span class="sc">' + clockSecs(r.total_seconds) + '</span>'
     + '</li>';
 }
-
-const BOARD_HEAD = '<li class="hd"><span class="pl"></span><span class="nm"></span>'
-  + '<span class="lv">Lv</span><span class="sc">Time</span></li>';
 
 const boardSays = (what) => '<li class="none"><span class="nm">' + what + '</span></li>';
 
@@ -2733,19 +2865,41 @@ async function loadBoard() {
 
   if (!ol.isConnected) return;
 
-  if (rows === null) { ol.innerHTML = boardSays('Board unavailable right now.'); boardLoaded = false; return; }
-  if (!rows.length) { ol.innerHTML = BOARD_HEAD + boardSays('Nobody has printed a level yet.'); return; }
+  const head = document.getElementById('cpBoardHead');
+  const showHead = (on) => { if (head) head.hidden = !on; };
 
-  let html = BOARD_HEAD + rows.map((r) => boardRow(r, !!me && r.place === me.place)).join('');
+  if (rows === null) { showHead(false); ol.innerHTML = boardSays('Board unavailable right now.'); boardLoaded = false; return; }
+  if (!rows.length) { showHead(false); ol.innerHTML = boardSays('Nobody has printed a level yet.'); return; }
+
+  showHead(true);
+  let html = rows.map((r) => boardRow(r, !!me && r.place === me.place)).join('');
 
   // Their own place, when it sits below the last row on display.
   if (me && !rows.some((r) => r.place === me.place)) {
     html += '<li class="gap">&middot;&middot;&middot;</li>' + boardRow(me, true);
-    ol.classList.add('long');
-  } else {
-    ol.classList.remove('long');
   }
   ol.innerHTML = html;
+  fitBoard();
+}
+
+/* Rows at full size first, and closer together only if the panel cannot
+   take them. Measured rather than guessed from a row count, because the
+   panel is a different height on every screen. */
+function fitBoard() {
+  const panel = document.getElementById('over');
+  const rules = document.getElementById('overRules');
+  const ol = document.getElementById('cpBoard');
+  if (!ol || !panel || elOver.hidden) return;
+
+  const wrap = ol.closest('.board-wrap');
+  ol.classList.remove('tight');
+  if (wrap) wrap.classList.remove('tight');
+
+  const room = panel.clientHeight - PANEL_PAD - FADE_H;
+  if (rules.scrollHeight > room) {
+    ol.classList.add('tight');
+    if (wrap) wrap.classList.add('tight');
+  }
 }
 
 function paintRules() {
@@ -2776,7 +2930,10 @@ function paintRules() {
   document.getElementById('rulesBack').disabled = rulesPage === 0;
   document.getElementById('rulesNext').disabled = rulesPage === n - 1;
 
-  if (rulesPage === n - 1) loadBoard();
+  /* The board reads from the top of the panel; the pages of copy stay
+     centred, which is right for a paragraph and wrong for a list. */
+  elOver.classList.toggle('boardface', rulesPage === n - 1);
+  if (rulesPage === n - 1) { loadBoard(); fitBoard(); }
 
   /* Sized page by page. A hidden page measures nothing, so the size page
      one settles on says nothing about what page two needs. */
@@ -2815,7 +2972,7 @@ function faceOff() {
   /* won goes too. It trades the scrim for a gradient that is clear at the
      top so the finished print shows through, which is right for the print
      and unreadable for anything laid over it. closeRules puts it back. */
-  elOver.classList.remove('intro', 'menu', 'won');
+  elOver.classList.remove('intro', 'menu', 'won', 'boardface');
   elRules().hidden = true;
   elSetup().hidden = true;
   elGallery().hidden = true;
