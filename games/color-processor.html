@@ -371,6 +371,20 @@ button.go:hover { background: #4653E0; }
 }
 
 .over[hidden] { display: none; }
+
+/* A finished print is the thing you played for, so the panel gets out of
+   its way: the scrim falls to the bottom of the screen and the words sit
+   on it, leaving the page itself clear. */
+.over.won {
+  background: linear-gradient(to bottom,
+              rgba(10,12,17,0) 0%, rgba(10,12,17,0) 52%,
+              rgba(10,12,17,0.72) 70%, rgba(10,12,17,0.94) 100%);
+  justify-content: flex-end;
+  padding-bottom: 34px;
+}
+
+.over.won h2 { text-shadow: 0 2px 14px rgba(0,0,0,0.9); }
+.over.won p  { text-shadow: 0 2px 10px rgba(0,0,0,0.9); }
 .over h2 { margin: 0; font-size: 1.4rem; color: var(--text); font-weight: 600; }
 .over p  { margin: 0; font-size: 0.95rem; max-width: 34ch; }
 </style>
@@ -380,8 +394,9 @@ button.go:hover { background: #4653E0; }
   <div class="head">
     <p class="title">Color Processor &mdash; rough board</p>
     <span class="stat">Points <b id="pts">0</b></span>
-    <span class="stat goal">Target <b id="tg">1000</b></span>
-    <span class="stat">Best chain <b id="bc">0</b></span>
+    <span class="stat goal">Plates <b id="tg">0/4</b></span>
+    <span class="stat">Time <b id="tm">0:00</b></span>
+    <span class="stat">Chain <b id="bc">0</b></span>
   </div>
 
   <div class="rig">
@@ -420,7 +435,7 @@ button.go:hover { background: #4653E0; }
         <option value="photo">6 &mdash; photo</option>
       </select>
     </label>
-    <label class="tune">Target <input id="setTarget" type="number" min="100" step="100" value="1000"></label>
+    <label class="tune">Ink per plate <input id="setTarget" type="number" min="3" step="1" value="10"></label>
     <label class="tune">Fall ms <input id="setFall" type="number" min="100" step="50" value="700"></label>
     <button class="go" id="again" type="button">New print</button>
     <p class="hint" id="hint">Drag to steer &middot; tap to rotate &middot; swipe down to drop</p>
@@ -568,16 +583,14 @@ const DOT   = { c: '#0093D3', m: '#E6007E', y: '#F3E500', k: '#1A1A1A' };
    the paper and feeds nothing. */
 const PLATE_OF = { c: 'c', lc: 'c', m: 'm', lm: 'm', y: 'y', k: 'k', w: null };
 
-const PLATE_ORDER = ['k', 'c', 'm', 'y'];
-const PER_PLATE = 7;                        // drops of an ink before its plate lands
+const PLATES = ['k', 'c', 'm', 'y'];
 
-const STAGES = [
-  { cell: 9,   inks: ['k'] },
-  { cell: 7,   inks: ['k', 'c'] },
-  { cell: 5,   inks: ['k', 'c', 'm'] },
-  { cell: 4,   inks: ['k', 'c', 'm', 'y'] },
-  { cell: 3.2, inks: ['k', 'c', 'm', 'y'] }
-];
+/* How much of an ink the page wants before that plate lands. This is the
+   difficulty dial now: a quick print asks for little of each, a long one
+   for plenty. */
+let inkPer = 10;
+
+const COARSE = 6, FINE = 3.2;
 
 function separate(img, w, h) {
   const off = document.createElement('canvas');
@@ -629,51 +642,78 @@ function screenPlate(ctx, plate, w, h, cell, angleDeg, color) {
   }
 }
 
-let printStages = [];        // one offscreen canvas per stage
-let printStage = -1;
+const PW = 300, PH = 600;
+let separated = null;                 // the four plates of the artwork, cached
+let laid = { c: false, m: false, y: false, k: false };
 let cleared = { c: 0, m: 0, y: 0, k: 0 };
 
-/* Rendering is heavy, so every stage is drawn once at load and then just
-   swapped in -- never redrawn while the game is running. */
+function pageEl() { return document.getElementById('page'); }
+
+function blankPage() {
+  laid = { c: false, m: false, y: false, k: false };
+  const page = pageEl();
+  page.width = PW; page.height = PH;
+  const ctx = page.getContext('2d');
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#F2EFE6';
+  ctx.fillRect(0, 0, PW, PH);
+  page.style.opacity = '0';
+  page.style.filter = 'brightness(0.34) blur(2px)';
+}
+
 function preparePrint(img) {
-  const W = 300, H = 600;
-  printStages = STAGES.map((st) => {
-    const c = document.createElement('canvas');
-    c.width = W; c.height = H;
-    const ctx = c.getContext('2d');
-    ctx.fillStyle = '#F2EFE6';
-    ctx.fillRect(0, 0, W, H);
+  separated = separate(img, PW, PH);
+  blankPage();
+}
+
+const platesDown = () => PLATES.filter(pl => laid[pl]).length;
+
+/* Each plate goes down on its own, as soon as the page has had enough of
+   that ink. No order: every clear moves something, where before black had
+   to finish before cyan could start and a run could stall through no fault
+   of the player.
+
+   Drawn straight onto the page it is joining, so the whole print costs
+   about what one render costs, spread across the run. */
+function layPlates() {
+  if (!separated) return false;
+  let did = false;
+
+  for (const pl of PLATES) {
+    if (laid[pl] || cleared[pl] < inkPer) continue;
+    const ctx = pageEl().getContext('2d');
     ctx.globalCompositeOperation = 'multiply';
-    const pl = separate(img, W, H);
-    for (const ink of st.inks) screenPlate(ctx, pl[ink], W, H, st.cell, ANGLE[ink], DOT[ink]);
-    return c;
-  });
-}
-
-function showStage(n) {
-  if (n === printStage || n < 0 || !printStages[n]) return;
-  printStage = n;
-
-  const page = document.getElementById('page');
-  page.width = printStages[n].width;
-  page.height = printStages[n].height;
-  page.getContext('2d').drawImage(printStages[n], 0, 0);
-
-  // it comes up and comes into focus as it develops
-  const t = n / (STAGES.length - 1);
-  page.style.opacity = '1';
-  page.style.filter = 'brightness(' + (0.34 + t * 0.26).toFixed(2) + ') blur(' + (2.0 - t * 1.2).toFixed(2) + 'px)';
-}
-
-/* How far along the print is: each plate needs its own ink fed to it, in
-   order, and the fine screen comes when all four have had plenty. */
-function printProgress() {
-  let n = 0;
-  for (const plate of PLATE_ORDER) {
-    if (cleared[plate] >= PER_PLATE) n++; else break;
+    screenPlate(ctx, separated[pl], PW, PH, COARSE, ANGLE[pl], DOT[pl]);
+    ctx.globalCompositeOperation = 'source-over';
+    laid[pl] = true;
+    did = true;
   }
-  if (n === 4 && PLATE_ORDER.every(pl => cleared[pl] >= PER_PLATE * 2)) n = 5;
-  return n - 1;                                  // -1 means nothing printed yet
+
+  if (did) {
+    const el = document.getElementById('tg');
+    if (el) el.textContent = platesDown() + '/4';
+    const page = pageEl();
+    const t = platesDown() / PLATES.length;
+    page.style.opacity = '1';
+    page.style.filter = 'brightness(' + (0.34 + t * 0.2).toFixed(2) + ') blur(' + (2 - t * 0.9).toFixed(2) + 'px)';
+  }
+
+  return did;
+}
+
+/* The last beat: the page re-screened fine, at full strength, in focus. */
+function finishPrint() {
+  if (!separated) return;
+  const page = pageEl();
+  const ctx = page.getContext('2d');
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#F2EFE6';
+  ctx.fillRect(0, 0, PW, PH);
+  ctx.globalCompositeOperation = 'multiply';
+  for (const pl of PLATES) screenPlate(ctx, separated[pl], PW, PH, FINE, ANGLE[pl], DOT[pl]);
+  ctx.globalCompositeOperation = 'source-over';
+  page.style.opacity = '1';
+  page.style.filter = 'brightness(1) blur(0px)';
 }
 
 /* ============================================================
@@ -683,13 +723,14 @@ function printProgress() {
 const elGrid  = document.getElementById('grid');
 const elPts   = document.getElementById('pts');
 const elTg    = document.getElementById('tg');
+const elTm    = document.getElementById('tm');
 const elBc    = document.getElementById('bc');
 const elMsg   = document.getElementById('msg');
 const elOver  = document.getElementById('over');
 const elChain = document.getElementById('chainnow');
 
 let well = [], piece = null, next = null;
-let points = 0, target = 1000, bestChain = 0, fallMs = 700;
+let points = 0, bestChain = 0, fallMs = 700, pieces = 0, startedAt = 0;
 let timer = null, busy = false, over = false;
 
 let tiles = [];
@@ -899,6 +940,7 @@ function pullMagnets() {
 }
 
 function lock() {
+  pieces++;
   for (const [x, y, code] of pieceCells(piece)) {
     if (inside(x, y)) put(well, x, y, code);
   }
@@ -984,7 +1026,7 @@ async function resolve() {
     settle(well);
     if (pullMagnets()) settle(well);
     paint();
-    showStage(printProgress());
+    layPlates();
     await wait(90);
   }
 
@@ -992,7 +1034,7 @@ async function resolve() {
   elChain.textContent = '';
   busy = false;
 
-  if (points >= target) { finish(true); return; }
+  if (platesDown() === PLATES.length) { finish(true); return; }
 
   spawn();
   startTick();
@@ -1005,6 +1047,15 @@ function tick() {
   const down = { ...piece, y: piece.y + 1 };
   if (fits(down)) { piece = down; paint(); }
   else lock();
+}
+
+let clock = null;
+
+function startClock() {
+  clearInterval(clock);
+  clock = setInterval(() => {
+    if (!over) elTm.textContent = stamp(Date.now() - startedAt);
+  }, 500);
 }
 
 function startTick() { stopTick(); timer = setInterval(tick, fallMs); }
@@ -1089,21 +1140,25 @@ document.addEventListener('pointerup', (e) => {
 
 /* ---- a print ---- */
 
+function stamp(ms) {
+  const sec = Math.round(ms / 1000);
+  return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+}
+
 function finish(won) {
   over = true;
   stopTick();
+  if (won) finishPrint();
 
-  if (won) {
-    const page = document.getElementById('page');
-    showStage(STAGES.length - 1);
-    page.style.opacity = '1';
-    page.style.filter = 'brightness(1) blur(0px)';     // the print comes into focus
-  }
-
+  const down = platesDown();
   document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
-  document.getElementById('overText').textContent = won
-    ? points + ' points. Longest chain: ' + bestChain + '.'
-    : 'The well filled up at ' + points + ' of ' + target + '. Longest chain: ' + bestChain + '.';
+  document.getElementById('overText').innerHTML = won
+    ? '<b>' + stamp(Date.now() - startedAt) + '</b> &middot; ' + points + ' points &middot; '
+      + pieces + ' drops &middot; longest chain ' + bestChain
+    : 'The well filled up with ' + down + ' of 4 plates down'
+      + (down ? '' : ' &mdash; nothing printed') + '. '
+      + points + ' points, longest chain ' + bestChain + '.';
+  elOver.classList.toggle('won', !!won);
   elOver.hidden = false;
 }
 
@@ -1116,7 +1171,7 @@ function newPrint() {
   virusRate = VIRUS_RATE[mode] || 0.05;
   cureAt = CURE_AT[mode] || 2;
 
-  target = Math.max(100, Number(document.getElementById('setTarget').value) || 1000);
+  inkPer = Math.max(3, Number(document.getElementById('setTarget').value) || 10);
   fallMs = Math.max(100, Number(document.getElementById('setFall').value) || 700);
 
   well = new Array(COLS * ROWS).fill(null);
@@ -1128,19 +1183,21 @@ function newPrint() {
   paintHoppers();
 
   cleared = { c: 0, m: 0, y: 0, k: 0 };
-  printStage = -1;
-  const page = document.getElementById('page');
-  page.style.opacity = '0';
-  page.style.filter = 'brightness(0.42) blur(1.6px)';
+  pieces = 0;
+  startedAt = Date.now();
+  blankPage();
+  startClock();
 
   elPts.textContent = '0';
-  elTg.textContent = target;
+  elTg.textContent = '0/4';
+  elTm.textContent = '0:00';
   elBc.textContent = '0';
   elChain.textContent = '';
   elOver.hidden = true;
   document.getElementById('keyCure').innerHTML =
     'corrupt &mdash; chain ' + cureAt + ' or a clump of ' + CURE_CLUMP + ' clears it';
-  show('Four or more touching clears.');
+  show('Four or more touching clears. Feed each ink until its plate lays down &mdash; '
+     + 'four plates and the page is printed.');
 
   sizeBoard();
   spawn();
@@ -1150,7 +1207,7 @@ function newPrint() {
 /* The plates take a moment to screen, so the game starts without them and
    the page appears as soon as they are ready. */
 const art = new Image();
-art.onload = () => { preparePrint(art); showStage(printProgress()); };
+art.onload = () => { preparePrint(art); };
 art.onerror = () => { /* no page behind the well; the game is unaffected */ };
 art.src = '/games/img/wave.jpg';
 
