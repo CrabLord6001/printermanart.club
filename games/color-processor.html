@@ -64,14 +64,18 @@ body {
 
 /* ---- readout ---- */
 
-/* In the window the readout has the whole width to work with, and has to
-   keep clear of the buttons floating over the corner. */
+/* In the window the readout drops below the buttons floating over the
+   corner and centres itself, rather than running along the left edge with
+   the board centred underneath it. */
 html.embed .head {
   max-width: none;
-  padding-right: 84px;
+  justify-content: center;
+  padding-top: 30px;
+  padding-right: 0;
 }
 
 html.embed .snd { margin-left: 4px; }
+html.embed .title { display: none; }
 
 .head {
   width: 100%;
@@ -118,6 +122,29 @@ html.embed .snd { margin-left: 4px; }
   display: flex;
   gap: 10px;
   align-items: flex-start;
+  justify-content: center;
+}
+
+/* The next-piece panel only exists on one side, which pushed the board off
+   centre by half its width while everything else on the page was centred
+   on the page. Where there is room to spare, an empty twin on the left
+   puts it back. */
+@media (min-width: 620px) {
+  .rig::before {
+    content: '';
+    flex: none;
+    width: 62px;
+  }
+}
+
+/* Where there is not room for the twin -- a phone, or the window before it
+   is opened out -- the board keeps the width and the readout and the
+   buttons shift across to line up with it instead. A board you can see
+   beats a board in the exact middle. */
+@media (max-width: 619px) {
+  .head, .foot { padding-right: 72px; }
+  html.embed .head { padding-right: 72px; }
+}
 }
 
 .stack { display: flex; flex-direction: column; align-items: center; }
@@ -351,7 +378,14 @@ html.embed .snd { margin-left: 4px; }
 .foot.center { justify-content: center; }
 .foot.center .setup-row { justify-content: center; }
 
-.msg { flex: 1 1 100%; font-size: 0.78rem; color: var(--muted); min-height: 2.4em; margin: 0; }
+.msg {
+  flex: 1 1 100%;
+  font-size: 0.78rem;
+  color: var(--muted);
+  min-height: 2.4em;
+  margin: 0;
+  text-align: center;
+}
 
 /* The message line is where the game talks, and it gets overwritten the
    moment anything happens. The two wildcards need somewhere permanent. */
@@ -475,6 +509,7 @@ button.go:hover { background: #4653E0; }
   font-size: 0.62rem;
   color: var(--dim);
   margin: 2px 0 0;
+  text-align: center;
 }
 
 /* ---- end of a print ---- */
@@ -1014,9 +1049,14 @@ function sizeBoard() {
              + document.querySelector('.foot').offsetHeight
              + 70;                       // body padding, the casing, the well, gaps
 
+  /* The width used to be capped at 430, which is a sensible column on a
+     page and nonsense in full screen: the board could never grow past a
+     phone's worth however much room it had. It takes what is there now,
+     less the side panel and the casing, and the cell ceiling is high
+     enough that a desktop filling the screen actually fills it. */
   const byH = (window.innerHeight - used - ROWS * 3) / ROWS;
-  const byW = (Math.min(window.innerWidth, 430) - 122 - COLS * 3) / COLS;
-  const cell = Math.max(14, Math.min(byH, byW, 44));
+  const byW = (window.innerWidth - 150 - COLS * 3) / COLS;
+  const cell = Math.max(14, Math.min(byH, byW, 72));
 
   for (const t of tiles) { t.style.width = cell + 'px'; t.style.height = cell + 'px'; }
   document.querySelectorAll('.nextgrid div').forEach((d) => {
