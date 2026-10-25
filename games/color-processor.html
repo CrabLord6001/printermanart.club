@@ -952,8 +952,8 @@ button.go:hover { background: #4653E0; }
 .tune {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  font-size: 0.55rem;
+  gap: 8px;
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -962,41 +962,43 @@ button.go:hover { background: #4653E0; }
 
 .tune input[type="number"] {
   font-family: var(--font);
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   letter-spacing: 0;
   text-transform: none;
   color: var(--text);
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 7px 9px;
+  border-radius: 8px;
+  padding: 9px 11px;
   width: 5.2em;
 }
 
 .tune.check { flex-direction: row; align-items: center; gap: 9px; cursor: pointer; }
-.tune.check input { width: 16px; height: 16px; accent-color: var(--accent); }
+.tune.check input { width: 18px; height: 18px; accent-color: var(--accent); }
 
 /* The cartridge sets, shown as the inks they hold rather than named. The
    count says how many, the swatches say which, and neither needs reading. */
-.inkset { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+.inkset { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
 
 .inkset button {
   font-family: var(--font);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  gap: 6px;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 7px 8px;
+  border-radius: 8px;
+  padding: 10px 6px;
   cursor: pointer;
 }
 
 .inkset button:hover { border-color: #3A4152; }
 .inkset button.on { border-color: var(--accent); background: #171A22; }
-.inkset .n { font-size: 0.78rem; font-weight: 700; letter-spacing: 0; color: var(--dim); }
+.inkset .n { font-size: 1rem; font-weight: 700; letter-spacing: 0; color: var(--dim); }
 .inkset button.on .n { color: var(--accent); }
-.inkset .swatches { display: flex; gap: 3px; flex-wrap: wrap; }
+.inkset .swatches { display: flex; gap: 2px; }
 .inkset .sw { width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(8,10,14,0.5); }
 
 /* A speed reads as a position on a line. Nobody knows what 700 was. */
@@ -1004,7 +1006,7 @@ button.go:hover { background: #4653E0; }
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 4px;
+  height: 6px;
   border-radius: 3px;
   background: #242A35;
   outline: none;
@@ -1014,14 +1016,14 @@ button.go:hover { background: #4653E0; }
 .tune input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px; height: 16px;
+  width: 20px; height: 20px;
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
 }
 
 .tune input[type="range"]::-moz-range-thumb {
-  width: 16px; height: 16px;
+  width: 20px; height: 20px;
   border: 0;
   border-radius: 50%;
   background: var(--accent);
@@ -1032,7 +1034,7 @@ button.go:hover { background: #4653E0; }
   display: flex;
   justify-content: space-between;
   margin: 0;
-  font-size: 0.5rem;
+  font-size: 0.56rem;
   color: var(--dim);
 }
 
@@ -1040,7 +1042,6 @@ button.go:hover { background: #4653E0; }
    board uses, so the edge and the screen angles come with them. */
 .peek {
   position: relative;
-  height: 112px;
   border-radius: 8px;
   background: #0C0E13;
   box-shadow: inset 0 0 0 1px var(--border);
@@ -1056,18 +1057,35 @@ body .peek .cell { position: absolute; }
   .peek .cell { animation: none !important; }
 }
 
-.over.menu { justify-content: center; }
+.over.menu { justify-content: flex-start; }
 .over.menu .rules { margin-left: auto; margin-right: auto; }
 
+.over.menu .over-in {
+  margin: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The controls take what they need and the preview takes everything left,
+   so the panel ends at the bottom of the board rather than halfway down
+   it with dead space under. */
+.setupface { flex: 1 1 auto; gap: 16px; }
+
+/* Takes the room the controls did not need, and gives room back on a
+   short panel rather than pushing the bottom of it off the board. */
+.peek { flex: 1 1 0; min-height: 84px; }
+
 /* "Settings" is a label for the face you are on, not the announcement
-   that "Print complete" is. */
+   that "Print complete" is -- but it sits at the top of a full panel now,
+   so it can be read from across the room. */
 .over.menu h2 {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--accent);
-  margin: 0 0 22px;
+  margin: 0 0 20px;
 }
 
 /* The left-hand button is the quiet one everywhere except paused, where
@@ -1270,7 +1288,6 @@ let COLS = 6; const ROWS = 12;
 const PALETTES = {
   'office':   { label: 'Office',  inks: ['c', 'm', 'y', 'k'] },
   'five-lc':  { label: 'Five',    inks: ['c', 'm', 'y', 'k', 'lc'] },
-  'five-w':   { label: 'Five',    inks: ['c', 'm', 'y', 'k', 'w'] },
   'photo':    { label: 'Photo',   inks: ['c', 'm', 'y', 'k', 'lc', 'lm'] }
 };
 
@@ -1296,13 +1313,13 @@ const isBug  = (v) => v === VIRUS || v === VIRUS_NEW;
 /* How often the machine misbehaves. The magnet is the reward and stays put;
    the virus is the punishment and gets worse as the printer gets harder. */
 const MAG_RATE = 0.12;
-const VIRUS_RATE = { 'office': 0.03, 'five-lc': 0.05, 'five-w': 0.05, 'photo': 0.07 };
+const VIRUS_RATE = { 'office': 0.03, 'five-lc': 0.05, 'photo': 0.07 };
 
 /* Two ways to burn the corruption off, because one was not enough: a chain
    of this many links, or a single clump of this size. The second matters --
    it gives a player who cannot chain yet a route that is only about
    patience, and on six inks a three link chain was a wall. */
-const CURE_AT = { 'office': 2, 'five-lc': 2, 'five-w': 2, 'photo': 2 };
+const CURE_AT = { 'office': 2, 'five-lc': 2, 'photo': 2 };
 const CURE_CLUMP = 6;
 
 let mode = 'office', virusRate = 0.05, cureAt = 2;
@@ -2433,7 +2450,7 @@ function peekInks() {
   return inks.filter((i) => !base.includes(i)).concat(inks.filter((i) => base.includes(i)));
 }
 
-const PEEK_ROWS = 7, PEEK_CELL = 16;
+const PEEK_ROWS = 7;
 
 function buildPeek() {
   const host = document.getElementById('peek');
@@ -2444,9 +2461,12 @@ function buildPeek() {
   if (!w) return;                               // not on screen yet
 
   const inks = peekInks();
-  const lanes = Math.max(3, Math.min(inks.length, Math.floor(w / 44)));
+  const h = host.clientHeight;
+  // a drop big enough to read in whatever height the panel could spare
+  const PEEK_CELL = Math.max(16, Math.min(30, Math.round(h / 8)));
+  const lanes = Math.max(3, Math.min(inks.length, Math.floor(w / (PEEK_CELL * 2.6))));
   const ms = fallMsNow();
-  const span = host.clientHeight + PEEK_CELL * 2;
+  const span = h + PEEK_CELL * 2;
 
   inks.forEach((ink, i) => {
     const d = document.createElement('div');
