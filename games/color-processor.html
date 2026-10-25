@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Color Processor — rough board</title>
+<title>Gallery Printshop — rough board</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="/img/favicon-32.png" sizes="32x32">
 
 <style>
 /* ============================================================
-   Color Processor — step one, the rough board
+   Gallery Printshop — step one, the rough board
    ============================================================
    Falling pairs, Puyo rules: four or more of a color touching in
    any shape clear, what is left falls, and anything that lands in
@@ -502,6 +502,56 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    Empty means that plate is finished and further clears of its color are
    board work rather than print work. */
 .platebox { margin-top: 8px; }
+
+/* The way to the board from inside a run. Round, so it reads as another
+   instrument on the rail rather than one more word to click. */
+.rankbtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.rankdial {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #0C0E13;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  transition: color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.rankbtn .lbl {
+  margin: 0;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.rankbtn:hover .rankdial,
+.rankbtn:focus-visible .rankdial {
+  color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212, 162, 76, 0.14);
+}
+
+.rankbtn:hover .lbl, .rankbtn:focus-visible .lbl { color: var(--muted); }
+
+/* Lit while the board is the thing on screen, the same way the rules
+   button reads as pressed. */
+.rankbtn.on .rankdial { color: var(--accent); border-color: var(--accent); }
+.rankbtn.on .lbl { color: var(--accent); }
 
 .tubes { display: flex; justify-content: center; gap: 6px; }
 
@@ -1287,7 +1337,7 @@ ol.board li.none .nm {
 <body>
 
   <div class="head">
-    <p class="title" id="pageTitle"><a class="home" href="/">&larr; PrinterMan&rsquo;s Art Club</a> &middot; Color Processor &mdash; rough board</p>
+    <p class="title" id="pageTitle"><a class="home" href="/">&larr; PrinterMan&rsquo;s Art Club</a> &middot; Gallery Printshop &mdash; rough board</p>
     <span class="stat">Points <b id="pts">0</b></span>
     <span class="stat goal">Plates <b id="tg">0/4</b></span>
     <span class="stat">Time <b id="tm">0:00</b></span>
@@ -1317,7 +1367,7 @@ ol.board li.none .nm {
                    and the panel sizes each page for itself. -->
               <div class="pg" id="rulesPg1">
               <div class="demo" id="demo" hidden></div>
-              <p>Welcome to Color Processor! The background image file needs to be printed. Clear a color set by matching four in a row. Each color you clear adds that color plate to the image. The goal is to add every color to the image and "print" it. The side tubes empty as you fill the image to track your progress of that color.</p>
+              <p>Welcome to the Gallery Printshop! The background image file needs to be printed. Clear a color set by matching four in a row. Each color you clear adds that color plate to the image. The goal is to add every color to the image and "print" it. The side tubes empty as you fill the image to track your progress of that color.</p>
               </div>
 
               <div class="pg" id="rulesPg2" hidden>
@@ -1440,6 +1490,17 @@ ol.board li.none .nm {
         <div class="tubes" id="tubes"></div>
         <div class="tubetags" id="tubetags"></div>
       </div>
+      <!-- The board, reachable from the rail as well as from the last page
+           of the instructions. Somebody who has just finished a run wants to
+           see where it put them, not to walk back through the rules. -->
+      <button class="rankbtn" id="rankBtn" type="button" aria-label="Rankings">
+        <span class="rankdial">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 20v-4.5M12 20V6M18 20v-8.5"/>
+          </svg>
+        </span>
+        <span class="lbl">Rankings</span>
+      </button>
       <p class="chainnow" id="chainnow">&nbsp;</p>
     </div>
   </div>
@@ -1793,7 +1854,13 @@ function fitCopy(panel, rules, room) {
 }
 
 const demoArt = new Image();
-demoArt.onload = () => { demoSep = separate(demoArt, PW, PH); paintDemo(); };
+demoArt.onload = () => {
+  demoSep = separate(demoArt, PW, PH);
+  /* The page break was never worked out without this, so work it out now
+     and lay the instructions out again if they are the thing on screen. */
+  if (typeof paintRules === 'function' && !elOver.hidden && !elRules().hidden) paintRules();
+  else paintDemo();
+};
 demoArt.onerror = () => { demoSep = null; };   // the panel simply goes without it
 
 /* Heaviest plate first. A fixed order kept putting a plate the painting
@@ -2548,9 +2615,59 @@ function begin() {
 
 /* ---- the instructions, in three pages ---- */
 
-const RULES_PAGES = 4;
+/* The instructions run to three pages where there is room for them and
+   four where there is not. The mechanics are one read, not two, so they
+   only take a page break on a panel too short to hold them -- which is a
+   small phone, and nowhere else. The alternative was a fixed break that
+   a desktop never needed, or one page of 11px type on a phone. */
+let rulesSplit = false;          // are the mechanics on two pages?
+let rulesFitFor = '';            // the panel this was last worked out for
 let rulesPage = 0;
 let boardLoaded = false;
+
+const rulesPages = () => rulesSplit ? 4 : 3;
+
+/* Page index to the element holding it. With the mechanics merged there
+   is no second page, so everything after it moves up one. */
+function rulesPageEl(i) {
+  if (rulesSplit) return document.getElementById('rulesPg' + (i + 1));
+  return document.getElementById('rulesPg' + (i === 0 ? 1 : i + 2));
+}
+
+const mechA = () => document.getElementById('rulesPg1');
+const mechB = () => document.getElementById('rulesPg2');
+
+/* Try the mechanics as one page and keep that if it fits. Worked out once
+   per panel size: the answer cannot change until the window does, and
+   measuring means laying out the example twice. */
+function layoutRules() {
+  const panel = document.getElementById('over');
+  const rules = document.getElementById('overRules');
+  const key = panel.clientWidth + 'x' + panel.clientHeight;
+  if (key === rulesFitFor) return;
+
+  /* Not until the example exists. Measured while the image is still on its
+     way, the mechanics fit every time, because the tallest thing on the
+     page is missing -- and then it lands and runs off the bottom. The
+     image calls this back when it arrives. */
+  if (!demoSep) return;
+  rulesFitFor = key;
+
+  const a = mechA(), bb = mechB();
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('rulesPg' + i);
+    if (el) el.hidden = i !== 1;
+  }
+
+  const moved = [...bb.children];
+  moved.forEach((e) => a.appendChild(e));
+  bb.hidden = true;
+  paintDemo();
+  const fits = rules.scrollHeight <= panel.clientHeight - PANEL_PAD - FADE_H;
+
+  if (!fits) moved.forEach((e) => bb.appendChild(e));
+  rulesSplit = !fits;
+}
 
 /* Hours only appear once somebody has earned them. A total for the whole
    series runs past an hour; a single level never does. */
@@ -2621,28 +2738,34 @@ async function loadBoard() {
 }
 
 function paintRules() {
-  for (let i = 0; i < RULES_PAGES; i++) {
-    const pg = document.getElementById('rulesPg' + (i + 1));
-    if (pg) pg.hidden = i !== rulesPage;
+  layoutRules();
+  const n = rulesPages();
+  if (rulesPage > n - 1) rulesPage = n - 1;
+
+  for (let i = 1; i <= 4; i++) {
+    const pg = document.getElementById('rulesPg' + i);
+    if (pg) pg.hidden = true;
   }
+  const here = rulesPageEl(rulesPage);
+  if (here) here.hidden = false;
 
   const dots = document.getElementById('rulesDots');
   if (dots) {
     dots.innerHTML = '';
-    for (let i = 0; i < RULES_PAGES; i++) {
+    for (let i = 0; i < n; i++) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = i === rulesPage ? 'on' : '';
-      b.setAttribute('aria-label', 'Page ' + (i + 1) + ' of ' + RULES_PAGES);
+      b.setAttribute('aria-label', 'Page ' + (i + 1) + ' of ' + n);
       b.addEventListener('click', () => goRules(i));
       dots.appendChild(b);
     }
   }
 
   document.getElementById('rulesBack').disabled = rulesPage === 0;
-  document.getElementById('rulesNext').disabled = rulesPage === RULES_PAGES - 1;
+  document.getElementById('rulesNext').disabled = rulesPage === n - 1;
 
-  if (rulesPage === RULES_PAGES - 1) loadBoard();
+  if (rulesPage === n - 1) loadBoard();
 
   /* Sized page by page. A hidden page measures nothing, so the size page
      one settles on says nothing about what page two needs. */
@@ -2653,9 +2776,20 @@ function paintRules() {
 }
 
 function goRules(i) {
-  rulesPage = Math.min(RULES_PAGES - 1, Math.max(0, i));
+  rulesPage = Math.min(rulesPages() - 1, Math.max(0, i));
   paintRules();
+  buttons();
 }
+
+/* The board is the last page whichever way the mechanics fell. */
+const boardPage = () => rulesPages() - 1;
+
+document.getElementById('rankBtn').addEventListener('click', () => {
+  const up = !elOver.hidden && !elRules().hidden;
+  if (up && rulesPage === boardPage()) { closeRules(); return; }
+  if (!up) openRules();
+  goRules(boardPage());
+});
 
 document.getElementById('rulesBack').addEventListener('click', () => goRules(rulesPage - 1));
 document.getElementById('rulesNext').addEventListener('click', () => goRules(rulesPage + 1));
@@ -2988,6 +3122,14 @@ function buttons() {
     const up = !elOver.hidden && !elRules().hidden;
     rules.hidden = up && !rulesFrom;
     rules.classList.toggle('on', up);
+  }
+
+  /* The rail button lights only while the board itself is up, so it goes
+     out wherever the panel closes rather than only where it opened. */
+  const rank = document.getElementById('rankBtn');
+  if (rank) {
+    const up = !elOver.hidden && !elRules().hidden;
+    rank.classList.toggle('on', up && rulesPage === boardPage());
   }
 
 
@@ -3450,7 +3592,12 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) pause();
 });
 
-window.addEventListener('resize', sizeBoard);
+window.addEventListener('resize', () => {
+  sizeBoard();
+  /* The panel is a different shape now, so where the mechanics break and
+     how big the copy sets are both stale. */
+  if (!elOver.hidden && !elRules().hidden) { rulesFitFor = ''; paintRules(); }
+});
 
 newPrint('rules');
 </script>
