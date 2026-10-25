@@ -133,17 +133,96 @@ html.embed .title { display: none; }
   flex: 1 1 100%;
 }
 
-.stat {
-  font-size: 0.64rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--dim);
-  font-variant-numeric: tabular-nums;
+/* Four readings, evenly weighted, each the full height of the band. They
+   used to be a line of small print above the machine. */
+.scores {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
 }
 
-.stat b { color: var(--text); font-size: 0.92rem; margin-left: 4px; }
-.stat.goal b { color: var(--accent); }
+/* The cartridge's own shape: its name along the top, what it holds
+   underneath. Under glass, the way a cabinet puts a sheet over its
+   artwork -- the bevel at the edge and one sweep of reflection across
+   the face. */
+.score {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 3px 6px;
+  border: 1px solid #2B3141;
+  border-radius: 7px;
+  min-width: 0;
+  background: linear-gradient(168deg, #161B25 0%, #0B0D12 58%, #0E1119 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    inset 0 0 0 1px rgba(255,255,255,0.03),
+    inset 0 -6px 12px rgba(0,0,0,0.45),
+    0 2px 7px rgba(0,0,0,0.5);
+}
+
+/* The reflection. One soft diagonal off the top left corner, cut away
+   before it reaches the bottom, which is what makes it read as a sheet
+   over the box rather than a gradient in it. */
+.score::after {
+  content: '';
+  position: absolute;
+  left: -34%; right: -14%; top: -150%;
+  height: 218%;
+  border-radius: 50%;
+  transform: rotate(-7deg);
+  background: linear-gradient(to bottom,
+              rgba(255,255,255,0.16) 0%,
+              rgba(255,255,255,0.06) 48%,
+              rgba(255,255,255,0.012) 76%,
+              rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+/* The lit edge where the sheet is cut. */
+.score::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 7px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.12),
+    inset -1px -1px 0 rgba(255,255,255,0.045);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.score span {
+  position: relative;
+  z-index: 1;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* The reading, printed. The plain text stays underneath it for anyone
+   whose browser will not give us a canvas, and for screen readers. */
+.score b {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.score .print {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+}
 
 /* ---- the machine ---- */
 
@@ -206,47 +285,7 @@ html.embed .title { display: none; }
 
 /* four tanks across the top of the well */
 /* One tank per cartridge, so the count is visible before you start. */
-.hoppers {
-  width: 100%;
-  display: grid;
-  gap: 5px;
-  margin-bottom: 6px;
-}
 
-.hopper {
-  position: relative;
-  height: 34px;
-  border-radius: 6px 6px 3px 3px;
-  border: 1px solid var(--border);
-  background: #0C0E13;
-  overflow: hidden;
-}
-
-.hopper .fill {
-  position: absolute;
-  left: 3px; right: 3px; bottom: 3px;
-  border-radius: 2px 2px 3px 3px;
-  transition: height 0.35s ease;
-}
-
-.hopper .tag {
-  position: absolute;
-  left: 0; right: 0; top: 2px;
-  text-align: center;
-  font-size: 0.54rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--dim);
-  z-index: 1;
-}
-
-.hopper.c  .fill { background: var(--cyan); }
-.hopper.m  .fill { background: var(--magenta); }
-.hopper.y  .fill { background: var(--yellow); }
-.hopper.k  .fill { background: var(--key); }
-.hopper.lc .fill { background: var(--lcyan); }
-.hopper.lm .fill { background: var(--lmagenta); }
-.hopper.w  .fill { background: var(--white); }
 
 /* ---- the well ---- */
 
@@ -1617,15 +1656,20 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
   <div class="head">
     <p class="title" id="pageTitle"><a class="home" href="/">&larr; PrinterMan&rsquo;s Art Club</a> &middot; Gallery Printshop</p>
-    <span class="stat">Points <b id="pts">0</b></span>
-    <span class="stat goal">Plates <b id="tg">0/4</b></span>
-    <span class="stat">Time <b id="tm">0:00</b></span>
-    <span class="stat">Chain <b id="bc">0</b></span>
+    <!-- The four numbers worth watching, given the width the ink tanks
+         used to take. The tanks said which inks were in play and dipped
+         when one was drawn on, which the queue and the tubes both say
+         better. -->
+    <div class="scores">
+      <div class="score"><span>Points</span><b id="pts">0</b><canvas class="print" id="prPts"></canvas></div>
+      <div class="score goal"><span>Plates</span><b id="tg">0/4</b><canvas class="print" id="prTg"></canvas></div>
+      <div class="score"><span>Time</span><b id="tm">0:00</b><canvas class="print" id="prTm"></canvas></div>
+      <div class="score"><span>Chain</span><b id="bc">0</b><canvas class="print" id="prBc"></canvas></div>
+    </div>
   </div>
 
   <div class="rig">
     <div class="stack">
-      <div class="hoppers" id="hoppers"></div>
       <div class="frame">
       <div class="well">
         <canvas id="page"></canvas>
@@ -2331,8 +2375,7 @@ function layPlates() {
 
   if (did) {
     pageEl().style.opacity = '1';
-    const el = document.getElementById('tg');
-    if (el) el.textContent = platesDown() + '/4';
+    sayGoal(platesDown() + '/4');
     if (sealed) sayMusic('lay');
   }
 
@@ -2359,10 +2402,6 @@ function finishPrint() {
    ============================================================ */
 
 const elGrid  = document.getElementById('grid');
-const elPts   = document.getElementById('pts');
-const elTg    = document.getElementById('tg');
-const elTm    = document.getElementById('tm');
-const elBc    = document.getElementById('bc');
 const elMsg   = document.getElementById('msg');
 const elOver  = document.getElementById('over');
 const elChain = document.getElementById('chainnow');
@@ -2424,7 +2463,6 @@ function sizeBoard() {
   // Measure what the rest of the page is actually taking rather than
   // guessing at it, then give the well the remainder.
   const used = document.querySelector('.head').offsetHeight
-             + document.querySelector('.hoppers').offsetHeight
              + document.querySelector('.foot').offsetHeight
              + 70;                       // body padding, the casing, the well, gaps
 
@@ -2458,34 +2496,7 @@ const show = (html) => { elMsg.innerHTML = html; };
 
 /* ---- the tanks ---- */
 
-const REST = 56;
-let level = {};
-let topUp = null;
-
-function buildHoppers() {
-  const box = document.getElementById('hoppers');
-  box.innerHTML = '';
-  box.style.gridTemplateColumns = 'repeat(' + INKS.length + ', 1fr)';
-  level = {};
-
-  for (const ink of INKS) {
-    level[ink] = REST;
-    const tank = document.createElement('div');
-    tank.className = 'hopper ' + ink;
-    tank.innerHTML = '<div class="fill" id="hop-' + ink + '"></div>' +
-                     '<span class="tag">' + TAGS[ink] + '</span>';
-    box.appendChild(tank);
-  }
-}
-
-function paintHoppers() {
-  for (const ink of INKS) {
-    const el = document.getElementById('hop-' + ink);
-    if (el) el.style.height = level[ink] + '%';
-  }
-}
-
-/* The plate tubes in the rail. Shown in the hoppers' order rather than the
+/* The plate tubes in the rail. Shown in the plates' own order rather than the
    plate order, so the rail reads the same way as the tanks over the board. */
 const TUBE_ORDER = ['c', 'm', 'y', 'k'];
 
@@ -2511,13 +2522,6 @@ function paintTubes() {
     const tag = document.getElementById('tubetag-' + pl);
     if (tag) tag.classList.toggle('spent', spent);
   }
-}
-
-function drawInk(counts) {
-  for (const ink of INKS) if (counts[ink]) level[ink] = Math.max(16, level[ink] - counts[ink] * 4);
-  paintHoppers();
-  clearTimeout(topUp);
-  topUp = setTimeout(() => { for (const ink of INKS) level[ink] = REST; paintHoppers(); }, 600);
 }
 
 /* ---- painting ---- */
@@ -2722,14 +2726,11 @@ async function resolve() {
     chain++;
     const mult = Math.min(chain, CHAIN_CAP);
     let pass = 0;
-    const used = {};
-    for (const ink of INKS) used[ink] = 0;
 
     for (const group of clumps) {
       pass += groupPoints(group.length) * mult;
       for (const [x, y] of group) {
         const ink = inkOf(at(well, x, y));
-        if (ink in used) used[ink]++;
         const plate = PLATE_OF[ink];
         if (plate) cleared[plate]++;
         tiles[idx(x, y)].className = 'cell hit';
@@ -2747,10 +2748,9 @@ async function resolve() {
     }
 
     points += pass;
-    elPts.textContent = points;
+    sayPts(points);
     sayMusic('clear', chain);
     elChain.textContent = chain > 1 ? 'Chain ×' + mult : '';
-    drawInk(used);
     show((chain > 1
       ? 'Chain <b>&times;' + mult + '</b> &mdash; ' + pass + ' points'
       : clumps.map(g => g.length + ' touching').join(', ') + ' &mdash; <b>' + pass + '</b>')
@@ -2769,7 +2769,7 @@ async function resolve() {
     await wait(90);
   }
 
-  if (chain > bestChain) { bestChain = chain; elBc.textContent = bestChain; }
+  if (chain > bestChain) { bestChain = chain; sayChain(bestChain); }
   elChain.textContent = '';
   busy = false;
 
@@ -2793,7 +2793,7 @@ let clock = null;
 function startClock() {
   stopClock();
   clock = setInterval(() => {
-    if (!over && !paused) elTm.textContent = stamp(Date.now() - startedAt);
+    if (!over && !paused) sayTime(stamp(Date.now() - startedAt));
   }, 500);
 }
 
@@ -2915,7 +2915,7 @@ function begin() {
   pageEl().style.opacity = '1';                 // the blank sheet goes in the press
   over = false;
   startedAt = Date.now();                       // the clock starts here
-  elTm.textContent = '0:00';
+  sayTime('0:00');
   startClock();
   startTick();
   sayMusic('startMusic');
@@ -3023,6 +3023,97 @@ function paintPlate(cv, lines, force) {
 
 /* Poppins may still be on its way when the title is first printed, and the
    letters are a different width once it lands. */
+/* The four readings, printed. Same press, but laid light on a dark field
+   instead of dark on paper, because these sit under glass rather than on
+   a sheet: the colour plates go down first and the black plate prints in
+   paper white on top of them, so the misregistration shows as colour
+   around a white figure rather than inside a black one. */
+const SCORE_OFF = {
+  c: { x: -0.85, y: -0.42 },
+  m: { x:  0.85, y:  0.38 },
+  y: { x:  0.10, y:  0.88 },
+  k: { x:  0.00, y:  0.00 }
+};
+const SCORE_LIT = { c: '#39C8F2', m: '#FF4FA8', y: '#FFE04A', k: '#F4F1E8' };
+
+function paintScore(cv, text) {
+  if (!cv || !cv.parentElement) return;
+  const W = Math.round(cv.parentElement.clientWidth) - 6;
+  if (W < 24) return;
+
+  const key = W + '|' + text;
+  if (key === cv.dataset.printed) return;
+  cv.dataset.printed = key;
+
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const probe = document.createElement('canvas').getContext('2d');
+
+  /* The dots reach past the letters -- that is the whole point of a
+     screen -- and the plates are deliberately off true on top of that, so
+     the type is set to less than the sheet and the overhang prints inside
+     it rather than off the edge. */
+  /* The band sits above the well and takes its height out of it, so on a
+     narrow screen the figures come down with the boxes rather than
+     keeping a desktop size and costing the board its rows. */
+  const BOX_FS = Math.max(19, Math.min(30, Math.round(W * 0.31)));
+  const ROOM = W - 11;
+  let fs = BOX_FS;
+  probe.font = '700 ' + fs + 'px ' + TITLE_FONT;
+  const wide = probe.measureText(text).width;
+  if (wide > ROOM) fs = Math.max(12, Math.floor(fs * ROOM / wide));
+
+  /* One height for all four, whatever size the figures inside them end
+     up: a long score must not make its box shorter than its neighbours. */
+  const H = Math.round(BOX_FS * 1.26);
+  cv.width = Math.round(W * dpr);
+  cv.height = Math.round(H * dpr);
+  cv.style.width = W + 'px';
+  cv.style.height = H + 'px';
+
+  /* The ruling follows the type here, which is the opposite of the title
+     plate. There the sheet is one size and the screen is the press's; here
+     the box can be 95px on a desktop and 62px on a phone, and a fixed
+     pitch that reads at the first is four dots to a digit at the second.
+     Tied to the letter height, the texture is the same at both. */
+  const cell = Math.max(0.9, fs / 11) * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+
+  for (const pl of PLATES) {
+    const o = SCORE_OFF[pl];
+    const mask = titlePlate(cv.width, cv.height, [text], fs * dpr, H * dpr,
+                            o.x * cell, o.y * cell, 1);
+    ctx.globalCompositeOperation = pl === 'k' ? 'source-over' : 'lighter';
+    screenPlate(ctx, mask, cv.width, cv.height, cell, ANGLE[pl], SCORE_LIT[pl]);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/* Every reading goes through the same place, so the printed face and the
+   text underneath it can never disagree. Not called reading(): this file
+   already has one of those, and it means the settings the board in front
+   of you was built from. */
+function sayScore(id, cvId, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+  paintScore(document.getElementById(cvId), text);
+}
+
+const sayPts   = (v) => sayScore('pts', 'prPts', String(v));
+const sayGoal  = (v) => sayScore('tg',  'prTg',  v);
+const sayTime  = (v) => sayScore('tm',  'prTm',  v);
+const sayChain = (v) => sayScore('bc',  'prBc',  String(v));
+
+/* The boxes are a share of the width, so a resize changes how big the
+   type in them can be. Each sheet knows what it last printed, so this
+   only costs anything when something actually moved. */
+function repaintScores() {
+  for (const [id, cv] of [['pts','prPts'], ['tg','prTg'], ['tm','prTm'], ['bc','prBc']]) {
+    const el = document.getElementById(id), c = document.getElementById(cv);
+    if (el && c) { c.dataset.printed = ''; paintScore(c, el.textContent); }
+  }
+}
+
 /* What the title sheet currently says. */
 let titleWords = ['GALLERY', 'PRINTSHOP'];
 const TITLE_WORDS  = ['GALLERY', 'PRINTSHOP'];
@@ -4056,8 +4147,6 @@ function newPrint(face) {
   fillQueue();
 
   buildGrid();
-  buildHoppers();
-  paintHoppers();
 
   cleared = { c: 0, m: 0, y: 0, k: 0 };
   pieces = 0;
@@ -4065,10 +4154,10 @@ function newPrint(face) {
   loadArtwork();
   blankPage();
 
-  elPts.textContent = '0';
-  elTg.textContent = '0/4';
-  elTm.textContent = '0:00';
-  elBc.textContent = '0';
+  sayPts(0);
+  sayGoal('0/4');
+  sayTime('0:00');
+  sayChain(0);
   elChain.textContent = '';
   elOver.hidden = true;
   show('');
@@ -4309,6 +4398,7 @@ window.addEventListener('resize', () => {
   /* The panel is a different shape now, so where the mechanics break and
      how big the copy sets are both stale. */
   if (!elOver.hidden && !elRules().hidden) { rulesFitFor = ''; paintRules(); }
+  repaintScores();
 });
 
 /* Built behind the title screen, so the first thing anyone sees is the
