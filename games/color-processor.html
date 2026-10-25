@@ -161,7 +161,6 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
   gap: 3px;
 }
 
@@ -191,6 +190,9 @@ body {
 
 /* A corrupted supply. Green appears nowhere in CMYK, so there is no chance
    of reading it as ink. */
+/* a pull, announced */
+.cell.pull { box-shadow: inset 0 0 0 3px var(--accent), 0 0 14px 4px rgba(212,162,76,0.85); }
+
 .cell.virus {
   background: #11161C;
   box-shadow: inset 0 0 0 3px #43D98B, 0 0 7px rgba(67,217,139,0.4);
@@ -253,7 +255,30 @@ body {
   padding-top: 8px;
 }
 
-.msg { flex: 1 1 100%; font-size: 0.78rem; color: var(--muted); min-height: 1.2em; margin: 0; }
+.msg { flex: 1 1 100%; font-size: 0.78rem; color: var(--muted); min-height: 2.4em; margin: 0; }
+
+/* The message line is where the game talks, and it gets overwritten the
+   moment anything happens. The two wildcards need somewhere permanent. */
+.key {
+  flex: 1 1 100%;
+  margin: 0 0 4px;
+  font-size: 0.66rem;
+  color: var(--dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+}
+
+.chip.gold  { background: #2A2E3A; box-shadow: inset 0 0 0 3px var(--accent); }
+.chip.green { background: #11161C; box-shadow: inset 0 0 0 3px #43D98B; margin-left: 10px; }
 .msg b { color: var(--accent); }
 
 label.tune {
@@ -356,7 +381,18 @@ button.go:hover { background: #4653E0; }
   </div>
 
   <div class="foot">
+    <p class="key">
+      <span class="chip gold"></span> pulls its own color into line
+      <span class="chip green"></span> <span id="keyCure">corrupt &mdash; chain 2 or a clump of 6 clears it</span>
+    </p>
     <p class="msg" id="msg">Four or more touching clears.</p>
+    <label class="tune">Width
+      <select id="setWidth">
+        <option value="6" selected>6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+      </select>
+    </label>
     <label class="tune">Cartridges
       <select id="setInks">
         <option value="office" selected>4 &mdash; CMYK</option>
@@ -382,7 +418,7 @@ button.go:hover { background: #4653E0; }
    Logic
    ============================================================ */
 
-const COLS = 6, ROWS = 12;
+let COLS = 6; const ROWS = 12;
 
 /* How many cartridges the machine has. Four is an office printer and it is
    the beginner setting -- with only four, clumps half assemble themselves.
@@ -508,12 +544,18 @@ let well = [], piece = null, next = null;
 let points = 0, target = 1000, bestChain = 0, fallMs = 700;
 let timer = null, busy = false, over = false;
 
-const tiles = [];
-for (let i = 0; i < COLS * ROWS; i++) {
-  const d = document.createElement('div');
-  d.className = 'cell';
-  elGrid.appendChild(d);
-  tiles.push(d);
+let tiles = [];
+
+function buildGrid() {
+  elGrid.innerHTML = '';
+  elGrid.style.gridTemplateColumns = 'repeat(' + COLS + ', 1fr)';
+  tiles = [];
+  for (let i = 0; i < COLS * ROWS; i++) {
+    const d = document.createElement('div');
+    d.className = 'cell';
+    elGrid.appendChild(d);
+    tiles.push(d);
+  }
 }
 
 /* Cells are square and the whole rig has to fit the screen without
@@ -633,7 +675,7 @@ function roll() {
 }
 
 function newPair() {
-  const p = { x: 2, y: 1, rot: 0, a: roll(), b: roll() };
+  const p = { x: (COLS >> 1) - 1, y: 1, rot: 0, a: roll(), b: roll() };
   // never both halves corrupted -- two at once is a punishment nobody can read
   if (isBug(p.a) && isBug(p.b)) p.b = rand();
   return p;
@@ -641,7 +683,7 @@ function newPair() {
 
 function spawn() {
   piece = next || newPair();
-  piece.x = 2; piece.y = 1; piece.rot = 0;
+  piece.x = (COLS >> 1) - 1; piece.y = 1; piece.rot = 0;
   next = newPair();
 
   if (!fits(piece)) { piece = null; finish(false); return; }
@@ -676,8 +718,11 @@ function corruptNew() {
 /* Magnetic ink drags its own color out of a diagonal and into line: if the
    square above the magnet is free and a matching drop sits diagonally above
    it, that drop slides across. */
+let pulled = [];
+
 function pullMagnets() {
   let moved = false;
+  pulled = [];
 
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
@@ -695,6 +740,7 @@ function pullMagnets() {
 
         put(well, nx, ny, null);
         put(well, x, y - 1, v);
+        pulled.push([x, y - 1], [x, y]);
         moved = true;
         break;
       }
@@ -725,7 +771,18 @@ async function resolve() {
   // a virus bites where it came to rest, not where it was dropped
   if (corruptNew()) { paint(); await wait(150); }
 
-  if (pullMagnets()) { settle(well); paint(); await wait(150); }
+  /* The pull used to happen between frames, which meant nobody ever saw it
+     and nobody learned what the gold ring was for. Now it flashes and says
+     so. */
+  if (pullMagnets()) {
+    const marks = pulled.slice();
+    settle(well);
+    paint();
+    for (const [mx, my] of marks) if (inside(mx, my)) tiles[idx(mx, my)].classList.add('pull');
+    show('Magnet pulled &mdash; <b>that gold ring</b> drags its own color into line');
+    await wait(420);
+    paint();
+  }
 
   paint();
 
@@ -892,6 +949,8 @@ function finish(won) {
 }
 
 function newPrint() {
+  COLS = Math.max(5, Math.min(9, Number(document.getElementById('setWidth').value) || 6));
+
   mode = document.getElementById('setInks').value;
   const pick = PALETTES[mode] || PALETTES.office;
   INKS = pick.inks;
@@ -905,6 +964,7 @@ function newPrint() {
   points = 0; bestChain = 0; over = false; busy = false;
   next = null; piece = null;
 
+  buildGrid();
   buildHoppers();
   paintHoppers();
 
@@ -913,8 +973,9 @@ function newPrint() {
   elBc.textContent = '0';
   elChain.textContent = '';
   elOver.hidden = true;
-  show('Four or more touching clears. Gold ring pulls its own color into line; '
-     + 'a chain of ' + cureAt + ', or one clump of ' + CURE_CLUMP + ', burns off the green.');
+  document.getElementById('keyCure').innerHTML =
+    'corrupt &mdash; chain ' + cureAt + ' or a clump of ' + CURE_CLUMP + ' clears it';
+  show('Four or more touching clears.');
 
   sizeBoard();
   spawn();
