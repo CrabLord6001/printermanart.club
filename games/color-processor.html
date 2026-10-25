@@ -1105,6 +1105,138 @@ h2[hidden] { display: none; }
 .board-line b { color: var(--accent); font-weight: 700; }
 .board-line[hidden] { display: none; }
 
+/* ---- the instruction pages, and the board on the last one ---- */
+
+.pg[hidden] { display: none; }
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 13px auto 0;
+  max-width: 22rem;
+}
+
+.pg-arrow {
+  flex: none;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 5px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.pg-arrow:hover:not(:disabled) { color: var(--text); border-color: var(--dim); }
+
+/* Dimmed rather than removed, so the row keeps its balance and the end of
+   the set reads as the end rather than as a button that did nothing. */
+.pg-arrow:disabled { opacity: 0.28; cursor: default; }
+
+.pg-dots { display: flex; gap: 7px; }
+
+.pg-dots button {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+}
+
+.pg-dots button.on { background: var(--accent); }
+
+/* The same shape as the arcade's board so the club reads as one thing.
+   Places are printed rather than counted, because a player outside the ten
+   appears under a break at whatever place they actually hold. */
+.board-wrap { margin: 0 auto; width: 100%; max-width: 22rem; }
+
+.board-wrap h3 {
+  margin: 0 0 8px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-align: center;
+}
+
+ol.board { list-style: none; margin: 0; padding: 0; text-align: left; }
+
+ol.board li {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 5px 2px;
+  border-top: 1px solid var(--border);
+}
+
+ol.board li:first-child { border-top: 0; }
+
+ol.board .pl,
+ol.board .lv,
+ol.board .sc { font-variant-numeric: tabular-nums; }
+
+ol.board .pl { flex: none; width: 1.9em; font-size: 0.72rem; font-weight: 600; color: var(--dim); }
+
+ol.board .nm {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.84rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+ol.board .lv { flex: none; width: 2.4em; text-align: right; font-size: 0.84rem; font-weight: 600; color: var(--text); }
+ol.board .sc { flex: none; width: 4.2em; text-align: right; font-size: 0.78rem; color: var(--muted); }
+
+/* The column labels, which have to sit over the numbers they name. */
+ol.board li.hd { padding-bottom: 3px; border-top: 0; }
+
+ol.board li.hd span {
+  font-size: 0.52rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+ol.board li.me .pl,
+ol.board li.me .nm,
+ol.board li.me .lv,
+ol.board li.me .sc { color: var(--accent); font-weight: 600; }
+
+/* A break above the player's own row, so nobody reads tenth and thirty
+   fourth as though they were next to each other. */
+ol.board li.gap {
+  justify-content: center;
+  padding: 1px 2px;
+  color: var(--border);
+  font-size: 0.7rem;
+  letter-spacing: 0.34em;
+}
+
+ol.board.long li { padding: 3px 2px; }
+
+ol.board li.none { justify-content: center; border-top: 0; }
+
+ol.board li.none .nm {
+  flex: 0 1 auto;
+  text-align: center;
+  color: var(--dim);
+  font-size: 0.76rem;
+  font-weight: 300;
+  white-space: normal;
+}
+
 /* The gallery screen: which level is next and how much of the series is
    behind you. */
 /* .rules sets its own text left, and its paragraphs left again, which
@@ -1174,8 +1306,15 @@ h2[hidden] { display: none; }
               <!-- Built from the print the player is about to make, small
                    enough to show the idea without handing them the painting
                    before they have earned it. -->
+              <!-- Three pages: his rules, then what the series is and how it
+                   is scored, then the board. One screen of reading at a time,
+                   and the panel sizes each page for itself. -->
+              <div class="pg" id="rulesPg1">
               <div class="demo" id="demo" hidden></div>
               <p>Welcome to Color Processor! The background image file needs to be printed. Clear a color set by matching four in a row. Each color you clear adds that color plate to the image. The goal is to add every color to the image and "print" it. The side tubes empty as you fill the image to track your progress of that color.</p>
+              </div>
+
+              <div class="pg" id="rulesPg2" hidden>
               <p>Beware of virus colors that cannot match and randomize colors they touch. You need to combo clear (one set after another) or match six of one color to clear viruses.</p>
               <p>Magnetic ink has a gold shine and works like the others, but it also drags a matching drop across to sit beside it.</p>
               <!-- Shown rather than described, side by side: the virus
@@ -1202,7 +1341,35 @@ h2[hidden] { display: none; }
                   <div class="cell"></div>
                 </div></div>
               </div>
+              </div>
+
+              <div class="pg" id="rulesPg3" hidden>
               <p>In the setup, you can adjust the fall speed, add additional colors for more challenge, and change the number of clears of a color needed to complete it on the background image.</p>
+              </div>
+
+              <div class="pg" id="rulesPg4" hidden>
+                <p>The Gallery is twenty paintings in six chapters, printed in order. Each painting you print is a level.</p>
+                <p>Every level is harder than the one before it. The drops fall faster, each color takes more clears to fill, and new inks join the set along the way.</p>
+                <p>The board ranks you by levels printed. Total time only breaks a tie, and each level counts at your best time on it, so going back to beat one can only move you up.</p>
+                <p>Sign in on the arcade page to keep your place between visits.</p>
+              </div>
+
+              <div class="pg" id="rulesPg5" hidden>
+                <div class="board-wrap">
+                  <h3>The Board</h3>
+                  <ol class="board" id="cpBoard">
+                    <li class="none"><span class="nm">Loading&hellip;</span></li>
+                  </ol>
+                </div>
+              </div>
+
+              <!-- Flanked like the footer: the dots hold the middle and the
+                   two ways through sit either side of them. -->
+              <div class="pager">
+                <button class="pg-arrow" id="rulesBack" type="button">&lsaquo; Back</button>
+                <div class="pg-dots" id="rulesDots"></div>
+                <button class="pg-arrow" id="rulesNext" type="button">Next &rsaquo;</button>
+              </div>
             </div>
 
             <!-- The panel's other face. Same box, same room: the controls were
@@ -2377,6 +2544,120 @@ function begin() {
   buttons();
 }
 
+/* ---- the instructions, in three pages ---- */
+
+const RULES_PAGES = 5;
+let rulesPage = 0;
+let boardLoaded = false;
+
+/* Hours only appear once somebody has earned them. A total for the whole
+   series runs past an hour; a single level never does. */
+function clockSecs(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), r = sec % 60;
+  return h
+    ? h + ':' + String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0')
+    : m + ':' + String(r).padStart(2, '0');
+}
+
+/* A display name is whatever a member typed into their profile, so it is
+   never put into markup as it stands. */
+function escHTML(t) {
+  return String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[c]);
+}
+
+function boardRow(r, mine) {
+  return '<li' + (mine ? ' class="me"' : '') + '>'
+    + '<span class="pl">' + r.place + '</span>'
+    + '<span class="nm">' + escHTML(r.display_name) + '</span>'
+    + '<span class="lv">' + r.levels + '</span>'
+    + '<span class="sc">' + clockSecs(r.total_seconds) + '</span>'
+    + '</li>';
+}
+
+const BOARD_HEAD = '<li class="hd"><span class="pl"></span><span class="nm"></span>'
+  + '<span class="lv">Lv</span><span class="sc">Time</span></li>';
+
+const boardSays = (what) => '<li class="none"><span class="nm">' + what + '</span></li>';
+
+/* Fetched the first time somebody turns to the page rather than on every
+   load of the game, and again after a run, which is the only thing that
+   can have changed it. */
+async function loadBoard() {
+  const ol = document.getElementById('cpBoard');
+  if (!ol || boardLoaded) return;
+  boardLoaded = true;
+
+  /* The bridge is a module and arrives after the rest of the page. Nobody
+     reaches this page in that time, but waiting costs nothing. */
+  for (let i = 0; i < 30 && !window.CPBoard; i++) await new Promise((r) => setTimeout(r, 100));
+  if (!window.CPBoard) { ol.innerHTML = boardSays('Board unavailable right now.'); boardLoaded = false; return; }
+
+  let rows = null, me = null;
+  try {
+    rows = await window.CPBoard.board(10);
+    me = await window.CPBoard.standing();
+  } catch (e) { rows = null; }
+
+  if (!ol.isConnected) return;
+
+  if (rows === null) { ol.innerHTML = boardSays('Board unavailable right now.'); boardLoaded = false; return; }
+  if (!rows.length) { ol.innerHTML = BOARD_HEAD + boardSays('Nobody has printed a level yet.'); return; }
+
+  let html = BOARD_HEAD + rows.map((r) => boardRow(r, !!me && r.place === me.place)).join('');
+
+  // Their own place, when it sits below the last row on display.
+  if (me && !rows.some((r) => r.place === me.place)) {
+    html += '<li class="gap">&middot;&middot;&middot;</li>' + boardRow(me, true);
+    ol.classList.add('long');
+  } else {
+    ol.classList.remove('long');
+  }
+  ol.innerHTML = html;
+}
+
+function paintRules() {
+  for (let i = 0; i < RULES_PAGES; i++) {
+    const pg = document.getElementById('rulesPg' + (i + 1));
+    if (pg) pg.hidden = i !== rulesPage;
+  }
+
+  const dots = document.getElementById('rulesDots');
+  if (dots) {
+    dots.innerHTML = '';
+    for (let i = 0; i < RULES_PAGES; i++) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = i === rulesPage ? 'on' : '';
+      b.setAttribute('aria-label', 'Page ' + (i + 1) + ' of ' + RULES_PAGES);
+      b.addEventListener('click', () => goRules(i));
+      dots.appendChild(b);
+    }
+  }
+
+  document.getElementById('rulesBack').disabled = rulesPage === 0;
+  document.getElementById('rulesNext').disabled = rulesPage === RULES_PAGES - 1;
+
+  if (rulesPage === RULES_PAGES - 1) loadBoard();
+
+  /* Sized page by page. A hidden page measures nothing, so the size page
+     one settles on says nothing about what page two needs. */
+  const panel = document.getElementById('over');
+  const rules = document.getElementById('overRules');
+  if (rulesPage === 0) paintDemo();
+  else fitCopy(panel, rules, panel.clientHeight - PANEL_PAD - FADE_H);
+}
+
+function goRules(i) {
+  rulesPage = Math.min(RULES_PAGES - 1, Math.max(0, i));
+  paintRules();
+}
+
+document.getElementById('rulesBack').addEventListener('click', () => goRules(rulesPage - 1));
+document.getElementById('rulesNext').addEventListener('click', () => goRules(rulesPage + 1));
+
 /* ---- the panel's two faces, and the pause ---- */
 
 const elSetup = () => document.getElementById('overSetup');
@@ -2429,6 +2710,7 @@ function showFace(which) {
   faceOff();
   const intro = which === 'rules';
   if (!intro) rulesFrom = null;
+  if (intro) rulesPage = 0;              // always opened at the front
 
   if (intro) {
     elOver.classList.add('intro');
@@ -2456,7 +2738,7 @@ function showFace(which) {
      size and the example to its smallest thumbnails. It only ever looked
      right on the first load because the demo image was still arriving and
      painted again once it had, by which time the panel was up. */
-  if (intro) paintDemo();
+  if (intro) paintRules();
   else if (which === 'gallery') buildGallery();
   else { buildModes(); buildPeek(); }
 
@@ -2867,6 +3149,7 @@ function record(ran) {
 
   board.textContent = 'Saving the run\u2026';
   board.hidden = false;
+  boardLoaded = false;                          // a run is the only thing that moves it
 
   window.CPBoard.record('campaign', Math.max(1, Math.round(ran / 1000)), {
     ms: ran,
@@ -2877,9 +3160,10 @@ function record(ran) {
     level: i + 1
   }).then((r) => {
     if (!r || !r.ok) { board.textContent = 'That run did not save.'; return; }
+    const st = r.standing;
     board.innerHTML = campDone.length + ' of ' + list.length + ' printed'
-      + ' \u00b7 <b>' + stamp(r.best * 1000) + '</b>'
-      + (r.place ? ' \u00b7 <b>' + ordinal(r.place) + '</b> on the board' : '');
+      + (st ? ' \u00b7 <b>' + clockSecs(st.total_seconds) + '</b> total'
+            + ' \u00b7 <b>' + ordinal(st.place) + '</b> on the board' : '');
   }).catch(() => { board.textContent = 'That run did not save.'; });
 }
 
@@ -3173,7 +3457,7 @@ newPrint('rules');
      script through one small bridge. Same origin as the arcade page, so
      anyone signed in there is already signed in here. -->
 <script type="module">
-  import { db, onMember, postScore, leaderboardLow, myBestLow } from '/games/club-auth.js';
+  import { db, onMember, postScore, campaignBoard, campaignMe } from '/games/club-auth.js';
 
   const GAME = 'color-processor';
   let member = null;
@@ -3204,22 +3488,28 @@ newPrint('rules');
       return { done };
     },
 
+    /* The board is public: a visitor who has never signed in can still
+       see who is ahead of them. */
+    async board(limit) {
+      return await campaignBoard(GAME, limit || 10);
+    },
+
+    async standing() {
+      if (!member) return null;
+      return await campaignMe(GAME);
+    },
+
     async record(variant, seconds, detail) {
       if (!member) return null;
 
       const posted = await postScore(GAME, seconds, detail, variant);
       if (!posted.ok) return { ok: false };
 
-      const best = await myBestLow(GAME, variant);
-      const rows = await leaderboardLow(GAME, variant, 10);
-
-      // only a place they can actually see on the board, not a rank in the air
-      let place = 0;
-      if (rows && best != null) {
-        const at = rows.findIndex((r) => r.display_name === member.displayName && r.score === best);
-        place = at >= 0 ? at + 1 : 0;
-      }
-      return { ok: true, best, place };
+      /* Where the run leaves them in the series, which is levels first and
+         total time only as a tiebreak. The old readout asked for their
+         fastest single level and called its rank a place on the board,
+         which ranked a quick early level above a finished gallery. */
+      return { ok: true, standing: await campaignMe(GAME) };
     }
   };
 

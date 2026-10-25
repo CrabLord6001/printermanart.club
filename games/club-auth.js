@@ -195,6 +195,35 @@ export async function leaderboardLow(game, variant, limit) {
   return data || [];
 }
 
+/* The campaign board: levels cleared is the rank, and total time only
+   breaks a tie. Each level counts once, at the player's best time on it, so
+   going back to beat a level can only move them up. */
+export async function campaignBoard(game, limit) {
+  const { data, error } = await db.rpc('club_campaign_board', {
+    p_game: game,
+    p_limit: limit || 10
+  });
+
+  if (error) {
+    console.warn('[club-auth] campaign board failed:', error.message);
+    return null;
+  }
+  return data || [];
+}
+
+/* Where the signed-in player stands in the whole field, which is how a
+   board can show somebody their own place when it sits below the last row
+   on display. Null when they are signed out or have cleared nothing. */
+export async function campaignMe(game) {
+  const { data, error } = await db.rpc('club_campaign_me', { p_game: game });
+
+  if (error) {
+    console.warn('[club-auth] campaign standing failed:', error.message);
+    return null;
+  }
+  return (data && data[0]) || null;
+}
+
 export async function leaderboard(game, variant, limit) {
   const { data, error } = await db.rpc('club_leaderboard', {
     p_game: game,
