@@ -79,8 +79,8 @@ body {
 /* ---- readout ---- */
 
 /* In the window the readout drops below the buttons floating over the
-   corner and centres itself, rather than running along the left edge with
-   the board centred underneath it. */
+   corner and centers itself, rather than running along the left edge with
+   the board centered underneath it. */
 html.embed .head {
   max-width: none;
   justify-content: center;
@@ -140,7 +140,7 @@ html.embed .title { display: none; }
 }
 
 /* The next-piece panel only exists on one side, which pushed the board off
-   centre by half its width while everything else on the page was centred
+   center by half its width while everything else on the page was centered
    on the page. Where there is room to spare, an empty twin on the left
    puts it back. */
 @media (min-width: 620px) {
@@ -241,7 +241,7 @@ html.embed .title { display: none; }
    Plate steel with rivets along the rails and a bolted corner at
    each end, drawn in CSS rather than loaded as an image so it
    scales with the board and costs nothing to fetch. It is the
-   same cold grey as the toner tanks, so the whole rig reads as
+   same cold gray as the toner tanks, so the whole rig reads as
    one machine with the page in the middle of it.
    ============================================================ */
 
@@ -458,7 +458,7 @@ html.embed .title { display: none; }
 }
 
 /* The queue. One pair per row, soonest at the top, the rest a shade back
-   so the order reads without having to be labelled. */
+   so the order reads without having to be labeled. */
 .nextlist { display: flex; flex-direction: column; align-items: center; gap: 9px; }
 
 .nextlist .pair { display: flex; flex-direction: column; align-items: center; gap: 3px; }
@@ -647,11 +647,11 @@ button.go:hover { background: #4653E0; }
   text-align: center;
 }
 
-/* Every line centred explicitly rather than by inheritance, and balanced so
+/* Every line centered explicitly rather than by inheritance, and balanced so
    a wrap splits it evenly instead of leaving two words stranded. */
 /* text-wrap: balance shrinks the element to balance its lines, which left
-   the text centred inside a narrow box that was itself flush left. The auto
-   margins centre the box. */
+   the text centered inside a narrow box that was itself flush left. The auto
+   margins center the box. */
 .over p {
   margin: 0 auto 12px;
   font-size: 0.82rem;
@@ -1109,7 +1109,7 @@ function findClumps(w) {
 /* ============================================================
    The print
    ============================================================
-   A real four colour halftone: each plate is a grid of dots on
+   A real four color halftone: each plate is a grid of dots on
    its own rotated screen, each dot sized by how much of that ink
    the picture wants there. The angles are the trade's, chosen so
    the screens interfere as little as possible.
@@ -1914,7 +1914,7 @@ document.addEventListener('pointermove', (e) => {
   }
 });
 
-/* touch-action covers every browser that honours it; this covers the rest.
+/* touch-action covers every browser that honors it; this covers the rest.
    Only a gesture that began on the board is swallowed -- t0 is unset for
    the setup and the intro panel, so both still scroll. */
 document.addEventListener('touchmove', (e) => {

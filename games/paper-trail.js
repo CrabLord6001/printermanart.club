@@ -80,7 +80,7 @@ const INKS = [
    the Data Center and get good at that board in particular. Random
    layouts would throw that away.
 
-   Everything in here is grey. Color on this board means ink and
+   Everything in here is gray. Color on this board means ink and
    nothing else, so nobody has to wonder whether a thing is food or
    furniture; the pieces are told apart by shape and surface.
 
@@ -207,7 +207,7 @@ export const ROOMS = {
 
 export const ROOM_ORDER = ['classic', 'lobby', 'office', 'mail', 'data'];
 
-const GREY = {
+const GRAY = {
   rack: '#343B49', shelf: '#434A5C', desk: '#4A5162',
   cabinet: '#3D4454', pillar: '#555D6E', bench: '#474E5F', cart: '#525A6B'
 };
@@ -267,7 +267,7 @@ function paintTray(ctx, shape) {
   }
 }
 
-/* The furniture. Grey throughout and told apart by what is etched on it:
+/* The furniture. Gray throughout and told apart by what is etched on it:
    vents on a rack, pigeonholes on a shelf, a lighter top on a desk. */
 function paintRoom(ctx, roomKey, shape) {
   for (const it of itemsOf(roomKey, shape)) {
@@ -276,7 +276,7 @@ function paintRoom(ctx, roomKey, shape) {
     const w = it.w * CELL - 4;
     const h = it.h * CELL - 4;
 
-    ctx.fillStyle = GREY[it.k] || GREY.desk;
+    ctx.fillStyle = GRAY[it.k] || GRAY.desk;
     rr(ctx, x, y, w, h, 4);
     ctx.fill();
 

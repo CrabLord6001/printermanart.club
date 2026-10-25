@@ -174,7 +174,7 @@ header.page .bio {
 /* A fixed height, not a minimum. Members submit whatever shape they like,
    and with min-height a tall piece made its card tall while a wide one left
    a void under its caption, because a flex row stretches every card to the
-   tallest. Same plate for everyone, image centred inside it, nothing
+   tallest. Same plate for everyone, image centered inside it, nothing
    cropped. */
 .work .plate {
   background: #0C0E13;

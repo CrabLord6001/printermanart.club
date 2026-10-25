@@ -3,7 +3,7 @@
    ============================================================
    Written rather than recorded: a few oscillators and a delay,
    so there is no file to load, nothing to credit, and no licence
-   to honour. Paper Trail has its chiptune; this is the other
+   to honor. Paper Trail has its chiptune; this is the other
    machine, and the other mood.
 
    D minor, slow, with an organ holding the chords, a pedal note

@@ -501,7 +501,7 @@ body.play-open { overflow: hidden; }
 #playbox.full .play-head { padding-right: 44px; }
 
 /* The board takes whatever the head bar leaves and the 4:3 picture is fitted
-   inside it, so an upright phone shows the room centred rather than stretched.
+   inside it, so an upright phone shows the room centered rather than stretched.
    The paper tray's frame comes off here: it would be a tall empty box around a
    short picture. The board draws its own background, so what is left is the
    room itself on the sheet. */
