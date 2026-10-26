@@ -269,6 +269,66 @@ function cuePiece(at, buf, off, len, slot, rate, fade) {
   cueLive.push({ src, g });
 }
 
+/* ---- her, over the top of it ----
+   She is not narrating the level; she is losing hold of it. Every so
+   often a line of her taunt comes through the track itself, on the bar,
+   sometimes backwards -- the same thing happening to her voice that is
+   happening to her music.
+
+   One file and a table of offsets rather than five fetches, and it only
+   loads on the one stage that uses it. */
+const STABS = '/games/voice/asil-stabs';
+let stabBuf = null, stabRev = null, stabAt = null, stabJob = null;
+let stabLast = -1;
+
+async function stabLoad() {
+  if (stabBuf) return true;
+  if (stabJob) return stabJob;
+  stabJob = (async () => {
+    try {
+      const [a, t] = await Promise.all([
+        fetch(STABS + '.mp3').then((r) => r.ok ? r.arrayBuffer() : Promise.reject()),
+        fetch(STABS + '.json').then((r) => r.ok ? r.json() : Promise.reject())
+      ]);
+      stabBuf = await ctx.decodeAudioData(a);
+      stabRev = reverseOf(stabBuf);
+      stabAt = t;
+      return true;
+    } catch (e) { return false; }   // no lines, same level
+  })();
+  return stabJob;
+}
+
+function stabFire(at) {
+  if (!stabBuf || !stabAt || !stabAt.length) return;
+  let i = (rnd() * stabAt.length) | 0;
+  if (i === stabLast) i = (i + 1) % stabAt.length;   // not the same one twice running
+  stabLast = i;
+  const cut = stabAt[i];
+  const back = rnd() < 0.22;
+
+  /* Backwards means reading a reversed copy from the mirrored offset.
+     A negative playback rate is not a thing Web Audio will do. */
+  const src = ctx.createBufferSource();
+  src.buffer = back ? stabRev : stabBuf;
+  const off = back ? (stabBuf.duration - cut.at - cut.dur) : cut.at;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.linearRampToValueAtTime(0.78, at + 0.01);
+  g.gain.setValueAtTime(0.78, at + cut.dur - 0.05);
+  g.gain.linearRampToValueAtTime(0.0001, at + cut.dur);
+
+  src.connect(g);
+  /* Over the music rather than through the same mangling. She is already
+     a voice that does not work; putting her through the ring modulator
+     as well only makes her hard to make out. */
+  g.connect(cueBus);
+  try { src.start(at, Math.max(0, off), cut.dur); } catch (e) { return; }
+  src.stop(at + cut.dur + 0.05);
+  src.onended = () => { cueLive = cueLive.filter((x) => x.src !== src); try { g.disconnect(); } catch (e) {} };
+  cueLive.push({ src, g });
+}
+
 function cueRemixBar(at) {
   const bars = Math.max(1, Math.round(cueBuf.duration / BAR));
   const n = cueBar % bars;
@@ -295,6 +355,12 @@ function cueRemixBar(at) {
   } else {                                              // and sometimes nothing
     cueBar += 1;
   }
+
+  /* And every so often she comes through the track. Not on the first
+     bars: arriving over the top of the very first thing you hear reads
+     as a bug rather than as her. */
+  if (cueBar > 4 && rnd() < 0.13) stabFire(at);
+
   return BAR;
 }
 
@@ -455,6 +521,7 @@ export function corrupt(onOff) {
 
     cueFxNodes = [ring, bend, tilt, dl, fb, damp, verb, wet, trim];
     cueRate = 1;                                // the bars do the speed now
+    stabLoad();                                 // her lines, for the stage that has her on it
     cueRelap();
     return;
   }

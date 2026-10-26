@@ -5475,7 +5475,13 @@ function record(ran) {
 window.CPArrived = function (p) {
   campSaved = !!p;
   campDone = (p && p.done) ? p.done.slice() : [];
-  campAt = campFind();
+
+  /* Somebody on a trial or a visit chose the level they are standing on.
+     Their own progress arriving a second later is not a reason to move
+     them off it -- and it did: ?try=21 was quietly rewritten to level
+     one the moment the session settled, so the last print was never the
+     level being played and its music was never the one being heard. */
+  if (!meeting && !trying) campAt = campFind();
 
   if (onGallery()) buildGallery();
   if (onHome()) whereInSeries();

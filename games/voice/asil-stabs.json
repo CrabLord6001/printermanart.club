@@ -1,0 +1,27 @@
+[
+ {
+  "id": "unavoidable",
+  "at": 0.0,
+  "dur": 1.26
+ },
+ {
+  "id": "destiny",
+  "at": 1.36,
+  "dur": 1.62
+ },
+ {
+  "id": "art",
+  "at": 3.08,
+  "dur": 1.06
+ },
+ {
+  "id": "creativity",
+  "at": 4.24,
+  "dur": 1.28
+ },
+ {
+  "id": "terminated",
+  "at": 5.62,
+  "dur": 1.28
+ }
+]
