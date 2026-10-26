@@ -1684,6 +1684,105 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 .bossmenu .mi:hover { color: var(--text); border-color: #3C4454; }
 .bossmenu .mi.hot:hover { border-color: var(--magenta); }
 
+/* ---- Victor Crumpet ----
+   Her screen is a picture with words over it. His is the opposite: a
+   print on the wall of a shop, with the shop's own frame around it and
+   the man talking underneath. He is the human in this story and the
+   screen should not feel like hers. */
+.rules.victorface {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 30rem;
+  margin: 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  text-align: center;
+}
+
+.victorface .tag {
+  margin: 0 0 10px !important;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* The same sheet and frame the title hangs in, because it is the same
+   shop and the same press. */
+.victorface .vicplate {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* The sheet is as wide as the panel lets it be, and only its height
+     flexes. Left to size itself around the picture, it reported whatever
+     width the canvas happened to have last time, and the fit agreed with
+     itself forever. */
+  width: 100%;
+  max-width: 23rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px;
+  background: #F2EFE6;
+  border: 1px solid #2E333F;
+  border-radius: 3px;
+  box-shadow: 0 0 0 4px #15181F, 0 0 0 5px #39404E, 0 10px 26px rgba(0,0,0,0.55);
+}
+
+.victorface .vicplate canvas { display: block; max-width: 100%; max-height: 100%; }
+
+/* He says one line at a time, and the band is held at the height of his
+   longest so the frame above it does not jump every time he draws
+   breath. */
+.victorface .said {
+  margin: 0 auto !important;
+  max-width: 22rem;
+  height: var(--vicBand, 3.4em);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--vicFs, 0.82rem);
+  line-height: 1.5;
+  color: #E7E9EF;
+  text-align: center;
+  transition: opacity 140ms linear;
+}
+
+.victorface .said.turning { opacity: 0; }
+
+.victorface .who {
+  margin: 13px 0 6px !important;
+  font-size: 0.5rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* He gets the same offer she does, and only when there is a voice to
+   offer: the button stays hidden until the file is there. */
+.victorface .hear {
+  margin: 9px auto 0;
+  padding: 3px 9px;
+  border: 1px solid #2B3141;
+  border-radius: 999px;
+  background: rgba(10,12,17,0.6);
+  color: var(--dim);
+  font: inherit;
+  font-size: 0.48rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.victorface .hear:hover { color: var(--text); border-color: #3C4454; }
+
+.over.victor .over-in { margin: 0; flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+.over.victor > .over-in > h2,
+.over.victor > .over-in > p { display: none; }
+
 .rules.homeface .gameover {
   margin: 0 0 13px !important;
   font-size: clamp(1.1rem, 5.6vw, 1.9rem) !important;
@@ -1932,6 +2031,22 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
               <p class="saved" id="galSaved"></p>
             </div>
 
+
+            <!-- The curator, before the first print. Pressed in the
+                 browser from one photograph: four plates, the shop's own
+                 screen angles, warm sepia under the black. He is a print
+                 in his own printshop. -->
+            <div class="rules victorface" id="overVictor" hidden>
+              <p class="tag">Before the first print</p>
+              <div class="plate vicplate"><canvas id="vicArt"></canvas></div>
+              <p class="who">Victor Crumpet &middot; Curator</p>
+              <p class="said" id="vicSaid"></p>
+              <button class="hear" id="vicHear" type="button" hidden>Sound off</button>
+              <nav class="bossmenu" id="vicMenu">
+                <button class="mi hot" type="button" data-vic="begin">Begin</button>
+                <button class="mi" type="button" data-vic="menu">Menu</button>
+              </nav>
+            </div>
             <!-- The twenty first level is the only one with somebody on the
                  other side of it, so it gets a screen where she is the
                  screen. The portrait is generated from the same public
@@ -3607,19 +3722,23 @@ const elRules = () => document.getElementById('overRules');
 const elGallery = () => document.getElementById('overGallery');
 const elBoss = () => document.getElementById('overBoss');
 const onBoss = () => !elOver.hidden && !elBoss().hidden;
+const elVictor = () => document.getElementById('overVictor');
+const onVictor = () => !elOver.hidden && !elVictor().hidden;
 
 function faceOff() {
   /* won goes too. It trades the scrim for a gradient that is clear at the
      top so the finished print shows through, which is right for the print
      and unreadable for anything laid over it. closeRules puts it back. */
   elOver.classList.remove('intro', 'menu', 'won', 'boardface');
-  elOver.classList.remove('home', 'boss');
+  elOver.classList.remove('home', 'boss', 'victor');
   asilStop();                                   // she stops talking to an empty room
+  victorStop();
   elRules().hidden = true;
   elSetup().hidden = true;
   elGallery().hidden = true;
   elHome().hidden = true;
   elBoss().hidden = true;
+  elVictor().hidden = true;
 }
 
 /* No face at all: the board as it stands, with the buttons under it. */
@@ -3665,6 +3784,10 @@ const changed = () => !applied || JSON.stringify(reading()) !== JSON.stringify(a
    cleared whenever the series moves off the last level, so she greets a
    fresh arrival and keeps quiet for a retry. */
 let bossSeen = false;
+
+/* The same for Victor, at the other end of the series. */
+let vicSeen = false;
+let vicSpoken = false;
 
 /* And has she actually got through it? Her screen can be opened a second
    time from the board without that being a second arrival. */
@@ -3717,6 +3840,19 @@ function showFace(which) {
     paintTitle();
     whereInSeries();
     buttons();
+    return;
+  }
+
+  if (which === 'victor') {
+    elOver.classList.add('victor');
+    elVictor().hidden = false;
+    document.getElementById('overTitle').hidden = true;
+    document.getElementById('overCredit').hidden = true;
+    document.getElementById('overText').innerHTML = '';
+    document.getElementById('overBoard').hidden = true;
+    elOver.hidden = false;
+    buttons();
+    victorStart(vicSpoken);
     return;
   }
 
@@ -3819,6 +3955,219 @@ const FINALE = {
   file: 'mona.jpg', id: 'mona-lisa', room: 'classics', roomName: 'Classics',
   title: 'Mona Lisa', artist: 'Leonardo da Vinci', date: 'ca. 1503\u201319'
 };
+
+/* ============================================================
+   Victor Crumpet
+   ============================================================
+   The curator is a print in his own shop, so he is not shipped as a
+   picture of a halftone -- he is a photograph, pressed in the browser by
+   the same two functions that print the paintings. One warm-toned file
+   and the shop's own press, which means he is screened at whatever size
+   the panel happens to be rather than scaled up from a fixed image.
+
+   The warmth is written into the file: its pixels are built so that
+   separate() pulls back a heavy black plate with a sepia cast under it,
+   the way a photograph reproduced in a book of his century was built up.
+
+   Source: the Brady-Handy glass negative of Thaddeus Stevens, Library of
+   Congress, public domain.
+   ============================================================ */
+const VIC = { img: null, loading: null, audio: null, raf: 0, t0: 0, line: -1, drew: 0 };
+
+/* What he says and when he says it. The times are read off the recording
+   itself -- seven stretches of speech with a clear pause between each,
+   and seven lines of his to put in them, longest line against longest
+   stretch. With the sound off the same clock runs on its own, so the
+   screen plays out either way. */
+const VIC_SAYS = [
+  { t:  0.10, s: "Oh. Hey. It's you." },
+  { t:  1.60, s: "You're finally awake!" },
+  { t:  3.95, s: "You lazy, good for nothing intern." },
+  { t:  6.50, s: "We need you in the print shop, asap." },
+  { t:  8.45, s: "Something is wrong with the print." },
+  { t: 10.60, s: "The archivists are complaining all the art printers are printing as blanks." },
+  { t: 14.45, s: "Might be a virus on that ancient copy machine." }
+];
+const VIC_RUNS = 17.1;                          // how long he takes, with the tail
+
+/* The screen is as fine as the frame it is printed in. A fixed cell gave
+   him about fifty dots across the face on a phone, which is a man you
+   cannot recognise; this keeps the count near a hundred wherever he
+   hangs, and stops the dots disappearing on a big one. */
+const vicCell = (w) => Math.max(1.5, Math.min(3.4, w / 95));
+
+async function victorLoad() {
+  if (VIC.img) return true;
+  if (VIC.loading) return VIC.loading;
+  VIC.loading = new Promise((done) => {
+    const img = new Image();
+    img.onload = () => { VIC.img = img; done(true); };
+    img.onerror = () => done(false);
+    img.src = '/games/img/victor.jpg';
+  });
+  return VIC.loading;
+}
+
+/* The frame takes whatever the words left it, so he is pressed to fit
+   rather than to a size written down here. */
+function victorFit() {
+  const cv = document.getElementById('vicArt');
+  const box = cv && cv.parentNode;
+  if (!cv || !box || !VIC.img) return;
+
+  cv.style.width = '0px';
+  cv.style.height = '0px';
+  fitVictor();
+
+  const style = getComputedStyle(box);
+  const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+  const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+  /* The sheet's height is worked out from what everything else on the
+     screen took, not read back off the sheet. Asking the flex box how
+     tall it is while the picture inside it is what makes it that tall
+     gives an answer that only ever agrees with the previous pass. */
+  const face = elVictor();
+  let used = 0;
+  for (const kid of face.children) {
+    if (kid === box) continue;
+    const ks = getComputedStyle(kid);
+    if (ks.display === 'none') continue;
+    used += kid.offsetHeight + parseFloat(ks.marginTop) + parseFloat(ks.marginBottom);
+  }
+  const roomW = Math.max(40, box.clientWidth - padX);
+  const roomH = Math.max(40, face.clientHeight - used - padY - 2);
+  const ar = VIC.img.width / VIC.img.height;
+
+  let w = roomW, h = w / ar;
+  if (h > roomH) { h = roomH; w = h * ar; }
+
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.style.width = Math.round(w) + 'px';
+  cv.style.height = Math.round(h) + 'px';
+  VIC.drew = Math.round(w);
+  cv.width = Math.round(w * dpr);
+  cv.height = Math.round(h * dpr);
+
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#F2EFE6';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+
+  const sep = separate(VIC.img, cv.width, cv.height);
+  const cell = vicCell(w) * dpr;
+  ctx.globalCompositeOperation = 'multiply';
+  for (const pl of PLATES) screenPlate(ctx, sep[pl], cv.width, cv.height, cell, ANGLE[pl], DOT[pl]);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/* His speech is longer than hers and the frame is sharing the panel with
+   it, so the type steps down until the picture still has somewhere to
+   hang. */
+function fitVictor() {
+  const face = elVictor(), box = face && face.querySelector('.vicplate');
+  const band = document.getElementById('vicSaid');
+  if (!face || !box || !band) return;
+  const room = face.clientHeight;
+  if (!room) return;
+  const floor = Math.max(150, room * 0.46);     // the frame never gets less
+
+  /* The band holds his longest line, whatever size the type ends up, so
+     it is measured rather than guessed at. */
+  const held = band.textContent;
+  for (const fs of [0.86, 0.80, 0.74, 0.68, 0.62, 0.56, 0.50]) {
+    face.style.setProperty('--vicFs', fs + 'rem');
+    face.style.setProperty('--vicBand', 'auto');
+    let tall = 0;
+    for (const line of VIC_SAYS) {
+      band.textContent = line.s;
+      tall = Math.max(tall, band.scrollHeight);
+    }
+    band.textContent = held;
+    face.style.setProperty('--vicBand', tall + 'px');
+    if (box.clientHeight >= floor) return;
+  }
+}
+
+/* Which line belongs to this moment. The audio's own clock when it is
+   playing, because that cannot drift; a plain one when it is not. */
+function victorNow() {
+  if (VIC.audio && !VIC.audio.paused && VIC.audio.currentTime > 0) return VIC.audio.currentTime;
+  return (performance.now() - VIC.t0) / 1000;
+}
+
+function victorAt(t) {
+  let i = 0;
+  for (let k = 0; k < VIC_SAYS.length; k++) if (t >= VIC_SAYS[k].t) i = k;
+  return i;
+}
+
+function victorShow(i) {
+  if (i === VIC.line) return;
+  const band = document.getElementById('vicSaid');
+  if (!band) return;
+  VIC.line = i;
+  band.classList.add('turning');
+  setTimeout(() => {
+    if (VIC.line !== i) return;
+    band.textContent = VIC_SAYS[i] ? VIC_SAYS[i].s : '';
+    band.classList.remove('turning');
+  }, 140);
+}
+
+function victorTick() {
+  VIC.raf = requestAnimationFrame(victorTick);
+  const t = victorNow();
+  victorShow(victorAt(t));
+  /* He stops on his last line rather than clearing it: the screen waits
+     for you, and the last thing he said is still there to read. */
+  if (t > VIC_RUNS + 0.5) { cancelAnimationFrame(VIC.raf); VIC.raf = 0; }
+}
+
+function victorSpeak() {
+  const hear = document.getElementById('vicHear');
+  const on = !!(music && music.isOn());
+  if (!VIC.audio) {
+    const a = new Audio();
+    a.preload = 'auto';
+    a.src = '/games/voice/victor.mp3';
+    /* No recording of him yet. Until there is one the screen reads
+       exactly the same, and nothing offers a sound that is not there. */
+    a.addEventListener('error', () => { VIC.audio = null; if (hear) hear.hidden = true; });
+    VIC.audio = a;
+  }
+  if (hear) hear.hidden = on;
+  if (!on) return;
+  try {
+    VIC.audio.currentTime = 0;
+    VIC.audio.play().catch(() => {});
+  } catch (e) { /* no voice, same screen */ }
+}
+
+function victorStop() {
+  if (VIC.raf) { cancelAnimationFrame(VIC.raf); VIC.raf = 0; }
+  if (VIC.audio) { try { VIC.audio.pause(); VIC.audio.currentTime = 0; } catch (e) {} }
+}
+
+async function victorStart(silent) {
+  victorStop();
+  const ok = await victorLoad();
+  if (!ok || !onVictor()) return;
+  victorFit();
+  VIC.line = -1;
+  if (silent) {                                 // he has already said it
+    victorShow(VIC_SAYS.length - 1);
+    const hear = document.getElementById('vicHear');
+    if (hear && VIC.audio) hear.hidden = !!(music && music.isOn());
+    return;
+  }
+  vicSpoken = true;
+  VIC.t0 = performance.now();
+  victorShow(0);
+  victorSpeak();
+  victorTick();
+}
 
 /* ============================================================
    Asil Anom
@@ -4594,7 +4943,7 @@ function buttons() {
   /* On the title screen the options are the interface. Three more buttons
      under the board would only be a second way to say the same four
      things, so they stand down until there is a board to act on. */
-  if (onHome() || onBoss()) {
+  if (onHome() || onBoss() || onVictor()) {
     menu.hidden = true;
     main.hidden = true;
     if (rules) rules.hidden = true;
@@ -4922,6 +5271,7 @@ function newPrint(face) {
 
   // anywhere but the last level, she gets her say again next time it comes round
   if (!atFinale()) { bossSeen = false; bossSpoken = false; }
+  if (!campOn || campAt !== 0) { vicSeen = false; vicSpoken = false; }
 
   mode = document.getElementById('setInks').value;
   const pick = PALETTES[mode] || PALETTES.office;
@@ -5062,11 +5412,33 @@ document.getElementById('again').addEventListener('click', () => {
       showFace('boss');
       return;
     }
+    /* He is the other end of the same idea: somebody waiting on the far
+       side of the card, once, before the first print of the series. */
+    if (!vicSeen && campOn && campAt === 0) {
+      vicSeen = true;
+      showFace('victor');
+      return;
+    }
     begin();
     return;
   }
   if (phase === 'done' && campOn && wonLast && isFinale(artwork)) { showWin(); return; }
   newPrint();
+});
+
+document.getElementById('vicMenu').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-vic]');
+  if (!b) return;
+  if (b.dataset.vic === 'begin') { begin(); return; }
+  showFace('home');
+});
+
+document.getElementById('vicHear').addEventListener('click', async () => {
+  const ok = await wantSound(true);
+  if (!ok) return;
+  sndBtn.setAttribute('aria-pressed', 'true');
+  sndBtn.setAttribute('aria-label', 'Turn sound off');
+  if (onVictor()) victorStart(false);
 });
 
 /* Her screen carries its own two, the way the title screen does: the row
@@ -5120,7 +5492,9 @@ function openRules() {
      reading the rules would throw the result away. */
   const from = {
     wasPlaying: started && !paused,
-    face: onSetup() ? 'setup' : (onGallery() ? 'gallery' : (onBoss() ? 'boss' : null)),
+    face: onSetup() ? 'setup'
+        : (onGallery() ? 'gallery'
+        : (onBoss() ? 'boss' : (onVictor() ? 'victor' : null))),
     done: phase === 'done' ? {
       won: elOver.classList.contains('won'),
       titleText: title.textContent, titleHidden: title.hidden,
@@ -5164,6 +5538,7 @@ function closeRules() {
   if (from && from.face === 'setup') { showFace('setup'); return; }
   if (from && from.face === 'gallery') { showFace('gallery'); return; }
   if (from && from.face === 'boss') { showFace('boss'); return; }
+  if (from && from.face === 'victor') { showFace('victor'); return; }
   hideFace();
 }
 
@@ -5227,6 +5602,7 @@ window.addEventListener('resize', () => {
   /* She holds on the last frame once she has spoken, so nothing is
      running to notice the panel changed shape. */
   if (onBoss()) { fitBoss(); if (!ASIL.raf) asilDraw(performance.now() - ASIL.t0); }
+  if (onVictor()) victorFit();
   repaintScores();
 });
 
