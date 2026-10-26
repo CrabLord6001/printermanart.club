@@ -2491,6 +2491,20 @@ const DOT   = { c: '#0093D3', m: '#E6007E', y: '#F3E500', k: '#1A1A1A' };
    the paper and feeds nothing. */
 const PLATE_OF = { c: 'c', lc: 'c', m: 'm', lm: 'm', y: 'y', k: 'k', w: null };
 
+/* What a cleared cell is worth to its plate. A light ink is a diluted
+   one -- a photo printer carries light cyan so it can lay a pale tint
+   without a coarse dot, and it puts down less pigment doing it. So a
+   light cyan clear fills the cyan plate four fifths as far as a cyan one.
+   The page shows it: the print is laid down in beads, one per unit, so
+   five light clears deposit four beads' worth of ink rather than five.
+
+   It gives the two extra inks a cost to go with their convenience, and
+   something to weigh -- the full color is worth more, the light one is
+   easier to find. Measured at twelve runs a level: about a tenth more
+   drops to finish, and no change in who wins. Seven tenths was tried and
+   was worse on both counts, longer and less even. */
+const LIGHT_WORTH = { lc: 0.8, lm: 0.8 };
+
 const PLATES = ['k', 'c', 'm', 'y'];
 
 /* How much of an ink the page wants before that plate lands. This is the
@@ -3338,7 +3352,10 @@ async function resolve() {
       for (const [x, y] of group) {
         const ink = inkOf(at(well, x, y));
         const plate = PLATE_OF[ink];
-        if (plate) cleared[plate]++;
+        /* Rounded as it goes. Four fifths does not land on a binary
+           fraction, so twenty five of them come to 19.999999999999996 and
+           a plate that is full never says so. */
+        if (plate) cleared[plate] = Math.round((cleared[plate] + (LIGHT_WORTH[ink] || 1)) * 100) / 100;
         tiles[idx(x, y)].className = 'cell hit';
       }
     }
