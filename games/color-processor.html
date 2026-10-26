@@ -1537,6 +1537,69 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    hold the screen down, so the card takes the middle of it. */
 .rules.campface.finale { justify-content: center; }
 
+/* The level's own card: the same sheet and frame as the last one, a size
+   down, because it announces a level rather than the end of them. */
+.campface .levelplate {
+  width: 100%;
+  max-width: 19rem;
+  margin: 2px auto 0;
+  padding: 9px 11px;
+  background: #F2EFE6;
+  border: 1px solid #2E333F;
+  border-radius: 3px;
+  box-shadow: 0 0 0 4px #15181F, 0 0 0 5px #39404E, 0 10px 26px rgba(0,0,0,0.55);
+}
+
+/* The painting behind the card, pressed and then drained of its color.
+   Gray rather than the black plate alone: the key plate of a pale
+   painting is nearly empty, and what is wanted here is the picture. */
+.campface .galart {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+/* Dark at both ends and clear across the middle, so the small type at the
+   top and the bottom has something to sit on without the picture being
+   dimmed where it is actually being looked at. */
+.campface .galveil {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom,
+    rgba(10,12,17,0.94) 0%, rgba(10,12,17,0.80) 10%, rgba(10,12,17,0.22) 26%,
+    rgba(10,12,17,0.18) 68%, rgba(10,12,17,0.72) 88%, rgba(10,12,17,0.95) 100%);
+}
+
+.rules.campface { position: relative; }
+.campface > *:not(.galart):not(.galveil) { position: relative; z-index: 1; }
+
+/* The time to beat, and the one number on the screen worth reading from
+   across the room. */
+.campface .par {
+  margin: 2px 0 0;
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+}
+.campface .par b {
+  display: block;
+  margin-top: 5px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-shadow: 0 2px 14px rgba(0,0,0,0.95);
+}
+
 /* ---- Asil Anom ----
    Every other face is words on a dark panel. This one is a picture with
    words over it, so it takes the whole panel: no padding, nothing above
@@ -2069,13 +2132,17 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
             <div class="rules campface" id="overGallery" hidden>
               <!-- The last level does not get a chapter and a number; it
                    gets a card, printed the same way the title is. -->
+              <!-- The painting, pressed in gray, behind everything. It is
+                   the job sheet: enough to know what is coming, with the
+                   color held back until it has been printed. -->
+              <canvas class="galart" id="galArt" aria-hidden="true"></canvas>
+              <div class="galveil" aria-hidden="true"></div>
               <div class="plate finaleplate" id="galPlateWrap" hidden><canvas id="galPlate"></canvas></div>
               <p class="chap" id="galChap"></p>
-              <p class="lvl" id="galNum"></p>
-              <p class="of" id="galOf"></p>
+              <div class="plate levelplate" id="galTitleWrap"><canvas id="galTitle"></canvas></div>
+              <p class="par" id="galPar"></p>
               <div class="dots" id="galDots"></div>
               <p class="pick" id="galPick" hidden>Tap a printed level to go back to it</p>
-              <p class="spec" id="galSpec"></p>
               <p class="saved" id="galSaved"></p>
             </div>
 
@@ -2504,6 +2571,46 @@ const PLATE_OF = { c: 'c', lc: 'c', m: 'm', lm: 'm', y: 'y', k: 'k', w: null };
    drops to finish, and no change in who wins. Seven tenths was tried and
    was worse on both counts, longer and less even. */
 const LIGHT_WORTH = { lc: 0.8, lm: 0.8 };
+
+/* The time to beat, per level, in seconds.
+   ------------------------------------------------------------------
+   Not picked. Built from two measurements that each answer half of it.
+
+   The stand-in player runs with the clock switched off, so what it can
+   say is how many drops a level takes: ten runs a level on this build,
+   the median of the ones it finished. What it cannot say is how long a
+   drop takes a person, because it does not feel the fall.
+
+   That came from fifteen real runs on the board, where the time per
+   drop sits at 1.93 seconds and barely moves -- it hardly tracks the
+   fall speed at all (correlation -0.25 across levels one to fifteen).
+   The clock is measuring somebody deciding where to put a piece, not
+   the piece coming down. Par is the two multiplied, rounded up to the
+   nearest five seconds so it reads as a time rather than an
+   arithmetic result, and so there are a few seconds of grace in it.
+
+   One player's pace and one bot's drops. The board already records a
+   time per level, so once more people have printed these, par can be
+   taken from what people actually do. Treat these as a first pass. */
+const PAR = [50, 55, 60, 65, 65, 65, 75, 70, 80, 75, 80,
+             90, 95, 105, 110, 100, 130, 120, 115, 120, 135];
+
+const parOf = (lv) => PAR[lv - 1] || 0;
+
+/* The best a level has been printed in, kept on the machine so it works
+   signed out and answers instantly. The board keeps the real record. */
+let bests = {};
+try { bests = JSON.parse(localStorage.getItem('cp-best') || '{}') || {}; } catch (e) { bests = {}; }
+
+const bestOf = (lv) => bests[lv] || 0;
+
+function keepBest(lv, ms) {
+  if (!lv || !ms) return;
+  const had = bests[lv] || 0;
+  if (had && had <= ms) return;
+  bests[lv] = ms;
+  try { localStorage.setItem('cp-best', JSON.stringify(bests)); } catch (e) {}
+}
 
 const PLATES = ['k', 'c', 'm', 'y'];
 
@@ -5141,8 +5248,7 @@ function buildGallery() {
   const ttl = document.getElementById('overTitle');
   if (ttl && onGallery()) ttl.hidden = !!here.finale;
   show('galChap', !here.finale);
-  show('galNum', !here.finale);
-  show('galOf', !here.finale);
+  show('galTitleWrap', !here.finale);
   show('galDots', !here.finale);
   if (here.finale) paintPlate(document.getElementById('galPlate'), FINALE_WORDS);
 
@@ -5150,12 +5256,25 @@ function buildGallery() {
     ? 'The last print'
     : 'Chapter ' + (ORDINAL_WORD[here.chapter] || (here.chapter + 1))
       + ' \u00b7 ' + (ch ? ch.name : here.art.roomName));
-  set('galNum', String(i + 1));
-  set('galOf', 'Level ' + (i + 1) + ' of ' + list.length);
+  /* The number, printed rather than set in the page's own type -- the
+     same press that prints the title screen and the last card. */
+  if (!here.finale) paintPlate(document.getElementById('galTitle'), ['LEVEL ' + (i + 1)]);
 
-  const pace = s.fallMs > 740 ? 'slow' : (s.fallMs > 560 ? 'steady' : (s.fallMs > 430 ? 'brisk' : 'fast'));
-  set('galSpec', PALETTES[s.mode].inks.length + ' inks \u00b7 ' + s.inkPer
-    + ' clears to finish each color \u00b7 ' + pace + ' fall');
+  /* What the level is made of used to be spelled out here: the inks, the
+     clears, the pace. It belongs on a page about the levels rather than
+     on the way into one, and it was the last thing between somebody and
+     the button. The time to beat is what they want standing here. */
+  /* The last level gets one too. Her card looks nothing like the other
+     twenty, but a level without a time to beat is a level that cannot be
+     graded, and she is still a print with a clock on it. */
+  const parEl = document.getElementById('galPar');
+  if (parEl) {
+    const par = parOf(i + 1);
+    parEl.innerHTML = par ? 'Par time <b>' + stamp(par * 1000) + '</b>' : '';
+    parEl.hidden = !par;
+  }
+
+  paintGalleryArt(here);
 
   set('galSaved', trying
     ? 'Trial run \u2014 nothing from here is saved'
@@ -5494,6 +5613,54 @@ function stamp(ms) {
   return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
 }
 
+/* The painting behind the level card, run through the game's own press
+   and then drained of its color by the stylesheet. The point is to say
+   what the job is without handing over the reward for doing it: the
+   shapes are all there, the color is not.
+
+   The last level is left alone. Her card is a printed one of its own,
+   and a gray Mona Lisa behind it would introduce her before she has had
+   the chance to.
+
+   Cached against the painting and the size it was drawn at, because this
+   runs on every repaint of the card and the screen does not usually
+   change between them. */
+let galArtKey = '';
+
+function paintGalleryArt(here) {
+  const cv = document.getElementById('galArt');
+  if (!cv) return;
+
+  if (!here || here.finale || !here.art || !here.art.file) { cv.hidden = true; galArtKey = ''; return; }
+
+  const W = Math.round(cv.clientWidth), H = Math.round(cv.clientHeight);
+  if (W < 40 || H < 40) return;                  // the panel has no size yet
+
+  const key = here.art.file + '|' + W + 'x' + H;
+  if (key === galArtKey) { cv.hidden = false; return; }
+
+  const img = new Image();
+  img.onload = () => {
+    // the card can have moved on while the file was arriving
+    if (key !== here.art.file + '|' + Math.round(cv.clientWidth) + 'x' + Math.round(cv.clientHeight)) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(W * dpr);
+    cv.height = Math.round(H * dpr);
+    const cx = cv.getContext('2d');
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx.fillStyle = '#F2EFE6';
+    cx.fillRect(0, 0, W, H);
+    const sep = separate(img, W, H);
+    cx.globalCompositeOperation = 'multiply';
+    for (const pl of PLATES) screenPlate(cx, sep[pl], W, H, 2.2, ANGLE[pl], DOT[pl]);
+    cx.globalCompositeOperation = 'source-over';
+    galArtKey = key;
+    cv.hidden = false;
+  };
+  img.onerror = () => { cv.hidden = true; galArtKey = ''; };   // no sheet; the card still reads
+  img.src = '/games/img/' + here.art.file;
+}
+
 function finish(won) {
   over = true;
   stopTick();
@@ -5527,6 +5694,10 @@ function finish(won) {
   started = false; paused = false; phase = 'done';
   stopClock();
   wonLast = !!won;
+
+  /* A finished print sets the mark for its level. A trial does not: the
+     whole point of a trial is that nothing from it is kept. */
+  if (won && campOn && !trying) keepBest(campAt + 1, ran);
 
   /* The scoring line is the game talking while you play, and it was only
      ever cleared when the next run started. So the last clear of a run sat
