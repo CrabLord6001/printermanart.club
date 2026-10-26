@@ -613,7 +613,7 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   .rankdial { width: 32px; height: 32px; }
   .rankbtn .lbl { display: none; }
   .signin { padding: 6px 0; }
-  .me { padding: 4px 2px; gap: 2px; }
+  .whoami { padding: 4px 2px; gap: 2px; }
 
   /* The list is the whole panel on a phone, so the panel keeps less for
      itself: the heading sits closer and the frame around it is thinner.
@@ -1377,7 +1377,7 @@ button.go:not(.ghost):hover {
 /* Signed in. Quiet on purpose: the loud color belongs to the thing you
    want somebody to press, and once they are in there is nothing here to
    press except the way back out. */
-.me {
+.whoami {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1389,9 +1389,9 @@ button.go:not(.ghost):hover {
   background: #13161D;
 }
 
-.me[hidden] { display: none; }
+.whoami[hidden] { display: none; }
 
-.me-face {
+.whoami-face {
   display: grid;
   place-items: center;
   width: 22px;
@@ -1407,7 +1407,7 @@ button.go:not(.ghost):hover {
 
 /* Their name, cut off rather than wrapped: the rail is as wide as it is,
    and a second line here is a cell off the board. */
-.me-name {
+.whoami-name {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1421,7 +1421,7 @@ button.go:not(.ghost):hover {
    mistake and not destructive -- you can sign straight back in -- so the
    warning shows up under the thumb rather than sitting in the corner of
    the machine all game. */
-.me-out {
+.whoami-out {
   padding: 0;
   border: 0;
   background: none;
@@ -1434,14 +1434,14 @@ button.go:not(.ghost):hover {
   cursor: pointer;
 }
 
-.me-out:hover, .me-out:focus-visible { color: #E8394F; outline: none; }
-.me-out:active { transform: translateY(1px); }
-.me-out:disabled { opacity: 0.6; cursor: default; }
+.whoami-out:hover, .whoami-out:focus-visible { color: #E8394F; outline: none; }
+.whoami-out:active { transform: translateY(1px); }
+.whoami-out:disabled { opacity: 0.6; cursor: default; }
 
 /* The name goes on the narrow rail the way the word goes off the blue
    button. The picture says who, and Sign out still says what. */
 @media (max-width: 560px) {
-  .me-name { display: none; }
+  .whoami-name { display: none; }
 }
 
 /* What the three of them add up to, falling. Built from the same drops the
@@ -1464,13 +1464,14 @@ body .peek .cell { position: absolute; }
 }
 
 /* The scrim is see-through so a finished print can show under it. Every
-   other menu is a page in its own right and the board behind it is only
+   other page is a page in its own right and the board behind it is only
    whatever the last run left -- a jammed board, most of the time, which
    fights the type and hands somebody their failure back on the way to
-   picking the next level. Those pages close the panel instead. The
-   finished print keeps its own gradient, and the level card keeps the
-   painting it puts behind the well. */
-.over.menu:not(.hasart), .over.home { background: #0A0C11; }
+   picking the next level, or reading the rules, or looking at where they
+   placed. Those pages close the panel instead. The finished print keeps
+   its own gradient, and the level card keeps the painting it puts behind
+   the well. */
+.over.menu:not(.hasart), .over.home, .over.intro { background: #0A0C11; }
 
 .over.menu { justify-content: flex-start; }
 .over.menu .rules { margin-left: auto; margin-right: auto; }
@@ -2699,10 +2700,10 @@ nav.menu {
            its job and the slot says who the run is being saved for. The
            same dark cartridge as the sound buttons and the rankings dial,
            because this is now a reading rather than a thing to press. -->
-      <div class="me" id="meBox" hidden>
-        <span class="me-face" id="meFace"></span>
-        <span class="me-name" id="meName"></span>
-        <button class="me-out" id="signOut" type="button">Sign out</button>
+      <div class="whoami" id="meBox" hidden>
+        <span class="whoami-face" id="meFace"></span>
+        <span class="whoami-name" id="meName"></span>
+        <button class="whoami-out" id="signOut" type="button">Sign out</button>
       </div>
       <div class="switches">
       <button class="snd" id="snd" type="button" aria-pressed="true" aria-label="Turn sound off">
@@ -6467,6 +6468,11 @@ function buttonsNow() {
     menu.classList.toggle('ghost', moved);
     main.textContent = redeal();
     main.classList.toggle('ghost', !moved);
+    /* A pause with no way out of it is a trap: the three buttons were
+       Resume, Restart and Rules, and every one of them kept you in the
+       level. The third slot is the way out, the same as it is on a
+       finished print. The rules are on the title screen. */
+    if (rules) { rules.hidden = false; rules.textContent = 'Menu'; rules.classList.remove('on'); }
     return;
   }
 
@@ -7185,9 +7191,26 @@ function closeRules() {
   hideFace();
 }
 
+/* Walking out of a paused level. Nothing is given up by it that was not
+   given up already: a run that does not finish never posts anything. The
+   board goes with it, so the title screen is not standing in front of a
+   game somebody has already left. */
+function leaveRun() {
+  started = false; paused = false; phase = 'ready';
+  stopTick();
+  stopClock();
+  well = new Array(COLS * ROWS).fill(null);
+  piece = null;
+  buildGrid();
+}
+
 document.getElementById('rulesBtn').addEventListener('click', () => {
-  // on a finished print this button is the way back to the title screen
-  if (phase === 'done' && (elOver.hidden || elRules().hidden)) { showFace('home'); return; }
+  // on a finished print, and on a paused one, this is the way back out
+  if ((phase === 'done' || phase === 'paused') && (elOver.hidden || elRules().hidden)) {
+    if (phase === 'paused') leaveRun();
+    showFace('home');
+    return;
+  }
   const up = !elOver.hidden && !elRules().hidden;
   if (up) closeRules(); else openRules();
 });
