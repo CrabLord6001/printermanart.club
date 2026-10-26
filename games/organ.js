@@ -261,8 +261,18 @@ function cueLap(at) {
 
    Half the bars are left alone on purpose. A remix that mangles
    everything stops being a remix of anything. */
-const BAR = 2.0;                    // the piece is 120 BPM in four
+const BAR = 2.786;                  // The Clockwork Ledger is 86 BPM in four
+
+/* Her stage runs the title piece from four bars in, and laps back to
+   there rather than to the top. The piece opens with eleven seconds of
+   sparse, quiet music -- right for the screen the game opens on, wrong
+   for the last level, which began on almost nothing and fell back into
+   it every lap. What is left is the forty-odd seconds of it that are
+   actually playing. The bar count still runs from zero, because her
+   first line is owed to the third bar of the level, not of the tape. */
+const BOSS_IN = 4;
 let cueBar = 0;
+let lastFault = -99;            // how long since the tape last misbehaved
 let cueRev = null;                  // the same buffer, backwards
 let cueSeed = 1;
 
@@ -376,39 +386,72 @@ function stabFire(at) {
 
 function cueRemixBar(at) {
   const bars = Math.max(1, Math.round(cueBuf.duration / BAR));
-  const n = cueBar % bars;
+  const span = Math.max(1, bars - BOSS_IN);
+  const n = BOSS_IN + (cueBar % span);
   const off = n * BAR;
-  const pick = rnd();
 
-  if (pick < 0.70) {                                    // as written
-    cuePiece(at, cueBuf, off, BAR, BAR, 1);
-    cueBar += 1;
-  } else if (pick < 0.80) {                             // backwards
-    const mirror = cueBuf.duration - off - BAR;
-    cuePiece(at, cueRev, mirror, BAR, BAR, 1);
-    cueBar += 1;
-  } else if (pick < 0.89) {                             // half speed, half the bar
-    cuePiece(at, cueBuf, off, BAR / 2, BAR, 0.5);
-    cueBar += 1;
-  } else if (pick < 0.95) {                             // two bars in one
-    cuePiece(at, cueBuf, off, BAR * 2, BAR, 2);
-    cueBar += 2;
-  } else if (pick < 0.98) {                             // the needle sticks
-    const slice = BAR / 4;
-    for (let k = 0; k < 4; k++) cuePiece(at + k * slice, cueBuf, off, slice, slice, 1, 0.006);
-    cueBar += 1;
-  } else {                                              // and sometimes nothing
-    cueBar += 1;
+  /* Wow: the slow drift of a tape that is not quite running true. Under
+     half a percent, always there, never the thing you notice -- it is
+     what makes the rest read as a tape fault rather than a bug. */
+  const wow = 1 + 0.004 * Math.sin(cueBar * 0.63) + 0.002 * Math.sin(cueBar * 1.7);
+
+  /* Faults are spaced rather than rolled. Pure chance clusters, and three
+     in a row stops sounding like damage and starts sounding broken --
+     which is what went wrong the first time. At least three clean bars
+     between any two, so what lands is heard as one event. */
+  const clear = cueBar - lastFault >= 4;
+  const pick = clear && rnd() < 0.45 ? rnd() : -1;
+  let slot = BAR / wow;
+
+  if (pick < 0) {                                       // as written, and most of it is
+    cuePiece(at, cueBuf, off, BAR, slot, wow);
+
+  } else if (pick < 0.30) {                             // the oxide has shed: a hole
+    const gap = 0.05 + rnd() * 0.07;                    // 50 to 120 ms
+    const when = BAR * (0.25 + rnd() * 0.4);
+    cuePiece(at, cueBuf, off, when, when, wow);
+    cuePiece(at + when + gap, cueBuf, off + when + gap, BAR - when - gap, BAR - when - gap, wow);
+    lastFault = cueBar;
+
+  } else if (pick < 0.52) {                             // a note simply missing
+    const gap = 0.018 + rnd() * 0.035;                  // under 55 ms
+    const when = BAR * (0.2 + rnd() * 0.55);
+    cuePiece(at, cueBuf, off, when, when, wow);
+    cuePiece(at + when + gap, cueBuf, off + when + gap, BAR - when - gap, BAR - when - gap, wow);
+    lastFault = cueBar;
+
+  } else if (pick < 0.72) {                             // the capstan sags and recovers
+    const sag = 0.93 + rnd() * 0.04;
+    slot = BAR / sag;
+    cuePiece(at, cueBuf, off, BAR, slot, sag);
+    lastFault = cueBar;
+
+  } else if (pick < 0.88) {                             // a quarter of it runs backwards
+    const part = BAR / 4;
+    cuePiece(at, cueBuf, off, BAR - part, BAR - part, wow);
+    const mirror = cueBuf.duration - (off + BAR);
+    cuePiece(at + BAR - part, cueRev, mirror, part, part, 1);
+    lastFault = cueBar;
+
+  } else {                                              // the head catches and repeats
+    const bit = BAR / 8;
+    cuePiece(at, cueBuf, off, BAR - bit * 2, BAR - bit * 2, wow);
+    for (let k = 0; k < 2; k++) {
+      cuePiece(at + BAR - bit * 2 + k * bit, cueBuf, off + BAR - bit * 2, bit, bit, 1, 0.005);
+    }
+    lastFault = cueBar;
   }
+
+  cueBar += 1;
 
   /* She comes through the track early and often. At one bar in eight,
      starting after the eighth, a run that ends in twenty seconds heard
      her not at all -- and most runs on this level end in twenty
      seconds. The third bar is hers by right; after that it is one in
-     four, which is about every eight seconds. */
+     four, which is about every eleven seconds. */
   if (cueBar === 3 || (cueBar > 3 && rnd() < 0.25)) stabFire(at);
 
-  return BAR;
+  return slot;
 }
 
 function cueSchedule() {

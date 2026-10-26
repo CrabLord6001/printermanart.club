@@ -2402,7 +2402,11 @@ function cueNow() {
   const list = campList();
   const here = list[Math.min(campAt, list.length - 1)];
   if (!here) return 'classics';
-  if (here.finale) return 'classics';          // hers is the same one, corrupted
+  /* Hers is the title music, corrupted. It is the piece anybody has heard
+     most by the time they reach her -- it plays on the screen the game
+     opens on -- so hearing it come apart means something, which the
+     first chapter's track would not. */
+  if (here.finale) return 'title';
   const ch = CHAPTERS[here.chapter];
   return CUE[ch ? ch.room : here.art.room] || 'classics';
 }
