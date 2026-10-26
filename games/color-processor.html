@@ -2042,14 +2042,23 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 }
 
 /* Their own time under it, quiet: the par is what the screen is for, and
-   this is how they stand against it. Gold when it came in under. */
+   this is how they stand against it. Gold when it came in under.
+
+   On its own small plate, because this line is the smallest type on the
+   card and it is standing on a painting. A shadow is enough for the big
+   gold number above it; eight point letters over a light passage of a
+   print need something behind them. */
 .campface .mine {
-  margin: 7px 0 0;
+  display: inline-block;
+  margin: 9px auto 0;
+  padding: 4px 10px 5px;
+  border: 1px solid #262C36;
+  border-radius: 999px;
+  background: rgba(10,12,17,0.82);
   font-size: 0.56rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--dim);
-  text-shadow: 0 2px 10px rgba(0,0,0,0.9);
 }
 .campface .mine b { font-weight: 700; color: var(--muted); }
 .campface .mine.under b { color: var(--accent); }
@@ -3849,10 +3858,11 @@ function buildTubes() {
 }
 
 function paintTubes() {
+  const rest = onHome();                         // nothing has been printed yet
   for (const pl of TUBE_ORDER) {
     const tube = document.getElementById('tube-' + pl);
     if (!tube) continue;
-    const done = Math.min(cleared[pl] || 0, inkPer);
+    const done = rest ? 0 : Math.min(cleared[pl] || 0, inkPer);
     const spent = done >= inkPer;
     tube.firstChild.style.height = (inkPer ? (1 - done / inkPer) * 100 : 0).toFixed(1) + '%';
     tube.classList.toggle('spent', spent);
@@ -3888,7 +3898,16 @@ function paintNext() {
 
   const dot = Math.max(10, Math.round(cellPx * 0.6));
 
-  queue.slice(0, shownNext).forEach((pc, i) => {
+  /* On the title screen the rail shows the shop's own cartridges rather
+     than whatever three pieces were queued when the last run ended. The
+     branch lives here because the rail is repainted whenever the board
+     is measured, which happens several times on the way to the title
+     screen and would put the old hand back. */
+  const list = onHome()
+    ? REST_INKS.map(([b, a]) => ({ b: b, a: a }))
+    : queue.slice(0, shownNext);
+
+  list.forEach((pc, i) => {
     const row = document.createElement('div');
     row.className = 'pair' + (i ? ' later' : '');
 
@@ -3914,6 +3933,29 @@ function paintNext() {
 
 const colorOf = (ink) => getComputedStyle(document.documentElement)
   .getPropertyValue(VARS[ink] || '--key');
+
+/* The machine at rest, which is what the title screen is standing in
+   front of. It used to hold the last run still: the readings from a
+   print somebody had already finished or lost, four tubes drawn down,
+   and whatever three pieces happened to be queued when it ended. None of
+   that is about the next print, and all of it reads as a game already
+   half played.
+
+   The six cartridges are the shop's own, not a hand: four plates and the
+   two light inks, in pairs, so the rail says what the press holds rather
+   than pretending to know what is coming. The first drop of a real print
+   replaces every bit of it. */
+const REST_INKS = [['c', 'm'], ['y', 'k'], ['lc', 'lm']];
+
+function restPress() {
+  sayPts(0);
+  sayGoal('0/4');
+  sayTime('0:00');
+  sayChain(0);
+  if (elChain) elChain.textContent = '';
+  paintNext();
+  paintTubes();
+}
 
 function pieceCells(p) {
   const [dx, dy] = ROT[p.rot];
@@ -5233,6 +5275,7 @@ function showFace(which) {
 
     paintTitle();
     whereInSeries();
+    restPress();                                 // the press between runs
     buttons();
     setMusic('title');
     return;
