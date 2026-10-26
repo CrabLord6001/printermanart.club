@@ -2270,6 +2270,15 @@ function setMusic(name) {
 const MEET = (new URLSearchParams(location.search).get('meet') || '').toLowerCase();
 let meeting = (MEET === 'asil' || MEET === 'victor') ? MEET : null;
 
+/* ?try=21 plays that level for real -- the drops, the clears, the whole
+   thing -- and records none of it. Nothing is posted to the board,
+   nothing is marked off, and the series does not move on, so a level can
+   be played twenty times over to see how it feels without any of those
+   runs becoming somebody's progress. The way to test the last print
+   without printing the other twenty first. */
+const TRY = parseInt(new URLSearchParams(location.search).get('try'), 10);
+let trying = 0;                                 // the level being tried, or 0
+
 const EMBED = new URLSearchParams(location.search).has('embed');
 if (EMBED) {
   document.documentElement.classList.add('embed');
@@ -3822,8 +3831,8 @@ function homeGo(go) {
   /* This option says where it goes, and the label under it says which
      level. Somebody who dropped back to an earlier one from the card is
      on a detour; carrying on with the series means carrying on. */
-  if (go === 'gallery')  { campOn = true; campAt = campFind(); hideFace(); newPrint('gallery'); return; }
-  if (go === 'practice') { campOn = false; hideFace(); newPrint('setup');   return; }
+  if (go === 'gallery')  { trying = 0; campOn = true; campAt = campFind(); hideFace(); newPrint('gallery'); return; }
+  if (go === 'practice') { trying = 0; campOn = false; hideFace(); newPrint('setup');   return; }
 
   rulesFrom = null;
   showFace('rules');
@@ -4984,9 +4993,10 @@ function buildGallery() {
   set('galSpec', PALETTES[s.mode].inks.length + ' inks \u00b7 ' + s.inkPer
     + ' clears to finish each color \u00b7 ' + pace + ' fall');
 
-  set('galSaved', campSaved
-    ? 'Saved to your account'
-    : 'Sign in on the arcade page to keep your place');
+  set('galSaved', trying
+    ? 'Trial run \u2014 nothing from here is saved'
+    : (campSaved ? 'Saved to your account'
+                 : 'Sign in on the arcade page to keep your place'));
 
   const dots = document.getElementById('galDots');
   if (dots) {
@@ -5377,8 +5387,10 @@ function showWin() {
   fromWin = true;
 
   document.getElementById('gameOver').hidden = true;
-  line.innerHTML = 'All ' + list.length + ' printed \u00b7 ' + FINALE.title
-                 + ' \u00b7 ' + FINALE.artist;
+  line.innerHTML = trying
+    ? 'Trial run \u00b7 ' + FINALE.title + ' \u00b7 ' + FINALE.artist
+    : 'All ' + list.length + ' printed \u00b7 ' + FINALE.title
+      + ' \u00b7 ' + FINALE.artist;
   line.hidden = false;
 
   showFace('home');
@@ -5408,6 +5420,16 @@ function record(ran) {
   /* The series moves on whether or not there is an account behind it. A
      signed-out run is a real printed level for as long as the tab is open;
      it just has nowhere to be written down. */
+  if (trying) {
+    /* A trial counts for nothing and stays where it is, so the level can
+       be played again straight away. */
+    if (board) {
+      board.textContent = 'Trial run \u00b7 not saved, and the series has not moved';
+      board.hidden = false;
+    }
+    return;
+  }
+
   if (campDone.indexOf(i + 1) === -1) campDone.push(i + 1);
   campAt = campFind();
 
@@ -5462,7 +5484,7 @@ window.CPArrived = function (p) {
      title screen and the instructions are both somewhere they chose to
      be, and an account settling in the background is no reason to move
      them off it. */
-  if (meeting) return;                          // they came for one screen
+  if (meeting || trying) return;                // they came for one screen
   if (campOn && !started && phase === 'ready' && elRules().hidden && !onHome()) newPrint('gallery');
 };
 
@@ -5900,6 +5922,7 @@ if (!soundWanted()) {
    nothing -- and nothing is written down either way, since a level only
    counts when it is printed. */
 function leaveMeeting() {
+  trying = 0;
   if (!meeting) return;
   meeting = null;
   campOn = false;
@@ -5932,10 +5955,23 @@ function openMeeting() {
   showFace(meeting === 'asil' ? 'boss' : 'victor');
 }
 
+function openTrial() {
+  const list = campList();
+  const n = Math.min(Math.max(1, TRY), list.length);
+  trying = n;
+  campOn = true;
+  campAt = n - 1;
+  if (n === 1) { vicSeen = false; vicSpoken = false; }
+  if (n === list.length) { bossSeen = false; bossSpoken = false; }
+  hideFace();
+  newPrint('gallery');
+}
+
 /* Built behind the title screen, so the first thing anyone sees is the
    name of the game rather than a board they have not asked for yet. */
 newPrint('home');
 if (meeting) openMeeting();
+else if (TRY > 0) openTrial();
 </script>
 
 <!-- The arcade's sign-in and its score table, reached from the game's own
