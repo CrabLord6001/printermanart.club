@@ -416,6 +416,16 @@ html.embed .title { display: none; }
   gap: 3px;
 }
 
+/* A finished print still has the inks that did not clear sitting on top
+   of it, and on a late level that can be half the picture. They are what
+   the painting was made out of, so they do not vanish -- they come off
+   the page over about a second and leave it. */
+.grid.lifted {
+  opacity: 0;
+  transition: opacity 0.9s ease-out;
+  pointer-events: none;
+}
+
 .cell {
   border-radius: 50%;
   background: transparent;
@@ -5801,7 +5811,16 @@ function finish(won) {
   sayMusic('stopMusic');
   setMusic(null);                                // out of the way of the sting
   sayMusic(won ? 'done' : 'jam');
-  if (won) finishPrint();
+  if (won) {
+    finishPrint();
+    /* The print is underneath the ink that never cleared, and how much
+       of it is covered depends entirely on how the run went -- a late
+       level can finish with half the picture behind drops. The board
+       lifts off over about a second so the painting is arrived at rather
+       than glimpsed around. A jam keeps its board: there is no finished
+       print under it to show. */
+    if (elGrid) elGrid.classList.add('lifted');
+  }
 
   const ran = Date.now() - startedAt;            // read once, used twice
   const down = platesDown();
@@ -6028,6 +6047,7 @@ function newPrint(face) {
   well = new Array(COLS * ROWS).fill(null);
   points = 0; bestChain = 0; over = false; busy = false;
   queue = []; piece = null;
+  if (elGrid) elGrid.classList.remove('lifted');   // the board comes back for the next one
   fillQueue();
 
   buildGrid();
