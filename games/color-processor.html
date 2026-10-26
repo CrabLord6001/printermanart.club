@@ -2262,6 +2262,14 @@ function setMusic(name) {
 /* Inside the window on the lander the page needs neither its own title nor
    its own way home: the window has an X. It does need to keep clear of the
    buttons floating over its top right corner. */
+/* ?meet=victor or ?meet=asil opens that screen and nothing else: a way
+   to show somebody the two characters without printing twenty levels
+   first. It is a viewing, not a way in -- the button underneath goes to
+   the menu rather than into the level, so nobody can reach the last
+   print through a link and mark it off. */
+const MEET = (new URLSearchParams(location.search).get('meet') || '').toLowerCase();
+let meeting = (MEET === 'asil' || MEET === 'victor') ? MEET : null;
+
 const EMBED = new URLSearchParams(location.search).has('embed');
 if (EMBED) {
   document.documentElement.classList.add('embed');
@@ -4208,6 +4216,7 @@ function victorTick() {
 function victorSpeak() {
   const hear = document.getElementById('vicHear');
   const on = !!(music && music.isOn());
+  const showIt = () => { if (VIC.audio) hearShow('vicHear'); else if (hear) hear.hidden = true; };
   if (!VIC.audio) {
     const a = new Audio();
     a.preload = 'auto';
@@ -4217,7 +4226,7 @@ function victorSpeak() {
     a.addEventListener('error', () => { VIC.audio = null; if (hear) hear.hidden = true; });
     VIC.audio = a;
   }
-  if (hear) hear.hidden = on;
+  showIt();
   if (!on) return;
   try {
     VIC.audio.currentTime = 0;
@@ -4238,8 +4247,7 @@ async function victorStart(silent) {
   VIC.line = -1;
   if (silent) {                                 // he has already said it
     victorShow(VIC_SAYS.length - 1);
-    const hear = document.getElementById('vicHear');
-    if (hear && VIC.audio) hear.hidden = !!(music && music.isOn());
+    if (VIC.audio) hearShow('vicHear');
     return;
   }
   vicSpoken = true;
@@ -4558,6 +4566,18 @@ function warpMouth(ctx, source, w, h, open, A) {
   ctx.restore();
 }
 
+/* What the offer under their name says. The sound is on by default and
+   waiting for a touch, so most of the time it is not off -- it has
+   simply not been allowed to start yet, and saying "sound off" there
+   reads as a contradiction of the speaker lit up in the rail. */
+function hearShow(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const live = !!(music && music.isOn());
+  el.hidden = live;
+  if (!live) el.textContent = soundWanted() ? 'Tap for sound' : 'Sound off';
+}
+
 /* ---- her, running ------------------------------------------------
    Three canvases: the painting corrupted once and kept (base), the one
    the mouth is drawn into each frame (stage), and the one on screen,
@@ -4655,9 +4675,8 @@ function asilTick() {
 }
 
 function asilSpeak() {
-  const hear = document.getElementById('bossHear');
   const on = !!(music && music.isOn());
-  if (hear) hear.hidden = on;
+  hearShow('bossHear');
   if (!on) return;                              // the mouth still runs; the room is quiet
   try {
     if (!ASIL.audio) {
@@ -4686,9 +4705,7 @@ async function asilStart(silent) {
   if (silent) {                                 // straight to the end of it
     ASIL.t0 = performance.now() - asilRuns() - 500;
     asilDraw(performance.now() - ASIL.t0);
-    /* The offer stands: taking it plays her from the top, with sound. */
-    const hear = document.getElementById('bossHear');
-    if (hear) hear.hidden = !!(music && music.isOn());
+    hearShow('bossHear');                       // the offer stands
     return;
   }
   bossSpoken = true;
@@ -5348,6 +5365,7 @@ window.CPArrived = function (p) {
      title screen and the instructions are both somewhere they chose to
      be, and an account settling in the background is no reason to move
      them off it. */
+  if (meeting) return;                          // they came for one screen
   if (campOn && !started && phase === 'ready' && elRules().hidden && !onHome()) newPrint('gallery');
 };
 
@@ -5518,15 +5536,12 @@ async function setSound(next) {
 /* Quiet, but still speaking. The mouth and the captions run off their own
    clock, so losing the voice must not stop the screen. */
 function victorHush() {
-  if (VIC.audio) { try { VIC.audio.pause(); } catch (e) {} }
-  const h = document.getElementById('vicHear');
-  if (h && VIC.audio) h.hidden = false;
+  if (VIC.audio) { try { VIC.audio.pause(); } catch (e) {} hearShow('vicHear'); }
 }
 
 function asilHush() {
   if (ASIL.audio) { try { ASIL.audio.pause(); } catch (e) {} }
-  const h = document.getElementById('bossHear');
-  if (h) h.hidden = false;
+  hearShow('bossHear');
 }
 
 /* The right-hand button: start the first print, or start the next one. */
@@ -5576,7 +5591,8 @@ document.getElementById('galDots').addEventListener('click', (e) => {
 document.getElementById('vicMenu').addEventListener('click', (e) => {
   const b = e.target.closest('[data-vic]');
   if (!b) return;
-  if (b.dataset.vic === 'begin') { begin(); return; }
+  if (b.dataset.vic === 'begin' && !meeting) { begin(); return; }
+  leaveMeeting();
   showFace('home');
 });
 
@@ -5587,7 +5603,8 @@ document.getElementById('vicHear').addEventListener('click', () => setSound(true
 document.getElementById('bossMenu').addEventListener('click', (e) => {
   const b = e.target.closest('[data-boss]');
   if (!b) return;
-  if (b.dataset.boss === 'begin') { begin(); return; }
+  if (b.dataset.boss === 'begin' && !meeting) { begin(); return; }
+  leaveMeeting();
   showFace('home');
 });
 
@@ -5780,9 +5797,47 @@ if (!soundWanted()) {
   document.addEventListener('touchstart', go, true);
 })();
 
+/* Somebody who followed a ?meet link is here for one screen. The series
+   is put back where it was on the way out, so the visit costs them
+   nothing -- and nothing is written down either way, since a level only
+   counts when it is printed. */
+function leaveMeeting() {
+  if (!meeting) return;
+  meeting = null;
+  campOn = false;
+  campAt = campFind();
+  const row = document.getElementById('bossMenu');
+  const row2 = document.getElementById('vicMenu');
+  for (const r of [row, row2]) {
+    const hot = r && r.querySelector('.mi.hot');
+    if (hot) hot.textContent = 'Begin';
+    const cold = r && r.querySelector('.mi:not(.hot)');
+    if (cold) cold.hidden = false;
+  }
+}
+
+function openMeeting() {
+  const list = campList();
+  campOn = true;
+  campAt = meeting === 'asil' ? list.length - 1 : 0;
+  if (meeting === 'asil') { bossSeen = false; bossSpoken = false; }
+  else { vicSeen = false; vicSpoken = false; }
+
+  /* One button, and it says where it goes. Two would read as a choice
+     between watching and playing, and playing is not on offer here. */
+  const row = document.getElementById(meeting === 'asil' ? 'bossMenu' : 'vicMenu');
+  const hot = row.querySelector('.mi.hot');
+  const cold = row.querySelector('.mi:not(.hot)');
+  if (hot) hot.textContent = 'Menu';
+  if (cold) cold.hidden = true;
+
+  showFace(meeting === 'asil' ? 'boss' : 'victor');
+}
+
 /* Built behind the title screen, so the first thing anyone sees is the
    name of the game rather than a board they have not asked for yet. */
 newPrint('home');
+if (meeting) openMeeting();
 </script>
 
 <!-- The arcade's sign-in and its score table, reached from the game's own
