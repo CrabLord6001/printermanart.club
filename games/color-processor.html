@@ -600,6 +600,26 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
      step down in size and tracking keeps three labels across it. */
   .deck { gap: 4px; }
   button.go { font-size: 0.56rem; letter-spacing: 0.05em; padding: 9px 4px 10px; }
+
+  /* The rail's own height is the thing that decides how big the board is
+     allowed to be on a phone: it stands beside the board, and whatever
+     of it hangs below runs the page past the bottom of the screen, which
+     the board then pays for in cells. So on a phone it is packed. The
+     boxes sit closer, the dial loses the word under it -- a bar chart on
+     a round button is not a mystery -- and the sign in block gives up its
+     padding. Every pixel saved here is one the board keeps. */
+  .side { gap: 6px; }
+  .rankbtn { margin-top: 6px; gap: 2px; }
+  .rankdial { width: 32px; height: 32px; }
+  .rankbtn .lbl { display: none; }
+  .signin { padding: 6px 0; }
+  .me { padding: 4px 2px; gap: 2px; }
+
+  /* The list is the whole panel on a phone, so the panel keeps less for
+     itself: the heading sits closer and the frame around it is thinner.
+     Six rooms have to land inside the board, not past the bottom of it. */
+  .over.lvface { padding: 8px; }
+  .over.lvface h2 { font-size: 0.9rem; margin-bottom: 8px; }
 }
 
 .nextbox {
@@ -685,7 +705,7 @@ body.reading .hint { visibility: hidden; }
 
 .tubes .tube {
   width: 10px;
-  height: 132px;
+  height: var(--tubeH, 132px);
   border-radius: 4px;
   background: #141821;
   box-shadow: inset 0 0 0 1px #242A35;
@@ -1861,15 +1881,15 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   flex-direction: column;
   justify-content: space-between;
   flex: 1 1 auto;
-  gap: 12px;
+  gap: clamp(6px, 1.1vh, 12px);
   width: 100%;
-  padding: 6px 0 2px;
+  padding: 4px 0 2px;
 
   /* Every chip is the same size, and the size is the board's: five across
      is the widest a room gets, so one chip is a fifth of the width. A
      three level room is three of those, centered, rather than three fat
      ones -- the rooms are different lengths, not different weights. */
-  --lvgap: 8px;
+  --lvgap: clamp(5px, 1vh, 8px);
   --lvw: calc((100% - 4 * var(--lvgap)) / 5);
 }
 
@@ -1894,9 +1914,12 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   gap: var(--lvgap);
 }
 
+/* The height comes off the window, because the list has to fit the well
+   it is given. Six rooms at a fixed height ran past the bottom of a phone
+   board and left the page scrolling inside the frame. */
 .levelsface .lv {
   box-sizing: border-box;
-  padding: 14px 0;
+  padding: clamp(6px, 1.1vh, 14px) 0;
   border: 1px solid #2B3141;
   border-radius: 5px;
   background: rgba(16,18,24,0.9);
@@ -1907,7 +1930,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   cursor: pointer;
 }
 
-.levelsface .lv b { font-size: 1.2rem; font-weight: 700; color: var(--text); }
+.levelsface .lv b { font-size: clamp(0.9rem, 2vh, 1.2rem); font-weight: 700; color: var(--text); }
 
 /* Printed carries a gold rule under the number -- inset, so marking one
    never moves the row. */
@@ -3597,6 +3620,30 @@ function buildGrid() {
 /* Cells are square and the whole rig has to fit the screen without
    scrolling, so the size is worked out from whichever runs out first,
    the width or the height. */
+/* The rail is a column of boxes with fixed heights and the board is sized
+   by the window, so on a short screen the rail ends up taller than the
+   thing it stands beside. What sticks out below is dead space under the
+   board, and it makes the page scroll -- which then costs the board
+   cells, which makes the rail stick out further.
+
+   The tubes give it back. They are a scale rather than a measurement, so
+   a shorter one says the same thing. The next pieces need no help: they
+   are already drawn off the cell size, so they shrink with the board.
+   Forty four is the floor -- below that four tubes side by side stop
+   reading as levels and start reading as four marks. */
+const TUBE_H = 132;
+function fitRail() {
+  const side = document.querySelector('.side');
+  const stack = document.querySelector('.stack');
+  if (!side || !stack) return;
+
+  document.documentElement.style.setProperty('--tubeH', TUBE_H + 'px');
+  const over = side.offsetHeight - stack.offsetHeight;
+  if (over <= 0) return;
+
+  document.documentElement.style.setProperty('--tubeH', Math.max(44, TUBE_H - over) + 'px');
+}
+
 function sizeBoard() {
   // Measure what the rest of the page is actually taking rather than
   // guessing at it, then give the well the remainder.
@@ -3658,6 +3705,12 @@ function sizeBoard() {
     shownNext = Math.max(1, Math.min(QUEUE_LEN, Math.floor(room / (pairH + 9))));
 
     paintNext();
+
+    /* The rail is measured against the board every time the board moves.
+       Done once up front, the gap under it reopened on the next pass and
+       the loop below read a page that would not shrink however many cells
+       it gave back. */
+    fitRail();
   };
 
   lay(cell);
@@ -3699,6 +3752,7 @@ function sizeBoard() {
      board that scrolls is worse than a big one that scrolls. A few pixels
      over counts as fitting; that is rounding, not a scrollbar. */
   if (cell < began && tall() > 8) { cell = began; lay(cell); }
+
 
   /* Where the casing ended up, and how wide. The readout above it and the
      deck below it are both bolted to those two numbers, so each is the
