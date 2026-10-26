@@ -3626,7 +3626,12 @@ function levelSetup(i, n) {
 /* The campaign, or practice. Practice never posts and never touches where
    you are in the series. */
 let campOn = true;
-let campDone = [];                              // artwork ids already printed
+/* Which levels are behind them, by number rather than by painting. It
+   was the painting's id until the paintings were allowed to rotate
+   through a slot -- at which point clearing level three twice, with two
+   different pictures in it, counted as two levels cleared. The level is
+   what the series is made of; the painting is what is in it this week. */
+let campDone = [];                              // level numbers already printed
 let campAt = 0;                                 // the level up next
 let campSaved = false;                          // is there an account behind it
 
@@ -3635,7 +3640,7 @@ function campList() { return gallery(); }
 function campFind() {
   const list = campList();
   for (let i = 0; i < list.length; i++) {
-    if (campDone.indexOf(list[i].art.id) === -1) return i;
+    if (campDone.indexOf(i + 1) === -1) return i;
   }
   return list.length - 1;                       // the whole gallery is printed
 }
@@ -3705,7 +3710,7 @@ function buildGallery() {
     dots.innerHTML = '';
     for (let d = 0; d < list.length; d++) {
       const el = document.createElement('span');
-      el.className = 'dot' + (campDone.indexOf(list[d].art.id) !== -1 ? ' done' : (d === i ? ' now' : ''));
+      el.className = 'dot' + (campDone.indexOf(d + 1) !== -1 ? ' done' : (d === i ? ' now' : ''));
       dots.appendChild(el);
     }
   }
@@ -4062,7 +4067,7 @@ function record(ran) {
   /* The series moves on whether or not there is an account behind it. A
      signed-out run is a real printed level for as long as the tab is open;
      it just has nowhere to be written down. */
-  if (was && campDone.indexOf(was.id) === -1) campDone.push(was.id);
+  if (campDone.indexOf(i + 1) === -1) campDone.push(i + 1);
   campAt = campFind();
 
   if (!board) return;
@@ -4433,10 +4438,12 @@ newPrint('home');
 
       if (error || !data) return null;
 
+      /* By level, not by painting. A slot can hold a different work from
+         one week to the next, and what the player cleared is the slot. */
       const done = [];
       for (const row of data) {
-        const id = row.detail && row.detail.art;
-        if (id && done.indexOf(id) === -1) done.push(id);
+        const lv = row.detail && Number(row.detail.level);
+        if (lv > 0 && done.indexOf(lv) === -1) done.push(lv);
       }
       return { done };
     },
