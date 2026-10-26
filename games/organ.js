@@ -166,6 +166,18 @@ function schedule() {
 
 const CUE_DIR = '/games/music/';
 const CUE_XF = 0.14;                // the overlap between laps
+
+/* The two halves of the crossfade, built once. Sine up and cosine down:
+   their squares sum to one at every point, so the power through the join
+   stays level even though the two sides are unrelated music. */
+const XF_STEPS = 65;
+const XF_UP = new Float32Array(XF_STEPS);
+const XF_DOWN = new Float32Array(XF_STEPS);
+for (let i = 0; i < XF_STEPS; i++) {
+  const t = (i / (XF_STEPS - 1)) * (Math.PI / 2);
+  XF_UP[i] = Math.max(0.0001, Math.sin(t));
+  XF_DOWN[i] = Math.max(0.0001, Math.cos(t));
+}
 const CUE_LOOK = 0.9;               // how far ahead laps are written
 const CUE_LEVEL = 0.52;             // the soundtrack sits under the effects
 
@@ -219,10 +231,16 @@ function cueLap(at) {
 
   const g = ctx.createGain();
   const dur = cueBuf.duration / (cueRate || 1);
+  /* Equal power, not a straight line. A lap meets itself at the seam, and
+     the two ends are different music -- so their levels do not add, they
+     add in power. Two straight ramps crossing at a half each leave a
+     noticeable dip in the middle of the join; sine and cosine cross at
+     about .71 and hold the power flat. Worth up to 3 dB at every loop in
+     the game, which is the difference between a lap and an audible seam. */
   g.gain.setValueAtTime(0.0001, at);
-  g.gain.linearRampToValueAtTime(1, at + CUE_XF);
-  g.gain.setValueAtTime(1, at + dur - CUE_XF);
-  g.gain.linearRampToValueAtTime(0.0001, at + dur);
+  g.gain.setValueCurveAtTime(XF_UP, at, CUE_XF);
+  g.gain.setValueAtTime(1, at + CUE_XF);
+  g.gain.setValueCurveAtTime(XF_DOWN, at + dur - CUE_XF, CUE_XF);
 
   src.connect(g);
   g.connect(cueFx || cueBus);
