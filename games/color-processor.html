@@ -1354,6 +1354,76 @@ button.go:not(.ghost):hover {
   .signin svg { width: 16px; height: 12px; }
 }
 
+/* Signed in. Quiet on purpose: the loud color belongs to the thing you
+   want somebody to press, and once they are in there is nothing here to
+   press except the way back out. */
+.me {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  padding: 6px 2px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #13161D;
+}
+
+.me[hidden] { display: none; }
+
+.me-face {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #0C0E13 50% / cover no-repeat;
+  box-shadow: inset 0 0 0 1px var(--border);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* Their name, cut off rather than wrapped: the rail is as wide as it is,
+   and a second line here is a cell off the board. */
+.me-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.48rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* Red at the moment of pressing and not before. Signing out is not a
+   mistake and not destructive -- you can sign straight back in -- so the
+   warning shows up under the thumb rather than sitting in the corner of
+   the machine all game. */
+.me-out {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.44rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  cursor: pointer;
+}
+
+.me-out:hover, .me-out:focus-visible { color: #E8394F; outline: none; }
+.me-out:active { transform: translateY(1px); }
+.me-out:disabled { opacity: 0.6; cursor: default; }
+
+/* The name goes on the narrow rail the way the word goes off the blue
+   button. The picture says who, and Sign out still says what. */
+@media (max-width: 560px) {
+  .me-name { display: none; }
+}
+
 /* What the three of them add up to, falling. Built from the same drops the
    board uses, so the edge and the screen angles come with them. */
 .peek {
@@ -2595,6 +2665,15 @@ nav.menu {
         </svg>
         <span>Sign in</span>
       </button>
+      <!-- And the other half: once somebody is in, the loud blue has done
+           its job and the slot says who the run is being saved for. The
+           same dark cartridge as the sound buttons and the rankings dial,
+           because this is now a reading rather than a thing to press. -->
+      <div class="me" id="meBox" hidden>
+        <span class="me-face" id="meFace"></span>
+        <span class="me-name" id="meName"></span>
+        <button class="me-out" id="signOut" type="button">Sign out</button>
+      </div>
       <div class="switches">
       <button class="snd" id="snd" type="button" aria-pressed="true" aria-label="Turn sound off">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -6670,11 +6749,45 @@ function record(ran) {
       return;
     }
     const st = r.standing;
-    board.innerHTML = campDone.length + ' of ' + list.length + ' printed'
+    /* How many they have printed, not how many there are. The length of
+       the gallery is still something you find out by printing it. */
+    board.innerHTML = campDone.length + ' printed'
       + (st ? ' \u00b7 <b>' + clockSecs(st.total_seconds) + '</b> total'
             + ' \u00b7 <b>' + ordinal(st.place) + '</b> on the board' : '');
   }).catch(() => { board.textContent = 'That run did not save.'; });
 }
+
+/* Who is signed in, said on the rail. The bridge calls this with the
+   member or with null, now and whenever it changes.
+
+   Their Discord picture, or the first letter of the name when they have
+   none -- the same fallback the leaderboard uses, so one account looks
+   like itself in both places. The picture is a background image rather
+   than an img, so a broken or blocked one leaves the letter standing
+   instead of a torn page icon. */
+window.CPMember = function (m) {
+  const inBtn = document.getElementById('signIn');
+  const meBox = document.getElementById('meBox');
+  if (inBtn) { inBtn.hidden = !!m; inBtn.disabled = false; }
+  if (!meBox) return;
+  meBox.hidden = !m;
+  if (!m) return;
+
+  const name = String(m.displayName || '').trim();
+  /* The picture goes into a CSS url(), so anything that could close the
+     quote or the bracket disqualifies it and the letter stands in. */
+  const raw = String(m.avatarUrl || '');
+  const pic = /^https:\/\/[^"'()\s\\]+$/.test(raw) ? raw : '';
+
+  const face = document.getElementById('meFace');
+  const label = document.getElementById('meName');
+  if (label) label.textContent = name;
+  if (face) {
+    face.textContent = pic ? '' : (name.charAt(0) || '?');
+    face.style.backgroundImage = pic ? 'url("' + pic + '")' : '';
+  }
+  meBox.title = 'Signed in as ' + name;
+};
 
 /* The account arriving, which is the moment the series learns where it is.
    Called by the bridge once the session has settled, and again if it
@@ -7175,7 +7288,7 @@ else if (TRY > 0) openTrial();
      script through one small bridge. Same origin as the arcade page, so
      anyone signed in there is already signed in here. -->
 <script type="module">
-  import { db, onMember, signIn, postScore, campaignBoard, campaignMe } from '/games/club-auth.js';
+  import { db, onMember, signIn, signOut, postScore, campaignBoard, campaignMe } from '/games/club-auth.js';
 
   const GAME = 'color-processor';
   let member = null;
@@ -7187,6 +7300,14 @@ else if (TRY > 0) openTrial();
     inBtn.disabled = true;
     try { await signIn(); }
     catch (err) { inBtn.disabled = false; }
+  });
+
+  const outBtn = document.getElementById('signOut');
+  if (outBtn) outBtn.addEventListener('click', async () => {
+    outBtn.disabled = true;
+    try { await signOut(); }
+    catch (err) { /* the session callback puts the rail back either way */ }
+    outBtn.disabled = false;
   });
 
   window.CPBoard = {
@@ -7244,7 +7365,7 @@ else if (TRY > 0) openTrial();
 
   onMember(async (m) => {
     member = m;
-    if (inBtn) { inBtn.hidden = !!m; inBtn.disabled = false; }
+    if (window.CPMember) window.CPMember(m);
     let p = null;
     try { p = m ? await window.CPBoard.progress() : null; } catch (e) { p = null; }
     if (window.CPArrived) window.CPArrived(p);
