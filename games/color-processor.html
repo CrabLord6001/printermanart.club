@@ -1933,16 +1933,39 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 .levelsface .lv b { font-size: clamp(0.9rem, 2vh, 1.2rem); font-weight: 700; color: var(--text); }
 
-/* Printed carries a gold rule under the number -- inset, so marking one
-   never moves the row. */
+/* Three things a chip can say, and they stack, because they are three
+   different facts: printed, beaten and standing on. All of them are
+   inset, so marking a chip never moves the row.
+
+   Printed carries a gold rule under the number. */
 .levelsface .lv.done {
   border-color: #3A4152;
   background: rgba(26,30,39,0.95);
   box-shadow: inset 0 -2px 0 var(--accent);
 }
-.levelsface .lv.here { border-color: var(--accent); box-shadow: 0 0 14px rgba(212,162,76,0.25); }
-.levelsface .lv.here b { color: var(--accent); }
-.levelsface .lv.done.here { box-shadow: inset 0 -2px 0 var(--accent), 0 0 14px rgba(212,162,76,0.25); }
+
+/* Beaten the par time carries a gold ring. It reads across the whole
+   board at a glance, which is the point -- nothing else on the page
+   tells somebody which levels they were fast on. */
+.levelsface .lv.par {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.levelsface .lv.done.par { box-shadow: inset 0 0 0 1px var(--accent), inset 0 -3px 0 var(--accent); }
+
+/* The level they are on is the one chip faced in gold, the way the
+   button that starts it is. The ring could not also be this: a mark
+   everything eventually carries cannot be the mark for where you are. */
+.levelsface .lv.here {
+  border-color: var(--accent);
+  background: linear-gradient(168deg, #F6CE85 0%, #CE9C41 58%, #DEAC54 100%);
+  box-shadow: 0 0 14px rgba(212,162,76,0.25);
+}
+.levelsface .lv.here b { color: #171308; }
+
+/* Standing on one they already beat: the ring again, cut into the gold
+   rather than drawn on it. */
+.levelsface .lv.here.par { box-shadow: inset 0 0 0 2px rgba(23,19,8,0.5), 0 0 14px rgba(212,162,76,0.25); }
 
 /* Not been reached. It is shown rather than hidden, because a row with a
    gap in it says more than a row that is simply shorter. */
@@ -3118,6 +3141,15 @@ function keepBest(lv, ms) {
   bests[lv] = ms;
   try { localStorage.setItem('cp-best', JSON.stringify(bests)); } catch (e) {}
 }
+
+/* Beat the par time on that level. The browser remembers the times it
+   saw itself and the account remembers all of them, so this answers for
+   a signed out player on the machine they played on, and for a signed in
+   one wherever they are. */
+const beatPar = (lv) => {
+  const best = bestOf(lv), par = parOf(lv);
+  return !!(best && par && best <= par * 1000);
+};
 
 const PLATES = ['k', 'c', 'm', 'y'];
 
@@ -4976,7 +5008,7 @@ function buildLevels() {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'lv' + (done ? ' done' : '') + (i === campAt ? ' here' : '')
-                  + (open ? '' : ' shut');
+                  + (open ? '' : ' shut') + (beatPar(lv) ? ' par' : '');
       b.innerHTML = '<b>' + lv + '</b>';
       if (open) {
         b.dataset.level = String(lv);
@@ -6864,6 +6896,13 @@ window.CPArrived = function (p) {
   campSaved = !!p;
   campDone = (p && p.done) ? p.done.slice() : [];
 
+  /* Their times come back with their levels. Merged rather than replaced:
+     a run printed signed out on this machine still counts, and the faster
+     of the two is the one that stands. */
+  if (p && p.best) {
+    for (const lv in p.best) keepBest(lv, Number(p.best[lv]) * 1000);
+  }
+
   /* Somebody on a trial or a visit chose the level they are standing on.
      Their own progress arriving a second later is not a reason to move
      them off it -- and it did: ?try=21 was quietly rewritten to level
@@ -7405,7 +7444,7 @@ else if (TRY > 0) openTrial();
 
       const { data, error } = await db
         .from('club_scores')
-        .select('detail')
+        .select('detail, score')
         .eq('user_id', member.id)
         .eq('game', GAME)
         .eq('variant', 'campaign');
@@ -7413,13 +7452,23 @@ else if (TRY > 0) openTrial();
       if (error || !data) return null;
 
       /* By level, not by painting. A slot can hold a different work from
-         one week to the next, and what the player cleared is the slot. */
+         one week to the next, and what the player cleared is the slot.
+
+         Their best time on each one comes back with it. Every run is a
+         row here already, so this is the same read it always was with
+         one more column asked for -- and it is the account that holds
+         it, which is the only way a time printed on a laptop is still
+         there on a phone. */
       const done = [];
+      const best = {};
       for (const row of data) {
         const lv = row.detail && Number(row.detail.level);
-        if (lv > 0 && done.indexOf(lv) === -1) done.push(lv);
+        if (!(lv > 0)) continue;
+        if (done.indexOf(lv) === -1) done.push(lv);
+        const secs = Number(row.score);
+        if (secs > 0 && (!best[lv] || secs < best[lv])) best[lv] = secs;
       }
-      return { done };
+      return { done, best };
     },
 
     /* The board is public: a visitor who has never signed in can still
