@@ -1202,7 +1202,11 @@ body .peek .cell { position: absolute; }
   .peek .cell { animation: none !important; }
 }
 
-.over.menu { justify-content: flex-start; }
+/* Capped at a column's width, which left it sitting against the left
+   edge of the well. Nothing showed it while the panel's own scrim
+   covered everything behind it; with the painting back there the whole
+   screen reads as hung crooked. */
+.over.menu { justify-content: flex-start; margin-left: auto; margin-right: auto; }
 .over.menu .rules { margin-left: auto; margin-right: auto; }
 
 .over.menu .over-in {
@@ -1584,6 +1588,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   border-radius: 3px;
   box-shadow: 0 0 0 4px #15181F, 0 0 0 5px #39404E, 0 10px 26px rgba(0,0,0,0.55);
 }
+
 
 /* The painting behind the card, pressed and then drained of its color.
    Gray rather than the black plate alone: the key plate of a pale
@@ -2001,12 +2006,23 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 .rules.setupface[hidden],
 .rules.homeface[hidden] { display: none; }
 
+/* The chapter is the heading now. "The Gallery" sat above it saying the
+   same thing in different words, so the room gets the size instead. */
 .campface .chap {
   margin: 0;
-  font-size: 0.6rem; font-weight: 700;
-  letter-spacing: 0.22em; text-transform: uppercase;
-  color: var(--dim);
+  /* Sized so the longest of them -- "Chapter six . Non-Western" -- stays
+     on one line in the column it is given. Two lines put the separator at
+     the head of the second, which reads as a mistake. */
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-shadow: 0 2px 14px rgba(0,0,0,0.95);
 }
+
+/* The size above is a ceiling. What it actually gets is worked out
+   against the column it lands in -- see fitChapter. */
 
 .campface .lvl { margin: 0; font-size: 2.4rem; font-weight: 700; line-height: 1; color: var(--text); }
 
@@ -4387,10 +4403,11 @@ function showFace(which) {
     elRules().hidden = false;
     document.getElementById('overTitle').hidden = true;
   } else if (which === 'gallery') {
+    /* No heading. The chapter carries the screen now, printed large, and
+       "The Gallery" above it was a second name for the same place. */
     elOver.classList.add('menu');
     elGallery().hidden = false;
-    document.getElementById('overTitle').hidden = false;
-    document.getElementById('overTitle').textContent = 'The Gallery';
+    document.getElementById('overTitle').hidden = true;
   } else {
     elOver.classList.add('menu');
     elSetup().hidden = false;
@@ -4412,9 +4429,15 @@ function showFace(which) {
   else if (which === 'gallery') buildGallery();
   else { buildModes(); buildPeek(); }
 
-  /* The card for a level plays that level's music, so the change lands
-     before the board does rather than on the first drop. */
-  if (which === 'gallery' || which === 'setup') setMusic(cueNow());
+  /* The card used to start the level's own music, so that the change
+     landed before the board did. But the card is a menu -- it waits for
+     somebody to press Play -- and a whole chapter's track running under a
+     screen that is not the level spends the opening of it before the
+     level it belongs to has begun. The track starts with the board.
+
+     Practice keeps its cue: its card is a chooser people sit on. */
+  if (which === 'setup') setMusic(cueNow());
+  else if (which === 'gallery') setMusic(null);
 
   buttons();
 }
@@ -5318,7 +5341,7 @@ function buildGallery() {
   /* Nothing above the card. "The Gallery" is the name of the twenty that
      led here; the last one announces itself. */
   const ttl = document.getElementById('overTitle');
-  if (ttl && onGallery()) ttl.hidden = !!here.finale;
+  if (ttl && onGallery()) ttl.hidden = true;
   show('galChap', !here.finale);
   show('galTitleWrap', !here.finale);
   show('galDots', !here.finale);
@@ -5346,6 +5369,7 @@ function buildGallery() {
     parEl.hidden = !par;
   }
 
+  fitChapter();
   paintGalleryArt(here);
 
   set('galSaved', trying
@@ -5697,6 +5721,24 @@ function stamp(ms) {
    Cached against the painting and the size it was drawn at, because this
    runs on every repaint of the card and the screen does not usually
    change between them. */
+/* The chapter is the heading, and it has to hold one line. How wide the
+   column is depends on the board, which depends on the screen, and the
+   longest of the six -- "Chapter six . Non-Western" -- is nearly twice
+   the shortest. A breakpoint guessed at two of those and missed on the
+   others, so the type is stepped down until it fits instead. */
+function fitChapter() {
+  const el = document.getElementById('galChap');
+  if (!el || el.hidden || !el.textContent) return;
+  el.style.fontSize = '';                                  // back to the ceiling
+  const line = () => parseFloat(getComputedStyle(el).lineHeight) || 1;
+  const rows = () => Math.round(el.getBoundingClientRect().height / line());
+  let px = parseFloat(getComputedStyle(el).fontSize) || 17;
+  for (let i = 0; i < 14 && rows() > 1 && px > 9; i++) {
+    px -= 0.7;
+    el.style.fontSize = px.toFixed(1) + 'px';
+  }
+}
+
 let galArtKey = '';
 
 function clearGalleryArt() {
