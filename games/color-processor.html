@@ -109,6 +109,41 @@ html.embed .head {
 html.embed .snd { margin-left: 4px; }
 html.embed .title { display: none; }
 
+/* The rail back to the club, on the game's own page only. Thin, one row,
+   and it never wraps: the links go before the name does, because getting
+   out is the part that has to survive a narrow screen. */
+.sitebar {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  margin: -8px -10px 6px;
+  padding: 7px max(10px, env(safe-area-inset-right)) 7px max(10px, env(safe-area-inset-left));
+  width: calc(100% + 20px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #0C0E13;
+  border-bottom: 1px solid #1B1F29;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sitebar a { color: var(--dim); text-decoration: none; }
+.sitebar a:hover { color: var(--accent); }
+.sb-home { color: var(--muted) !important; font-weight: 600; }
+.sb-home:hover { color: var(--accent) !important; }
+.sb-nav { display: flex; gap: 14px; overflow: hidden; }
+
+/* Under about a phone and a half the club's other pages come off and the
+   way home stays. Somebody on a 320 wide screen is not browsing. */
+@media (max-width: 560px) {
+  .sb-nav { display: none; }
+  .sitebar { font-size: 0.58rem; }
+}
+
 .head {
   width: 100%;
   max-width: 430px;
@@ -1552,10 +1587,12 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* The painting behind the card, pressed and then drained of its color.
    Gray rather than the black plate alone: the key plate of a pale
-   painting is nearly empty, and what is wanted here is the picture. */
-.campface .galart {
+   painting is nearly empty, and what is wanted here is the picture.
+   It covers the panel, which is the whole well. */
+.well > .galart {
   position: absolute;
   inset: 0;
+  z-index: 2;
   width: 100%; height: 100%;
   z-index: 0;
   display: block;
@@ -1567,18 +1604,21 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 /* Dark at both ends and clear across the middle, so the small type at the
    top and the bottom has something to sit on without the picture being
    dimmed where it is actually being looked at. */
-.campface .galveil {
+.well > .galveil {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 2;
   pointer-events: none;
   background: linear-gradient(to bottom,
     rgba(10,12,17,0.94) 0%, rgba(10,12,17,0.80) 10%, rgba(10,12,17,0.22) 26%,
     rgba(10,12,17,0.18) 68%, rgba(10,12,17,0.72) 88%, rgba(10,12,17,0.95) 100%);
 }
 
-.rules.campface { position: relative; }
-.campface > *:not(.galart):not(.galveil) { position: relative; z-index: 1; }
+/* The panel's own scrim would sit on top of the sheet and grey it out, so
+   while the sheet is up the panel lets it through. The gradient over the
+   well does the darkening instead, and it darkens the whole block rather
+   than one column of it. */
+.over.hasart { background: transparent; }
 
 /* The time to beat, and the one number on the screen worth reading from
    across the room. */
@@ -2027,6 +2067,20 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 </head>
 <body>
 
+  <!-- On its own page the game takes the whole window, so the only thing
+       above it is a rail back to the rest of the club. Hidden when the
+       lander opens the game in a window, because the lander is already
+       the way back. One row, always: the breadcrumb it replaces wrapped
+       on a phone and left the name stranded on a line of its own. -->
+  <header class="sitebar" id="siteBar" hidden>
+    <a class="sb-home" href="/"><span aria-hidden="true">&larr;</span> PrinterMan&rsquo;s Art Club</a>
+    <nav class="sb-nav">
+      <a href="/art-history/">Weekly Art History</a>
+      <a href="/about.html">About</a>
+      <a href="/faq.html">FAQ</a>
+    </nav>
+  </header>
+
   <div class="head">
     <p class="title" id="pageTitle"><a class="home" href="/">&larr; PrinterMan&rsquo;s Art Club</a> &middot; Gallery Printshop</p>
     <!-- The four numbers worth watching, given the width the ink tanks
@@ -2047,6 +2101,15 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
       <div class="well">
         <canvas id="page"></canvas>
         <div class="grid" id="grid"></div>
+
+        <!-- The painting, pressed in gray, behind the level card. It hangs
+             off the well rather than off the card or the panel: the card is
+             part of the panel, and the panel is a narrow column by design,
+             so anything inside either of them stops well short of the
+             block. The words stay in their column; the picture gets the
+             whole sheet. -->
+        <canvas class="galart" id="galArt" aria-hidden="true" hidden></canvas>
+        <div class="galveil" id="galVeil" aria-hidden="true" hidden></div>
 
         <div class="over" id="over" hidden>
           <div class="over-in">
@@ -2132,11 +2195,6 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
             <div class="rules campface" id="overGallery" hidden>
               <!-- The last level does not get a chapter and a number; it
                    gets a card, printed the same way the title is. -->
-              <!-- The painting, pressed in gray, behind everything. It is
-                   the job sheet: enough to know what is coming, with the
-                   color held back until it has been printed. -->
-              <canvas class="galart" id="galArt" aria-hidden="true"></canvas>
-              <div class="galveil" aria-hidden="true"></div>
               <div class="plate finaleplate" id="galPlateWrap" hidden><canvas id="galPlate"></canvas></div>
               <p class="chap" id="galChap"></p>
               <div class="plate levelplate" id="galTitleWrap"><canvas id="galTitle"></canvas></div>
@@ -2370,6 +2428,17 @@ const TRY = parseInt(new URLSearchParams(location.search).get('try'), 10);
 let trying = 0;                                 // the level being tried, or 0
 
 const EMBED = new URLSearchParams(location.search).has('embed');
+
+/* On its own page the game is the page: it takes the window, and the one
+   piece of the club it keeps is a rail back out. In a window on the
+   lander it keeps neither, because the lander is still underneath. */
+if (!EMBED) {
+  const bar = document.getElementById('siteBar');
+  if (bar) bar.hidden = false;
+  const t = document.getElementById('pageTitle');
+  if (t) t.remove();                 // the rail says it, and says it on one line
+}
+
 if (EMBED) {
   document.documentElement.classList.add('embed');
   const t = document.getElementById('pageTitle');
@@ -3117,8 +3186,10 @@ function buildGrid() {
 function sizeBoard() {
   // Measure what the rest of the page is actually taking rather than
   // guessing at it, then give the well the remainder.
+  const bar = document.getElementById('siteBar');
   const used = document.querySelector('.head').offsetHeight
              + document.querySelector('.foot').offsetHeight
+             + ((bar && !bar.hidden) ? bar.offsetHeight : 0)
              + 70;                       // body padding, the casing, the well, gaps
 
   /* The width used to be capped at 430, which is a sensible column on a
@@ -4161,6 +4232,7 @@ function faceOff() {
      and unreadable for anything laid over it. closeRules puts it back. */
   elOver.classList.remove('intro', 'menu', 'won', 'boardface');
   elOver.classList.remove('home', 'boss', 'victor');
+  clearGalleryArt();                            // the sheet belongs to one face only
   asilStop();                                   // she stops talking to an empty room
   victorStop();
   elRules().hidden = true;
@@ -5627,22 +5699,42 @@ function stamp(ms) {
    change between them. */
 let galArtKey = '';
 
+function clearGalleryArt() {
+  const cv = document.getElementById('galArt');
+  const vl = document.getElementById('galVeil');
+  if (cv) cv.hidden = true;
+  if (vl) vl.hidden = true;
+  if (elOver) elOver.classList.remove('hasart');
+  galArtKey = '';
+}
+
 function paintGalleryArt(here) {
   const cv = document.getElementById('galArt');
+  const vl = document.getElementById('galVeil');
   if (!cv) return;
 
-  if (!here || here.finale || !here.art || !here.art.file) { cv.hidden = true; galArtKey = ''; return; }
+  if (!here || here.finale || !here.art || !here.art.file) { clearGalleryArt(); return; }
 
-  const W = Math.round(cv.clientWidth), H = Math.round(cv.clientHeight);
+  /* Measured off the panel, which is the whole well. The canvas itself is
+     stretched to it, so asking the canvas would be asking the thing being
+     sized how big it is. */
+  const panel = elGrid.closest('.well') || elOver;
+  const W = Math.round(panel.clientWidth), H = Math.round(panel.clientHeight);
   if (W < 40 || H < 40) return;                  // the panel has no size yet
 
+  const show = () => {
+    cv.hidden = false;
+    if (vl) vl.hidden = false;
+    elOver.classList.add('hasart');
+  };
+
   const key = here.art.file + '|' + W + 'x' + H;
-  if (key === galArtKey) { cv.hidden = false; return; }
+  if (key === galArtKey) { show(); return; }
 
   const img = new Image();
   img.onload = () => {
     // the card can have moved on while the file was arriving
-    if (key !== here.art.file + '|' + Math.round(cv.clientWidth) + 'x' + Math.round(cv.clientHeight)) return;
+    if (key !== here.art.file + '|' + Math.round(panel.clientWidth) + 'x' + Math.round(panel.clientHeight)) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     cv.width = Math.round(W * dpr);
     cv.height = Math.round(H * dpr);
@@ -5655,9 +5747,9 @@ function paintGalleryArt(here) {
     for (const pl of PLATES) screenPlate(cx, sep[pl], W, H, 2.2, ANGLE[pl], DOT[pl]);
     cx.globalCompositeOperation = 'source-over';
     galArtKey = key;
-    cv.hidden = false;
+    show();
   };
-  img.onerror = () => { cv.hidden = true; galArtKey = ''; };   // no sheet; the card still reads
+  img.onerror = () => { clearGalleryArt(); };   // no sheet; the card still reads
   img.src = '/games/img/' + here.art.file;
 }
 
