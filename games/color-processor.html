@@ -1020,17 +1020,42 @@ button.go:not(.ghost):hover {
 
 /* A finished print is the thing you played for, so the panel gets out of
    its way: the scrim falls to the bottom of the board and the words sit on
-   it, leaving the page clear. */
+   it, leaving the page clear.
+
+   A shallow band at the top as well, for the announcement that hangs
+   there. It is a tenth of the sheet and gone by a fifth, which is enough
+   to carry a line of type over a bright painting and not enough to be a
+   lid on it. */
 .over.won {
   background: linear-gradient(to bottom,
-              rgba(10,12,17,0) 0%, rgba(10,12,17,0) 40%,
+              rgba(10,12,17,0.70) 0%, rgba(10,12,17,0.34) 8%,
+              rgba(10,12,17,0) 19%, rgba(10,12,17,0) 40%,
               rgba(10,12,17,0.74) 62%, rgba(10,12,17,0.96) 100%);
   justify-content: flex-end;
   padding-bottom: 20px;
 }
 
+/* The announcement goes to the head of the panel rather than standing in
+   front of the painting with the title and the credit. It is set the way
+   the level card sets its chapter -- bold, tracked, upper case, not the
+   printed face -- because this is a label on the screen you are looking
+   at, and the printed face belongs to things that went through the
+   press. Out of the flow, so the rest stays down on the scrim. */
+.over.won h2 {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
 .over.won h2,
-.over.won p { text-shadow: 0 2px 12px rgba(0,0,0,0.95); }
+.over.won p { text-shadow: 0 2px 14px rgba(0,0,0,0.95); }
 
 /* what was printed */
 .plate-line {
@@ -4472,7 +4497,10 @@ function paintRules() {
 }
 
 /* What "Play through Gallery" will actually do, said under it, so the
-   first option is not a guess about where they left off. */
+   first option is not a guess about where they left off.
+
+   Where they are, not how far it runs. The length of the gallery is
+   something you find out by printing it. */
 function whereInSeries() {
   const el = document.getElementById('miWhere');
   if (!el) return;
@@ -4480,8 +4508,8 @@ function whereInSeries() {
   const at = Math.min(campFind(), list.length - 1);
   const lv = list[at];
   el.textContent = campDone.length >= list.length
-    ? 'All ' + list.length + ' printed'
-    : 'Level ' + (at + 1) + ' of ' + list.length
+    ? 'Every level printed'
+    : 'Level ' + (at + 1)
       + (lv ? ' \u00b7 ' + (lv.finale ? 'The last print' : lv.art.roomName) : '');
 }
 
@@ -6181,7 +6209,7 @@ function finish(won) {
   }
 
   document.getElementById('overTitle').hidden = false;
-  document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
+  document.getElementById('overTitle').textContent = won ? 'Print Complete' : 'Paper jam';
   /* A finished print says what it is and leaves it there. The time, the
      points, the chain and the plate count are all on the readout above
      the board and have been the whole run -- repeating them under the
