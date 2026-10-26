@@ -2041,6 +2041,20 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   text-shadow: 0 2px 14px rgba(0,0,0,0.95);
 }
 
+/* Their own time under it, quiet: the par is what the screen is for, and
+   this is how they stand against it. Gold when it came in under. */
+.campface .mine {
+  margin: 7px 0 0;
+  font-size: 0.56rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+}
+.campface .mine b { font-weight: 700; color: var(--muted); }
+.campface .mine.under b { color: var(--accent); }
+.campface .mine[hidden] { display: none; }
+
 /* ---- Asil Anom ----
    Every other face is words on a dark panel. This one is a picture with
    words over it, so it takes the whole panel: no padding, nothing above
@@ -2616,6 +2630,10 @@ nav.menu {
               <p class="chap" id="galChap"></p>
               <div class="plate levelplate" id="galTitleWrap"><canvas id="galTitle"></canvas></div>
               <p class="par" id="galPar"></p>
+              <!-- What they did on this level last time, against the number
+                   above it. Only on a level they have printed: before that
+                   the par is the whole story. -->
+              <p class="mine" id="galMine" hidden></p>
               <p class="saved" id="galSaved"></p>
             </div>
 
@@ -6226,11 +6244,25 @@ function buildGallery() {
   /* The last level gets one too. Her card looks nothing like the other
      twenty, but a level without a time to beat is a level that cannot be
      graded, and she is still a print with a clock on it. */
+  const par = parOf(i + 1);
   const parEl = document.getElementById('galPar');
   if (parEl) {
-    const par = parOf(i + 1);
     parEl.innerHTML = par ? 'Par time <b>' + stamp(par * 1000) + '</b>' : '';
     parEl.hidden = !par;
+  }
+
+  /* Their own best on this level, under the par. Nothing before they have
+     printed it: there is no time to stand against the number yet, and an
+     empty row where one will be is a reminder of what they have not done
+     rather than a reading. */
+  const mineEl = document.getElementById('galMine');
+  if (mineEl) {
+    const best = bestOf(i + 1);
+    mineEl.hidden = !(best && par);
+    if (best && par) {
+      mineEl.innerHTML = 'Your best <b>' + stamp(best) + '</b>';
+      mineEl.classList.toggle('under', best <= par * 1000);
+    }
   }
 
   fitChapter();
