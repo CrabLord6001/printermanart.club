@@ -1738,12 +1738,15 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   max-width: 30rem;
 }
 
-.levelsface .lv-rooms { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+/* A room's name sits right on top of its own chips, and the air goes
+   between the rooms instead. Evenly spaced, the names floated halfway
+   between two rows and belonged to neither. */
+.levelsface .lv-rooms { display: flex; flex-direction: column; gap: 18px; width: 100%; }
 
 .levelsface .lv-room-name {
-  margin: 0 0 5px;
+  margin: 0 0 3px;
   font-size: 0.6rem;
-  line-height: 1.2;
+  line-height: 1;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -2522,7 +2525,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
               <p class="faceline" id="faceLine" hidden></p>
               <nav class="menu" id="titleMenu">
                 <button class="mi" type="button" data-go="gallery">Play through Gallery<span class="sub" id="miWhere"></span></button>
-                <button class="mi" type="button" data-go="levels">Levels<span class="sub" id="miDone"></span></button>
+                <button class="mi" type="button" data-go="levels">Level Select<span class="sub" id="miDone"></span></button>
                 <button class="mi" type="button" data-go="practice">Practice</button>
                 <button class="mi" type="button" data-go="intro">Introduction</button>
                 <button class="mi" type="button" data-go="board">Leaderboard</button>
