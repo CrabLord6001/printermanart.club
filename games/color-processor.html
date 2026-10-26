@@ -740,7 +740,8 @@ body.reading .hint { visibility: hidden; }
 
 /* ---- foot ---- */
 
-/* Bolted to the casing the way the readout is, off the same two numbers. */
+/* Bolted to the casing the way the readout is, off the same two numbers,
+   and standing as close under it as the readings stand over it. */
 .foot {
   width: var(--boardw, 100%);
   max-width: 100%;
@@ -750,8 +751,12 @@ body.reading .hint { visibility: hidden; }
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  padding-top: 8px;
+  padding-top: 6px;
 }
+
+/* The bank first, then whatever the game has to say under it. */
+.foot .msg { order: 2; margin-top: 2px; }
+.foot .hint { order: 3; }
 
 .foot.center { justify-content: center; }
 
@@ -2096,8 +2101,12 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 }
 
 /* The title screen is the whole panel, so it sits against the full scrim
-   and keeps the buttons under the board out of it. */
-.over.home { justify-content: center; }
+   and keeps the buttons under the board out of it.
+
+   It hangs from the top rather than floating in the middle: the plate is
+   the sign over the shop, and a sign belongs at the head of the room with
+   the way in written under it, not stranded halfway down a tall well. */
+.over.home { justify-content: flex-start; }
 .over.home .over-in { margin: 0; gap: 0; }
 
 /* The gallery screen: which level is next and how much of the series is
@@ -2450,15 +2459,21 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   </div>
 
   <div class="foot center">
-    <p class="msg" id="msg">&nbsp;</p>
     <!-- One bank, not three loose buttons. The row answers the readings
          over the well, so it is built the same way: equal cartridges
-         across the board's own width. -->
+         across the board's own width, hard against the casing.
+
+         The talking line used to sit here, above the bank, holding two
+         lines of height open whether it had anything to say or not. That
+         space was the whole reason the controls read as parked under the
+         machine rather than bolted to it, so it has gone below them with
+         the other small print. -->
     <div class="deck">
       <button class="go ghost" id="menuBtn" type="button">Settings</button>
       <button class="go" id="again" type="button">New print</button>
       <button class="go ghost" id="rulesBtn" type="button">Rules</button>
     </div>
+    <p class="msg" id="msg">&nbsp;</p>
     <p class="hint" id="hint">Drag to steer &middot; tap to rotate &middot; swipe down to drop</p>
   </div>
 
@@ -3894,9 +3909,122 @@ const TITLE_OFF = {
   y: { x:  0.08, y:  0.62, d: 0.85 }
 };
 
+/* ---- the shop, printed under its own name ----
+
+   The room the game is named after, drawn plate by plate: every part of
+   it is laid on the plate that prints it and the black one carries the
+   drawing over the top. Four passes, the same four the lettering takes
+   and the same nudge off true, so the picture belongs to the sheet
+   instead of sitting on it.
+
+   Drawn here rather than fetched, like the rest of this machine: it
+   costs nothing, it prints at whatever size the plate ends up, and it is
+   the shop's own, not a stock photograph of somebody else's. */
+
+/* Laid lighter than the lettering, which is a rich black by design. A
+   sign has to carry the room; the room does not have to carry the sign. */
+const SHOP_INK = { k: 0.88, c: 0.74, m: 0.72, y: 0.80 };
+
+/* The scene, in a box a little wider than it is tall. Everything is in
+   shares of that box, so the drawing is the same drawing at any size. */
+function shopDraw(o, X, Y, W, H, pl) {
+  const u = (t) => X + t * W;
+  const v = (t) => Y + t * H;
+
+  o.fillStyle = '#000';
+  o.strokeStyle = '#000';
+  o.lineCap = 'round';
+  o.lineJoin = 'round';
+
+  const box = (a, b, c, d, r) => {
+    const x = u(a), y = v(b), bw = (c - a) * W, bh = (d - b) * H;
+    o.beginPath();
+    if (o.roundRect) o.roundRect(x, y, bw, bh, (r || 0) * H);
+    else o.rect(x, y, bw, bh);
+    o.fill();
+  };
+  const disc = (a, b, r) => {
+    o.beginPath(); o.arc(u(a), v(b), r * H, 0, Math.PI * 2); o.fill();
+  };
+  const run = (pts, wid, shut) => {
+    o.beginPath();
+    pts.forEach((q, i) => (i ? o.lineTo(u(q[0]), v(q[1])) : o.moveTo(u(q[0]), v(q[1]))));
+    if (shut) o.closePath();
+    if (wid) { o.lineWidth = wid * H; o.stroke(); } else o.fill();
+  };
+
+  if (pl === 'c') {
+    /* The cowling, with the console cut clean out of it. A dark panel
+       with lamps drawn over it would have gone black under multiply;
+       a hole leaves bare paper, and bare paper is the only thing on
+       this sheet that can be lit. */
+    o.beginPath();
+    if (o.roundRect) {
+      o.roundRect(u(0.17), v(0.28), 0.43 * W, 0.62 * H, 0.045 * H);
+      o.roundRect(u(0.205), v(0.365), 0.15 * W, 0.20 * H, 0.025 * H);
+      o.roundRect(u(0.545), v(0.425), 0.075 * W, 0.155 * H, 0.012 * H);
+      o.fill('evenodd');
+    } else {
+      o.rect(u(0.17), v(0.28), 0.43 * W, 0.62 * H);
+      o.fill();
+    }
+    box(0.02, 0.60, 0.148, 0.90, 0.018);       // paper waiting at the feed
+    box(0.60, 0.70, 0.858, 0.768, 0.022);      // the delivery table
+    box(0.872, 0.62, 0.940, 0.872, 0.02);      // the pressman, below the belt
+    box(0.636, 0.452, 0.676, 0.556, 0.01);     // the first bar off the sheet
+  }
+
+  if (pl === 'm') {
+    disc(0.258, 0.198, 0.105);                 // an ink drum over the bed
+    box(0.856, 0.378, 0.956, 0.642, 0.045);    // the pressman, above the belt
+    run([[0.870, 0.452], [0.826, 0.520]], 0.062);  // his arm, out to the sheet
+    disc(0.243, 0.432, 0.034);                 // a lamp in the console
+    box(0.683, 0.441, 0.723, 0.545, 0.01);
+  }
+
+  if (pl === 'y') {
+    disc(0.434, 0.198, 0.105);                 // the other drum
+    box(0.02, 0.548, 0.148, 0.606, 0.016);     // the top sheet of the stack
+    disc(0.283, 0.432, 0.034);                 // the other lamp
+    box(0.730, 0.430, 0.770, 0.534, 0.01);
+  }
+
+  if (pl === 'k') {
+    /* The sheet coming off the press. It is paper, so nothing but its
+       edge takes ink -- drawn heavy, because a hairline breaks up into
+       loose dots at this ruling and stops being a line at all. */
+    run([[0.572, 0.40], [0.822, 0.355], [0.822, 0.585], [0.572, 0.63]], 0.038, true);
+    box(0.777, 0.419, 0.805, 0.523, 0.01);     // the last bar on it
+    box(0.222, 0.488, 0.338, 0.528, 0.015);    // the keys under the lamps
+    box(0.244, 0.268, 0.272, 0.306, 0.011);    // the drums' shafts
+    box(0.420, 0.268, 0.448, 0.306, 0.011);
+    disc(0.905, 0.308, 0.082);                 // the pressman's head
+    box(0.856, 0.864, 0.956, 0.906, 0.018);    // and his feet
+    box(0.618, 0.768, 0.650, 0.90, 0.012);     // the table's legs
+    box(0.806, 0.768, 0.838, 0.90, 0.012);
+    run([[0.0, 0.906], [1.0, 0.906]], 0.022);  // the floor
+  }
+}
+
+/* One plate's worth of the shop, read back the same way the letters are. */
+function shopPlate(w, h, X, Y, SW, SH, pl) {
+  const off = document.createElement('canvas');
+  off.width = w; off.height = h;
+  shopDraw(off.getContext('2d'), X, Y, SW, SH, pl);
+  const d = off.getContext('2d').getImageData(0, 0, w, h).data;
+  const arr = new Float32Array(w * h);
+  const dens = SHOP_INK[pl];
+  for (let i = 3, q = 0; i < d.length; i += 4, q++) arr[q] = (d[i] / 255) * dens;
+  return arr;
+}
+
 /* One plate's worth of the title: the letters drawn into a scratch canvas
-   and read back as ink density, which is the shape screenPlate wants. */
-function titlePlate(w, h, lines, fs, lead, dx, dy, dens) {
+   and read back as ink density, which is the shape screenPlate wants.
+
+   `band` is how much of the sheet the lettering is centred in. It is the
+   whole sheet on a plate that carries nothing else, and the top of it
+   when the shop is printed underneath. */
+function titlePlate(w, h, lines, fs, lead, dx, dy, dens, band) {
   const off = document.createElement('canvas');
   off.width = w; off.height = h;
   const o = off.getContext('2d');
@@ -3906,7 +4034,8 @@ function titlePlate(w, h, lines, fs, lead, dx, dy, dens) {
   o.font = '700 ' + fs + 'px ' + TITLE_FONT;
   try { o.letterSpacing = Math.round(fs * 0.06) + 'px'; } catch (e) { /* older browsers set it in the font */ }
 
-  const top = h / 2 - (lines.length * lead) / 2;
+  const bh = band || h;
+  const top = bh / 2 - (lines.length * lead) / 2;
   lines.forEach((ln, i) => o.fillText(ln, w / 2 + dx, top + lead * (i + 0.5) + dy));
 
   const d = o.getImageData(0, 0, w, h).data;
@@ -3920,7 +4049,7 @@ function titlePlate(w, h, lines, fs, lead, dx, dy, dens) {
    and the end says YOU WIN -- all off the press the player spends the
    whole series feeding. Each sheet remembers what it last printed so a
    repaint costs nothing. */
-function paintPlate(cv, lines, force) {
+function paintPlate(cv, lines, force, shop) {
   if (!cv || !cv.parentElement) return;
 
   /* The content box of the paper, not the padded box: measured the easy
@@ -3931,7 +4060,7 @@ function paintPlate(cv, lines, force) {
                        - parseFloat(cs.paddingLeft || 0)
                        - parseFloat(cs.paddingRight || 0));
   if (W < 60) return;                        // the panel has no size yet
-  const key = W + '|' + lines.join(' ');
+  const key = W + '|' + lines.join(' ') + (shop ? '|shop' : '');
   if (!force && key === cv.dataset.printed) return;
   cv.dataset.printed = key;
 
@@ -3945,7 +4074,11 @@ function paintPlate(cv, lines, force) {
      YOU WIN does not. */
   const fs = Math.min(88, Math.max(14, Math.floor(100 * (W * 0.9) / widest)));
   const lead = Math.round(fs * 1.02);
-  const H = Math.round(lead * lines.length + fs * 0.5);
+  /* The sheet is as deep as the name needs, plus a band under it for the
+     shop when the shop is being printed. */
+  const bandH = Math.round(lead * lines.length + fs * 0.5);
+  const shopH = shop ? Math.round(W * 0.42) : 0;
+  const H = bandH + shopH;
 
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   cv.width = Math.round(W * dpr);
@@ -3969,7 +4102,18 @@ function paintPlate(cv, lines, force) {
   for (const pl of PLATES) {
     const o = TITLE_OFF[pl];
     const mask = titlePlate(cv.width, cv.height, lines, fs * dpr, lead * dpr,
-                            o.x * cell, o.y * cell, o.d);
+                            o.x * cell, o.y * cell, o.d, bandH * dpr);
+    if (shopH) {
+      /* Inset from the edges of the sheet, and carrying the same plate's
+         miss, so the room registers off true exactly as its name does. */
+      const pad = cv.width * 0.045;
+      const sm = shopPlate(cv.width, cv.height,
+                           pad + o.x * cell,
+                           bandH * dpr + o.y * cell,
+                           cv.width - pad * 2,
+                           shopH * dpr - cv.width * 0.02, pl);
+      for (let i = 0; i < mask.length; i++) mask[i] = Math.min(1, mask[i] + sm[i]);
+    }
     screenPlate(ctx, mask, cv.width, cv.height, cell, ANGLE[pl], DOT[pl]);
   }
   ctx.globalCompositeOperation = 'source-over';
@@ -4074,7 +4218,7 @@ const TITLE_WORDS  = ['GALLERY', 'PRINTSHOP'];
 const WIN_WORDS    = ['YOU', 'WIN'];
 const FINALE_WORDS = ['THE LAST', 'PRINT'];
 
-const paintTitle = (force) => paintPlate(document.getElementById('titleArt'), titleWords, force);
+const paintTitle = (force) => paintPlate(document.getElementById('titleArt'), titleWords, force, true);
 
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(() => {
