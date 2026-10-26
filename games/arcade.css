@@ -207,10 +207,10 @@ canvas#play {
 .veil.start .veil-mid { padding: 14px 16px; }
 
 .veil h2 {
-  margin: 0 0 4px;
+  margin: 0 0 12px;
   font-family: var(--pixel);
-  font-size: clamp(0.85rem, 3.2vw, 1.4rem);
-  line-height: 1.4;
+  font-size: clamp(1.3rem, 6vw, 1.75rem);
+  line-height: 1.35;
   font-weight: 400;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -536,17 +536,17 @@ canvas#play {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  margin-top: 14px;
+  gap: 12px;
+  margin-top: 22px;
 }
 
 .after[hidden] { display: none; }
 .after .btn { margin-top: 0; }
 
-.where {
-  margin-top: 10px;
+.veil .where {
+  margin-top: 16px;
   font-family: var(--pixel);
-  font-size: 0.52rem;
+  font-size: clamp(0.55rem, 2.4vw, 0.62rem);
   font-weight: 400;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -596,9 +596,9 @@ canvas#play {
 /* Gold is rank one, the way a cabinet marks its champion. Your own row is
    the white one with the cursor beside it. Both at once reads as gold. */
 
-.board-wrap { margin-top: 12px; width: 100%; max-width: 420px; }
+.board-wrap { margin-top: 18px; width: 100%; max-width: 420px; }
 
-.board-top { display: flex; align-items: center; gap: 11px; margin-bottom: 9px; }
+.board-top { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
 .board-top i { flex: 1 1 auto; height: 1px; background: var(--crt-edge); }
 
 .board-wrap h3 {
@@ -624,7 +624,7 @@ ol.board li {
   grid-template-columns: 16px 2.4em 20px minmax(0, 1fr) auto;
   align-items: center;
   gap: 13px;
-  padding: 5px 9px;
+  padding: 8px 9px;
   border-bottom: 1px solid var(--crt-rail);
 }
 
@@ -685,7 +685,7 @@ ol.board li.me .av { box-shadow: 0 0 0 2px #fff; }
 ol.board li.top {
   border: 1px solid var(--accent, #D4A24C);
   background: rgba(212, 162, 76, 0.08);
-  padding: 6px 8px;
+  padding: 9px 8px;
 }
 ol.board li.top .rk,
 ol.board li.top .nm,
@@ -705,7 +705,7 @@ ol.board li.none .nm {
   white-space: normal;
 }
 
-.msg { margin: 9px 0 0; font-size: 0.78rem; }
+.veil .msg { margin: 16px 0 0; font-size: 0.78rem; }
 .msg.bad { color: #E8459B; }
 .msg.good { color: var(--accent, #D4A24C); }
 .msg[hidden] { display: none; }

@@ -816,9 +816,10 @@
               <h2 id="pTitle" class="lore">Ms.&nbsp;Printer: Paper Trail</h2>
               <p id="pText" hidden></p>
 
+              <p class="where" id="pWhere" hidden></p>
+
               <div id="pExtra"></div>
 
-              <p class="where" id="pWhere" hidden></p>
               <div class="rooms" id="pRooms"></div>
 
               <div class="after" id="pAfter" hidden>
@@ -1349,7 +1350,7 @@ if (track) {
   }
 
   async function showBoard(heading) {
-    const label = heading || ('High Scores \u00b7 ' + mods.rooms[room].name);
+    const label = heading || 'High Scores';
 
     elExtra.innerHTML =
       '<div class="board-wrap"><div class="board-top"><h3>' + esc(label) + '</h3><i></i></div>' +
