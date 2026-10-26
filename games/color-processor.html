@@ -1861,9 +1861,16 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   flex-direction: column;
   justify-content: space-between;
   flex: 1 1 auto;
-  gap: 18px;
+  gap: 12px;
   width: 100%;
   padding: 6px 0 2px;
+
+  /* Every chip is the same size, and the size is the board's: five across
+     is the widest a room gets, so one chip is a fifth of the width. A
+     three level room is three of those, centered, rather than three fat
+     ones -- the rooms are different lengths, not different weights. */
+  --lvgap: 8px;
+  --lvw: calc((100% - 4 * var(--lvgap)) / 5);
 }
 
 .levelsface .lv-room-name {
@@ -1882,14 +1889,14 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    a room broken over two lines reads as two rooms. */
 .levelsface .lv-row {
   display: grid;
-  grid-template-columns: repeat(var(--n, 3), minmax(0, 48px));
+  grid-template-columns: repeat(var(--n, 3), var(--lvw));
   justify-content: center;
-  gap: 6px;
+  gap: var(--lvgap);
 }
 
 .levelsface .lv {
   box-sizing: border-box;
-  padding: 11px 0;
+  padding: 14px 0;
   border: 1px solid #2B3141;
   border-radius: 5px;
   background: rgba(16,18,24,0.9);
@@ -1900,7 +1907,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   cursor: pointer;
 }
 
-.levelsface .lv b { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+.levelsface .lv b { font-size: 1.2rem; font-weight: 700; color: var(--text); }
 
 /* Printed carries a gold rule under the number -- inset, so marking one
    never moves the row. */
