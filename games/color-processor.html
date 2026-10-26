@@ -908,7 +908,7 @@ button.go:active { transform: translateY(1px); }
 
 /* The one that moves the game on, lit from behind. Same cartridge, same
    bevel, same sheet: only the face is different. It used to be the one
-   colour on the whole machine that belonged to the website instead. */
+   color on the whole machine that belonged to the website instead. */
 button.go:not(.ghost) {
   color: #171308;
   border-color: #7A5A22;
@@ -1457,7 +1457,7 @@ h2[hidden] { display: none; }
 
 /* The board. It opens at the top of the panel rather than floating in the
    middle of it, because a ranking is a list you read down, and a title
-   sitting in dead centre with empty board under it read as an error. Rows
+   sitting in dead center with empty board under it read as an error. Rows
    are bars with a face on them: a name alone says who holds a place, a
    face says who they are. */
 .board-wrap {
@@ -1666,7 +1666,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 .board-wrap.tight h3::after { width: 44px; height: 1.5px; margin-top: 5px; }
 .board-wrap.tight ol.board { margin-top: 7px; }
 
-/* The board page reads from the top. Every other page is centred, which
+/* The board page reads from the top. Every other page is centered, which
    is right for a paragraph and wrong for a list. */
 .over.intro.boardface .over-in { justify-content: flex-start; }
 
@@ -1714,6 +1714,84 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    hold the screen down, so the card takes the middle of it. */
 .rules.campface.finale { justify-content: center; }
 
+/* ---- the levels face ----
+   A room to a block, the levels in it as numbered chips. No art on them:
+   the painting in a slot changes on the hour, so a card showing one would
+   be promising something it cannot keep, and a level somebody printed
+   last week would show them a picture they never saw.
+
+   Six short rows do not hold a tall panel down, so they take the middle of
+   it rather than sitting at the top with the rest of the well empty. The
+   panel's own column is what fills the well here, so the centering goes on
+   that rather than on the panel. */
+.over.lvface .over-in { justify-content: center; }
+
+/* Everything here is scoped past .rules p, which is sized and aligned at
+   run time to fit the introduction and would otherwise set the room names
+   in 20px, ranged left. */
+.rules.levelsface {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 30rem;
+}
+
+.levelsface .lv-rooms { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+
+.levelsface .lv-room-name {
+  margin: 0 0 5px;
+  font-size: 0.6rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-align: center;
+}
+
+/* A room is one line of chips, always. The count comes from the room, and
+   the columns shrink to whatever the board is wide rather than wrapping --
+   a room broken over two lines reads as two rooms. */
+.levelsface .lv-row {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 3), minmax(0, 40px));
+  justify-content: center;
+  gap: 6px;
+}
+
+.levelsface .lv {
+  box-sizing: border-box;
+  padding: 8px 0;
+  border: 1px solid #2B3141;
+  border-radius: 5px;
+  background: rgba(16,18,24,0.9);
+  color: var(--muted);
+  font: inherit;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+}
+
+.levelsface .lv b { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+
+/* Printed carries a gold rule under the number -- inset, so marking one
+   never moves the row. */
+.levelsface .lv.done {
+  border-color: #3A4152;
+  background: rgba(26,30,39,0.95);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+.levelsface .lv.here { border-color: var(--accent); box-shadow: 0 0 14px rgba(212,162,76,0.25); }
+.levelsface .lv.here b { color: var(--accent); }
+.levelsface .lv.done.here { box-shadow: inset 0 -2px 0 var(--accent), 0 0 14px rgba(212,162,76,0.25); }
+
+/* Not been reached. It is shown rather than hidden, because a row with a
+   gap in it says more than a row that is simply shorter. */
+.levelsface .lv.shut { opacity: 0.38; cursor: default; }
+.levelsface .lv.shut b { color: var(--dim); }
+
 /* The level's own card: the same sheet and frame as the last one, a size
    down, because it announces a level rather than the end of them. */
 .campface .levelplate {
@@ -1757,7 +1835,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
     rgba(10,12,17,0.18) 68%, rgba(10,12,17,0.72) 88%, rgba(10,12,17,0.95) 100%);
 }
 
-/* The panel's own scrim would sit on top of the sheet and grey it out, so
+/* The panel's own scrim would sit on top of the sheet and gray it out, so
    while the sheet is up the panel lets it through. The gradient over the
    well does the darkening instead, and it darkens the whole block rather
    than one column of it. */
@@ -2403,7 +2481,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
             <!-- The title screen, and the place every run comes back to.
                  The name is printed rather than drawn: the same four plates
                  and the same screens that print the paintings, run slightly
-                 out of register so the letters carry colour at their edges
+                 out of register so the letters carry color at their edges
                  the way a cheap press would leave them. -->
             <div class="rules homeface" id="overHome" hidden>
               <p class="gameover" id="gameOver" hidden>Game Over</p>
@@ -2411,10 +2489,19 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
               <p class="faceline" id="faceLine" hidden></p>
               <nav class="menu" id="titleMenu">
                 <button class="mi" type="button" data-go="gallery">Play through Gallery<span class="sub" id="miWhere"></span></button>
+                <button class="mi" type="button" data-go="levels">Levels<span class="sub" id="miDone"></span></button>
                 <button class="mi" type="button" data-go="practice">Practice</button>
                 <button class="mi" type="button" data-go="intro">Introduction</button>
                 <button class="mi" type="button" data-go="board">Leaderboard</button>
               </nav>
+            </div>
+
+            <!-- Every level printed so far, by chapter. The rooms are the
+                 structure the series already has, so they are the structure
+                 here; what is past the last room does not appear until
+                 somebody has been there. -->
+            <div class="rules levelsface" id="overLevels" hidden>
+              <div class="lv-rooms" id="lvRooms"></div>
             </div>
 
             <div class="rules setupface" id="overSetup" hidden>
@@ -3463,9 +3550,9 @@ function sizeBoard() {
      board's own column at every window size rather than a fixed 430 that
      happened to be close.
 
-     The offset is wanted because the board is not centred on the page:
+     The offset is wanted because the board is not centered on the page:
      the rail stands to the right of it, so on a narrow window the casing
-     sits left of centre by half the rail. That used to be paid for with
+     sits left of center by half the rail. That used to be paid for with
      72px of padding, which was near enough to look right and wrong by a
      few pixels everywhere else. */
   const fr = document.querySelector('.frame');
@@ -3921,7 +4008,7 @@ function begin() {
    The name goes through the same press as the paintings: four plates,
    four screens at the trade's angles, laid in multiply on paper white.
    The plates are nudged a little off true, which is the one thing a
-   cheap print always shows and the reason the letters carry colour at
+   cheap print always shows and the reason the letters carry color at
    their edges instead of being flat black type. */
 
 const TITLE_FONT = "'Poppins', system-ui, -apple-system, sans-serif";
@@ -4046,7 +4133,7 @@ function shopPlate(w, h, X, Y, SW, SH, pl) {
 /* One plate's worth of the title: the letters drawn into a scratch canvas
    and read back as ink density, which is the shape screenPlate wants.
 
-   `band` is how much of the sheet the lettering is centred in. It is the
+   `band` is how much of the sheet the lettering is centered in. It is the
    whole sheet on a plate that carries nothing else, and the top of it
    when the shop is printed underneath. */
 function titlePlate(w, h, lines, fs, lead, dx, dy, dens, band) {
@@ -4148,8 +4235,8 @@ function paintPlate(cv, lines, force, shop) {
    letters are a different width once it lands. */
 /* The four readings, printed. Same press, but laid light on a dark field
    instead of dark on paper, because these sit under glass rather than on
-   a sheet: the colour plates go down first and the black plate prints in
-   paper white on top of them, so the misregistration shows as colour
+   a sheet: the color plates go down first and the black plate prints in
+   paper white on top of them, so the misregistration shows as color
    around a white figure rather than inside a black one. */
 const SCORE_OFF = {
   c: { x: -0.85, y: -0.42 },
@@ -4343,7 +4430,7 @@ function boardFace(r) {
 }
 
 /* Gold, silver, bronze. Drawn rather than fetched, so they cost nothing
-   and take the panel's own colours. */
+   and take the panel's own colors. */
 const MEDALS = {
   1: { face: '#E8B65C', rim: '#A9761F', lit: '#F8E3AE', ink: '#4A3406' },
   2: { face: '#C9CDD6', rim: '#848A97', lit: '#F0F2F6', ink: '#343941' },
@@ -4454,7 +4541,7 @@ function paintRules() {
     document.getElementById('rulesPg4').hidden = false;
     if (pager) pager.hidden = true;
     /* The board reads from the top of the panel; the pages of copy stay
-       centred, which is right for a paragraph and wrong for a list. */
+       centered, which is right for a paragraph and wrong for a list. */
     elOver.classList.add('boardface');
     loadBoard();
     fitBoard();
@@ -4511,7 +4598,81 @@ function whereInSeries() {
     ? 'Every level printed'
     : 'Level ' + (at + 1)
       + (lv ? ' \u00b7 ' + (lv.finale ? 'The last print' : lv.art.roomName) : '');
+
+  /* The tally belongs under the option that opens the list, not inside it:
+     the list itself is numbers, and this is the one thing a number cannot
+     say. Still no total -- how many there are stays unsaid. */
+  const done = document.getElementById('miDone');
+  if (done) done.textContent = campDone.length ? campDone.length + ' printed' : '';
 }
+
+/* Every level, by room, as numbered chips. Tapping one opens that level's
+   card rather than dropping straight into it -- the card is where the par
+   and the painting are, and going back to a level is still arriving at it.
+
+   The last print is not here until it has been reached. The rooms are the
+   only count the series shows, and a twenty first chip sitting past the
+   sixth room would answer the question the game is keeping. */
+function buildLevels() {
+  const wrap = document.getElementById('lvRooms');
+  if (!wrap) return;
+  const list = campList();
+  const reach = campFind();                       // the furthest level open to them
+  wrap.innerHTML = '';
+
+  const rooms = new Map();
+  list.forEach((here, i) => {
+    if (here.finale && campDone.indexOf(i + 1) === -1 && i > reach) return;
+    const key = here.finale ? 'last' : here.chapter;
+    if (!rooms.has(key)) rooms.set(key, []);
+    rooms.get(key).push({ here, i });
+  });
+
+  for (const [key, items] of rooms) {
+    const box = document.createElement('div');
+    const name = document.createElement('p');
+    name.className = 'lv-room-name';
+    const ch = CHAPTERS[key];
+    name.textContent = key === 'last' ? 'The last print' : (ch ? ch.name : '');
+    const row = document.createElement('div');
+    row.className = 'lv-row';
+    row.style.setProperty('--n', String(items.length));
+
+    for (const { i } of items) {
+      const lv = i + 1;
+      const done = campDone.indexOf(lv) !== -1;
+      const open = done || i <= reach;
+
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'lv' + (done ? ' done' : '') + (i === campAt ? ' here' : '')
+                  + (open ? '' : ' shut');
+      b.innerHTML = '<b>' + lv + '</b>';
+      if (open) {
+        b.dataset.level = String(lv);
+        b.setAttribute('aria-label', 'Level ' + lv + (done ? ', printed' : '') + ' -- open it');
+      } else {
+        b.disabled = true;
+        b.setAttribute('aria-label', 'Level ' + lv + ', not reached yet');
+      }
+      row.appendChild(b);
+    }
+    box.appendChild(name);
+    box.appendChild(row);
+    wrap.appendChild(box);
+  }
+}
+
+/* A chip opens that level's card. */
+document.addEventListener('click', (e) => {
+  const chip = e.target.closest ? e.target.closest('.lv[data-level]') : null;
+  if (!chip || elLevels().hidden) return;
+  const lv = parseInt(chip.dataset.level, 10);
+  if (!lv) return;
+  trying = 0; campOn = true; campAt = lv - 1;
+  hideFace();
+  newPrint('gallery');
+});
 
 /* Where each option goes. The two that open a panel remember they came
    from here, so closing it comes back rather than dropping them on a
@@ -4522,6 +4683,7 @@ function homeGo(go) {
      on a detour; carrying on with the series means carrying on. */
   if (go === 'gallery')  { trying = 0; campOn = true; campAt = campFind(); hideFace(); newPrint('gallery'); return; }
   if (go === 'practice') { trying = 0; campOn = false; hideFace(); newPrint('setup');   return; }
+  if (go === 'levels')   { showFace('levels'); return; }
 
   rulesFrom = null;
   showFace('rules');
@@ -4566,6 +4728,7 @@ const onHome = () => !elOver.hidden && !elHome().hidden;
 const elRules = () => document.getElementById('overRules');
 const elGallery = () => document.getElementById('overGallery');
 const elBoss = () => document.getElementById('overBoss');
+const elLevels = () => document.getElementById('overLevels');
 const onBoss = () => !elOver.hidden && !elBoss().hidden;
 const elVictor = () => document.getElementById('overVictor');
 const onVictor = () => !elOver.hidden && !elVictor().hidden;
@@ -4574,7 +4737,7 @@ function faceOff() {
   /* won goes too. It trades the scrim for a gradient that is clear at the
      top so the finished print shows through, which is right for the print
      and unreadable for anything laid over it. closeRules puts it back. */
-  elOver.classList.remove('intro', 'menu', 'won', 'boardface');
+  elOver.classList.remove('intro', 'menu', 'won', 'boardface', 'lvface');
   elOver.classList.remove('home', 'boss', 'victor');
   clearGalleryArt();                            // the sheet belongs to one face only
   asilStop();                                   // she stops talking to an empty room
@@ -4584,6 +4747,7 @@ function faceOff() {
   elGallery().hidden = true;
   elHome().hidden = true;
   elBoss().hidden = true;
+  elLevels().hidden = true;
   elVictor().hidden = true;
 }
 
@@ -4730,6 +4894,12 @@ function showFace(which) {
     elOver.classList.add('intro');
     elRules().hidden = false;
     document.getElementById('overTitle').hidden = true;
+  } else if (which === 'levels') {
+    elOver.classList.add('menu', 'lvface');
+    elLevels().hidden = false;
+    document.getElementById('overTitle').hidden = false;
+    document.getElementById('overTitle').textContent = 'Levels';
+    buildLevels();
   } else if (which === 'gallery') {
     if (chimeDue) { chimeDue = false; sayMusic('chime'); }
     /* No heading. The chapter carries the screen now, printed large, and
