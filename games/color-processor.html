@@ -4210,7 +4210,10 @@ function victorTick() {
   victorShow(victorAt(t));
   /* He stops on his last line rather than clearing it: the screen waits
      for you, and the last thing he said is still there to read. */
-  if (t > VIC_RUNS + 0.5) { cancelAnimationFrame(VIC.raf); VIC.raf = 0; }
+  if (t > VIC_RUNS + 0.5) {
+    cancelAnimationFrame(VIC.raf); VIC.raf = 0;
+    if (music && music.duck) music.duck(false);
+  }
 }
 
 function victorSpeak() {
@@ -4237,6 +4240,7 @@ function victorSpeak() {
 function victorStop() {
   if (VIC.raf) { cancelAnimationFrame(VIC.raf); VIC.raf = 0; }
   if (VIC.audio) { try { VIC.audio.pause(); VIC.audio.currentTime = 0; } catch (e) {} }
+  if (music && music.duck) music.duck(false);
 }
 
 async function victorStart(silent) {
@@ -4252,6 +4256,7 @@ async function victorStart(silent) {
   }
   vicSpoken = true;
   VIC.t0 = performance.now();
+  if (music && music.duck) music.duck(true);
   victorShow(0);
   victorSpeak();
   victorTick();
@@ -4272,7 +4277,16 @@ async function victorStart(silent) {
    Geometry is in fractions of the frame, measured against the 1:2 crop
    the game prints: her face fills the upper third, eyes at .228.
    ============================================================ */
-const FACE  = { cx: 0.465, eyeY: 0.228, faceW: 0.40, faceTop: 0.125, chinY: 0.355 };
+const FACE  = { cx: 0.465, faceW: 0.40, faceTop: 0.125, chinY: 0.355 };
+
+/* Each iris, found on the painting rather than guessed at from the
+   middle of the face. Her left eye was out by 0.04 of the frame -- the
+   light was sitting on her temple, not in her eye -- and they are not
+   level with each other either, so they are written down separately. */
+const EYES = [
+  { x: 0.3770, y: 0.2345, lens: false },        // her right, our left
+  { x: 0.5155, y: 0.2335, lens: true }          // her left, under the plating
+];
 
 /* She has no lips -- she has an output device, over the one feature
    anybody could name. Measured off her face rather than estimated: the
@@ -4469,8 +4483,7 @@ function corrupt(ctx, img, w, h, amount, seed) {
   /* ---- the eyes ---------------------------------------------------
      Lit from inside. The one under the plating becomes a lens, which is
      the point: the same look out of a different instrument. */
-  const eyes = [[0.380, FACE.eyeY, false], [0.555, FACE.eyeY, true]];
-  for (const [ex, ey, lens] of eyes) {
+  for (const { x: ex, y: ey, lens } of EYES) {
     const cx = X(ex), cy = Y(ey), r = X(0.050) * (0.62 + 0.38 * A);
     if (lens) {
       ctx.fillStyle = 'rgba(16,20,28,' + (0.92 * A) + ')';
@@ -4671,7 +4684,10 @@ function asilTick() {
   asilDraw(ms);
   /* She runs the reveal, says her piece once, and then holds. Nothing
      here loops: a taunt on repeat stops being a taunt. */
-  if (ms > asilRuns() + 400) { cancelAnimationFrame(ASIL.raf); ASIL.raf = 0; }
+  if (ms > asilRuns() + 400) {
+    cancelAnimationFrame(ASIL.raf); ASIL.raf = 0;
+    if (music && music.duck) music.duck(false);  // she has finished; the score comes back
+  }
 }
 
 function asilSpeak() {
@@ -4696,6 +4712,7 @@ function asilSpeak() {
 function asilStop() {
   if (ASIL.raf) { cancelAnimationFrame(ASIL.raf); ASIL.raf = 0; }
   if (ASIL.audio) { try { ASIL.audio.pause(); ASIL.audio.currentTime = 0; } catch (e) {} }
+  if (music && music.duck) music.duck(false);
 }
 
 async function asilStart(silent) {
@@ -4710,6 +4727,7 @@ async function asilStart(silent) {
   }
   bossSpoken = true;
   ASIL.t0 = performance.now();
+  if (music && music.duck) music.duck(true);
   asilSpeak();
   asilTick();
 }

@@ -170,6 +170,7 @@ const CUE_LOOK = 0.9;               // how far ahead laps are written
 const CUE_LEVEL = 0.52;             // the soundtrack sits under the effects
 
 let cueBus = null;                  // everything musical hangs off this
+let cueDuck = null;                 // and comes down under a voice
 let cueWant = null;                 // the cue that should be playing
 let cueHave = null;                 // the one that is
 let cueBuf = null;
@@ -180,9 +181,25 @@ let cueTurn = 0;                    // which request is the current one
 const cueCache = new Map();         // name -> AudioBuffer, or a promise for one
 
 function cueBuild() {
+  cueDuck = ctx.createGain();
+  cueDuck.gain.value = 1;
+  cueDuck.connect(master);
   cueBus = ctx.createGain();
   cueBus.gain.value = 0.0001;
-  cueBus.connect(master);
+  cueBus.connect(cueDuck);
+}
+
+/* Somebody is talking. The music comes down rather than out, because a
+   score that stops dead the moment a character opens their mouth draws
+   more attention to itself than one that steps back. Its own node, so
+   the fades between cues and this can both write to a gain without
+   arguing over the same one. */
+export function duck(quiet) {
+  if (!cueDuck || !ctx) return;
+  const t = ctx.currentTime;
+  cueDuck.gain.cancelScheduledValues(t);
+  cueDuck.gain.setValueAtTime(Math.max(cueDuck.gain.value, 0.0001), t);
+  cueDuck.gain.exponentialRampToValueAtTime(quiet ? 0.16 : 1, t + (quiet ? 0.25 : 0.9));
 }
 
 async function cueLoad(name) {
