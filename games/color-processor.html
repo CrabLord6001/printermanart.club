@@ -2248,10 +2248,16 @@ function cueNow() {
    level plays in silence until the next screen. */
 let wantCue = null;
 
-function setMusic(name) {
+let wantHow = null;
+
+function setMusic(name, how) {
   wantCue = name || null;
+  wantHow = how || null;
   if (!music || !music.setCue) return;
-  if (music.corrupt) music.corrupt(!!name && atFinale() && started);
+  /* Faint means her intro: the stage's own music, corrupt, a long way
+     down. Otherwise the corruption belongs to the level itself. */
+  if (music.corrupt) music.corrupt(!!name && (how === 'faint' || (atFinale() && started)));
+  if (music.under) music.under(how === 'faint');
   music.setCue(name);
 }
 
@@ -4030,9 +4036,9 @@ function showFace(which) {
     elOver.hidden = false;
     buildBoss();
     buttons();
-    /* Nothing plays here. The level has not started, and a score under
-       somebody talking is a score competing with them. */
-    setMusic(null);
+    /* Her own stage music, corrupt, and a long way down -- the room she
+       is standing in rather than something to talk over. */
+    setMusic(cueNow(), 'faint');
     /* Said once. Coming back from the board is not a fresh arrival, so
        she is already standing there having finished. */
     asilStart(bossSpoken);
@@ -5650,7 +5656,7 @@ async function setSound(next) {
   try { localStorage.setItem('cp-sound', next ? '1' : '0'); } catch (e) {}
 
   // whatever the screen asked for while there was nobody to ask
-  if (next) setMusic(wantCue);
+  if (next) setMusic(wantCue, wantHow);
 
   /* Whoever is talking starts again from the top rather than joining
      halfway: the point of turning it on is to hear the line. */

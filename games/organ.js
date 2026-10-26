@@ -170,6 +170,9 @@ const CUE_LOOK = 0.9;               // how far ahead laps are written
 const CUE_LEVEL = 0.52;             // the soundtrack sits under the effects
 
 let cueBus = null;                  // everything musical hangs off this
+let cueDuck = null;                 // which steps back while she speaks
+let cueFaint = false;               // or sits right down, under her intro
+let voiceBus = null;                // her lines, which the music does not scale
 let cueWant = null;                 // the cue that should be playing
 let cueHave = null;                 // the one that is
 let cueBuf = null;
@@ -180,9 +183,19 @@ let cueTurn = 0;                    // which request is the current one
 const cueCache = new Map();         // name -> AudioBuffer, or a promise for one
 
 function cueBuild() {
+  /* Her lines hang off the master rather than off the music, so the
+     level the track is playing at cannot quietly decide how loud she
+     is -- and ducking the track cannot duck her with it. */
+  voiceBus = ctx.createGain();
+  voiceBus.gain.value = 0.62;
+  voiceBus.connect(master);
+
+  cueDuck = ctx.createGain();
+  cueDuck.gain.value = 1;
+  cueDuck.connect(master);
   cueBus = ctx.createGain();
   cueBus.gain.value = 0.0001;
-  cueBus.connect(master);
+  cueBus.connect(cueDuck);
 }
 
 async function cueLoad(name) {
@@ -300,6 +313,7 @@ async function stabLoad() {
 }
 
 function stabFire(at) {
+  if (cueFaint) return;                         // she is speaking; she does not need quoting
   if (!stabBuf || !stabAt || !stabAt.length) return;
   let i = (rnd() * stabAt.length) | 0;
   if (i === stabLast) i = (i + 1) % stabAt.length;   // not the same one twice running
@@ -314,15 +328,28 @@ function stabFire(at) {
   const off = back ? (stabBuf.duration - cut.at - cut.dur) : cut.at;
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, at);
-  g.gain.linearRampToValueAtTime(0.78, at + 0.01);
-  g.gain.setValueAtTime(0.78, at + cut.dur - 0.05);
+  g.gain.linearRampToValueAtTime(1, at + 0.01);
+  g.gain.setValueAtTime(1, at + cut.dur - 0.05);
   g.gain.linearRampToValueAtTime(0.0001, at + cut.dur);
 
   src.connect(g);
   /* Over the music rather than through the same mangling. She is already
      a voice that does not work; putting her through the ring modulator
      as well only makes her hard to make out. */
-  g.connect(cueBus);
+  g.connect(voiceBus || cueBus);
+
+  /* And the track steps back for the length of the line. Her voice over
+     the top of its own remix was a voice you could hear was there and
+     not make out, which is worse than not having it. */
+  const d = cueDuck;
+  if (d) {
+    d.gain.cancelScheduledValues(at);
+    d.gain.setValueAtTime(Math.max(d.gain.value, 0.0001), at);
+    d.gain.linearRampToValueAtTime(0.26, at + 0.08);
+    d.gain.setValueAtTime(0.26, at + cut.dur - 0.08);
+    d.gain.linearRampToValueAtTime(1, at + cut.dur + 0.55);
+  }
+
   try { src.start(at, Math.max(0, off), cut.dur); } catch (e) { return; }
   src.stop(at + cut.dur + 0.05);
   src.onended = () => { cueLive = cueLive.filter((x) => x.src !== src); try { g.disconnect(); } catch (e) {} };
@@ -335,20 +362,20 @@ function cueRemixBar(at) {
   const off = n * BAR;
   const pick = rnd();
 
-  if (pick < 0.46) {                                    // as written
+  if (pick < 0.70) {                                    // as written
     cuePiece(at, cueBuf, off, BAR, BAR, 1);
     cueBar += 1;
-  } else if (pick < 0.60) {                             // backwards
+  } else if (pick < 0.80) {                             // backwards
     const mirror = cueBuf.duration - off - BAR;
     cuePiece(at, cueRev, mirror, BAR, BAR, 1);
     cueBar += 1;
-  } else if (pick < 0.72) {                             // half speed, half the bar
+  } else if (pick < 0.89) {                             // half speed, half the bar
     cuePiece(at, cueBuf, off, BAR / 2, BAR, 0.5);
     cueBar += 1;
-  } else if (pick < 0.84) {                             // two bars in one
+  } else if (pick < 0.95) {                             // two bars in one
     cuePiece(at, cueBuf, off, BAR * 2, BAR, 2);
     cueBar += 2;
-  } else if (pick < 0.95) {                             // the needle sticks
+  } else if (pick < 0.98) {                             // the needle sticks
     const slice = BAR / 4;
     for (let k = 0; k < 4; k++) cuePiece(at + k * slice, cueBuf, off, slice, slice, 1, 0.006);
     cueBar += 1;
@@ -461,6 +488,17 @@ function bendCurve(k) {
   return c;
 }
 
+/* Her intro plays the stage's own music, but a long way down: enough to
+   be the room she is standing in, not enough to argue with her. */
+export function under(on) {
+  cueFaint = !!on;
+  if (!cueDuck || !ctx) return;
+  const t = ctx.currentTime;
+  cueDuck.gain.cancelScheduledValues(t);
+  cueDuck.gain.setValueAtTime(Math.max(cueDuck.gain.value, 0.0001), t);
+  cueDuck.gain.exponentialRampToValueAtTime(cueFaint ? 0.17 : 1, t + 0.6);
+}
+
 export function corrupt(onOff) {
   if (!ctx) return;
   if (onOff && !cueFx) {
@@ -468,19 +506,19 @@ export function corrupt(onOff) {
 
     // the ring, slow enough to wobble rather than buzz
     const ring = ctx.createGain();
-    ring.gain.value = 0.72;
+    ring.gain.value = 0.88;
     const osc = ctx.createOscillator();
     osc.type = 'sine';
     osc.frequency.value = 23;
     const depth = ctx.createGain();
-    depth.gain.value = 0.28;
+    depth.gain.value = 0.12;
     osc.connect(depth); depth.connect(ring.gain);
     osc.start();
     cueRing = osc;
 
     // the bend
     const bend = ctx.createWaveShaper();
-    bend.curve = bendCurve(2.2);
+    bend.curve = bendCurve(1.1);
     bend.oversample = '2x';
 
     // the top taken off, which is what makes it sound broken rather than
@@ -488,13 +526,13 @@ export function corrupt(onOff) {
     const tilt = ctx.createBiquadFilter();
     tilt.type = 'lowshelf';
     tilt.frequency.value = 220;
-    tilt.gain.value = 5;
+    tilt.gain.value = 3;
 
     // a long delay, fed back, so phrases arrive on top of each other
     const dl = ctx.createDelay(1.5);
     dl.delayTime.value = 0.375;                 // a dotted eighth at this tempo
     const fb = ctx.createGain();
-    fb.gain.value = 0.40;
+    fb.gain.value = 0.24;
     const damp = ctx.createBiquadFilter();
     damp.type = 'lowpass';
     damp.frequency.value = 1600;
@@ -503,7 +541,7 @@ export function corrupt(onOff) {
     const verb = ctx.createConvolver();
     verb.buffer = hall(2.4, 2.6);
     const wet = ctx.createGain();
-    wet.gain.value = 0.34;
+    wet.gain.value = 0.18;
 
     cueFx.connect(ring);
     ring.connect(bend);
@@ -513,7 +551,7 @@ export function corrupt(onOff) {
        one unless something takes it back down. Measured: without this
        it peaks at 0.99 against the plain cue's 0.52. */
     const trim = ctx.createGain();
-    trim.gain.value = 0.46;
+    trim.gain.value = 0.62;
     trim.connect(cueBus);
 
     tilt.connect(trim);
