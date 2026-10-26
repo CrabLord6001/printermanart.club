@@ -2023,56 +2023,56 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* The time to beat, and the one number on the screen worth reading from
    across the room. */
-/* The times, in the same frame as the plate above them and the same
-   width, so the two stack as one object. Loose on the painting they were
-   two readings with nothing holding them, and the smaller one had a
-   light passage of a print running straight through it. */
+/* The times, as a shallow bar against the plate above: what they did on
+   the left, what to beat on the right. The plate is the thing on this
+   card and this is its label, so it is a strip rather than a second
+   panel competing with it. */
 .campface .times {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   width: 100%;
   max-width: 19rem;
-  margin: 16px auto 0;
-  padding: 10px 14px 12px;
-  background: rgba(10,12,17,0.9);
+  margin: 9px auto 0;
   border: 1px solid #2E333F;
   border-radius: 3px;
-  box-shadow: 0 0 0 4px #15181F, 0 0 0 5px #39404E, 0 10px 26px rgba(0,0,0,0.55);
+  background: rgba(10,12,17,0.9);
+  box-shadow: 0 0 0 3px #15181F, 0 6px 18px rgba(0,0,0,0.5);
+  overflow: hidden;
+  text-align: center;
 }
 
+/* A level nobody has printed has nothing to put on the left, so the par
+   takes the whole bar rather than standing beside an empty half. */
+.campface .times.alone { grid-template-columns: 1fr; }
 .campface .times[hidden] { display: none; }
 
-.campface .par {
-  margin: 0 !important;
-  font-size: 0.6rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.campface .par b {
+.campface .t-cell { padding: 6px 8px 7px; }
+.campface .t-cell + .t-cell { border-left: 1px solid #2E333F; }
+.campface .t-cell[hidden] { display: none; }
+
+.campface .t-cell span {
   display: block;
-  margin-top: 4px;
-  font-size: 1.5rem;
+  font-size: 0.44rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--accent);
-}
-
-/* Their own time under it, quiet: the par is what the screen is for, and
-   this is how they stand against it. Gold when it came in under.
-
-   The rule above it comes with the line rather than with the block, so a
-   level nobody has printed yet shows no divider under empty space. */
-.campface .mine {
-  margin: 9px 0 0 !important;
-  padding-top: 8px;
-  border-top: 1px solid #262C36;
-  font-size: 0.56rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--dim);
 }
-.campface .mine b { font-weight: 700; color: var(--muted); }
-.campface .mine.under b { color: var(--accent); }
-.campface .mine[hidden] { display: none; }
+
+.campface .t-cell b {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* The number to beat is the gold one. Their own goes gold only when it
+   came in under it, so the two read as the same color meaning the same
+   thing: this is the time that counts. */
+.campface .t-cell.goal b { color: var(--accent); }
+.campface .t-cell.under b { color: var(--accent); }
 
 /* ---- Asil Anom ----
    Every other face is words on a dark panel. This one is a picture with
@@ -2648,16 +2648,16 @@ nav.menu {
               <div class="plate finaleplate" id="galPlateWrap" hidden><canvas id="galPlate"></canvas></div>
               <p class="chap" id="galChap"></p>
               <div class="plate levelplate" id="galTitleWrap"><canvas id="galTitle"></canvas></div>
-              <!-- The times, in one block under the printed title rather
-                   than two readings floating separately on the painting.
-                   Same frame as the plate above it, so the card is a sheet
-                   with a label under it rather than three loose things. -->
+              <!-- The times, as one shallow bar under the printed title:
+                   what they did on the left, what to beat on the right.
+                   Two readings floating loose on a painting were three
+                   things on the card; this is one, and it sits against
+                   the plate rather than drifting below it. -->
               <div class="times" id="galTimes">
-                <p class="par" id="galPar"></p>
-                <!-- What they did on this level last time, against the
-                     number above it. Only on a level they have printed:
-                     before that the par is the whole story. -->
-                <p class="mine" id="galMine" hidden></p>
+                <!-- Only on a level they have printed. Before that the par
+                     is the whole story and the bar is one cell wide. -->
+                <div class="t-cell" id="galMine" hidden><span>Your best</span><b></b></div>
+                <div class="t-cell goal" id="galPar"><span>Par time</span><b></b></div>
               </div>
               <p class="saved" id="galSaved"></p>
             </div>
@@ -6305,28 +6305,27 @@ function buildGallery() {
      graded, and she is still a print with a clock on it. */
   const par = parOf(i + 1);
   const parEl = document.getElementById('galPar');
-  if (parEl) {
-    parEl.innerHTML = par ? 'Par time <b>' + stamp(par * 1000) + '</b>' : '';
-    parEl.hidden = !par;
-  }
+  if (parEl) parEl.querySelector('b').textContent = par ? stamp(par * 1000) : '';
 
   /* Their own best on this level, under the par. Nothing before they have
      printed it: there is no time to stand against the number yet, and an
      empty row where one will be is a reminder of what they have not done
      rather than a reading. */
   const mineEl = document.getElementById('galMine');
+  const best = bestOf(i + 1);
   if (mineEl) {
-    const best = bestOf(i + 1);
     mineEl.hidden = !(best && par);
     if (best && par) {
-      mineEl.innerHTML = 'Your best <b>' + stamp(best) + '</b>';
+      mineEl.querySelector('b').textContent = stamp(best);
       mineEl.classList.toggle('under', best <= par * 1000);
     }
   }
 
-  // nothing to put in it on a level with no par at all
   const timesEl = document.getElementById('galTimes');
-  if (timesEl) timesEl.hidden = !par;
+  if (timesEl) {
+    timesEl.hidden = !par;                       // no par, nothing to show
+    timesEl.classList.toggle('alone', !(best && par));
+  }
 
   fitChapter();
   paintGalleryArt(here);
