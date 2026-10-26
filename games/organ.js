@@ -237,9 +237,88 @@ function cueLap(at) {
   return dur;
 }
 
+/* ---- the remix ----
+   Her stage does not get the cue straight. It gets it a bar at a time,
+   and each bar is handed one of a few treatments: left alone, played
+   backwards, halved, doubled, stuttered, or dropped. The slot is always
+   one bar wide whatever happens inside it, so the groove holds and the
+   thing stays danceable rather than becoming noise -- which was the one
+   condition he set on it.
+
+   Half the bars are left alone on purpose. A remix that mangles
+   everything stops being a remix of anything. */
+const BAR = 2.0;                    // the piece is 120 BPM in four
+let cueBar = 0;
+let cueRev = null;                  // the same buffer, backwards
+let cueSeed = 1;
+
+function rnd() {
+  cueSeed = (cueSeed * 1664525 + 1013904223) >>> 0;
+  return cueSeed / 4294967296;
+}
+
+function reverseOf(buf) {
+  const out = ctx.createBuffer(buf.numberOfChannels, buf.length, buf.sampleRate);
+  for (let c = 0; c < buf.numberOfChannels; c++) {
+    const from = buf.getChannelData(c), to = out.getChannelData(c);
+    for (let i = 0, n = buf.length; i < n; i++) to[i] = from[n - 1 - i];
+  }
+  return out;
+}
+
+/* One source, started at `at`, reading `len` seconds from `off`, filling
+   `slot` seconds of the bar. */
+function cuePiece(at, buf, off, len, slot, rate, fade) {
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.playbackRate.value = rate;
+  const g = ctx.createGain();
+  const f = fade === undefined ? 0.012 : fade;
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.linearRampToValueAtTime(1, at + f);
+  g.gain.setValueAtTime(1, at + slot - f);
+  g.gain.linearRampToValueAtTime(0.0001, at + slot);
+  src.connect(g);
+  g.connect(cueFx || cueBus);
+  src.start(at, Math.max(0, off), Math.max(0.02, len));
+  src.stop(at + slot + 0.03);
+  src.onended = () => { cueLive = cueLive.filter((x) => x.src !== src); try { g.disconnect(); } catch (e) {} };
+  cueLive.push({ src, g });
+}
+
+function cueRemixBar(at) {
+  const bars = Math.max(1, Math.round(cueBuf.duration / BAR));
+  const n = cueBar % bars;
+  const off = n * BAR;
+  const pick = rnd();
+
+  if (pick < 0.46) {                                    // as written
+    cuePiece(at, cueBuf, off, BAR, BAR, 1);
+    cueBar += 1;
+  } else if (pick < 0.60) {                             // backwards
+    const mirror = cueBuf.duration - off - BAR;
+    cuePiece(at, cueRev, mirror, BAR, BAR, 1);
+    cueBar += 1;
+  } else if (pick < 0.72) {                             // half speed, half the bar
+    cuePiece(at, cueBuf, off, BAR / 2, BAR, 0.5);
+    cueBar += 1;
+  } else if (pick < 0.84) {                             // two bars in one
+    cuePiece(at, cueBuf, off, BAR * 2, BAR, 2);
+    cueBar += 2;
+  } else if (pick < 0.95) {                             // the needle sticks
+    const slice = BAR / 4;
+    for (let k = 0; k < 4; k++) cuePiece(at + k * slice, cueBuf, off, slice, slice, 1, 0.006);
+    cueBar += 1;
+  } else {                                              // and sometimes nothing
+    cueBar += 1;
+  }
+  return BAR;
+}
+
 function cueSchedule() {
   if (!cueBuf || !ctx) return;
   while (cueAt < ctx.currentTime + CUE_LOOK) {
+    if (cueFx) { cueAt += cueRemixBar(cueAt); continue; }
     const dur = cueLap(cueAt);
     cueAt += dur - CUE_XF;          // the next one starts inside this one
   }
@@ -251,6 +330,7 @@ function cueSilence() {
   clearInterval(cueTimer);
   cueTimer = null;
   cueBuf = null;
+  cueRev = null;
   cueHave = null;
 }
 
@@ -271,6 +351,9 @@ export async function setCue(name) {
 
   cueSilence();
   cueBuf = buf;
+  cueRev = cueFx ? reverseOf(buf) : null;
+  cueBar = 0;
+  cueSeed = 1;
   cueHave = name;
   cueAt = ctx.currentTime + 0.06;
   cueSchedule();
@@ -299,13 +382,40 @@ function cueFade(to, mine) {
 let cueRate = 1;
 let cueFx = null;
 let cueRing = null;
+let cueFxNodes = [];
+
+/* A room to play it in, built rather than loaded: white noise with an
+   exponential tail is a plain hall, and a plain hall is all this needs.
+   No impulse file to fetch for something only one level ever hears. */
+function hall(seconds, decay) {
+  const n = Math.floor(ctx.sampleRate * seconds);
+  const buf = ctx.createBuffer(2, n, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c);
+    for (let i = 0; i < n; i++) {
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, decay);
+    }
+  }
+  return buf;
+}
+
+/* A soft knee rather than a hard one. Hard clipping on music is a buzz;
+   this leans on it and lets it come back. */
+function bendCurve(k) {
+  const n = 1024, c = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    c[i] = (1 + k) * x / (1 + k * Math.abs(x));
+  }
+  return c;
+}
 
 export function corrupt(onOff) {
   if (!ctx) return;
   if (onOff && !cueFx) {
     cueFx = ctx.createGain();
 
-    // the ring, at a rate slow enough to wobble rather than buzz
+    // the ring, slow enough to wobble rather than buzz
     const ring = ctx.createGain();
     ring.gain.value = 0.72;
     const osc = ctx.createOscillator();
@@ -317,36 +427,58 @@ export function corrupt(onOff) {
     osc.start();
     cueRing = osc;
 
-    // a long delay, fed back, so phrases arrive on top of each other
-    const dl = ctx.createDelay(1.5);
-    dl.delayTime.value = 0.375;
-    const fb = ctx.createGain();
-    fb.gain.value = 0.42;
-    const damp = ctx.createBiquadFilter();
-    damp.type = 'lowpass';
-    damp.frequency.value = 1600;
+    // the bend
+    const bend = ctx.createWaveShaper();
+    bend.curve = bendCurve(2.2);
+    bend.oversample = '2x';
 
-    // and the top taken off, which is what makes it sound broken rather
-    // than merely effected
+    // the top taken off, which is what makes it sound broken rather than
+    // merely effected
     const tilt = ctx.createBiquadFilter();
     tilt.type = 'lowshelf';
     tilt.frequency.value = 220;
     tilt.gain.value = 5;
 
-    cueFx.connect(ring);
-    ring.connect(tilt);
-    tilt.connect(cueBus);
-    ring.connect(dl); dl.connect(damp); damp.connect(fb); fb.connect(dl);
-    damp.connect(cueBus);
+    // a long delay, fed back, so phrases arrive on top of each other
+    const dl = ctx.createDelay(1.5);
+    dl.delayTime.value = 0.375;                 // a dotted eighth at this tempo
+    const fb = ctx.createGain();
+    fb.gain.value = 0.40;
+    const damp = ctx.createBiquadFilter();
+    damp.type = 'lowpass';
+    damp.frequency.value = 1600;
 
-    cueRate = 0.84;                           // slower, and a little lower
+    // and the room
+    const verb = ctx.createConvolver();
+    verb.buffer = hall(2.4, 2.6);
+    const wet = ctx.createGain();
+    wet.gain.value = 0.34;
+
+    cueFx.connect(ring);
+    ring.connect(bend);
+    bend.connect(tilt);
+    /* The delay and the room are added to the dry, not swapped for it,
+       so the corrupt version arrives about twice as loud as the clean
+       one unless something takes it back down. Measured: without this
+       it peaks at 0.99 against the plain cue's 0.52. */
+    const trim = ctx.createGain();
+    trim.gain.value = 0.46;
+    trim.connect(cueBus);
+
+    tilt.connect(trim);
+    tilt.connect(verb); verb.connect(wet); wet.connect(trim);
+    ring.connect(dl); dl.connect(damp); damp.connect(fb); fb.connect(dl);
+    damp.connect(trim);
+
+    cueFxNodes = [ring, bend, tilt, dl, fb, damp, verb, wet, trim];
+    cueRate = 1;                                // the bars do the speed now
     cueRelap();
     return;
   }
   if (!onOff && cueFx) {
     try { cueRing.stop(); } catch (e) {}
-    try { cueFx.disconnect(); } catch (e) {}
-    cueFx = null; cueRing = null;
+    for (const n of cueFxNodes.concat([cueFx])) { try { n.disconnect(); } catch (e) {} }
+    cueFx = null; cueRing = null; cueFxNodes = [];
     cueRate = 1;
     cueRelap();
   }
