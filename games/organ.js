@@ -356,10 +356,12 @@ function cueRemixBar(at) {
     cueBar += 1;
   }
 
-  /* And every so often she comes through the track. Not on the first
-     bars: arriving over the top of the very first thing you hear reads
-     as a bug rather than as her. */
-  if (cueBar > 4 && rnd() < 0.13) stabFire(at);
+  /* She comes through the track early and often. At one bar in eight,
+     starting after the eighth, a run that ends in twenty seconds heard
+     her not at all -- and most runs on this level end in twenty
+     seconds. The third bar is hers by right; after that it is one in
+     four, which is about every eight seconds. */
+  if (cueBar === 3 || (cueBar > 3 && rnd() < 0.25)) stabFire(at);
 
   return BAR;
 }
