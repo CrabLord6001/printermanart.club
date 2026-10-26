@@ -95,9 +95,12 @@ body {
 
 /* In the window the readout drops below the buttons floating over the
    corner and centers itself, rather than running along the left edge with
-   the board centered underneath it. */
+   the board centered underneath it. The body centers it already, so it
+   only has to stop paying for the corner -- dropping the width cap as
+   well stretched four small readings across a maximized window, each of
+   them a pane of glass the size of a postcard with a number the size of
+   a stamp inside it. */
 html.embed .head {
-  max-width: none;
   justify-content: center;
   padding-top: 30px;
   padding-right: 0;
