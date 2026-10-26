@@ -3932,7 +3932,7 @@ function showFace(which) {
     document.getElementById('overBoard').hidden = true;
     elOver.hidden = false;
     buttons();
-    setMusic(cueNow());
+    setMusic(null);                              // he has the room to himself
     victorStart(vicSpoken);
     return;
   }
@@ -3950,9 +3950,9 @@ function showFace(which) {
     elOver.hidden = false;
     buildBoss();
     buttons();
-    /* Hers is the Classics theme, and it is not corrupted yet: the
-       corruption lands when the level does. */
-    setMusic(cueNow());
+    /* Nothing plays here. The level has not started, and a score under
+       somebody talking is a score competing with them. */
+    setMusic(null);
     /* Said once. Coming back from the board is not a fresh arrival, so
        she is already standing there having finished. */
     asilStart(bossSpoken);
@@ -4210,10 +4210,7 @@ function victorTick() {
   victorShow(victorAt(t));
   /* He stops on his last line rather than clearing it: the screen waits
      for you, and the last thing he said is still there to read. */
-  if (t > VIC_RUNS + 0.5) {
-    cancelAnimationFrame(VIC.raf); VIC.raf = 0;
-    if (music && music.duck) music.duck(false);
-  }
+  if (t > VIC_RUNS + 0.5) { cancelAnimationFrame(VIC.raf); VIC.raf = 0; }
 }
 
 function victorSpeak() {
@@ -4240,7 +4237,6 @@ function victorSpeak() {
 function victorStop() {
   if (VIC.raf) { cancelAnimationFrame(VIC.raf); VIC.raf = 0; }
   if (VIC.audio) { try { VIC.audio.pause(); VIC.audio.currentTime = 0; } catch (e) {} }
-  if (music && music.duck) music.duck(false);
 }
 
 async function victorStart(silent) {
@@ -4256,7 +4252,6 @@ async function victorStart(silent) {
   }
   vicSpoken = true;
   VIC.t0 = performance.now();
-  if (music && music.duck) music.duck(true);
   victorShow(0);
   victorSpeak();
   victorTick();
@@ -4684,10 +4679,7 @@ function asilTick() {
   asilDraw(ms);
   /* She runs the reveal, says her piece once, and then holds. Nothing
      here loops: a taunt on repeat stops being a taunt. */
-  if (ms > asilRuns() + 400) {
-    cancelAnimationFrame(ASIL.raf); ASIL.raf = 0;
-    if (music && music.duck) music.duck(false);  // she has finished; the score comes back
-  }
+  if (ms > asilRuns() + 400) { cancelAnimationFrame(ASIL.raf); ASIL.raf = 0; }
 }
 
 function asilSpeak() {
@@ -4712,7 +4704,6 @@ function asilSpeak() {
 function asilStop() {
   if (ASIL.raf) { cancelAnimationFrame(ASIL.raf); ASIL.raf = 0; }
   if (ASIL.audio) { try { ASIL.audio.pause(); ASIL.audio.currentTime = 0; } catch (e) {} }
-  if (music && music.duck) music.duck(false);
 }
 
 async function asilStart(silent) {
@@ -4727,7 +4718,6 @@ async function asilStart(silent) {
   }
   bossSpoken = true;
   ASIL.t0 = performance.now();
-  if (music && music.duck) music.duck(true);
   asilSpeak();
   asilTick();
 }
