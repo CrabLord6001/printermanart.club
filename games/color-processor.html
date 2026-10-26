@@ -2990,23 +2990,89 @@ function sizeBoard() {
      page and nonsense in full screen: the board could never grow past a
      phone's worth however much room it had. It takes what is there now,
      less the side panel and the casing, and the cell ceiling is high
-     enough that a desktop filling the screen actually fills it. */
+     enough that a desktop filling the screen actually fills it.
+
+     What the rail and the casing cost sideways used to be the flat number
+     150. It was close enough to the truth to look right, and wrong in a
+     way that mattered: a constant cannot give the board anything. Trim the
+     rail or the casing and the board stayed exactly as it was, because the
+     sum it was subtracted from never changed. So the rail, the gap beside
+     it and the metal around the well are all measured.
+
+     The rig shrinks to fit whatever is inside it, so asking the rig how
+     wide it is only ever gets its current size back. The question has to
+     go to its parent, and to the content box rather than clientWidth,
+     which counts the page's own padding as though the board could print
+     on it. */
   const byH = (window.innerHeight - used - ROWS * 3) / ROWS;
-  const byW = (window.innerWidth - 150 - COLS * 3) / COLS;
-  const cell = Math.max(14, Math.min(byH, byW, 72));
-  cellPx = cell;
 
-  for (const t of tiles) { t.style.width = cell + 'px'; t.style.height = cell + 'px'; }
+  let byW;
+  const rig = elGrid.closest('.rig');
+  const frame = elGrid.closest('.frame');
+  const rail = rig && rig.querySelector('.side');
+  if (rig && frame && rail && rig.parentElement) {
+    const hold = rig.parentElement;
+    const pad = getComputedStyle(hold);
+    const room = hold.clientWidth
+               - (parseFloat(pad.paddingLeft) || 0)
+               - (parseFloat(pad.paddingRight) || 0);
+    const gap = parseFloat(getComputedStyle(rig).columnGap) || 0;
+    const metal = frame.offsetWidth - elGrid.offsetWidth;   // padding and border, not cells
+    byW = (room - rail.offsetWidth - gap - metal - COLS * 3) / COLS;
+  }
+  // before the first layout there is nothing to measure, so fall back
+  if (!byW || !isFinite(byW) || byW < 1) byW = (window.innerWidth - 150 - COLS * 3) / COLS;
 
-  /* How much of the queue is on screen is decided by the column beside the
-     board, which is as tall as the board itself. Whatever does not fit is
-     still in the queue -- it is simply not shown. */
-  const dot = Math.max(10, Math.round(cell * 0.6));
-  const pairH = dot * 2 + 3;
-  const room = ROWS * (cell + 3) - NEXT_CHROME;
-  shownNext = Math.max(1, Math.min(QUEUE_LEN, Math.floor(room / (pairH + 9))));
+  let cell = Math.max(14, Math.min(byH, byW, 72));
 
-  paintNext();
+  const lay = (c) => {
+    cellPx = c;
+    for (const t of tiles) { t.style.width = c + 'px'; t.style.height = c + 'px'; }
+
+    /* How much of the queue is on screen is decided by the column beside the
+       board, which is as tall as the board itself. Whatever does not fit is
+       still in the queue -- it is simply not shown. */
+    const dot = Math.max(10, Math.round(c * 0.6));
+    const pairH = dot * 2 + 3;
+    const room = ROWS * (c + 3) - NEXT_CHROME;
+    shownNext = Math.max(1, Math.min(QUEUE_LEN, Math.floor(room / (pairH + 9))));
+
+    paintNext();
+  };
+
+  lay(cell);
+
+  /* Three things above settle only once the cells have a size, so none of
+     them can be worked out beforehand: the buttons under the board wrap to
+     a second row on a narrow screen, the breadcrumb runs to two lines, and
+     the rail has a floor of its own that can stand taller than the board
+     it is beside. On a small phone that left the page two hundred pixels
+     longer than the screen, and a game you have to scroll is a game you
+     cannot play.
+
+     Rather than model all three, lay the board out and ask the page how
+     tall it came out. Anything over, the board gives back, a row's worth
+     at a time. Four passes is plenty -- each one takes real pixels off --
+     and the floor of 14 means it stops either way.
+
+     Only while it is doing some good, though. On a small phone the rail
+     has a floor of its own and stands taller than the board however small
+     the board gets, so there the page stays just as long and the cells
+     get smaller for nothing. The rail does shrink with the board most of
+     the way down -- it shows fewer of the queue -- so there is no telling
+     beforehand which case a screen is in. Shrink, look, and put it back
+     if looking says it did not help. */
+  const tall = () => document.documentElement.scrollHeight - window.innerHeight;
+  for (let pass = 0; pass < 4; pass++) {
+    const over = tall();
+    if (over <= 1 || cell <= 14) break;
+    // everything the board could give back, if it shrank to the floor
+    if (over > (cell - 14) * ROWS) break;      // not the board's to fix
+    const was = cell;
+    cell = Math.max(14, cell - Math.max(1, Math.ceil(over / ROWS)));
+    lay(cell);
+    if (tall() >= over - 1) { cell = was; lay(cell); break; }   // bought nothing
+  }
 
   // the intro is measured off the well, so it is redrawn when the well moves
   if (elOver && !elOver.hidden && elOver.classList.contains('intro')) paintDemo();
@@ -5209,7 +5275,9 @@ function buildPeek() {
 }
 
 /* The two buttons under the board, named for the state they are in. */
-function buttons() {
+function buttons() { buttonsNow(); refit(); }
+
+function buttonsNow() {
   const menu = document.getElementById('menuBtn');
   const main = document.getElementById('again');
   const rules = document.getElementById('rulesBtn');
@@ -5340,6 +5408,25 @@ function buttons() {
   main.textContent = redeal();
 }
 
+/* These buttons are what the row under the board is made of, and their
+   labels change with the phase -- so the row can wrap to two lines after
+   the board has already been sized against a one line row. On a narrow
+   phone that is how the page ended up longer than the screen with nobody
+   having resized anything. The board is measured again whenever the row
+   changes height. The flag is there because sizing can only ever make the
+   row wrap or unwrap, which would call back in here forever. */
+let footWas = 0, refitting = false;
+const refit = () => {
+  const foot = document.querySelector('.foot');
+  if (!foot || refitting || !tiles.length) return;
+  const h = foot.offsetHeight;
+  if (h === footWas) return;
+  footWas = h;
+  refitting = true;
+  sizeBoard();
+  refitting = false;
+};
+
 function pause() {
   if (!started || paused || over) return;
   paused = true; phase = 'paused';
@@ -5403,6 +5490,12 @@ function finish(won) {
   started = false; paused = false; phase = 'done';
   stopClock();
   wonLast = !!won;
+
+  /* The scoring line is the game talking while you play, and it was only
+     ever cleared when the next run started. So the last clear of a run sat
+     under Game Over saying what some clump was worth, about a game that
+     had already ended. Nothing is falling now, so it has nothing to say. */
+  show('');
 
   if (!won) {
     /* A jam used to leave them looking at a dead board with a plate count
