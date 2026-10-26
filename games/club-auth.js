@@ -224,6 +224,31 @@ export async function campaignMe(game) {
   return (data && data[0]) || null;
 }
 
+/* Profile pictures for the names already on a board. The board function
+   returns names and scores only, and club_members is readable, so one
+   extra query fills in the faces rather than changing the board function.
+   Keyed by display name, which is what the board rows carry. */
+export async function avatarsFor(names) {
+  const want = (names || []).filter(Boolean);
+  if (!want.length) return {};
+
+  const { data, error } = await db
+    .from('club_members')
+    .select('display_name, avatar_url')
+    .in('display_name', want);
+
+  if (error) {
+    console.warn('[club-auth] avatars failed:', error.message);
+    return {};
+  }
+
+  const faces = {};
+  (data || []).forEach((row) => {
+    if (row.avatar_url) faces[row.display_name] = row.avatar_url;
+  });
+  return faces;
+}
+
 export async function leaderboard(game, variant, limit) {
   const { data, error } = await db.rpc('club_leaderboard', {
     p_game: game,

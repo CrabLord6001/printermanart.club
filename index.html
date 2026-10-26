@@ -796,30 +796,63 @@
         <div class="tray">
           <canvas id="play" width="768" height="576" aria-label="Paper Trail game board"></canvas>
 
-          <!-- Everything that is not the board lives on this panel: the rules
-               before the first run, the score and the board after a jam. -->
+          <!-- Everything that is not the board lives on this panel: the
+               marquee and the menu before the first run, the score and the
+               board after a jam. -->
           <div class="veil" id="pVeil">
-            <h2 id="pTitle" class="lore">Ms.&nbsp;Printer: Paper Trail</h2>
-            <p id="pText" hidden></p>
 
-            <div id="pExtra">
+            <div class="marquee" id="pMarquee" hidden>
+              <svg class="star" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.6 1.4 6.8L12 17.1 5.9 20.5l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>
+              <div>
+                <p class="mq-sub">Ms.&nbsp;Printer</p>
+                <p class="mq-name">Paper Trail</p>
+              </div>
+              <svg class="star" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.6 1.4 6.8L12 17.1 5.9 20.5l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>
+            </div>
+
+            <div class="inkrule" id="pRule" aria-hidden="true" hidden><i></i><i></i><i></i><i></i></div>
+
+            <div class="veil-mid">
+              <h2 id="pTitle" class="lore">Ms.&nbsp;Printer: Paper Trail</h2>
+              <p id="pText" hidden></p>
+
+              <div id="pExtra"></div>
+
+              <p class="where" id="pWhere" hidden></p>
+              <div class="rooms" id="pRooms"></div>
+
+              <div class="after" id="pAfter" hidden>
+                <button class="btn" id="pBtn" type="button">Print again</button>
+                <button class="btn ghost" id="pBack" type="button">Change room</button>
+              </div>
+
+              <div class="arc-menu" id="pMenu" hidden>
+                <button class="menu-row" id="pHow" type="button" aria-expanded="true" aria-controls="pHowto">
+                  <span class="cur"><svg viewBox="0 0 4 8" width="11" height="16" fill="currentColor" aria-hidden="true"><path d="M0 0h1v1H0zM0 1h2v1H0zM0 2h3v1H0zM0 3h4v2H0zM0 5h3v1H0zM0 6h2v1H0zM0 7h1v1H0z"/></svg></span>How to Play
+                </button>
+                <button class="menu-row" id="pHigh" type="button">
+                  <span class="cur"><svg viewBox="0 0 4 8" width="11" height="16" fill="currentColor" aria-hidden="true"><path d="M0 0h1v1H0zM0 1h2v1H0zM0 2h3v1H0zM0 3h4v2H0zM0 5h3v1H0zM0 6h2v1H0zM0 7h1v1H0z"/></svg></span>High Scores
+                </button>
+              </div>
+
+              <p class="msg" id="pMsg" hidden></p>
+            </div>
+
+            <div class="trailband" id="pTrail" aria-hidden="true" hidden><i></i></div>
+
+            <!-- The rules sit in the markup rather than being built, so they
+                 are there for anyone with no scripting at all. -->
+            <div class="howto" id="pHowto">
+              <p class="howto-label">How to Play</p>
               <ul class="rules">
                 <li>WASD, arrow keys, or swipe</li>
                 <li>Consume ink to keep printing</li>
                 <li>Hit your own printouts or the wall and it&rsquo;s game over</li>
               </ul>
             </div>
-
-            <p class="where" id="pWhere" hidden></p>
-            <div class="rooms" id="pRooms"></div>
-
-            <div class="after" id="pAfter" hidden>
-              <button class="btn" id="pBtn" type="button">Print again</button>
-              <button class="btn ghost" id="pBack" type="button">Change room</button>
-            </div>
-
-            <p class="msg" id="pMsg" hidden></p>
           </div>
+
+          <div class="scan" aria-hidden="true"></div>
         </div>
 
         <button class="box-close" id="pClose" type="button" aria-label="Close">
@@ -1036,9 +1069,19 @@ if (track) {
   const elTray  = box ? box.querySelector('.tray') : null;
   const fullBtn = document.getElementById('pFull');
 
-  // The rules sit in the markup, so they are there for anyone with no
-  // scripting at all. Keep a copy to put back between runs.
-  const rulesHTML = elExtra.innerHTML;
+  const elMarquee = document.getElementById('pMarquee');
+  const elRule    = document.getElementById('pRule');
+  const elTrail   = document.getElementById('pTrail');
+  const elHowto   = document.getElementById('pHowto');
+  const elMenu    = document.getElementById('pMenu');
+  const elHow     = document.getElementById('pHow');
+  const elHigh    = document.getElementById('pHigh');
+
+  /* Which panel is showing. The two buttons at the bottom do a different
+     thing on each one, and reading the heading to work that out was always
+     going to break the moment a heading changed. */
+  let mode = 'intro';
+  let howOpen = true;
 
   let mods = null, game = null, signedIn = false, room = 'classic';
 
@@ -1081,6 +1124,36 @@ if (track) {
     elVeil.hidden = false;
   };
 
+  /* The title panel wears the marquee, the menu and the how-to strip. Every
+     other panel is the plain centered one. */
+  function startChrome(on) {
+    elVeil.classList.toggle('start', on);
+    elMarquee.hidden = !on;
+    elRule.hidden = !on;
+    elTrail.hidden = !on;
+    elMenu.hidden = !on;
+    elHowto.hidden = !on || !howOpen;
+    elTitle.hidden = on;                 // the marquee is the title here
+    elBtn.classList.toggle('big', on);
+    elHow.setAttribute('aria-expanded', howOpen ? 'true' : 'false');
+  }
+
+  /* The pixel face is only wanted once somebody opens the game, so it is
+     fetched then rather than on every visit to the lander. */
+  function loadPixelFont() {
+    if (document.getElementById('pixelFont')) return;
+    const link = document.createElement('link');
+    link.id = 'pixelFont';
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap';
+    document.head.appendChild(link);
+  }
+
+  const CURSOR = '<span class="cur" aria-hidden="true">' +
+    '<svg viewBox="0 0 4 8" width="10" height="14" fill="currentColor">' +
+    '<path d="M0 0h1v1H0zM0 1h2v1H0zM0 2h3v1H0zM0 3h4v2H0zM0 5h3v1H0zM0 6h2v1H0zM0 7h1v1H0z"/>' +
+    '</svg></span>';
+
   async function ensureModules() {
     if (mods) return mods;
     const [pt, auth, sound] = await Promise.all([
@@ -1121,8 +1194,10 @@ if (track) {
       },
 
       onPause() {
+        mode = 'paused';
         mods.sound.stopMusic();
         veil('Paused', 'Nothing is printing.', 'Resume');
+        startChrome(false);
         elExtra.innerHTML = '';
         elWhere.hidden = true;
         elRooms.hidden = true;
@@ -1131,6 +1206,7 @@ if (track) {
       },
 
       onResume() {
+        mode = 'playing';
         elVeil.hidden = true;
         mods.sound.startMusic();
       },
@@ -1138,6 +1214,7 @@ if (track) {
       onConfirm() { elBtn.click(); },
 
       async onEnd(result) {
+        mode = 'over';
         mods.sound.stopMusic();
         if (result.reason === 'full') mods.sound.begin(); else mods.sound.jam();
 
@@ -1160,6 +1237,7 @@ if (track) {
         elRooms.hidden = true;
         elAfter.hidden = false;
         elBack.hidden = false;
+        startChrome(false);
 
         showBoard();
 
@@ -1204,17 +1282,21 @@ if (track) {
 
   /* Two panels before you play: what the game is, then which room. */
   function showIntro() {
+    mode = 'intro';
     say(null);
-    elExtra.innerHTML = rulesHTML;
+    elExtra.innerHTML = '';
     elWhere.hidden = true;
     elRooms.hidden = true;
     elAfter.hidden = false;
     elBack.hidden = true;
     veil(LORE, '', 'Play');
+    startChrome(true);
   }
 
   function showChooser() {
+    mode = 'chooser';
     say(null);
+    startChrome(false);
     elExtra.innerHTML = '';
     elWhere.hidden = true;
     elRooms.hidden = false;
@@ -1222,11 +1304,27 @@ if (track) {
     veil(CHOOSE, '', '');
   }
 
+  /* The board on its own, reached from the title panel rather than from a
+     jam. It shows the room played last, Classic until one has been. */
+  async function showScores() {
+    mode = 'scores';
+    say(null);
+    startChrome(false);
+    elWhere.hidden = true;
+    elRooms.hidden = true;
+    elAfter.hidden = false;
+    elBack.hidden = true;
+    veil('High Scores', '', 'Back');
+    await showBoard(mods.rooms[room].name);
+  }
+
   function startRoom(key) {
+    mode = 'playing';
     room = key;
     loadBest(room);
     say(null);
 
+    startChrome(false);
     elExtra.innerHTML = '';
     elVeil.hidden = true;
 
@@ -1239,9 +1337,22 @@ if (track) {
     if (signedIn) syncBest();
   }
 
-  async function showBoard() {
+  /* A face for every row. The board returns names and scores only, so the
+     pictures come from the member list in one more query, and a name with
+     no picture on it gets its initial instead. */
+  function faceHTML(name, url) {
+    if (url) {
+      return '<img class="av" src="' + esc(url) + '" alt="" loading="lazy" width="20" height="20">';
+    }
+    const letter = (name || '?').trim().charAt(0).toUpperCase() || '?';
+    return '<span class="av" aria-hidden="true">' + esc(letter) + '</span>';
+  }
+
+  async function showBoard(heading) {
+    const label = heading || ('High Scores \u00b7 ' + mods.rooms[room].name);
+
     elExtra.innerHTML =
-      '<div class="board-wrap"><h3>Top Ten \u00b7 ' + esc(mods.rooms[room].name) + '</h3>' +
+      '<div class="board-wrap"><div class="board-top"><h3>' + esc(label) + '</h3><i></i></div>' +
       '<ol class="board" id="pBoard"><li class="none"><span class="nm">Loading&hellip;</span></li></ol></div>';
 
     const rows = await mods.auth.leaderboard(GAME, room, 10);
@@ -1258,11 +1369,28 @@ if (track) {
     }
 
     const me = mods.auth.currentMember();
-    ol.innerHTML = rows.map((r) => {
-      const mine = me && r.display_name === me.displayName ? ' class="me"' : '';
-      return '<li' + mine + '><span class="nm">' + esc(r.display_name) +
-             '</span><span class="sc">' + r.score + '</span></li>';
-    }).join('');
+
+    /* Drawn once with initials so the board is up immediately, then again
+       once the pictures are in. */
+    const draw = (faces) => {
+      ol.innerHTML = rows.map((r, i) => {
+        const mine = me && r.display_name === me.displayName;
+        const cls = (i === 0 ? 'top ' : '') + (mine ? 'me' : '');
+        return '<li' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '>' +
+               CURSOR +
+               '<span class="rk">' + (i + 1) + '</span>' +
+               faceHTML(r.display_name, r.avatar_url || faces[r.display_name]) +
+               '<span class="nm">' + esc(r.display_name) + '</span>' +
+               '<span class="sc">' + r.score + '</span></li>';
+      }).join('');
+    };
+
+    draw({});
+
+    if (mods.auth.avatarsFor) {
+      const faces = await mods.auth.avatarsFor(rows.map((r) => r.display_name));
+      if (document.getElementById('pBoard') === ol) draw(faces);
+    }
   }
 
   function drawSignedOut() {
@@ -1330,14 +1458,19 @@ if (track) {
   async function openGame() {
     if (!box || !box.showModal) return;
 
+    loadPixelFont();
+    mode = 'intro';
+    howOpen = true;
+
     elScore.textContent = '0';
-    elExtra.innerHTML = rulesHTML;
+    elExtra.innerHTML = '';
     elWhere.hidden = true;
     elRooms.hidden = true;
     elAfter.hidden = false;
     elBack.hidden = true;
     elBtn.disabled = true;
     veil(LORE, '', 'Loading\u2026');
+    startChrome(true);
     say(null);
     loadBest(room);
     setFull(COARSE.matches);
@@ -1456,12 +1589,23 @@ if (track) {
 
   elBtn.addEventListener('click', () => {
     if (!game || game.isRunning() || elBtn.disabled) return;
-    if (elTitle.textContent === 'Paused') { game.resume(); return; }
-    if (elTitle.textContent === LORE)     { showChooser(); return; }
+    if (mode === 'paused') { game.resume(); return; }
+    if (mode === 'scores') { showIntro(); return; }
+    if (mode === 'intro')  { showChooser(); return; }
     startRoom(room);                 // same room again
   });
 
   elBack.addEventListener('click', () => { if (game) showChooser(); });
+
+  /* How to Play folds the strip away, which is what gets PLAY above the fold
+     on a phone. High Scores swaps the panel for the board. */
+  elHow.addEventListener('click', () => {
+    howOpen = !howOpen;
+    elHowto.hidden = !howOpen;
+    elHow.setAttribute('aria-expanded', howOpen ? 'true' : 'false');
+  });
+
+  elHigh.addEventListener('click', () => { if (mods) showScores(); });
 
   showBest();
 }
