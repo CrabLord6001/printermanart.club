@@ -426,10 +426,10 @@ function cueRemixBar(at) {
     cuePiece(at, cueBuf, off, BAR, slot, sag);
     lastFault = cueBar;
 
-  } else if (pick < 0.88) {                             // a quarter of it runs backwards
+  } else if (pick < 0.88 && cueRev) {                   // a quarter of it runs backwards
     const part = BAR / 4;
     cuePiece(at, cueBuf, off, BAR - part, BAR - part, wow);
-    const mirror = cueBuf.duration - (off + BAR);
+    const mirror = Math.max(0, cueBuf.duration - (off + BAR));
     cuePiece(at + BAR - part, cueRev, mirror, part, part, 1);
     lastFault = cueBar;
 
@@ -576,6 +576,19 @@ export function under(on) {
 
 export function corrupt(onOff) {
   if (!ctx) return;
+
+  /* The backwards copy is made here as well as in setCue. The boss asks
+     for its cue before it asks for the corruption -- the level is not
+     running yet at the moment the screen changes -- so by the time the
+     remix wanted a reversed buffer there was none, and reaching for it
+     threw inside the scheduler. A source with a null buffer does not
+     fail quietly: it takes the whole scheduling tick with it, the bar is
+     never laid down, and what was already queued simply runs out. That
+     was the ten seconds of silence on her stage. */
+  if (onOff && cueBuf && !cueRev) {
+    try { cueRev = reverseOf(cueBuf); } catch (e) { cueRev = null; }
+  }
+
   if (onOff && !cueFx) {
     cueFx = ctx.createGain();
 
