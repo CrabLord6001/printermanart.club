@@ -273,6 +273,7 @@ const BAR = 2.786;                  // The Clockwork Ledger is 86 BPM in four
 const BOSS_IN = 4;
 let cueBar = 0;
 let lastFault = -99;            // how long since the tape last misbehaved
+let lastStab = -99;             // and how long since she last got a word in
 let cueRev = null;                  // the same buffer, backwards
 let cueSeed = 1;
 
@@ -340,14 +341,23 @@ async function stabLoad() {
   return stabJob;
 }
 
-function stabFire(at) {
+function stabFire(at, want) {
   if (cueFaint) return;                         // she is speaking; she does not need quoting
   if (!stabBuf || !stabAt || !stabAt.length) return;
-  let i = (rnd() * stabAt.length) | 0;
-  if (i === stabLast) i = (i + 1) % stabAt.length;   // not the same one twice running
+
+  /* A named fragment, when the caller wants a particular one. Her first
+     line of the level is "I am art", and it is asked for rather than
+     rolled: it is the one of the five that is about what she is doing to
+     the place, so it is the one worth being sure of. */
+  let i = -1;
+  if (want) i = stabAt.findIndex((c) => c.id === want);
+  if (i < 0) {
+    i = (rnd() * stabAt.length) | 0;
+    if (i === stabLast) i = (i + 1) % stabAt.length;   // not the same one twice running
+  }
   stabLast = i;
   const cut = stabAt[i];
-  const back = rnd() < 0.22;
+  const back = want ? false : rnd() < 0.22;     // the first one is not mangled
 
   /* Backwards means reading a reversed copy from the mirrored offset.
      A negative playback rate is not a thing Web Audio will do. */
@@ -444,12 +454,23 @@ function cueRemixBar(at) {
 
   cueBar += 1;
 
-  /* She comes through the track early and often. At one bar in eight,
-     starting after the eighth, a run that ends in twenty seconds heard
-     her not at all -- and most runs on this level end in twenty
-     seconds. The third bar is hers by right; after that it is one in
-     four, which is about every eleven seconds. */
-  if (cueBar === 3 || (cueBar > 3 && rnd() < 0.25)) stabFire(at);
+  /* The third bar is hers by right, and it is "I am art" -- a run that
+     ends in twenty seconds should still have heard her say the thing the
+     level is about. After that she is spaced rather than rolled, the
+     same way the tape faults are: five clear bars minimum, then about
+     one bar in five. That is a line every twenty six seconds or so,
+     against every eleven before, which was often enough that the same
+     five fragments started to wear.
+
+     Which one she says is random after the first, and about one in five
+     comes out backwards. */
+  if (cueBar === 3) {
+    stabFire(at, 'art');
+    lastStab = cueBar;
+  } else if (cueBar > 3 && cueBar - lastStab >= 6 && rnd() < 0.2) {
+    stabFire(at);
+    lastStab = cueBar;
+  }
 
   return slot;
 }
