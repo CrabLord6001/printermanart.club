@@ -759,6 +759,41 @@ export function jam() {
 
 /* The print finishes: the chord resolves up to the major, which is the
    oldest trick there is and still works. */
+/* The victory chime, on the card for the next level.
+   ------------------------------------------------------------------
+   Not a cue and not part of the written organ: one file, played once,
+   through the master so nothing ducks it. It is the only sound on that
+   screen, which is otherwise deliberately silent. */
+let chimeBuf = null, chimeJob = null;
+
+async function chimeLoad() {
+  if (chimeBuf) return true;
+  if (!chimeJob) {
+    chimeJob = (async () => {
+      try {
+        const r = await fetch(CUE_DIR + 'victory.mp3');
+        if (!r.ok) return false;
+        chimeBuf = await ctx.decodeAudioData(await r.arrayBuffer());
+        return true;
+      } catch (e) { return false; }
+    })();
+  }
+  return chimeJob;
+}
+
+export async function chime() {
+  if (!on || !ctx) return;
+  if (!await chimeLoad()) return;
+  const src = ctx.createBufferSource();
+  src.buffer = chimeBuf;
+  const g = ctx.createGain();
+  g.gain.value = 0.85;
+  src.connect(g);
+  g.connect(master || ctx.destination);   // not the voice trim; it is not a voice
+  src.start(ctx.currentTime + 0.02);
+  src.onended = () => { try { g.disconnect(); } catch (e) {} };
+}
+
 export function done() {
   if (!on || !ctx) return;
   const t = ctx.currentTime;

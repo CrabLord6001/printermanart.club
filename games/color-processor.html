@@ -144,19 +144,14 @@ html.embed .title { display: none; }
   .sitebar { font-size: 0.58rem; }
 }
 
-/* The readout is the width of the casing under it and starts where the
-   casing starts. Both numbers come from the board once it has sized
-   itself; until then it simply takes the page. */
 .head {
-  width: var(--boardw, 100%);
-  max-width: 100%;
-  align-self: flex-start;
-  margin-left: var(--boardx, 0);
+  width: 100%;
+  max-width: 430px;
   display: flex;
   align-items: baseline;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 0 0 6px;
+  padding: 0 2px 6px;
 }
 
 .title a.home {
@@ -293,10 +288,13 @@ html.embed .title { display: none; }
    buttons shift across to line up with it instead. A board you can see
    beats a board in the exact middle. */
 @media (max-width: 619px) {
-  /* The readout lines the board up by measuring it now, so there is no
-     padding left to pay for it. What is still wanted is the tracking:
-     four readings across a phone's worth of casing, where Chain used to
-     drop to a line of its own and hold the whole board down. */
+  .head, .foot { padding-right: 72px; }
+  html.embed .head { padding-right: 72px; }
+
+  /* That padding is what the readout pays to line up with the board, and
+     it left too little for four stats: Chain dropped to a line of its own
+     and held the whole board down for two words. Tighter tracking, a
+     smaller gap and a step down in size fit all four across. */
   .head { gap: 7px; }
   .stat { font-size: 0.56rem; letter-spacing: 0.06em; }
   .stat b { font-size: 0.82rem; margin-left: 3px; }
@@ -595,11 +593,6 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 @media (max-width: 560px) {
   .side { min-width: 56px; width: 56px; }
   .rig  { gap: 8px; }
-
-  /* The deck is the board's width, and on a phone that is not much. A
-     step down in size and tracking keeps three labels across it. */
-  .deck { gap: 4px; }
-  button.go { font-size: 0.56rem; letter-spacing: 0.05em; padding: 9px 4px 10px; }
 }
 
 .nextbox {
@@ -740,12 +733,9 @@ body.reading .hint { visibility: hidden; }
 
 /* ---- foot ---- */
 
-/* Bolted to the casing the way the readout is, off the same two numbers. */
 .foot {
-  width: var(--boardw, 100%);
-  max-width: 100%;
-  align-self: flex-start;
-  margin-left: var(--boardx, 0);
+  width: 100%;
+  max-width: 430px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -813,108 +803,23 @@ body.reading .hint { visibility: hidden; }
 .snd[aria-pressed="true"] .snd-off { display: none; }
 .snd[aria-pressed="false"] .snd-on { display: none; }
 
-/* ---- the control deck ---- */
-
-/* The row under the board belongs to the machine, not to the website.
-   The readings sit in glass over the well; these sit in the same glass
-   under it, so the board has chrome at both ends instead of a game with
-   three site buttons parked beneath it.
-
-   Columns flow rather than sitting in three fixed tracks: a control that
-   stands down leaves no slot behind it, and whatever is left takes the
-   width between them, the way the readings do. */
-.deck {
-  flex: 1 1 100%;
-  width: 100%;
-  margin: 0 auto;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  gap: 5px;
-}
-
-/* One way out of a screen is one control, not a drawer front the width
-   of the machine. */
-.deck.lone { max-width: 186px; }
-
-/* A label that will not fit across one cartridge wraps inside it rather
-   than running off the end, and the grid levels the row back up. */
+/* Open, it needs the whole width: as an auto-width flex item the row of
+   controls simply ran off the side of the box. */
 button.go {
-  position: relative;
-  isolation: isolate;            /* so the sheet can pass under the lettering */
-  overflow: hidden;
-  min-width: 0;
   font-family: var(--font);
-  font-size: 0.62rem;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: 0.68rem;
+  font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
-  padding: 10px 6px 11px;
-  border: 1px solid #2B3141;
-  border-radius: 7px;
-  background: linear-gradient(168deg, #161B25 0%, #0B0D12 58%, #0E1119 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.10),
-    inset 0 0 0 1px rgba(255,255,255,0.03),
-    inset 0 -6px 12px rgba(0,0,0,0.45),
-    0 2px 7px rgba(0,0,0,0.5);
+  color: var(--text);
+  background: #5865F2;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 
-/* The reflection the readings sit under, and under the lettering rather
-   than over it: a sixteen per cent veil across a word is the difference
-   between glass and fog. */
-button.go::after {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  left: -34%; right: -14%; top: -150%;
-  height: 218%;
-  border-radius: 50%;
-  transform: rotate(-7deg);
-  background: linear-gradient(to bottom,
-              rgba(255,255,255,0.16) 0%,
-              rgba(255,255,255,0.06) 48%,
-              rgba(255,255,255,0.012) 76%,
-              rgba(255,255,255,0) 100%);
-  pointer-events: none;
-}
-
-/* The lit edge where the sheet is cut. */
-button.go::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 7px;
-  box-shadow:
-    inset 1px 1px 0 rgba(255,255,255,0.12),
-    inset -1px -1px 0 rgba(255,255,255,0.045);
-  pointer-events: none;
-  z-index: 2;
-}
-
-button.go:hover { border-color: #3E4556; color: var(--text); }
-
-/* Pressed, the cartridge goes down into its slot. */
-button.go:active { transform: translateY(1px); }
-
-/* The one that moves the game on, lit from behind. Same cartridge, same
-   bevel, same sheet: only the face is different. It used to be the one
-   colour on the whole machine that belonged to the website instead. */
-button.go:not(.ghost) {
-  color: #171308;
-  border-color: #7A5A22;
-  background: linear-gradient(168deg, #EBC074 0%, #BF8E37 58%, #D09F49 100%);
-}
-
-button.go:not(.ghost):hover {
-  color: #171308;
-  border-color: #8E6B2B;
-  background: linear-gradient(168deg, #F6CE85 0%, #CE9C41 58%, #DEAC54 100%);
-}
+button.go:hover { background: #4653E0; }
 
 .hint {
   flex: 1 1 100%;
@@ -1342,23 +1247,20 @@ body .peek .cell { position: absolute; }
   margin: 0 0 20px;
 }
 
-/* The quiet ones are the same cartridge, lettered in the shop's gold
-   rather than faced with it -- the way the readings are all one box and
-   it is what is printed on them that differs. */
-.go.ghost { color: var(--accent); }
-.go.ghost:hover { color: #F0C886; }
+/* The left-hand button is the quiet one everywhere except paused, where
+   carrying on is the thing you most likely want. */
+.go.ghost {
+  background: #11131A;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
 
-/* Faced while its own panel is the one showing, so which side you are on
-   is readable from the button itself. */
-.go.ghost.on {
-  color: #171308;
-  border-color: #7A5A22;
-  background: linear-gradient(168deg, #EBC074 0%, #BF8E37 58%, #D09F49 100%);
-}
-.go.ghost.on:hover {
-  color: #171308;
-  background: linear-gradient(168deg, #F6CE85 0%, #CE9C41 58%, #DEAC54 100%);
-}
+.go.ghost:hover { background: #171A22; }
+
+/* Filled while its face is the one showing, so which side you are on is
+   readable from the button itself. */
+.go.ghost.on { background: var(--accent); color: #11131A; }
+.go.ghost.on:hover { background: #E0B160; }
 .go[hidden] { display: none; }
 
 h2[hidden] { display: none; }
@@ -2245,9 +2147,9 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
               <!-- Built from the print the player is about to make, small
                    enough to show the idea without handing them the painting
                    before they have earned it. -->
-              <!-- The mechanics, and nothing else. One screen of reading
-                   where there is room for it and two where there is not;
-                   the panel works out which when it measures itself. -->
+              <!-- Three pages: his rules, then what the series is and how it
+                   is scored, then the board. One screen of reading at a time,
+                   and the panel sizes each page for itself. -->
               <div class="pg" id="rulesPg1">
               <div class="demo" id="demo" hidden></div>
               <p>Welcome to the Gallery Printshop! The background image file needs to be printed. Clear a color set by having them fall and touch in any grouping of four. Each color you clear adds that color plate to the image. The goal is to add every color to the image and "print" it. The side tubes empty as you fill the image to track your progress of that color.</p>
@@ -2282,10 +2184,13 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
               </div>
               </div>
 
-              <!-- The board. Not a page of the rules: it has its own way
-                   in from the rail, and the pager stands down while it is
-                   up. It used to be reachable twice over, which read as two
-                   boards. -->
+              <div class="pg" id="rulesPg3" hidden>
+                <p>The Gallery is twenty paintings in six chapters, printed in order. Each painting you print is a level.</p>
+                <p>Every level is harder than the one before it. The drops fall faster, each color takes more clears to fill, and new inks join the set along the way.</p>
+                <p>The board ranks you by levels printed. Total time only breaks a tie, and each level counts at your best time on it, so going back to beat one can only move you up.</p>
+                <p>Sign in on the arcade page to keep your place between visits.</p>
+              </div>
+
               <div class="pg" id="rulesPg4" hidden>
                 <div class="board-wrap">
                   <h3>The Board</h3>
@@ -2300,7 +2205,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
               <!-- Flanked like the footer: the dots hold the middle and the
                    two ways through sit either side of them. -->
-              <div class="pager" id="rulesPager">
+              <div class="pager">
                 <button class="pg-arrow" id="rulesBack" type="button">&lsaquo; Back</button>
                 <div class="pg-dots" id="rulesDots"></div>
                 <button class="pg-arrow" id="rulesNext" type="button">Next &rsaquo;</button>
@@ -2451,14 +2356,9 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
   <div class="foot center">
     <p class="msg" id="msg">&nbsp;</p>
-    <!-- One bank, not three loose buttons. The row answers the readings
-         over the well, so it is built the same way: equal cartridges
-         across the board's own width. -->
-    <div class="deck">
-      <button class="go ghost" id="menuBtn" type="button">Settings</button>
-      <button class="go" id="again" type="button">New print</button>
-      <button class="go ghost" id="rulesBtn" type="button">Rules</button>
-    </div>
+    <button class="go ghost" id="menuBtn" type="button">Settings</button>
+    <button class="go" id="again" type="button">New print</button>
+    <button class="go ghost" id="rulesBtn" type="button">Rules</button>
     <p class="hint" id="hint">Drag to steer &middot; tap to rotate &middot; swipe down to drop</p>
   </div>
 
@@ -2518,6 +2418,8 @@ function cueNow() {
    -- which is usually a touch that has just changed the screen. Without
    this the cue that was set a moment too early is simply lost, and the
    level plays in silence until the next screen. */
+let chimeDue = false;            // a print was finished and the next card owes a chime
+
 let wantCue = null;
 
 let wantHow = null;
@@ -3280,7 +3182,7 @@ let timer = null, busy = false, over = false;
 /* Four states, and buttons that say the right thing in each. The series
    and practice want different words, so each state asks which lane it is
    in: before the first drop (Practice / Play, or Gallery / Practice),
-   printing (Pause / Restart, or Settings / New print), paused
+   printing (Pause / Restart level, or Settings / New print), paused
    (Resume / the same), and finished (View art / Next print, Try again
    after a jam, or New print in practice).
 
@@ -3415,26 +3317,6 @@ function sizeBoard() {
      board that scrolls is worse than a big one that scrolls. A few pixels
      over counts as fitting; that is rounding, not a scrollbar. */
   if (cell < began && tall() > 8) { cell = began; lay(cell); }
-
-  /* Where the casing ended up, and how wide. The readout above it and the
-     deck below it are both bolted to those two numbers, so each is the
-     board's own column at every window size rather than a fixed 430 that
-     happened to be close.
-
-     The offset is wanted because the board is not centred on the page:
-     the rail stands to the right of it, so on a narrow window the casing
-     sits left of centre by half the rail. That used to be paid for with
-     72px of padding, which was near enough to look right and wrong by a
-     few pixels everywhere else. */
-  const fr = document.querySelector('.frame');
-  if (fr) {
-    const r = fr.getBoundingClientRect();
-    const bs = document.body.getBoundingClientRect();
-    const left = bs.left + parseFloat(getComputedStyle(document.body).paddingLeft);
-    const st = document.documentElement.style;
-    st.setProperty('--boardw', Math.round(r.width) + 'px');
-    st.setProperty('--boardx', Math.round(r.left - left) + 'px');
-  }
 
   // the intro is measured off the well, so it is redrawn when the well moves
   if (elOver && !elOver.hidden && elOver.classList.contains('intro')) paintDemo();
@@ -4083,29 +3965,23 @@ if (document.fonts && document.fonts.ready) {
 
 /* ---- the instructions, in three pages ---- */
 
-/* The instructions are the mechanics and nothing else: one page where
-   there is room for them and two where there is not. The mechanics are
-   one read, not two, so they only take a page break on a panel too short
-   to hold them -- which is a small phone, and nowhere else. The
-   alternative was a fixed break that a desktop never needed, or one page
-   of 11px type on a phone.
-
-   Two pages came off the back of these. One described the series and how
-   it is scored, which the mechanics had already covered and which gave
-   away how far the gallery goes. The other was the board, and the board
-   has its own way in from the rail. */
+/* The instructions run to three pages where there is room for them and
+   four where there is not. The mechanics are one read, not two, so they
+   only take a page break on a panel too short to hold them -- which is a
+   small phone, and nowhere else. The alternative was a fixed break that
+   a desktop never needed, or one page of 11px type on a phone. */
 let rulesSplit = false;          // are the mechanics on two pages?
 let rulesFitFor = '';            // the panel this was last worked out for
 let rulesPage = 0;
-let boardUp = false;             // the board, which is not one of the pages
 let boardLoaded = false;
 
-const rulesPages = () => rulesSplit ? 2 : 1;
+const rulesPages = () => rulesSplit ? 4 : 3;
 
-/* Page index to the element holding it. Both pages are in the markup;
-   merged, only the first is ever asked for. */
+/* Page index to the element holding it. With the mechanics merged there
+   is no second page, so everything after it moves up one. */
 function rulesPageEl(i) {
-  return document.getElementById('rulesPg' + (rulesSplit ? i + 1 : 1));
+  if (rulesSplit) return document.getElementById('rulesPg' + (i + 1));
+  return document.getElementById('rulesPg' + (i === 0 ? 1 : i + 2));
 }
 
 const mechA = () => document.getElementById('rulesPg1');
@@ -4268,38 +4144,16 @@ function fitBoard() {
 
 function paintRules() {
   layoutRules();
+  const n = rulesPages();
+  if (wantBoard) rulesPage = n - 1;
+  if (rulesPage > n - 1) rulesPage = n - 1;
 
   for (let i = 1; i <= 4; i++) {
     const pg = document.getElementById('rulesPg' + i);
     if (pg) pg.hidden = true;
   }
-
-  const pager = document.getElementById('rulesPager');
-
-  /* The board is its own thing in the same box. Nothing pages on to it
-     and nothing pages off it: the way in and the way out are both the
-     rail, so the pager has no business under it. */
-  if (boardUp) {
-    document.getElementById('rulesPg4').hidden = false;
-    if (pager) pager.hidden = true;
-    /* The board reads from the top of the panel; the pages of copy stay
-       centred, which is right for a paragraph and wrong for a list. */
-    elOver.classList.add('boardface');
-    loadBoard();
-    fitBoard();
-    return;
-  }
-
-  elOver.classList.remove('boardface');
-
-  const n = rulesPages();
-  if (rulesPage > n - 1) rulesPage = n - 1;
   const here = rulesPageEl(rulesPage);
   if (here) here.hidden = false;
-
-  /* One page needs no pager. Two arrows and a single dot under a page
-     that goes nowhere only ask to be pressed. */
-  if (pager) pager.hidden = n < 2;
 
   const dots = document.getElementById('rulesDots');
   if (dots) {
@@ -4316,6 +4170,11 @@ function paintRules() {
 
   document.getElementById('rulesBack').disabled = rulesPage === 0;
   document.getElementById('rulesNext').disabled = rulesPage === n - 1;
+
+  /* The board reads from the top of the panel; the pages of copy stay
+     centred, which is right for a paragraph and wrong for a list. */
+  elOver.classList.toggle('boardface', rulesPage === n - 1);
+  if (rulesPage === n - 1) { loadBoard(); fitBoard(); }
 
   /* Sized page by page. A hidden page measures nothing, so the size page
      one settles on says nothing about what page two needs. */
@@ -4352,31 +4211,34 @@ function homeGo(go) {
   rulesFrom = null;
   showFace('rules');
   rulesFrom = { face: 'home', wasPlaying: false };
-  if (go === 'board') goBoard(); else goRules(0);
+  if (go === 'board') goBoard(); else { wantBoard = false; goRules(0); }
   buttons();
 }
 
 function goRules(i) {
-  boardUp = false;
   rulesPage = Math.min(rulesPages() - 1, Math.max(0, i));
+  if (rulesPage !== rulesPages() - 1) wantBoard = false;
   paintRules();
   buttons();
 }
 
-/* The board is a face of the panel rather than a page of it, so asking
-   for it is a switch rather than a page number. The page count used to
-   settle after the request -- the worked example decides the split, and
-   it can land late -- and the number would be stale by the time it was
-   used. A mode cannot go stale. */
+/* The board is the last page whichever way the mechanics fell. */
+const boardPage = () => rulesPages() - 1;
+
+/* Somebody who asked for the board wants the board, not page three. The
+   page count can still change under them -- the example settles the
+   split, and it may land after the request -- so the wish is held rather
+   than resolved once into a number. */
+let wantBoard = false;
+
 function goBoard() {
-  boardUp = true;
-  paintRules();
-  buttons();
+  wantBoard = true;
+  goRules(boardPage());
 }
 
 document.getElementById('rankBtn').addEventListener('click', () => {
   const up = !elOver.hidden && !elRules().hidden;
-  if (up && boardUp) { closeRules(); return; }
+  if (up && rulesPage === boardPage()) { closeRules(); return; }
   if (!up) openRules();
   goBoard();
 });
@@ -4489,7 +4351,7 @@ function showFace(which) {
   faceOff();
   const intro = which === 'rules';
   if (!intro) rulesFrom = null;
-  if (intro) { rulesPage = 0; boardUp = false; }   // always opened at the front
+  if (intro) { rulesPage = 0; wantBoard = false; }   // always opened at the front
 
   if (which === 'home') {
     /* The hub. Everything a run can end in comes back here, so it carries
@@ -4557,6 +4419,7 @@ function showFace(which) {
     elRules().hidden = false;
     document.getElementById('overTitle').hidden = true;
   } else if (which === 'gallery') {
+    if (chimeDue) { chimeDue = false; sayMusic('chime'); }
     /* No heading. The chapter carries the screen now, printed large, and
        "The Gallery" above it was a second name for the same place. */
     elOver.classList.add('menu');
@@ -5681,16 +5544,7 @@ function buildPeek() {
 }
 
 /* The two buttons under the board, named for the state they are in. */
-function buttons() { buttonsNow(); deckFit(); refit(); }
-
-/* A deck with one control on it is narrowed to suit. Counted here rather
-   than in buttonsNow, which leaves by several doors. */
-function deckFit() {
-  const deck = document.querySelector('.deck');
-  if (!deck) return;
-  const up = [...deck.querySelectorAll('.go')].filter((b) => !b.hidden).length;
-  deck.classList.toggle('lone', up === 1);
-}
+function buttons() { buttonsNow(); refit(); }
 
 function buttonsNow() {
   const menu = document.getElementById('menuBtn');
@@ -5719,7 +5573,7 @@ function buttonsNow() {
   /* The rail button lights only while the board itself is up, so it goes
      out wherever the panel closes rather than only where it opened. */
   const rank = document.getElementById('rankBtn');
-  if (rank) rank.classList.toggle('on', rulesUp && boardUp);
+  if (rank) rank.classList.toggle('on', rulesUp && rulesPage === boardPage());
 
   /* While the instructions are open there is one thing to do down here,
      and it is leaving. Play belonged to a screen that had already chosen
@@ -5792,7 +5646,7 @@ function buttonsNow() {
      In practice there is no level to be on, so it deals another painting.
      "New print" was from before the series existed and read, in the
      series, as though it would throw the whole gallery away. */
-  const redeal = () => campOn ? 'Restart' : 'New print';
+  const redeal = () => campOn ? 'Restart level' : 'New print';
 
   if (phase === 'paused') {
     /* Both ways out, always, the way the first panel offers both Setup and
@@ -6004,6 +5858,13 @@ function finish(won) {
   /* A finished print sets the mark for its level. A trial does not: the
      whole point of a trial is that nothing from it is kept. */
   if (won && campOn && !trying) keepBest(campAt + 1, ran);
+
+  /* A finished print earns the chime, but it does not sound here -- it
+     sounds on the card for the next level, which is the screen that
+     arrives next and the one screen in the game with nothing else on
+     it. Held as a debt so that reaching that card any other way is
+     still silent. */
+  if (won) chimeDue = true;
 
   /* The scoring line is the game talking while you play, and it was only
      ever cleared when the next run started. So the last clear of a run sat
