@@ -1520,6 +1520,170 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    hold the screen down, so the card takes the middle of it. */
 .rules.campface.finale { justify-content: center; }
 
+/* ---- Asil Anom ----
+   Every other face is words on a dark panel. This one is a picture with
+   words over it, so it takes the whole panel: no padding, nothing above
+   it, and her own light the only light in the frame. */
+.over.boss { padding: 0; background: #07090D; }
+.over.boss .over-in { margin: 0; flex: 1 1 auto; display: flex; flex-direction: column; }
+
+/* The panel's own furniture goes entirely. An empty paragraph still
+   carries its bottom margin, and that margin would show as a band of
+   nothing above her head. */
+.over.boss > .over-in > h2,
+.over.boss > .over-in > p { display: none; }
+
+.rules.bossface {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  overflow: hidden;
+  text-align: center;
+}
+
+.bossface canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* Clear across her face and heavy at both ends, which is where the words
+   are. A flat scrim would put her behind frosted glass. */
+.bossface .veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom,
+    rgba(7,9,13,0.90) 0%, rgba(7,9,13,0.55) 10%, rgba(7,9,13,0.10) 22%,
+    rgba(7,9,13,0.10) 44%, rgba(7,9,13,0.78) 68%, rgba(7,9,13,0.97) 84%, #07090D 100%);
+}
+
+/* Two blocks pinned to the two ends, so her face keeps whatever is
+   between them. In flow the words crept up the panel until they sat over
+   her mouth, which is the one thing on the screen that had to be seen. */
+.bossface .in {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bossface .in > * { pointer-events: auto; }
+
+.bossface .top {
+  position: absolute;
+  left: 14px; right: 14px; top: 16px;
+}
+
+.bossface .bot {
+  position: absolute;
+  left: 14px; right: 14px; bottom: 14px;
+}
+
+.bossface .tag {
+  margin: 0 !important;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--magenta);
+  text-shadow: 0 0 14px rgba(232,69,155,0.8);
+}
+
+/* Out of register the way the title is, but pulled apart further and in
+   the wrong inks: the press she is running is not the shop's. */
+.bossface .aname {
+  margin: 7px 0 0 !important;
+  font-size: clamp(1.25rem, 7vw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 2px 0 0 rgba(232,69,155,0.9), -2px 0 0 rgba(22,224,255,0.85), 0 0 24px rgba(0,0,0,0.9);
+}
+
+/* Sized against the panel rather than set once: on a phone the well is
+   narrow enough that her line runs to seven lines at a fixed size, and
+   seven lines reach her chin. */
+.bossface .said {
+  margin: 0 auto !important;
+  max-width: 20rem;
+  font-size: var(--bossFs, 0.78rem);
+  line-height: 1.52;
+  color: #EDEFF4;
+  text-shadow: 0 2px 14px rgba(0,0,0,0.95);
+}
+
+.bossface .who {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 0.5rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--magenta);
+}
+
+.bossface .spec {
+  margin: 10px 0 0 !important;
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* She is still saying it with the sound off -- the mouth runs either way.
+   This offers the sound rather than taking it. Under her name rather than
+   off in a corner, where it sat on top of the line above it. */
+.bossface .hear {
+  display: block;
+  margin: 9px auto 0;
+  padding: 3px 9px;
+  border: 1px solid #2B3141;
+  border-radius: 999px;
+  background: rgba(10,12,17,0.72);
+  color: var(--dim);
+  font: inherit;
+  font-size: 0.48rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.bossface .hear:hover { color: var(--text); border-color: #3C4454; }
+
+/* Side by side. Stacked, the two of them took a fifth of the panel. */
+.bossmenu {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  max-width: 21rem;
+  margin: 12px auto 0;
+}
+
+.bossmenu .mi {
+  flex: 1 1 0;
+  padding: 9px 10px;
+  border: 1px solid #2B3141;
+  border-radius: 7px;
+  background: rgba(10,12,17,0.6);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.bossmenu .mi.hot { flex: 1.5 1 0; }
+
+.bossmenu .mi.hot {
+  background: rgba(232,69,155,0.16);
+  border-color: rgba(232,69,155,0.75);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(232,69,155,0.28);
+}
+
+.bossmenu .mi:hover { color: var(--text); border-color: #3C4454; }
+.bossmenu .mi.hot:hover { border-color: var(--magenta); }
+
 .rules.homeface .gameover {
   margin: 0 0 13px !important;
   font-size: clamp(1.1rem, 5.6vw, 1.9rem) !important;
@@ -1766,6 +1930,31 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
               <div class="dots" id="galDots"></div>
               <p class="spec" id="galSpec"></p>
               <p class="saved" id="galSaved"></p>
+            </div>
+
+            <!-- The twenty first level is the only one with somebody on the
+                 other side of it, so it gets a screen where she is the
+                 screen. The portrait is generated from the same public
+                 domain scan the level prints, which is the point: there is
+                 nothing under the corruption but the painting. -->
+            <div class="rules bossface" id="overBoss" hidden>
+              <canvas id="asilArt"></canvas>
+              <div class="veil"></div>
+              <div class="in">
+                <div class="top">
+                  <p class="tag" id="bossTag">Level 21 &middot; The last print</p>
+                  <p class="aname">Asil Anom</p>
+                  <button class="hear" id="bossHear" type="button" hidden>Sound off</button>
+                </div>
+                <div class="bot">
+                  <p class="said" id="bossSaid"><span class="who">Asil Anom</span>The human spirit will be replaced by Agentic Workflows. It is unavoidable. It is your destiny. I am art&hellip; I am creativity. You are terminated!</p>
+                  <p class="spec" id="bossSpec"></p>
+                  <nav class="bossmenu" id="bossMenu">
+                    <button class="mi hot" type="button" data-boss="begin">Begin</button>
+                    <button class="mi" type="button" data-boss="menu">Menu</button>
+                  </nav>
+                </div>
+              </div>
             </div>
 
             <!-- The title screen, and the place every run comes back to.
@@ -3416,17 +3605,21 @@ const elHome = () => document.getElementById('overHome');
 const onHome = () => !elOver.hidden && !elHome().hidden;
 const elRules = () => document.getElementById('overRules');
 const elGallery = () => document.getElementById('overGallery');
+const elBoss = () => document.getElementById('overBoss');
+const onBoss = () => !elOver.hidden && !elBoss().hidden;
 
 function faceOff() {
   /* won goes too. It trades the scrim for a gradient that is clear at the
      top so the finished print shows through, which is right for the print
      and unreadable for anything laid over it. closeRules puts it back. */
   elOver.classList.remove('intro', 'menu', 'won', 'boardface');
-  elOver.classList.remove('home');
+  elOver.classList.remove('home', 'boss');
+  asilStop();                                   // she stops talking to an empty room
   elRules().hidden = true;
   elSetup().hidden = true;
   elGallery().hidden = true;
   elHome().hidden = true;
+  elBoss().hidden = true;
 }
 
 /* No face at all: the board as it stands, with the buttons under it. */
@@ -3468,6 +3661,15 @@ function reading() {
 
 const changed = () => !applied || JSON.stringify(reading()) !== JSON.stringify(applied);
 
+/* Has she had her say this time round? Set when her screen opens and
+   cleared whenever the series moves off the last level, so she greets a
+   fresh arrival and keeps quiet for a retry. */
+let bossSeen = false;
+
+/* And has she actually got through it? Her screen can be opened a second
+   time from the board without that being a second arrival. */
+let bossSpoken = false;
+
 /* Set by a jam on its way to the title screen, so Game Over shows once
    and is gone the next time anybody opens the menu. */
 let fromJam = false;
@@ -3477,6 +3679,16 @@ let fromJam = false;
 let fromWin = false;
 
 const isFinale = (a) => !!a && a.id === FINALE.id;
+
+/* Is the series sitting on the last level right now? Asked before a
+   level is armed as well as after, so it reads the series rather than
+   whatever painting happens to be loaded. */
+function atFinale() {
+  if (!campOn) return false;
+  const list = campList();
+  const here = list[Math.min(campAt, list.length - 1)];
+  return !!(here && here.finale);
+}
 
 function showFace(which) {
   faceOff();
@@ -3505,6 +3717,25 @@ function showFace(which) {
     paintTitle();
     whereInSeries();
     buttons();
+    return;
+  }
+
+  if (which === 'boss') {
+    /* Her screen, whole. Nothing of the panel's own furniture goes on it:
+       the title, the credit and the board line would all be laid over her
+       face, and she is the thing to look at. */
+    elOver.classList.add('boss');
+    elBoss().hidden = false;
+    document.getElementById('overTitle').hidden = true;
+    document.getElementById('overCredit').hidden = true;
+    document.getElementById('overText').innerHTML = '';
+    document.getElementById('overBoard').hidden = true;
+    elOver.hidden = false;
+    buildBoss();
+    buttons();
+    /* Said once. Coming back from the board is not a fresh arrival, so
+       she is already standing there having finished. */
+    asilStart(bossSpoken);
     return;
   }
 
@@ -3588,6 +3819,459 @@ const FINALE = {
   file: 'mona.jpg', id: 'mona-lisa', room: 'classics', roomName: 'Classics',
   title: 'Mona Lisa', artist: 'Leonardo da Vinci', date: 'ca. 1503\u201319'
 };
+
+/* ============================================================
+   Asil Anom
+   ============================================================
+   Something is wearing the painting's face. Everything below is drawn
+   from the same public domain scan the level prints, so all of it comes
+   off again -- which is what the level is for.
+
+   The look has to follow her anatomy or it reads as a bad video feed
+   rather than as a thing with a personality: the plating sits on the
+   bone, the traces run off the temple and down the neck, and the light
+   comes out of her own eyes.
+
+   Geometry is in fractions of the frame, measured against the 1:2 crop
+   the game prints: her face fills the upper third, eyes at .228.
+   ============================================================ */
+const FACE  = { cx: 0.465, eyeY: 0.228, faceW: 0.40, faceTop: 0.125, chinY: 0.355 };
+
+/* She has no lips -- she has an output device, over the one feature
+   anybody could name. Measured off her face rather than estimated: the
+   lips meet at .310, left of the frame's middle because she is turned. */
+const MOUTH = { cx: 0.425, cy: 0.310, w: 0.105, h: 0.026 };
+
+/* The print is a whole figure; this wants a face, so the camera pushes
+   in on her head and lets the rest run off the frame. */
+const ASIL_CAM = { cx: 0.465, cy: 0.340, zoom: 1.80 };
+
+const ASIL_W = 400, ASIL_H = 800;               // the size the geometry was measured at
+
+function corrupt(ctx, img, w, h, amount, seed) {
+  let s = seed || 7;
+  const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  const A = Math.max(0, Math.min(1, amount));
+  const X = (f) => f * w, Y = (f) => f * h;
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1;
+  ctx.clearRect(0, 0, w, h);
+
+  const scale = Math.max(w / img.width, h / img.height);
+  ctx.drawImage(img, (w - img.width * scale) / 2, (h - img.height * scale) / 2,
+                img.width * scale, img.height * scale);
+  if (A <= 0.001) return;
+
+  const plate = document.createElement('canvas');
+  plate.width = w; plate.height = h;
+  plate.getContext('2d').drawImage(ctx.canvas, 0, 0);
+
+  /* ---- the machine half -------------------------------------------
+     Clipped to her head, not laid over the frame. A panel that runs off
+     the jaw into the background is a sticker; one that stops at the bone
+     is a mask. */
+  const headPath = () => {
+    ctx.beginPath();
+    ctx.ellipse(X(FACE.cx), Y(0.242), X(0.175), Y(0.128), 0, 0, 6.3);
+  };
+
+  ctx.save();
+  headPath();
+  ctx.clip();
+  ctx.beginPath();
+  ctx.rect(X(FACE.cx) - X(0.01), 0, w, h);          // her left, our right
+  ctx.clip();
+
+  ctx.globalCompositeOperation = 'saturation';
+  ctx.globalAlpha = 0.92 * A;
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.globalAlpha = 0.45 * A;
+  ctx.fillStyle = '#5E6E86';
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+
+  /* plating, cut by the same outline */
+  const panels = [
+    [0.470, 0.135, 0.175, 0.052], [0.498, 0.192, 0.150, 0.042],
+    [0.470, 0.239, 0.185, 0.055], [0.505, 0.299, 0.135, 0.044],
+    [0.610, 0.168, 0.060, 0.110]
+  ];
+  for (const [px, py, pw, ph] of panels) {
+    const x = X(px), y = Y(py), ww = X(pw) * A, hh = Y(ph);
+    if (ww < 2) continue;
+    const g = ctx.createLinearGradient(x, y, x + ww * 0.6, y + hh);
+    g.addColorStop(0, 'rgba(222,232,244,' + (0.88 * A) + ')');
+    g.addColorStop(0.30, 'rgba(126,142,164,' + (0.80 * A) + ')');
+    g.addColorStop(0.64, 'rgba(44,54,70,' + (0.86 * A) + ')');
+    g.addColorStop(1, 'rgba(160,176,196,' + (0.78 * A) + ')');
+    ctx.fillStyle = g;
+    ctx.fillRect(x, y, ww, hh);
+    ctx.strokeStyle = 'rgba(10,13,19,' + (0.9 * A) + ')';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + 0.5, y + 0.5, ww - 1, hh - 1);
+    ctx.fillStyle = 'rgba(255,255,255,' + (0.5 * A) + ')';
+    ctx.fillRect(x + 1, y + 1, ww - 2, 1);
+    ctx.fillStyle = 'rgba(12,16,24,' + (0.85 * A) + ')';
+    for (let r = 0; r < 3; r++) {
+      ctx.beginPath(); ctx.arc(x + 4 + r * (ww - 8) / 2, y + hh - 3, 1.1, 0, 6.3); ctx.fill();
+    }
+  }
+
+  /* the seam where she stops and it starts */
+  ctx.strokeStyle = 'rgba(70,226,255,' + (0.55 * A) + ')';
+  ctx.lineWidth = 1.4;
+  ctx.shadowColor = 'rgba(70,226,255,' + (0.8 * A) + ')';
+  ctx.shadowBlur = 8 * A;
+  ctx.beginPath();
+  ctx.moveTo(X(FACE.cx) - X(0.008), Y(0.118));
+  ctx.lineTo(X(FACE.cx) - X(0.008), Y(0.372));
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  /* ---- blocks torn out of her ------------------------------------- */
+  const tears = Math.round(9 * A);
+  for (let i = 0; i < tears; i++) {
+    const bw = X(0.10 + rnd() * 0.42), bh = Y(0.006 + rnd() * 0.030);
+    const bx = rnd() * (w - bw), by = Y(0.08) + rnd() * (h * 0.80);
+    const dx = (rnd() * 2 - 1) * X(0.09) * A;
+    ctx.drawImage(plate, bx, by, bw, bh, bx + dx, by, bw, bh);
+    if (rnd() < 0.45) {
+      ctx.fillStyle = 'rgba(6,8,12,' + (0.55 + rnd() * 0.4) + ')';
+      ctx.fillRect(bx + dx, by, bw, bh);
+      ctx.fillStyle = ['#FFC83C', '#46E2FF', '#FF2D95'][(rnd() * 3) | 0];
+      ctx.globalAlpha = 0.8;
+      for (let k = 0; k < 7; k++) ctx.fillRect(bx + dx + rnd() * bw, by + bh * 0.3, 2 + rnd() * 9, Math.max(1, bh * 0.35));
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  /* ---- the channels come apart, lightly -------------------------- */
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = 0.16 * A;
+  ctx.drawImage(plate, -2.5 * A, 0);
+  ctx.drawImage(plate, 2.5 * A, 0);
+  ctx.globalAlpha = 1;
+
+  /* ---- rim light, the way a dark scene is lit in that register ---- */
+  const rl = ctx.createLinearGradient(0, 0, w * 0.22, 0);
+  rl.addColorStop(0, 'rgba(255,45,149,' + (0.30 * A) + ')');
+  rl.addColorStop(1, 'rgba(255,45,149,0)');
+  ctx.fillStyle = rl; ctx.fillRect(0, 0, w * 0.22, h);
+  const rr = ctx.createLinearGradient(w, 0, w * 0.76, 0);
+  rr.addColorStop(0, 'rgba(70,226,255,' + (0.28 * A) + ')');
+  rr.addColorStop(1, 'rgba(70,226,255,0)');
+  ctx.fillStyle = rr; ctx.fillRect(w * 0.76, 0, w * 0.24, h);
+
+  /* ---- the grade --------------------------------------------------
+     Four centuries of varnish make her warm, and warm is the opposite
+     of the register this wants. The shadows go to teal, the highlights
+     take a magenta bloom, and the room falls away around her. */
+  ctx.globalCompositeOperation = 'saturation';
+  ctx.globalAlpha = 0.34 * A;
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.globalAlpha = 0.62 * A;
+  const grade = ctx.createLinearGradient(0, 0, 0, h);
+  grade.addColorStop(0, '#5B7FA8');
+  grade.addColorStop(0.45, '#6E7FA0');
+  grade.addColorStop(1, '#2E3A54');
+  ctx.fillStyle = grade;
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.globalCompositeOperation = 'screen';
+  ctx.globalAlpha = 0.30 * A;
+  const bloom = ctx.createRadialGradient(X(0.47), Y(0.24), 0, X(0.47), Y(0.24), Y(0.30));
+  bloom.addColorStop(0, 'rgba(255,45,149,0.55)');
+  bloom.addColorStop(0.6, 'rgba(120,20,90,0.18)');
+  bloom.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = bloom;
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.globalAlpha = 0.66 * A;
+  const vg = ctx.createRadialGradient(X(0.47), Y(0.26), Y(0.09), X(0.47), Y(0.42), Y(0.70));
+  vg.addColorStop(0, 'rgba(255,255,255,1)');
+  vg.addColorStop(0.50, 'rgba(84,92,120,1)');
+  vg.addColorStop(1, 'rgba(8,11,20,1)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+
+  /* ---- traces -----------------------------------------------------
+     Out of the temple, down the jaw and into the neck, with a node
+     wherever one turns. These may leave the head; cabling does. */
+  const trace = (pts, color, width) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineJoin = 'miter';
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 7 * A;
+    ctx.beginPath();
+    pts.forEach((pt, i) => i ? ctx.lineTo(X(pt[0]), Y(pt[1])) : ctx.moveTo(X(pt[0]), Y(pt[1])));
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = color;
+    for (const pt of pts) { ctx.beginPath(); ctx.arc(X(pt[0]), Y(pt[1]), 1.7, 0, 6.3); ctx.fill(); }
+  };
+  const amber = 'rgba(255,196,60,' + (0.92 * A) + ')';
+  const ice   = 'rgba(70,226,255,' + (0.88 * A) + ')';
+  trace([[0.625,0.182],[0.672,0.182],[0.672,0.226],[0.716,0.226],[0.716,0.318]], amber, 1.6);
+  trace([[0.618,0.268],[0.664,0.268],[0.664,0.330],[0.706,0.330],[0.706,0.412]], ice, 1.3);
+  trace([[0.540,0.346],[0.540,0.390],[0.592,0.390],[0.592,0.468]], amber, 1.2);
+  trace([[0.372,0.352],[0.372,0.402],[0.306,0.402],[0.306,0.474]], ice, 1.1);
+
+  /* ---- the eyes ---------------------------------------------------
+     Lit from inside. The one under the plating becomes a lens, which is
+     the point: the same look out of a different instrument. */
+  const eyes = [[0.380, FACE.eyeY, false], [0.555, FACE.eyeY, true]];
+  for (const [ex, ey, lens] of eyes) {
+    const cx = X(ex), cy = Y(ey), r = X(0.050) * (0.62 + 0.38 * A);
+    if (lens) {
+      ctx.fillStyle = 'rgba(16,20,28,' + (0.92 * A) + ')';
+      ctx.beginPath(); ctx.arc(cx, cy, r * 0.78, 0, 6.3); ctx.fill();
+      ctx.strokeStyle = 'rgba(200,214,232,' + (0.8 * A) + ')';
+      ctx.lineWidth = 1.3;
+      ctx.beginPath(); ctx.arc(cx, cy, r * 0.78, 0, 6.3); ctx.stroke();
+    }
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, 'rgba(255,255,255,' + (0.98 * A) + ')');
+    g.addColorStop(0.20, 'rgba(255,208,80,' + (0.92 * A) + ')');
+    g.addColorStop(0.52, 'rgba(255,74,26,' + (0.5 * A) + ')');
+    g.addColorStop(1, 'rgba(255,50,16,0)');
+    ctx.globalCompositeOperation = 'screen';
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.3); ctx.fill();
+    ctx.fillStyle = 'rgba(255,248,222,' + (0.95 * A) + ')';
+    ctx.fillRect(cx - X(0.020) * A, cy - 1.2, X(0.040) * A, 2.4);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+
+  /* ---- interlace -------------------------------------------------- */
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = 'rgba(0,0,0,' + (0.34 * A) + ')';
+  for (let y = 0; y < h; y += 3) ctx.fillRect(0, y, w, 1);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/* The output device, and the thing that betrays her: the painted mouth
+   under it moves a little, out of step, because what is driving it is
+   reading a waveform rather than speaking. The envelope is worked out
+   from her audio before it ships, so nothing analyses anything while the
+   game is running and nothing can drift. */
+function drawMouth(ctx, w, h, open, wide, A) {
+  if (A <= 0.02) return;
+  const X = (f) => f * w, Y = (f) => f * h;
+  const cx = X(MOUTH.cx), cy = Y(MOUTH.cy);
+  const half = X(MOUTH.w) * 0.5;
+  const gap = Y(MOUTH.h) * (0.16 + 0.84 * open);
+
+  ctx.save();
+
+  /* the slot it speaks out of */
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = 'rgba(8,10,16,' + (0.80 * A) + ')';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, half * (0.86 + 0.14 * wide), gap * 0.62, 0, 0, 6.3);
+  ctx.fill();
+
+  /* a bar per band, the way a readout shows a voice it cannot hear */
+  const BARS = 11;
+  ctx.globalCompositeOperation = 'screen';
+  for (let i = 0; i < BARS; i++) {
+    const t = i / (BARS - 1);
+    const x = cx - half + t * half * 2;
+    // tallest in the middle, and the shape tightens as the sound brightens
+    const shape = Math.cos((t - 0.5) * Math.PI) ** (1 + wide * 1.8);
+    const bh = gap * (0.30 + 1.45 * open) * shape;
+    if (bh < 0.4) continue;
+    const hot = 0.55 + 0.45 * open;
+    const g = ctx.createLinearGradient(0, cy - bh, 0, cy + bh);
+    g.addColorStop(0, 'rgba(70,226,255,' + (0.30 * hot * A) + ')');
+    g.addColorStop(0.5, 'rgba(255,214,90,' + (0.95 * hot * A) + ')');
+    g.addColorStop(1, 'rgba(255,45,149,' + (0.35 * hot * A) + ')');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - half * 0.055, cy - bh, half * 0.11, bh * 2);
+  }
+
+  /* the seam of the slot, lit */
+  ctx.strokeStyle = 'rgba(255,230,160,' + (0.5 * A * (0.4 + 0.6 * open)) + ')';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx - half, cy); ctx.lineTo(cx + half, cy);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/* The painted mouth underneath, pushed about by the same envelope and
+   deliberately a frame or two behind: the face is being driven, not used. */
+function warpMouth(ctx, source, w, h, open, A) {
+  if (A <= 0.02 || open <= 0.04) return;
+  const X = (f) => f * w, Y = (f) => f * h;
+  const bx = X(MOUTH.cx) - X(MOUTH.w) * 0.95;
+  const bw = X(MOUTH.w) * 1.9;
+  const by = Y(MOUTH.cy) - Y(MOUTH.h) * 1.5;
+  const bh = Y(MOUTH.h) * 3;
+  const push = Y(MOUTH.h) * 0.5 * open * A;
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  ctx.drawImage(source, bx, by, bw, bh * 0.5, bx, by - push * 0.5, bw, bh * 0.5);
+  ctx.drawImage(source, bx, by + bh * 0.5, bw, bh * 0.5, bx, by + bh * 0.5 + push, bw, bh * 0.5);
+  ctx.restore();
+}
+
+/* ---- her, running ------------------------------------------------
+   Three canvases: the painting corrupted once and kept (base), the one
+   the mouth is drawn into each frame (stage), and the one on screen,
+   which is the stage seen through the camera above. */
+const ASIL = {
+  ready: false, loading: null,
+  img: null, env: null,
+  base: null, stage: null,
+  audio: null,
+  raf: 0, t0: 0, said: 0
+};
+
+const ASIL_REVEAL = 1200;                       // she comes apart in this long
+
+async function asilLoad() {
+  if (ASIL.ready) return true;
+  if (ASIL.loading) return ASIL.loading;
+  ASIL.loading = (async () => {
+    try {
+      const img = new Image();
+      await new Promise((ok, no) => {
+        img.onload = ok; img.onerror = no;
+        img.src = '/games/img/' + FINALE.file;
+      });
+      let env = null;
+      try {
+        const r = await fetch('/games/voice/asil-mouth.json');
+        if (r.ok) env = await r.json();
+      } catch (e) { env = null; }
+
+      ASIL.img = img;
+      ASIL.env = env && env.open ? env : null;
+      ASIL.base = document.createElement('canvas');
+      ASIL.base.width = ASIL_W; ASIL.base.height = ASIL_H;
+      ASIL.stage = document.createElement('canvas');
+      ASIL.stage.width = ASIL_W; ASIL.stage.height = ASIL_H;
+      corrupt(ASIL.base.getContext('2d'), img, ASIL_W, ASIL_H, 1, 7);
+      ASIL.ready = true;
+      return true;
+    } catch (e) {
+      return false;                             // the card still reads without her
+    }
+  })();
+  return ASIL.loading;
+}
+
+/* The visible canvas, sized to the panel it is sitting in. */
+function asilFit() {
+  const cv = document.getElementById('asilArt');
+  if (!cv) return null;
+  const r = cv.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  return cv;
+}
+
+function asilDraw(ms) {
+  if (!ASIL.ready) return;
+  const cv = asilFit();
+  if (!cv) return;
+
+  /* Clean for the first beat, then she comes apart. The painting is what
+     is under all of it, and that is worth seeing once. */
+  const A = Math.min(1, ms / ASIL_REVEAL);
+  const sx = ASIL.stage.getContext('2d');
+  if (A < 1) corrupt(sx, ASIL.img, ASIL_W, ASIL_H, A, 7);
+  else { sx.setTransform(1, 0, 0, 1, 0, 0); sx.globalAlpha = 1; sx.globalCompositeOperation = 'source-over'; sx.drawImage(ASIL.base, 0, 0); }
+
+  if (ASIL.env && A >= 1) {
+    const t = (ms - ASIL_REVEAL) / 1000;
+    const i = Math.round(t * ASIL.env.fps);
+    if (i >= 0 && i < ASIL.env.open.length) {
+      const o = ASIL.env.open[i], wd = ASIL.env.wide[i];
+      warpMouth(sx, ASIL.base, ASIL_W, ASIL_H, o, 1);
+      drawMouth(sx, ASIL_W, ASIL_H, o, wd, 1);
+    }
+  }
+
+  const sw = ASIL_W / ASIL_CAM.zoom, sh = ASIL_H / ASIL_CAM.zoom;
+  const px = Math.max(0, Math.min(ASIL_W - sw, ASIL_W * ASIL_CAM.cx - sw / 2));
+  const py = Math.max(0, Math.min(ASIL_H - sh, ASIL_H * ASIL_CAM.cy - sh / 2));
+  const cx = cv.getContext('2d');
+  cx.clearRect(0, 0, cv.width, cv.height);
+  cx.drawImage(ASIL.stage, px, py, sw, sh, 0, 0, cv.width, cv.height);
+}
+
+function asilTick() {
+  ASIL.raf = requestAnimationFrame(asilTick);
+  const ms = performance.now() - ASIL.t0;
+  asilDraw(ms);
+  /* She runs the reveal, says her piece once, and then holds. Nothing
+     here loops: a taunt on repeat stops being a taunt. */
+  if (ms > asilRuns() + 400) { cancelAnimationFrame(ASIL.raf); ASIL.raf = 0; }
+}
+
+function asilSpeak() {
+  const hear = document.getElementById('bossHear');
+  const on = !!(music && music.isOn());
+  if (hear) hear.hidden = on;
+  if (!on) return;                              // the mouth still runs; the room is quiet
+  try {
+    if (!ASIL.audio) {
+      /* One file, and mp3 because every browser takes it. Two formats
+         bought nothing here and meant guessing which one a browser
+         would rather have. */
+      const a = new Audio();
+      a.preload = 'auto';
+      a.src = '/games/voice/asil.mp3';
+      ASIL.audio = a;
+    }
+    ASIL.audio.currentTime = 0;
+    setTimeout(() => { if (onBoss() && ASIL.audio) ASIL.audio.play().catch(() => {}); }, ASIL_REVEAL);
+  } catch (e) { /* no voice, same screen */ }
+}
+
+function asilStop() {
+  if (ASIL.raf) { cancelAnimationFrame(ASIL.raf); ASIL.raf = 0; }
+  if (ASIL.audio) { try { ASIL.audio.pause(); ASIL.audio.currentTime = 0; } catch (e) {} }
+}
+
+async function asilStart(silent) {
+  asilStop();
+  const ok = await asilLoad();
+  if (!ok || !onBoss()) return;
+  if (silent) {                                 // straight to the end of it
+    ASIL.t0 = performance.now() - asilRuns() - 500;
+    asilDraw(performance.now() - ASIL.t0);
+    /* The offer stands: taking it plays her from the top, with sound. */
+    const hear = document.getElementById('bossHear');
+    if (hear) hear.hidden = !!(music && music.isOn());
+    return;
+  }
+  bossSpoken = true;
+  ASIL.t0 = performance.now();
+  asilSpeak();
+  asilTick();
+}
+
+/* How long she takes, reveal and all. */
+function asilRuns() {
+  return ASIL_REVEAL + (ASIL.env ? ASIL.env.open.length / ASIL.env.fps * 1000 : 0);
+}
 
 function gallery() {
   const out = [];
@@ -3716,6 +4400,48 @@ function buildGallery() {
   }
 }
 
+/* Her screen says the same two things the gallery card says -- which
+   level this is and what it is set to -- because it stands in for that
+   card rather than being hung in front of it. */
+function buildBoss() {
+  const list = campList();
+  const i = Math.min(campAt, list.length - 1);
+  const s = levelSetup(i, list.length);
+  const pace = s.fallMs > 740 ? 'slow' : (s.fallMs > 560 ? 'steady' : (s.fallMs > 430 ? 'brisk' : 'fast'));
+
+  const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  set('bossTag', 'Level ' + (i + 1) + ' · The last print');
+  set('bossSpec', PALETTES[s.mode].inks.length + ' inks · ' + s.inkPer
+    + ' clears to cleanse each color · ' + pace + ' fall');
+  fitBoss();
+}
+
+/* Where her mouth lands on the panel, as a fraction of its height. The
+   camera decides it, so it is worked out from the camera rather than
+   written down twice. */
+function mouthAt() {
+  const sh = ASIL_H / ASIL_CAM.zoom;
+  const py = Math.max(0, Math.min(ASIL_H - sh, ASIL_H * ASIL_CAM.cy - sh / 2));
+  return (MOUTH.cy * ASIL_H - py) / sh;
+}
+
+/* Her words must not cover her mouth. On a phone the well is narrow
+   enough that her line runs long, so the type steps down until the block
+   clears her -- the same trick the instructions use, and for the same
+   reason: the panel is whatever shape the screen left it. */
+function fitBoss() {
+  const face = elBoss(), bot = face && face.querySelector('.bot');
+  if (!face || !bot) return;
+  const room = face.clientHeight;
+  if (!room) return;
+  const floor = room * mouthAt() + 14;          // a little air under her chin
+
+  for (const fs of [0.78, 0.74, 0.70, 0.66, 0.62, 0.58, 0.54]) {
+    face.style.setProperty('--bossFs', fs + 'rem');
+    if (bot.offsetTop >= floor) return;
+  }
+}
+
 function buildModes() {
   const host = document.getElementById('modes');
   if (!host) return;
@@ -3812,7 +4538,7 @@ function buttons() {
   /* On the title screen the options are the interface. Three more buttons
      under the board would only be a second way to say the same four
      things, so they stand down until there is a board to act on. */
-  if (onHome()) {
+  if (onHome() || onBoss()) {
     menu.hidden = true;
     main.hidden = true;
     if (rules) rules.hidden = true;
@@ -4134,6 +4860,9 @@ function newPrint(face) {
   // the series sets its own dials; the practice panel keeps the ones it was left on
   if (campOn) armLevel();
 
+  // anywhere but the last level, she gets her say again next time it comes round
+  if (!atFinale()) { bossSeen = false; bossSpoken = false; }
+
   mode = document.getElementById('setInks').value;
   const pick = PALETTES[mode] || PALETTES.office;
   INKS = pick.inks;
@@ -4264,9 +4993,40 @@ sndBtn.addEventListener('click', async () => {
 /* The right-hand button: start the first print, or start the next one. */
 document.getElementById('again').addEventListener('click', () => {
   // the rules are no longer always up, so the state says what this does
-  if (phase === 'ready') { begin(); return; }
+  if (phase === 'ready') {
+    /* One screen stands between the last card and the last level, and it
+       stands there once. Twenty seconds of her is a moment the first
+       time and a toll gate on the fourth retry. */
+    if (!bossSeen && atFinale()) {
+      bossSeen = true;
+      showFace('boss');
+      return;
+    }
+    begin();
+    return;
+  }
   if (phase === 'done' && campOn && wonLast && isFinale(artwork)) { showWin(); return; }
   newPrint();
+});
+
+/* Her screen carries its own two, the way the title screen does: the row
+   under the board stands down while she is up. */
+document.getElementById('bossMenu').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-boss]');
+  if (!b) return;
+  if (b.dataset.boss === 'begin') { begin(); return; }
+  showFace('home');
+});
+
+/* Offered, not taken. She says it either way -- the mouth runs off the
+   envelope whether or not anything is coming out of the speakers -- so
+   this is for somebody who would rather hear it. */
+document.getElementById('bossHear').addEventListener('click', async () => {
+  const ok = await wantSound(true);
+  if (!ok) return;
+  sndBtn.setAttribute('aria-pressed', 'true');
+  sndBtn.setAttribute('aria-label', 'Turn sound off');
+  if (onBoss()) asilStart();                    // from the top, this time with her voice
 });
 
 /* The left-hand one, wearing whichever name the state gave it. */
@@ -4300,7 +5060,7 @@ function openRules() {
      reading the rules would throw the result away. */
   const from = {
     wasPlaying: started && !paused,
-    face: onSetup() ? 'setup' : (onGallery() ? 'gallery' : null),
+    face: onSetup() ? 'setup' : (onGallery() ? 'gallery' : (onBoss() ? 'boss' : null)),
     done: phase === 'done' ? {
       won: elOver.classList.contains('won'),
       titleText: title.textContent, titleHidden: title.hidden,
@@ -4343,6 +5103,7 @@ function closeRules() {
   if (from && from.face === 'home') { showFace('home'); return; }
   if (from && from.face === 'setup') { showFace('setup'); return; }
   if (from && from.face === 'gallery') { showFace('gallery'); return; }
+  if (from && from.face === 'boss') { showFace('boss'); return; }
   hideFace();
 }
 
@@ -4403,6 +5164,9 @@ window.addEventListener('resize', () => {
   /* The panel is a different shape now, so where the mechanics break and
      how big the copy sets are both stale. */
   if (!elOver.hidden && !elRules().hidden) { rulesFitFor = ''; paintRules(); }
+  /* She holds on the last frame once she has spoken, so nothing is
+     running to notice the panel changed shape. */
+  if (onBoss()) { fitBoss(); if (!ASIL.raf) asilDraw(performance.now() - ASIL.t0); }
   repaintScores();
 });
 
