@@ -536,6 +536,20 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   min-width: 62px;
 }
 
+/* On a phone the board runs out of width long before it runs out of
+   height -- the cells are square and the well is six across by twelve
+   down, so a tall screen cannot be spent on a board that is already as
+   wide as it is allowed to be. Every pixel the rail gives back is one the
+   board can have, which is worth four or five pixels a cell.
+
+   Fifty six is where it stops. At fifty the word under the rankings dial
+   is cut off at both ends and the two switches crowd the edges; at fifty
+   six the queue, the four tubes and every label still read. */
+@media (max-width: 560px) {
+  .side { min-width: 56px; width: 56px; }
+  .rig  { gap: 8px; }
+}
+
 .nextbox {
   background: #0C0E13;
   border: 1px solid var(--border);
@@ -3063,6 +3077,7 @@ function sizeBoard() {
      beforehand which case a screen is in. Shrink, look, and put it back
      if looking says it did not help. */
   const tall = () => document.documentElement.scrollHeight - window.innerHeight;
+  const began = cell;
   for (let pass = 0; pass < 4; pass++) {
     const over = tall();
     if (over <= 1 || cell <= 14) break;
@@ -3073,6 +3088,11 @@ function sizeBoard() {
     lay(cell);
     if (tall() >= over - 1) { cell = was; lay(cell); break; }   // bought nothing
   }
+  /* The point of giving cells back is a page that fits. If it still does
+     not fit, the cells went for nothing, so take them back -- a small
+     board that scrolls is worse than a big one that scrolls. A few pixels
+     over counts as fitting; that is rounding, not a scrollbar. */
+  if (cell < began && tall() > 8) { cell = began; lay(cell); }
 
   // the intro is measured off the well, so it is redrawn when the well moves
   if (elOver && !elOver.hidden && elOver.classList.contains('intro')) paintDemo();

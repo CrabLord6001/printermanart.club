@@ -437,6 +437,20 @@ export async function setCue(name) {
   cueSchedule();
   cueTimer = setInterval(cueSchedule, 200);
   cueFade(CUE_LEVEL, mine);
+
+  /* The written organ stands down, now that there is a real cue to carry
+     the level. It is the understudy: it plays when the file has not
+     arrived, or has not been cut for this screen, and it stops the moment
+     the recording starts.
+
+     It did not stop before, and the two played over each other. The guard
+     in startMusic tests cueHave, which is only set down here -- and
+     getting here means waiting for the file, so by the time the answer is
+     true the organ has already been started on the strength of it being
+     false. A flag set after an await cannot hold a gate that was tested
+     before it. */
+  clearInterval(timer);
+  timer = null;
 }
 
 function cueFade(to, mine) {
