@@ -2124,17 +2124,6 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 .over.victor > .over-in > h2,
 .over.victor > .over-in > p { display: none; }
 
-.rules.homeface .gameover {
-  margin: 0 0 13px !important;
-  font-size: clamp(1.1rem, 5.6vw, 1.9rem) !important;
-  font-weight: 700;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--magenta);
-  text-align: center !important;
-  text-shadow: 0 2px 16px rgba(232,69,155,0.4);
-}
-
 .rules.homeface .faceline {
   margin: 11px 0 0 !important;
   font-size: 0.64rem !important;
@@ -2149,58 +2138,103 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 5px;
+  gap: 7px;
   width: 100%;
-  max-width: 21rem;
-  margin-top: 20px;
+  /* The width of the sheet over it. Four lines of plain type in a column
+     two thirds as wide read as a caption under the plate rather than as
+     the way into the game. */
+  max-width: 26rem;
+  margin-top: 18px;
 }
 
+/* The way in, in the machine's own cartridge -- the one the readings sit
+   in over the well and the controls sit in under it. The title screen is
+   the one place with nothing else to look at, so these are cut heavier
+   than the deck: more room inside, bigger lettering, and the whole width
+   of the plate above them. */
 .menu .mi {
   position: relative;
-  padding: 8px 12px 8px 26px;
-  border: 1px solid transparent;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--muted);
+  isolation: isolate;            /* so the sheet can pass under the lettering */
+  overflow: hidden;
+  padding: 14px 34px 15px;
+  border: 1px solid #2B3141;
+  border-radius: 9px;
+  background: linear-gradient(168deg, #1A202B 0%, #0C0F15 58%, #10141C 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.11),
+    inset 0 0 0 1px rgba(255,255,255,0.03),
+    inset 0 -8px 15px rgba(0,0,0,0.45),
+    0 2px 8px rgba(0,0,0,0.5);
+  color: var(--accent);
   font-family: inherit;
-  font-size: clamp(0.84rem, 3.6vw, 1.12rem);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-align: left;
+  font-size: clamp(0.92rem, 4vw, 1.18rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
   cursor: pointer;
-  transition: color 0.12s, background 0.12s, border-color 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.12s, border-color 0.12s;
 }
 
-/* The pointer every one of these screens has had since 1985. */
+/* The sheet of glass over the face, under the lettering. */
 .menu .mi::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: -34%; right: -14%; top: -150%;
+  height: 218%;
+  border-radius: 50%;
+  transform: rotate(-7deg);
+  background: linear-gradient(to bottom,
+              rgba(255,255,255,0.16) 0%,
+              rgba(255,255,255,0.06) 48%,
+              rgba(255,255,255,0.012) 76%,
+              rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+/* The pointer every one of these screens has had since 1985, kept, and
+   moved inside the cartridge now that the cartridge is the button. */
+.menu .mi::after {
   content: '\25B8';
   position: absolute;
-  left: 11px;
+  left: 13px;
+  top: 50%;
+  margin-top: -0.72em;
+  font-size: 0.9em;
   opacity: 0;
   color: var(--accent);
   transition: opacity 0.12s, transform 0.12s;
   transform: translateX(-3px);
 }
 
+/* Lit, the way the rail button lights: the face the shop prints in. */
 .menu .mi:hover,
 .menu .mi:focus-visible {
-  color: var(--text);
-  background: rgba(255,255,255,0.035);
-  border-color: var(--border);
+  color: #171308;
+  border-color: #7A5A22;
+  background: linear-gradient(168deg, #EBC074 0%, #BF8E37 58%, #D09F49 100%);
   outline: none;
 }
 
-.menu .mi:hover::before,
-.menu .mi:focus-visible::before { opacity: 1; transform: translateX(0); }
+.menu .mi:hover::after,
+.menu .mi:focus-visible::after { opacity: 1; transform: translateX(0); color: #4A3406; }
+
+.menu .mi:hover .sub,
+.menu .mi:focus-visible .sub { color: #5A4310; }
+
+.menu .mi:active { transform: translateY(1px); }
 
 .menu .mi .sub {
   display: block;
-  margin-top: 1px;
-  font-size: 0.6rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
+  margin-top: 3px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--dim);
+  transition: color 0.12s;
 }
 
 /* The title screen is the whole panel, so it sits against the full scrim
@@ -2484,7 +2518,6 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
                  out of register so the letters carry color at their edges
                  the way a cheap press would leave them. -->
             <div class="rules homeface" id="overHome" hidden>
-              <p class="gameover" id="gameOver" hidden>Game Over</p>
               <div class="plate"><canvas id="titleArt"></canvas></div>
               <p class="faceline" id="faceLine" hidden></p>
               <nav class="menu" id="titleMenu">
@@ -4118,11 +4151,130 @@ function shopDraw(o, X, Y, W, H, pl) {
   }
 }
 
+/* The same room after a jam has gone all the way wrong: the cowling
+   alight, the sheet chewed up and coming out of the top, one of them with
+   his hands in the air and the other already down at it with a toolbox.
+
+   The flames are cut out of the cowling rather than laid over it. Yellow
+   printed on top of cyan is green, and a green fire is a worse mistake
+   than no fire at all -- so the plate carries holes where it burns and
+   the fire prints on bare paper through them, which is also how it would
+   actually be separated. */
+function wreckDraw(o, X, Y, W, H, pl) {
+  const u = (t) => X + t * W;
+  const v = (t) => Y + t * H;
+
+  o.fillStyle = '#000';
+  o.strokeStyle = '#000';
+  o.lineCap = 'round';
+  o.lineJoin = 'round';
+
+  const box = (a, b, c, d, r) => {
+    const x = u(a), y = v(b), bw = (c - a) * W, bh = (d - b) * H;
+    o.beginPath();
+    if (o.roundRect) o.roundRect(x, y, bw, bh, (r || 0) * H);
+    else o.rect(x, y, bw, bh);
+    o.fill();
+  };
+  const disc = (a, b, r) => {
+    o.beginPath(); o.arc(u(a), v(b), r * H, 0, Math.PI * 2); o.fill();
+  };
+  const run = (pts, wid, shut) => {
+    o.beginPath();
+    pts.forEach((q, i) => (i ? o.lineTo(u(q[0]), v(q[1])) : o.moveTo(u(q[0]), v(q[1]))));
+    if (shut) o.closePath();
+    if (wid) { o.lineWidth = wid * H; o.stroke(); } else o.fill();
+  };
+
+  /* Laid as subpaths so the same shapes can fill the fire on one plate
+     and bite holes in the cowling on another. */
+  const flame = (cx, base, fw, fh) => {
+    o.moveTo(u(cx - fw), v(base));
+    o.quadraticCurveTo(u(cx - fw), v(base - fh * 0.55), u(cx - fw * 0.25), v(base - fh * 0.72));
+    o.quadraticCurveTo(u(cx), v(base - fh), u(cx + fw * 0.35), v(base - fh * 0.62));
+    o.quadraticCurveTo(u(cx + fw), v(base - fh * 0.42), u(cx + fw), v(base));
+    o.closePath();
+  };
+  const LICK = [[0.345, 0.90, 0.058, 0.33], [0.452, 0.90, 0.066, 0.40], [0.565, 0.90, 0.052, 0.28]];
+  const HOT  = [[0.345, 0.90, 0.042, 0.21], [0.452, 0.90, 0.048, 0.26], [0.565, 0.90, 0.038, 0.18]];
+  const chew = () => {
+    o.moveTo(u(0.500), v(0.325));
+    o.lineTo(u(0.542), v(0.145));
+    o.lineTo(u(0.586), v(0.232));
+    o.lineTo(u(0.634), v(0.118));
+    o.lineTo(u(0.668), v(0.268));
+    o.lineTo(u(0.612), v(0.338));
+    o.closePath();
+  };
+
+  if (pl === 'c') {
+    o.beginPath();
+    if (o.roundRect) {
+      o.roundRect(u(0.27), v(0.30), 0.36 * W, 0.60 * H, 0.045 * H);
+      o.roundRect(u(0.298), v(0.375), 0.125 * W, 0.165 * H, 0.022 * H);  // the console, dead
+      chew();
+      LICK.forEach((f) => flame(f[0], f[1], f[2], f[3]));
+      o.fill('evenodd');
+    } else {
+      o.rect(u(0.27), v(0.30), 0.36 * W, 0.60 * H);
+      o.fill();
+    }
+    box(0.078, 0.585, 0.158, 0.868, 0.018);    // the one who gave up, below the belt
+    box(0.748, 0.568, 0.868, 0.792, 0.045);    // the one still at it, hunched
+    run([[0.754, 0.632], [0.680, 0.676]], 0.052);  // his arm, into the machine
+    box(0.758, 0.788, 0.886, 0.868, 0.032);    // and down on the knee
+  }
+
+  if (pl === 'm') {
+    o.beginPath();
+    HOT.forEach((f) => flame(f[0], f[1], f[2], f[3]));
+    o.fill();                                   // the hot of the fire, red under yellow
+    box(0.062, 0.335, 0.175, 0.602, 0.042);    // hands in the air, above the belt
+    run([[0.073, 0.362], [0.028, 0.242]], 0.048);
+    run([[0.164, 0.362], [0.209, 0.242]], 0.048);
+  }
+
+  if (pl === 'y') {
+    o.beginPath();
+    LICK.forEach((f) => flame(f[0], f[1], f[2], f[3]));
+    o.fill();
+    run([[0.900, 0.082], [0.962, 0.292], [0.838, 0.292]], 0, true);  // the warning
+  }
+
+  if (pl === 'k') {
+    /* Smoke is the one grey thing on the sheet, so it goes down light
+       rather than at the weight everything else on this plate takes. */
+    o.globalAlpha = 0.40;
+    disc(0.350, 0.258, 0.092);
+    disc(0.296, 0.182, 0.080);
+    disc(0.364, 0.138, 0.074);
+    disc(0.302, 0.072, 0.064);
+    disc(0.372, 0.036, 0.050);
+    disc(0.252, 0.118, 0.046);
+    o.globalAlpha = 1;
+
+    o.lineWidth = 0.026 * H;                    // the sheet, chewed and climbing out
+    o.beginPath(); chew(); o.stroke();
+
+    run([[0.900, 0.082], [0.962, 0.292], [0.838, 0.292]], 0.024, true);
+    box(0.891, 0.158, 0.909, 0.228, 0.008);     // the bang inside it
+    box(0.891, 0.245, 0.909, 0.265, 0.008);
+
+    disc(0.118, 0.262, 0.076);                  // his head
+    box(0.062, 0.862, 0.175, 0.906, 0.016);     // his feet
+    disc(0.793, 0.505, 0.070);                  // and the other's
+    box(0.862, 0.846, 0.912, 0.890, 0.014);     // his boot
+    box(0.906, 0.762, 0.978, 0.864, 0.016);     // the toolbox
+    run([[0.924, 0.762], [0.960, 0.762]], 0.028);
+    run([[0.0, 0.906], [1.0, 0.906]], 0.022);   // the floor
+  }
+}
+
 /* One plate's worth of the shop, read back the same way the letters are. */
-function shopPlate(w, h, X, Y, SW, SH, pl) {
+function shopPlate(w, h, X, Y, SW, SH, pl, wreck) {
   const off = document.createElement('canvas');
   off.width = w; off.height = h;
-  shopDraw(off.getContext('2d'), X, Y, SW, SH, pl);
+  (wreck ? wreckDraw : shopDraw)(off.getContext('2d'), X, Y, SW, SH, pl);
   const d = off.getContext('2d').getImageData(0, 0, w, h).data;
   const arr = new Float32Array(w * h);
   const dens = SHOP_INK[pl];
@@ -4161,7 +4313,7 @@ function titlePlate(w, h, lines, fs, lead, dx, dy, dens, band) {
    and the end says YOU WIN -- all off the press the player spends the
    whole series feeding. Each sheet remembers what it last printed so a
    repaint costs nothing. */
-function paintPlate(cv, lines, force, shop) {
+function paintPlate(cv, lines, force, shop) {   // shop: '' | 'shop' | 'wreck'
   if (!cv || !cv.parentElement) return;
 
   /* The content box of the paper, not the padded box: measured the easy
@@ -4172,7 +4324,7 @@ function paintPlate(cv, lines, force, shop) {
                        - parseFloat(cs.paddingLeft || 0)
                        - parseFloat(cs.paddingRight || 0));
   if (W < 60) return;                        // the panel has no size yet
-  const key = W + '|' + lines.join(' ') + (shop ? '|shop' : '');
+  const key = W + '|' + lines.join(' ') + (shop ? '|' + shop : '');
   if (!force && key === cv.dataset.printed) return;
   cv.dataset.printed = key;
 
@@ -4223,7 +4375,7 @@ function paintPlate(cv, lines, force, shop) {
                            pad + o.x * cell,
                            bandH * dpr + o.y * cell,
                            cv.width - pad * 2,
-                           shopH * dpr - cv.width * 0.02, pl);
+                           shopH * dpr - cv.width * 0.02, pl, shop === 'wreck');
       for (let i = 0; i < mask.length; i++) mask[i] = Math.min(1, mask[i] + sm[i]);
     }
     screenPlate(ctx, mask, cv.width, cv.height, cell, ANGLE[pl], DOT[pl]);
@@ -4324,13 +4476,20 @@ function repaintScores() {
   }
 }
 
-/* What the title sheet currently says. */
+/* What the title sheet currently says, and which room it shows under it.
+   A jam prints the same sheet with the bad news on it rather than putting
+   a second heading above a sheet that still says Gallery Printshop --
+   two titles, one of them cheerful, over a run that just ended. */
 let titleWords = ['GALLERY', 'PRINTSHOP'];
 const TITLE_WORDS  = ['GALLERY', 'PRINTSHOP'];
 const WIN_WORDS    = ['YOU', 'WIN'];
+const OVER_WORDS   = ['GAME OVER :(', 'TRY AGAIN?'];
 const FINALE_WORDS = ['THE LAST', 'PRINT'];
 
-const paintTitle = (force) => paintPlate(document.getElementById('titleArt'), titleWords, force, true);
+let shopWreck = false;          // is the room on fire on this sheet?
+
+const paintTitle = (force) => paintPlate(document.getElementById('titleArt'), titleWords, force,
+                                         shopWreck ? 'wreck' : 'shop');
 
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(() => {
@@ -4834,10 +4993,10 @@ function showFace(which) {
        the whole interface and the row under the board stands down. */
     elOver.classList.add('home');
     if (!fromJam && !fromWin) {
-      document.getElementById('gameOver').hidden = true;
       document.getElementById('faceLine').hidden = true;
+      titleWords = TITLE_WORDS;
+      shopWreck = false;
     }
-    if (!fromWin) titleWords = TITLE_WORDS;
     fromJam = false;
     fromWin = false;
     elHome().hidden = false;
@@ -6367,9 +6526,15 @@ function finish(won) {
     /* A jam used to leave them looking at a dead board with a plate count
        on it and nowhere to go. The sound is the same; what follows it is
        the title screen with Game Over over it and the same four options,
-       so losing lands somewhere instead of stopping. */
+       so losing lands somewhere instead of stopping.
+
+       The sheet itself carries it: the name of the shop comes off and the
+       bad news goes on in its place, over a picture of what they did to
+       the room. A heading above a plate that still read Gallery Printshop
+       was two titles arguing about what had just happened. */
     fromJam = true;
-    document.getElementById('gameOver').hidden = false;
+    titleWords = OVER_WORDS;
+    shopWreck = true;
     const jam = document.getElementById('faceLine');
     jam.innerHTML = down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
                   + ' &middot; chain&nbsp;&times;' + bestChain;
@@ -6407,9 +6572,9 @@ function showWin() {
   const line = document.getElementById('faceLine');
 
   titleWords = WIN_WORDS;
+  shopWreck = false;
   fromWin = true;
 
-  document.getElementById('gameOver').hidden = true;
   line.innerHTML = trying
     ? 'Trial run \u00b7 ' + FINALE.title + ' \u00b7 ' + FINALE.artist
     : 'All ' + list.length + ' printed \u00b7 ' + FINALE.title
