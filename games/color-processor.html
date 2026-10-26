@@ -1896,15 +1896,45 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   text-transform: uppercase; color: var(--dim);
 }
 
-.campface .dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+.campface .dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 
+/* A dot per level, and the ones already printed are a way back to them.
+   A level you have cleared costs nothing to play again and your best run
+   is the one that counts, so there is no reason to lock the door behind
+   you -- and it is the only way anybody would meet the curator twice. */
 .campface .dot {
-  width: 10px; height: 10px; border-radius: 50%;
+  width: 12px; height: 12px; padding: 0; border: 0; border-radius: 50%;
   background: #171B22; box-shadow: inset 0 0 0 1px #262C36;
 }
 
 .campface .dot.done { background: var(--accent); box-shadow: none; }
 .campface .dot.now { background: transparent; box-shadow: inset 0 0 0 2px var(--accent); }
+
+.campface button.dot { cursor: pointer; }
+
+/* The target is bigger than the dot: twelve pixels is a mark, not a
+   button, and a row of them on a phone is unusable at that size. The
+   reach stops at half the gap, so two neighbours never both answer for
+   the same tap -- which would send somebody to the wrong level, and they
+   would not know it had happened until the painting came up. */
+.campface button.dot { position: relative; }
+.campface button.dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+
+.campface button.dot:hover,
+.campface button.dot:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--text), 0 0 0 2px rgba(212,162,76,0.35);
+  outline: none;
+}
+
+.campface .pick {
+  margin: 0 !important;
+  font-size: 0.54rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--dim);
+}
 
 .campface .spec { margin: 0; font-size: 0.62rem; letter-spacing: 0.04em; color: var(--dim); }
 
@@ -2027,6 +2057,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
               <p class="lvl" id="galNum"></p>
               <p class="of" id="galOf"></p>
               <div class="dots" id="galDots"></div>
+              <p class="pick" id="galPick" hidden>Tap a printed level to go back to it</p>
               <p class="spec" id="galSpec"></p>
               <p class="saved" id="galSaved"></p>
             </div>
@@ -2112,7 +2143,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
     <div class="side">
       <div class="switches">
-      <button class="snd" id="snd" type="button" aria-pressed="false" aria-label="Turn sound on">
+      <button class="snd" id="snd" type="button" aria-pressed="true" aria-label="Turn sound off">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M11 5 6 9H2v6h4l5 4z"/>
           <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
@@ -2187,6 +2218,42 @@ async function wantSound(next) {
 }
 
 const sayMusic = (fn, ...args) => { if (music && music.isOn()) music[fn](...args); };
+
+/* ---- which music belongs to what is on screen ----
+   One cue per chapter, cut from a single piece along its own structure.
+   The last level has none of its own: she is wearing the shop's theme
+   the way she is wearing the painting's face, so it is Classics put
+   through something. */
+const CUE = {
+  classics: 'classics', landscape: 'landscape', figures: 'figures',
+  faith: 'faith', fantasy: 'fantasy', 'non-western': 'nonwestern'
+};
+
+function cueNow() {
+  if (!campOn) return 'practice';
+  const list = campList();
+  const here = list[Math.min(campAt, list.length - 1)];
+  if (!here) return 'classics';
+  if (here.finale) return 'classics';          // hers is the same one, corrupted
+  const ch = CHAPTERS[here.chapter];
+  return CUE[ch ? ch.room : here.art.room] || 'classics';
+}
+
+/* The music is told what the screen is, not when to change. Saying the
+   same thing twice costs nothing, so every screen can say it. */
+/* What the screen last asked for. The module cannot be asked anything
+   until the sound is turned on, and the sound comes up on the first touch
+   -- which is usually a touch that has just changed the screen. Without
+   this the cue that was set a moment too early is simply lost, and the
+   level plays in silence until the next screen. */
+let wantCue = null;
+
+function setMusic(name) {
+  wantCue = name || null;
+  if (!music || !music.setCue) return;
+  if (music.corrupt) music.corrupt(!!name && atFinale() && started);
+  music.setCue(name);
+}
 
 /* ============================================================
    Logic
@@ -3222,6 +3289,7 @@ function begin() {
   sayTime('0:00');
   startClock();
   startTick();
+  setMusic(cueNow());
   sayMusic('startMusic');
   show('');
   buttons();
@@ -3672,7 +3740,10 @@ function whereInSeries() {
    from here, so closing it comes back rather than dropping them on a
    board they have not started. */
 function homeGo(go) {
-  if (go === 'gallery')  { campOn = true;  hideFace(); newPrint('gallery'); return; }
+  /* This option says where it goes, and the label under it says which
+     level. Somebody who dropped back to an earlier one from the card is
+     on a detour; carrying on with the series means carrying on. */
+  if (go === 'gallery')  { campOn = true; campAt = campFind(); hideFace(); newPrint('gallery'); return; }
   if (go === 'practice') { campOn = false; hideFace(); newPrint('setup');   return; }
 
   rulesFrom = null;
@@ -3840,6 +3911,7 @@ function showFace(which) {
     paintTitle();
     whereInSeries();
     buttons();
+    setMusic('title');
     return;
   }
 
@@ -3852,6 +3924,7 @@ function showFace(which) {
     document.getElementById('overBoard').hidden = true;
     elOver.hidden = false;
     buttons();
+    setMusic(cueNow());
     victorStart(vicSpoken);
     return;
   }
@@ -3869,6 +3942,9 @@ function showFace(which) {
     elOver.hidden = false;
     buildBoss();
     buttons();
+    /* Hers is the Classics theme, and it is not corrupted yet: the
+       corruption lands when the level does. */
+    setMusic(cueNow());
     /* Said once. Coming back from the board is not a fresh arrival, so
        she is already standing there having finished. */
     asilStart(bossSpoken);
@@ -3904,6 +3980,10 @@ function showFace(which) {
   if (intro) paintRules();
   else if (which === 'gallery') buildGallery();
   else { buildModes(); buildPeek(); }
+
+  /* The card for a level plays that level's music, so the change lands
+     before the board does rather than on the first drop. */
+  if (which === 'gallery' || which === 'setup') setMusic(cueNow());
 
   buttons();
 }
@@ -3984,7 +4064,7 @@ const VIC_SAYS = [
   { t:  1.60, s: "You're finally awake!" },
   { t:  3.95, s: "You lazy, good for nothing intern." },
   { t:  6.50, s: "We need you in the print shop, asap." },
-  { t:  8.45, s: "Something is wrong with the print." },
+  { t:  8.45, s: "Something is wrong with the printer." },
   { t: 10.60, s: "The archivists are complaining all the art printers are printing as blanks." },
   { t: 14.45, s: "Might be a virus on that ancient copy machine." }
 ];
@@ -4797,11 +4877,23 @@ function buildGallery() {
   const dots = document.getElementById('galDots');
   if (dots) {
     dots.innerHTML = '';
+    let reachable = 0;
     for (let d = 0; d < list.length; d++) {
-      const el = document.createElement('span');
-      el.className = 'dot' + (campDone.indexOf(d + 1) !== -1 ? ' done' : (d === i ? ' now' : ''));
+      const done = campDone.indexOf(d + 1) !== -1;
+      const here = d === i;
+      const can = done && !here;                // where you are is not somewhere to go
+      const el = document.createElement(can ? 'button' : 'span');
+      el.className = 'dot' + (done ? ' done' : (here ? ' now' : ''));
+      if (can) {
+        reachable++;
+        el.type = 'button';
+        el.dataset.level = String(d + 1);
+        el.setAttribute('aria-label', 'Level ' + (d + 1) + ', printed \u2014 play it again');
+      }
       dots.appendChild(el);
     }
+    const pick = document.getElementById('galPick');
+    if (pick) pick.hidden = !reachable;
   }
 }
 
@@ -5083,6 +5175,7 @@ function resume() {
   faceOff();
   startClock();
   startTick();
+  setMusic(cueNow());
   sayMusic('startMusic');
   buttons();
 }
@@ -5096,6 +5189,7 @@ function finish(won) {
   over = true;
   stopTick();
   sayMusic('stopMusic');
+  setMusic(null);                                // out of the way of the sting
   sayMusic(won ? 'done' : 'jam');
   if (won) finishPrint();
 
@@ -5174,6 +5268,8 @@ function showWin() {
   line.hidden = false;
 
   showFace('home');
+  /* The only screen that gets an ending rather than a loop. */
+  if (music && music.ending && music.isOn()) music.ending();
 }
 
 function ordinal(n) {
@@ -5272,6 +5368,7 @@ function newPrint(face) {
   // anywhere but the last level, she gets her say again next time it comes round
   if (!atFinale()) { bossSeen = false; bossSpoken = false; }
   if (!campOn || campAt !== 0) { vicSeen = false; vicSpoken = false; }
+
 
   mode = document.getElementById('setInks').value;
   const pick = PALETTES[mode] || PALETTES.office;
@@ -5394,11 +5491,43 @@ const sndBtn = document.getElementById('snd');
 
 sndBtn.addEventListener('click', async () => {
   const next = sndBtn.getAttribute('aria-pressed') !== 'true';
+  await setSound(next);
+});
+
+/* One place that turns the sound on or off, so everything that depends on
+   it hears about it. Turning it on while somebody is mid sentence used to
+   do nothing audible: the screen had already decided there was no voice
+   to play and carried on silently to the end. */
+async function setSound(next) {
   const ok = await wantSound(next);
-  if (!ok) return;
+  if (!ok) return false;
   sndBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
   sndBtn.setAttribute('aria-label', next ? 'Turn sound off' : 'Turn sound on');
-});
+  try { localStorage.setItem('cp-sound', next ? '1' : '0'); } catch (e) {}
+
+  // whatever the screen asked for while there was nobody to ask
+  if (next) setMusic(wantCue);
+
+  /* Whoever is talking starts again from the top rather than joining
+     halfway: the point of turning it on is to hear the line. */
+  if (onVictor()) { if (next) victorStart(false); else victorHush(); }
+  if (onBoss())   { if (next) asilStart(false);   else asilHush(); }
+  return true;
+}
+
+/* Quiet, but still speaking. The mouth and the captions run off their own
+   clock, so losing the voice must not stop the screen. */
+function victorHush() {
+  if (VIC.audio) { try { VIC.audio.pause(); } catch (e) {} }
+  const h = document.getElementById('vicHear');
+  if (h && VIC.audio) h.hidden = false;
+}
+
+function asilHush() {
+  if (ASIL.audio) { try { ASIL.audio.pause(); } catch (e) {} }
+  const h = document.getElementById('bossHear');
+  if (h) h.hidden = false;
+}
 
 /* The right-hand button: start the first print, or start the next one. */
 document.getElementById('again').addEventListener('click', () => {
@@ -5426,6 +5555,24 @@ document.getElementById('again').addEventListener('click', () => {
   newPrint();
 });
 
+/* Going back to a level you have already printed. Nothing is given up
+   by it: progress is the set of levels cleared, so revisiting one cannot
+   take it off the list, and the board keeps your best run per level, so
+   a slower second attempt cannot cost you a place either. */
+document.getElementById('galDots').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-level]');
+  if (!b) return;
+  const n = Number(b.dataset.level);
+  const list = campList();
+  if (!(n >= 1 && n <= list.length)) return;
+  campAt = n - 1;
+  /* The two people waiting at either end of the series are part of the
+     level, not a prize for reaching it the first time. */
+  if (n === 1) { vicSeen = false; vicSpoken = false; }
+  if (n === list.length) { bossSeen = false; bossSpoken = false; }
+  newPrint('gallery');
+});
+
 document.getElementById('vicMenu').addEventListener('click', (e) => {
   const b = e.target.closest('[data-vic]');
   if (!b) return;
@@ -5433,13 +5580,7 @@ document.getElementById('vicMenu').addEventListener('click', (e) => {
   showFace('home');
 });
 
-document.getElementById('vicHear').addEventListener('click', async () => {
-  const ok = await wantSound(true);
-  if (!ok) return;
-  sndBtn.setAttribute('aria-pressed', 'true');
-  sndBtn.setAttribute('aria-label', 'Turn sound off');
-  if (onVictor()) victorStart(false);
-});
+document.getElementById('vicHear').addEventListener('click', () => setSound(true));
 
 /* Her screen carries its own two, the way the title screen does: the row
    under the board stands down while she is up. */
@@ -5453,13 +5594,7 @@ document.getElementById('bossMenu').addEventListener('click', (e) => {
 /* Offered, not taken. She says it either way -- the mouth runs off the
    envelope whether or not anything is coming out of the speakers -- so
    this is for somebody who would rather hear it. */
-document.getElementById('bossHear').addEventListener('click', async () => {
-  const ok = await wantSound(true);
-  if (!ok) return;
-  sndBtn.setAttribute('aria-pressed', 'true');
-  sndBtn.setAttribute('aria-label', 'Turn sound off');
-  if (onBoss()) asilStart();                    // from the top, this time with her voice
-});
+document.getElementById('bossHear').addEventListener('click', () => setSound(true));
 
 /* The left-hand one, wearing whichever name the state gave it. */
 document.getElementById('menuBtn').addEventListener('click', () => {
@@ -5605,6 +5740,45 @@ window.addEventListener('resize', () => {
   if (onVictor()) victorFit();
   repaintScores();
 });
+
+/* ---- the sound starts on ----
+   A game with two people talking in it and the sound off by default is a
+   game most people never hear. It cannot literally start on -- no browser
+   lets a page make noise before somebody has touched it -- so it waits
+   for the first touch, whatever that touch was for, and comes up then.
+   Anybody who would rather have it off turns it off once and it stays
+   off, here and on the next visit. */
+function soundWanted() {
+  try {
+    const v = localStorage.getItem('cp-sound');
+    if (v === '0') return false;
+  } catch (e) { /* a browser that will not remember is a browser that agrees */ }
+  return true;
+}
+
+if (!soundWanted()) {
+  sndBtn.setAttribute('aria-pressed', 'false');
+  sndBtn.setAttribute('aria-label', 'Turn sound on');
+}
+
+(function armOnFirstTouch() {
+  if (!soundWanted()) return;
+  const go = async (e) => {
+    /* The mute button runs its own handler; letting this one fire too
+       would turn the sound on and straight back off again. */
+    if (e && e.target && e.target.closest && e.target.closest('#snd')) return off();
+    off();
+    await setSound(true);
+  };
+  const off = () => {
+    document.removeEventListener('pointerdown', go, true);
+    document.removeEventListener('keydown', go, true);
+    document.removeEventListener('touchstart', go, true);
+  };
+  document.addEventListener('pointerdown', go, true);
+  document.addEventListener('keydown', go, true);
+  document.addEventListener('touchstart', go, true);
+})();
 
 /* Built behind the title screen, so the first thing anyone sees is the
    name of the game rather than a board they have not asked for yet. */
