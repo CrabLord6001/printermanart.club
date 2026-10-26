@@ -5421,13 +5421,16 @@ function finish(won) {
 
   document.getElementById('overTitle').hidden = false;
   document.getElementById('overTitle').textContent = won ? 'Print complete' : 'Paper jam';
-  /* Non breaking spaces inside each token, so a wrap can only ever fall
-     between them -- no more "longest" on one line and "chain 2" on the next. */
-  document.getElementById('overText').innerHTML = won
-    ? '<b>' + stamp(ran) + '</b>'
-      + ' &middot; ' + points + '&nbsp;pts'
-      + ' &middot; ' + pieces + '&nbsp;drops'
-      + ' &middot; chain&nbsp;&times;' + bestChain
+  /* A finished print says what it is and leaves it there. The time, the
+     points, the chain and the plate count are all on the readout above
+     the board and have been the whole run -- repeating them under the
+     painting put four numbers between somebody and the thing they just
+     spent two minutes making.
+
+     A jam is the other case: there is no painting to look at, so the
+     numbers are all there is to say. Non breaking spaces inside each
+     token, so a wrap can only fall between them. */
+  document.getElementById('overText').innerHTML = won ? ''
     : down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
       + ' &middot; chain&nbsp;&times;' + bestChain;
   wonLast = !!won;
