@@ -4273,16 +4273,72 @@ function asilRuns() {
   return ASIL_REVEAL + (ASIL.env ? ASIL.env.open.length / ASIL.env.fps * 1000 : 0);
 }
 
+/* How many levels each chapter holds, frozen at what the gallery had the
+   day the rotation went in. Twenty and a finale is the game; a painting
+   added to the Art History page joins the pool its chapter deals from
+   rather than making the series one level longer every week.
+
+   A room the list has not heard of falls back to however many paintings
+   are in it, which is what happens the week a new room opens. */
+const CHAPTER_SLOTS = {
+  classics: 3, landscape: 3, figures: 3,
+  faith: 3, fantasy: 3, 'non-western': 5
+};
+
+/* ---- the rotation ----
+   Which paintings a chapter deals this hour. Everyone playing in the
+   same hour gets the same twenty, so a time on the board was set against
+   the series somebody else is looking at -- and the artwork makes no
+   difference to the difficulty anyway, which is what lets the board stay
+   one board across the rotation.
+
+   Measured in UTC hours so it turns over at the same moment everywhere. */
+const ROTATE_MS = 60 * 60 * 1000;
+const hourNow = () => Math.floor(Date.now() / ROTATE_MS);
+
+let galleryHour = hourNow();
+let dealt = null;
+
+/* Never mid-run. Somebody three colors into a print does not want the
+   painting under the board to change, and a level they are about to
+   clear has to be the level they started. */
+function rotateCheck(anyway) {
+  if (started && !anyway) return;
+  const h = hourNow();
+  if (h === galleryHour) return;
+  galleryHour = h;
+  dealt = null;
+}
+
+/* A seeded shuffle, so the same hour deals the same hand on every
+   machine without anything being written down anywhere. */
+function dealRoom(pool, slots, ci) {
+  let s = ((galleryHour * 2654435761) ^ ((ci + 1) * 40503)) >>> 0;
+  const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  rnd(); rnd();                                 // neighbouring seeds start too much alike
+  const bag = pool.slice();
+  for (let i = bag.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    const t = bag[i]; bag[i] = bag[j]; bag[j] = t;
+  }
+  return bag.slice(0, Math.max(1, Math.min(slots, bag.length)));
+}
+
 function gallery() {
+  if (dealt) return dealt;
   const out = [];
   CHAPTERS.forEach((ch, ci) => {
-    for (const a of ARTWORKS) if (a.room === ch.room) out.push({ art: a, chapter: ci });
+    const pool = ARTWORKS.filter((a) => a.room === ch.room);
+    if (!pool.length) return;
+    const slots = CHAPTER_SLOTS[ch.room] != null ? CHAPTER_SLOTS[ch.room] : pool.length;
+    for (const a of dealRoom(pool, slots, ci)) out.push({ art: a, chapter: ci });
   });
   // a painting in a room the order has not heard of still gets a place
   for (const a of ARTWORKS) {
     if (!CHAPTERS.some((c) => c.room === a.room)) out.push({ art: a, chapter: CHAPTERS.length });
   }
   out.push({ art: FINALE, chapter: -1, finale: true });   // last, always
+  dealt = out;
   return out;
 }
 
@@ -4319,7 +4375,7 @@ let campDone = [];                              // level numbers already printed
 let campAt = 0;                                 // the level up next
 let campSaved = false;                          // is there an account behind it
 
-function campList() { return gallery(); }
+function campList() { rotateCheck(); return gallery(); }
 
 function campFind() {
   const list = campList();
@@ -4856,6 +4912,10 @@ function newPrint(face) {
      ink thinner over it, and the two all but cancel. The cartridge count
      is the difficulty, so that is the one left to turn. */
   COLS = 6;
+
+  /* A new print is never mid-run, whatever the last one left behind, so
+     this is where a turned hour gets to land. */
+  rotateCheck(true);
 
   // the series sets its own dials; the practice panel keeps the ones it was left on
   if (campOn) armLevel();
