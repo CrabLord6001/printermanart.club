@@ -1318,6 +1318,42 @@ button.go:not(.ghost):hover {
 .switches { display: flex; justify-content: center; gap: 4px; }
 .switches .snd { width: 28px; height: 28px; }
 
+/* Discord's own blue, because that is the account they are signing in
+   with and the button should look like what it opens. It is the one thing
+   on the machine that is not the shop's gold, which is the point: it
+   belongs to the service, not to the press. */
+.signin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 6px;
+  background: #5865F2;
+  color: #FFF;
+  font: inherit;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.signin[hidden] { display: none; }
+.signin:hover, .signin:focus-visible { background: #4752C4; }
+.signin:active { transform: translateY(1px); }
+.signin:disabled { opacity: 0.6; cursor: default; }
+
+/* On the narrow rail the word goes and the mark carries it, so signing in
+   never costs the board a column. */
+@media (max-width: 560px) {
+  .signin span { display: none; }
+  .signin { padding: 7px 0; }
+  .signin svg { width: 16px; height: 12px; }
+}
+
 /* What the three of them add up to, falling. Built from the same drops the
    board uses, so the edge and the screen angles come with them. */
 .peek {
@@ -1337,11 +1373,16 @@ body .peek .cell { position: absolute; }
   .peek .cell { animation: none !important; }
 }
 
-/* Capped at a column's width, which left it sitting against the left
-   edge of the well. Nothing showed it while the panel's own scrim
-   covered everything behind it; with the painting back there the whole
-   screen reads as hung crooked. */
-.over.menu { justify-content: flex-start; margin-left: auto; margin-right: auto; }
+/* The scrim is see-through so a finished print can show under it. Every
+   other menu is a page in its own right and the board behind it is only
+   whatever the last run left -- a jammed board, most of the time, which
+   fights the type and hands somebody their failure back on the way to
+   picking the next level. Those pages close the panel instead. The
+   finished print keeps its own gradient, and the level card keeps the
+   painting it puts behind the well. */
+.over.menu:not(.hasart), .over.home { background: #0A0C11; }
+
+.over.menu { justify-content: flex-start; }
 .over.menu .rules { margin-left: auto; margin-right: auto; }
 
 .over.menu .over-in {
@@ -1720,11 +1761,11 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    be promising something it cannot keep, and a level somebody printed
    last week would show them a picture they never saw.
 
-   Six short rows do not hold a tall panel down, so they take the middle of
-   it rather than sitting at the top with the rest of the well empty. The
-   panel's own column is what fills the well here, so the centering goes on
-   that rather than on the panel. */
-.over.lvface .over-in { justify-content: center; }
+   The list runs the length of the board rather than sitting as a block in
+   the middle of it. Six rooms spread down the well read as the gallery
+   they are; the same six bunched in the center read as a widget with the
+   rest of the panel left over. */
+.over.lvface .over-in { justify-content: flex-start; }
 
 /* Everything here is scoped past .rules p, which is sized and aligned at
    run time to fit the introduction and would otherwise set the room names
@@ -1733,15 +1774,27 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  flex: 1 1 auto;
   width: 100%;
   max-width: 30rem;
 }
 
 /* A room's name sits right on top of its own chips, and the air goes
    between the rooms instead. Evenly spaced, the names floated halfway
-   between two rows and belonged to neither. */
-.levelsface .lv-rooms { display: flex; flex-direction: column; gap: 18px; width: 100%; }
+   between two rows and belonged to neither.
+
+   The rooms take the whole column and share out what is left between
+   them, so the list ends where the board does. The gap is the floor for
+   a short window, not the spacing for a tall one. */
+.levelsface .lv-rooms {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1 1 auto;
+  gap: 18px;
+  width: 100%;
+  padding: 6px 0 2px;
+}
 
 .levelsface .lv-room-name {
   margin: 0 0 3px;
@@ -1759,14 +1812,14 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    a room broken over two lines reads as two rooms. */
 .levelsface .lv-row {
   display: grid;
-  grid-template-columns: repeat(var(--n, 3), minmax(0, 40px));
+  grid-template-columns: repeat(var(--n, 3), minmax(0, 48px));
   justify-content: center;
   gap: 6px;
 }
 
 .levelsface .lv {
   box-sizing: border-box;
-  padding: 8px 0;
+  padding: 11px 0;
   border: 1px solid #2B3141;
   border-radius: 5px;
   background: rgba(16,18,24,0.9);
@@ -1777,7 +1830,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   cursor: pointer;
 }
 
-.levelsface .lv b { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+.levelsface .lv b { font-size: 0.95rem; font-weight: 700; color: var(--text); }
 
 /* Printed carries a gold rule under the number -- inset, so marking one
    never moves the row. */
@@ -2137,7 +2190,12 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* The options. Big enough to be the interface, since on this screen they
    are the only one -- the row under the board steps aside here. */
-.menu {
+/* The element selector matters. The panel takes a class of "menu" too,
+   for the faces that are a menu rather than the game, and this block was
+   landing on it: an 18px margin that pushed the panel down off the top of
+   the well, and a 26rem cap that squeezed it into a column. Both were
+   worked around elsewhere instead of being stopped here. */
+nav.menu {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -2289,45 +2347,10 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   text-transform: uppercase; color: var(--dim);
 }
 
-.campface .dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-
-/* A dot per level, and the ones already printed are a way back to them.
-   A level you have cleared costs nothing to play again and your best run
-   is the one that counts, so there is no reason to lock the door behind
-   you -- and it is the only way anybody would meet the curator twice. */
-.campface .dot {
-  width: 12px; height: 12px; padding: 0; border: 0; border-radius: 50%;
-  background: #171B22; box-shadow: inset 0 0 0 1px #262C36;
-}
-
-.campface .dot.done { background: var(--accent); box-shadow: none; }
-.campface .dot.now { background: transparent; box-shadow: inset 0 0 0 2px var(--accent); }
-
-.campface button.dot { cursor: pointer; }
-
-/* The target is bigger than the dot: twelve pixels is a mark, not a
-   button, and a row of them on a phone is unusable at that size. The
-   reach stops at half the gap, so two neighbours never both answer for
-   the same tap -- which would send somebody to the wrong level, and they
-   would not know it had happened until the painting came up. */
-.campface button.dot { position: relative; }
-.campface button.dot::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-}
-
-.campface button.dot:hover,
-.campface button.dot:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--text), 0 0 0 2px rgba(212,162,76,0.35);
-  outline: none;
-}
-
-.campface .pick {
-  margin: 0 !important;
-  font-size: 0.54rem; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--dim);
-}
+/* The row of dots is gone. It was a way back to a level you had printed
+   and the only count of the series anywhere on the card -- twenty one
+   marks in a row, which answered the question the game is keeping. Level
+   Select is the way back now, and it shows rooms rather than a total. */
 
 .campface .spec { margin: 0; font-size: 0.62rem; letter-spacing: 0.04em; color: var(--dim); }
 
@@ -2469,8 +2492,6 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
               <p class="chap" id="galChap"></p>
               <div class="plate levelplate" id="galTitleWrap"><canvas id="galTitle"></canvas></div>
               <p class="par" id="galPar"></p>
-              <div class="dots" id="galDots"></div>
-              <p class="pick" id="galPick" hidden>Tap a printed level to go back to it</p>
               <p class="saved" id="galSaved"></p>
             </div>
 
@@ -2524,8 +2545,8 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
               <div class="plate"><canvas id="titleArt"></canvas></div>
               <p class="faceline" id="faceLine" hidden></p>
               <nav class="menu" id="titleMenu">
-                <button class="mi" type="button" data-go="gallery">Play through Gallery<span class="sub" id="miWhere"></span></button>
-                <button class="mi" type="button" data-go="levels">Level Select<span class="sub" id="miDone"></span></button>
+                <button class="mi" type="button" data-go="gallery">Play Gallery<span class="sub" id="miWhere"></span></button>
+                <button class="mi" type="button" data-go="levels">Level Select</button>
                 <button class="mi" type="button" data-go="practice">Practice</button>
                 <button class="mi" type="button" data-go="intro">Introduction</button>
                 <button class="mi" type="button" data-go="board">Leaderboard</button>
@@ -2562,6 +2583,18 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
     </div>
 
     <div class="side">
+      <!-- The way in. The game has its own address now, so the arcade page
+           it used to sit on is no longer somewhere a player passes through,
+           and the panel that asks them to sign in to keep a score has to be
+           able to do something about it. Hidden until the session says
+           nobody is here, so it never flashes at somebody already signed
+           in. -->
+      <button class="signin" id="signIn" type="button" hidden>
+        <svg viewBox="0 0 24 18" width="13" height="10" fill="currentColor" aria-hidden="true">
+          <path d="M20.3 1.6A19.8 19.8 0 0 0 15.4.1l-.2.5c1.6.4 3 1 4.4 1.8a17.6 17.6 0 0 0-11.2 0A14.7 14.7 0 0 1 12.8.6L12.6.1a19.8 19.8 0 0 0-4.9 1.5C4.6 6.2 3.7 10.8 4.1 15.3a19.9 19.9 0 0 0 6 3 14.6 14.6 0 0 0 1.3-2.1c-.7-.3-1.4-.6-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1 .4.7.8 1.4 1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.2-.9-9.8-3.6-13.7ZM9.7 12.6c-1.2 0-2.2-1.1-2.2-2.4S8.5 7.7 9.7 7.7s2.2 1.1 2.2 2.5-1 2.4-2.2 2.4Zm8.1 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.5 2.2-2.5 2.2 1.1 2.2 2.5-1 2.4-2.2 2.4Z"/>
+        </svg>
+        <span>Sign in</span>
+      </button>
       <div class="switches">
       <button class="snd" id="snd" type="button" aria-pressed="true" aria-label="Turn sound off">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -4745,7 +4778,7 @@ function paintRules() {
   else fitCopy(panel, rules, panel.clientHeight - PANEL_PAD - FADE_H);
 }
 
-/* What "Play through Gallery" will actually do, said under it, so the
+/* What "Play Gallery" will actually do, said under it, so the
    first option is not a guess about where they left off.
 
    Where they are, not how far it runs. The length of the gallery is
@@ -4760,12 +4793,6 @@ function whereInSeries() {
     ? 'Every level printed'
     : 'Level ' + (at + 1)
       + (lv ? ' \u00b7 ' + (lv.finale ? 'The last print' : lv.art.roomName) : '');
-
-  /* The tally belongs under the option that opens the list, not inside it:
-     the list itself is numbers, and this is the one thing a number cannot
-     say. Still no total -- how many there are stays unsaid. */
-  const done = document.getElementById('miDone');
-  if (done) done.textContent = campDone.length ? campDone.length + ' printed' : '';
 }
 
 /* Every level, by room, as numbered chips. Tapping one opens that level's
@@ -4832,6 +4859,10 @@ document.addEventListener('click', (e) => {
   const lv = parseInt(chip.dataset.level, 10);
   if (!lv) return;
   trying = 0; campOn = true; campAt = lv - 1;
+  /* The two people waiting at either end of the series are part of the
+     level, not a prize for reaching it the first time. */
+  if (lv === 1) { vicSeen = false; vicSpoken = false; }
+  if (lv === campList().length) { bossSeen = false; bossSpoken = false; }
   hideFace();
   newPrint('gallery');
 });
@@ -6005,7 +6036,6 @@ function buildGallery() {
   if (ttl && onGallery()) ttl.hidden = true;
   show('galChap', !here.finale);
   show('galTitleWrap', !here.finale);
-  show('galDots', !here.finale);
   if (here.finale) paintPlate(document.getElementById('galPlate'), FINALE_WORDS);
 
   set('galChap', here.finale
@@ -6036,29 +6066,8 @@ function buildGallery() {
   set('galSaved', trying
     ? 'Trial run \u2014 nothing from here is saved'
     : (campSaved ? 'Saved to your account'
-                 : 'Sign in on the arcade page to keep your place'));
+                 : 'Sign in to keep your place'));
 
-  const dots = document.getElementById('galDots');
-  if (dots) {
-    dots.innerHTML = '';
-    let reachable = 0;
-    for (let d = 0; d < list.length; d++) {
-      const done = campDone.indexOf(d + 1) !== -1;
-      const here = d === i;
-      const can = done && !here;                // where you are is not somewhere to go
-      const el = document.createElement(can ? 'button' : 'span');
-      el.className = 'dot' + (done ? ' done' : (here ? ' now' : ''));
-      if (can) {
-        reachable++;
-        el.type = 'button';
-        el.dataset.level = String(d + 1);
-        el.setAttribute('aria-label', 'Level ' + (d + 1) + ', printed \u2014 play it again');
-      }
-      dots.appendChild(el);
-    }
-    const pick = document.getElementById('galPick');
-    if (pick) pick.hidden = !reachable;
-  }
 }
 
 /* Her screen says the same two things the gallery card says -- which
@@ -6327,6 +6336,14 @@ function buttonsNow() {
   menu.textContent = campOn ? 'Pause' : 'Settings';
   menu.classList.add('ghost');
   menu.classList.remove('on');
+
+  /* Restart stands down while a level is running. It was the loud button
+     in the middle of the row, a thumb's width under the board, and it
+     throws away a run that is going well without asking. It is on the
+     pause screen instead, which is one deliberate tap away and the only
+     place anybody actually means to press it. Practice keeps it: there is
+     no run there to lose. */
+  main.hidden = campOn;
   main.textContent = redeal();
 }
 
@@ -6601,7 +6618,7 @@ function ordinal(n) {
 
    The bridge is set up by a module further down, which loads after this
    script, so everything here checks that it arrived. Signed out there is
-   nothing to say: the sign-in lives on the arcade page. */
+   nothing to say: the button on the rail is the way in. */
 function record(ran) {
   const board = document.getElementById('overBoard');
   const list = campList();
@@ -6888,24 +6905,6 @@ document.getElementById('again').addEventListener('click', () => {
   newPrint();
 });
 
-/* Going back to a level you have already printed. Nothing is given up
-   by it: progress is the set of levels cleared, so revisiting one cannot
-   take it off the list, and the board keeps your best run per level, so
-   a slower second attempt cannot cost you a place either. */
-document.getElementById('galDots').addEventListener('click', (e) => {
-  const b = e.target.closest('button[data-level]');
-  if (!b) return;
-  const n = Number(b.dataset.level);
-  const list = campList();
-  if (!(n >= 1 && n <= list.length)) return;
-  campAt = n - 1;
-  /* The two people waiting at either end of the series are part of the
-     level, not a prize for reaching it the first time. */
-  if (n === 1) { vicSeen = false; vicSpoken = false; }
-  if (n === list.length) { bossSeen = false; bossSpoken = false; }
-  newPrint('gallery');
-});
-
 document.getElementById('vicMenu').addEventListener('click', (e) => {
   const b = e.target.closest('[data-vic]');
   if (!b) return;
@@ -7176,10 +7175,19 @@ else if (TRY > 0) openTrial();
      script through one small bridge. Same origin as the arcade page, so
      anyone signed in there is already signed in here. -->
 <script type="module">
-  import { db, onMember, postScore, campaignBoard, campaignMe } from '/games/club-auth.js';
+  import { db, onMember, signIn, postScore, campaignBoard, campaignMe } from '/games/club-auth.js';
 
   const GAME = 'color-processor';
   let member = null;
+
+  /* Discord sends them back to this same address, so they land on the game
+     rather than on the page the sign-in used to live on. */
+  const inBtn = document.getElementById('signIn');
+  if (inBtn) inBtn.addEventListener('click', async () => {
+    inBtn.disabled = true;
+    try { await signIn(); }
+    catch (err) { inBtn.disabled = false; }
+  });
 
   window.CPBoard = {
     signedIn: () => !!member,
@@ -7236,6 +7244,7 @@ else if (TRY > 0) openTrial();
 
   onMember(async (m) => {
     member = m;
+    if (inBtn) { inBtn.hidden = !!m; inBtn.disabled = false; }
     let p = null;
     try { p = m ? await window.CPBoard.progress() : null; } catch (e) { p = null; }
     if (window.CPArrived) window.CPArrived(p);
