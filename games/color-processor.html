@@ -2333,7 +2333,17 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    while the sheet is up the panel lets it through. The gradient over the
    well does the darkening instead, and it darkens the whole block rather
    than one column of it. */
-.over.hasart { background: transparent; }
+/* A card with a painting on it shows the painting through -- that is the
+   whole point of the card. The instructions are not that: they are a
+   page to read, opened in the middle of a print, and a half-finished
+   painting behind them is the worst possible paper. Light pictures take
+   the text away completely.
+
+   :not(.intro) rather than a second rule further down, because this one
+   and the solid background above it have the same specificity and were
+   deciding it by source order -- which is how the instructions lost
+   theirs in the first place. */
+.over.hasart:not(.intro) { background: transparent; }
 
 /* The time to beat, and the one number on the screen worth reading from
    across the room. */
@@ -3178,7 +3188,7 @@ nav.menu {
               <div class="pg" id="rulesPg1">
               <div class="demo" id="demo" hidden></div>
               <p>Welcome to the Gallery Printshop! The chief curator has assigned you to fix the printer. He suspects a virus is corrupting the prints - but hey it probably just needs an alignment calibration. Did you bring the manual? Eh who needs those when we have AI, right?</p>
-              <p>Add color to the image plate by breaking a set of any four of one color by having them fall and connect. The side tubes empty as you fill the image to track your progress of that color.</p>
+              <p>Add color to the image plate by breaking a set of any four of one color by having them fall and connect. The side tubes fill as you fill the image to track your progress of that color.</p>
               </div>
 
               <div class="pg" id="rulesPg2" hidden>
