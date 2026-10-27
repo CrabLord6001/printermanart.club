@@ -455,6 +455,55 @@ html.embed .title { display: none; }
 .cell.lm { background: var(--lmagenta); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
 .cell.w  { background: var(--white); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
 
+/* ---- what a chain just paid ----
+   Over the cells that earned it rather than up in the readout, because
+   a number that changes in the corner is not a reward anybody notices
+   while they are watching the board. Struck through with a highlight
+   and leaning forward, the way a multiplier is drawn on a cabinet.
+
+   Not a child of the grid: the grid is rebuilt whenever the board is
+   measured, which would take the badge with it mid flight. */
+.bonus {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bonus b {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #F6CE85;
+  -webkit-text-stroke: 0.11em #140D02;
+  paint-order: stroke fill;
+  text-shadow: 0 0 18px rgba(246,206,133,0.65), 0 3px 0 rgba(20,13,2,0.55);
+  animation: bonusPop 760ms cubic-bezier(0.2, 1.5, 0.4, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* Lands hard, hangs, leaves upward -- a stamp rather than a fade. */
+@keyframes bonusPop {
+  0%   { transform: translate(-50%, -50%) scale(0.35) rotate(-14deg); opacity: 0; }
+  18%  { transform: translate(-50%, -62%) scale(1.22) rotate(-7deg);  opacity: 1; }
+  32%  { transform: translate(-50%, -58%) scale(0.98) rotate(-7deg);  opacity: 1; }
+  70%  { transform: translate(-50%, -66%) scale(1.02) rotate(-7deg);  opacity: 1; }
+  100% { transform: translate(-50%, -112%) scale(1.06) rotate(-7deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bonus b { animation: bonusFade 760ms linear forwards; }
+  @keyframes bonusFade {
+    0%, 70% { opacity: 1; transform: translate(-50%, -50%); }
+    100%    { opacity: 0; transform: translate(-50%, -50%); }
+  }
+}
+
 /* A clump of four or more flashes before it goes. A ring rather than a white
    fill, so it still reads when white is one of the inks on the board. */
 .cell.hit { box-shadow: 0 0 0 3px #fff, 0 0 10px 2px rgba(255,255,255,0.6); }
@@ -3084,6 +3133,8 @@ nav.menu {
              so the burst covers the print and the drops but never the
              words. -->
         <canvas class="zap" id="zap" aria-hidden="true"></canvas>
+        <!-- What a chain pays, said where it was earned. -->
+        <div class="bonus" id="bonus" aria-hidden="true"></div>
         <canvas class="galart" id="galArt" aria-hidden="true" hidden></canvas>
         <div class="galveil" id="galVeil" aria-hidden="true" hidden></div>
 
@@ -3610,6 +3661,9 @@ let mode = 'office', virusRate = VIRUS_FROM;
 const GROUP_POINTS = { 4: 10, 5: 15, 6: 25 };
 const BIG_GROUP    = 50;
 const CHAIN_CAP    = 8;
+/* What a chained pass is worth to the plates it feeds. Deliberately not
+   CHAIN_CAP: see the clear loop. */
+const CHAIN_INK    = 2;
 
 const groupPoints = (n) => (n >= 7 ? BIG_GROUP : GROUP_POINTS[n] || 0);
 
@@ -4784,6 +4838,46 @@ function fitRail() {
   document.documentElement.style.setProperty('--tubeH', Math.max(44, TUBE_H - over) + 'px');
 }
 
+/* The badge, over the middle of whatever just came off the board.
+   Measured off a real tile rather than worked out from the cell size,
+   because the grid carries its own padding and gaps and the arithmetic
+   for that is one more thing to keep in step with the CSS. */
+function popBonus(clumps) {
+  const host = document.getElementById('bonus');
+  const well = host && host.parentElement;
+  if (!host || !well || !clumps || !clumps.length || !tiles.length) return;
+
+  let sx = 0, sy = 0, n = 0;
+  for (const g of clumps) for (const [x, y] of g) { sx += x; sy += y; n++; }
+  if (!n) return;
+
+  const mid = tiles[idx(Math.round(sx / n), Math.round(sy / n))];
+  if (!mid) return;
+  const t = mid.getBoundingClientRect();
+  const w = well.getBoundingClientRect();
+  if (!t.width) return;
+
+  const fs = Math.max(17, Math.round(cellPx * 1.05));
+
+  /* Kept off the edges. The group that earns a chain is usually on the
+     floor of the well, which is exactly where a badge centred on it
+     hangs over the side and gets clipped. */
+  const pad = fs * 0.85;
+  const x = t.left - w.left + t.width / 2;
+  const y = t.top - w.top + t.height / 2;
+
+  const el = document.createElement('b');
+  el.textContent = '2\u00d7';
+  el.style.fontSize = fs + 'px';
+  el.style.left = Math.min(Math.max(x, pad), w.width - pad) + 'px';
+  el.style.top = Math.min(Math.max(y, pad * 1.2), w.height - pad) + 'px';
+  host.appendChild(el);
+  el.addEventListener('animationend', () => el.remove(), { once: true });
+  /* A dropped animationend -- a backgrounded tab is the usual way --
+     would leave it on the board for good. */
+  setTimeout(() => el.remove(), 1600);
+}
+
 function sizeBoard() {
   // Measure what the rest of the page is actually taking rather than
   // guessing at it, then give the well the remainder.
@@ -5502,6 +5596,21 @@ async function resolve() {
     const mult = Math.min(chain, CHAIN_CAP);
     let pass = 0;
 
+    /* A chain pays ink as well as points now. It used to pay points
+       only -- and the series is ranked on time, so a mechanic the game
+       put in the top row of readouts and flashed at you was one the
+       clock punished you for using. Double ink is roughly what the two
+       or three drops of setup cost you, so chaining comes out about
+       even on the clock with upside, which is where something rare
+       should sit: worth doing, not the only thing worth doing.
+
+       Flat, rather than the points curve. Points run to eight times;
+       ink at eight times would fill most of a plate in one go and par
+       would stop meaning anything. And from the second pass on, since
+       the first clear is not a chain -- it is a clear that happened to
+       be followed by one, and paying for that is paying for luck. */
+    const inkMult = chain >= 2 ? CHAIN_INK : 1;
+
     for (const group of clumps) {
       pass += groupPoints(group.length) * mult;
       for (const [x, y] of group) {
@@ -5510,10 +5619,13 @@ async function resolve() {
         /* Rounded as it goes. Four fifths does not land on a binary
            fraction, so twenty five of them come to 19.999999999999996 and
            a plate that is full never says so. */
-        if (plate) cleared[plate] = Math.round((cleared[plate] + (LIGHT_WORTH[ink] || 1)) * 100) / 100;
+        if (plate) cleared[plate] = Math.round((cleared[plate] + (LIGHT_WORTH[ink] || 1) * inkMult) * 100) / 100;
         tiles[idx(x, y)].className = 'cell hit';
       }
     }
+
+    /* And it has to be seen to be collected. */
+    if (inkMult > 1 && !discoOn) popBonus(clumps);
 
     points += pass;
     sayPts(points);
