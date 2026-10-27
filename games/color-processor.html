@@ -549,19 +549,26 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 /* A virus wears its own ink: it matches on colour like any other drop,
    so it has to look like one. What marks it is the light on top of it.
 
-   A red outline on its own just read as red. This is a beacon: a lamp
-   sweeping round inside the cell, a hot core under the number, and a
-   halo that spills past the edge onto whatever it is sitting next to.
-   The sweep is a conic gradient turned by a transform, so it costs the
-   compositor a rotation and nothing else. */
+   The lamp is green, which is the same argument as the strike: nothing
+   in this press lays down green, so a green light on a drop can only
+   mean the drop is not one of the shop's. Red read as a warning in
+   general; green reads as this particular thing being wrong, and it
+   means a player can be told to watch for green and never have to be
+   told what else green might be.
+
+   A coloured outline on its own just read as a colour. This is a
+   beacon: a lamp sweeping round inside the cell, a core under the
+   number, and a halo that spills past the edge onto whatever it is
+   sitting next to. The sweep is a conic gradient turned by a transform,
+   so it costs the compositor a rotation and nothing else. */
 .cell.virus, .nextlist .dot.virus {
   position: relative;
   overflow: visible;
   display: grid;
   place-items: center;
-  box-shadow: inset 0 0 0 2.5px #FF2A44,
-              0 0 14px 2px rgba(255,42,68,0.55),
-              0 0 34px 6px rgba(255,0,60,0.22);
+  box-shadow: inset 0 0 0 2.5px #4CFF3C,
+              0 0 14px 2px rgba(76,255,60,0.55),
+              0 0 34px 6px rgba(76,255,60,0.22);
   animation: bugLamp 2.4s ease-in-out infinite;
   font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
   font-weight: 400;
@@ -578,9 +585,9 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   inset: -2px;
   border-radius: 50%;
   background: conic-gradient(from 0deg,
-    rgba(255,42,68,0.95) 0deg, rgba(255,42,68,0) 48deg,
-    rgba(255,42,68,0) 180deg, rgba(255,42,68,0.95) 180deg,
-    rgba(255,42,68,0) 228deg, rgba(255,42,68,0) 360deg);
+    rgba(76,255,60,0.95) 0deg, rgba(76,255,60,0) 48deg,
+    rgba(76,255,60,0) 180deg, rgba(76,255,60,0.95) 180deg,
+    rgba(76,255,60,0) 228deg, rgba(76,255,60,0) 360deg);
   animation: bugSweep 1.5s linear infinite;
   pointer-events: none;
   mix-blend-mode: screen;
@@ -597,7 +604,7 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   width: 62%;
   height: 62%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,120,140,0.42) 0%, rgba(255,51,80,0.18) 60%, rgba(255,0,60,0) 100%);
+  background: radial-gradient(circle, rgba(190,255,150,0.42) 0%, rgba(76,255,60,0.18) 60%, rgba(76,255,60,0) 100%);
   animation: bugBulb 1.5s ease-in-out infinite;
   pointer-events: none;
 }
@@ -612,25 +619,25 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 /* The halo breathing, so a virus is doing something even when the lamp
    is pointing away from you. */
 @keyframes bugLamp {
-  0%, 100% { box-shadow: inset 0 0 0 2.5px #FF2A44,
-                         0 0 14px 2px rgba(255,42,68,0.55),
-                         0 0 34px 6px rgba(255,0,60,0.22); }
-  50%      { box-shadow: inset 0 0 0 3px #FF4D63,
-                         0 0 22px 4px rgba(255,42,68,0.8),
-                         0 0 48px 10px rgba(255,0,60,0.34); }
+  0%, 100% { box-shadow: inset 0 0 0 2.5px #4CFF3C,
+                         0 0 14px 2px rgba(76,255,60,0.55),
+                         0 0 34px 6px rgba(76,255,60,0.22); }
+  50%      { box-shadow: inset 0 0 0 3px #86FF6E,
+                         0 0 22px 4px rgba(76,255,60,0.85),
+                         0 0 48px 10px rgba(76,255,60,0.36); }
 }
 
-/* The last three. Everything speeds up and the cell starts to shake --
-   this is the whole warning somebody gets, so it has to arrive with
-   enough left on the count to act on. */
-.cell.virus.soon { animation: bugLamp 0.5s ease-in-out infinite, bugShake 0.42s steps(2, end) infinite; }
+/* The last three. Everything speeds up -- this is the whole warning
+   somebody gets, so it has to arrive with enough left on the count to
+   act on.
+
+   The cell used to shake as well, and the count went with it. The one
+   piece of information on a virus is the number; moving it to say the
+   number is running out is working against itself. The lamp going
+   frantic says the same thing and leaves it still. */
+.cell.virus.soon { animation: bugLamp 0.5s ease-in-out infinite; }
 .cell.virus.soon::before { animation-duration: 0.42s; }
 .cell.virus.soon::after  { animation-duration: 0.42s; }
-
-@keyframes bugShake {
-  0%, 100% { transform: translate(0, 0); }
-  50%      { transform: translate(0.9px, -0.7px); }
-}
 
 /* The count has to read on whatever it landed on. Three of the six inks
    are dark enough to take white type and three are not, so the pale ones
@@ -658,9 +665,9 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   .cell.virus::before, .cell.virus::after { animation: none; }
   .cell.virus::before { opacity: 0.5; }
   .cell.virus {
-    box-shadow: inset 0 0 0 3px #FF4D63,
-                0 0 22px 4px rgba(255,42,68,0.8),
-                0 0 48px 10px rgba(255,0,60,0.34);
+    box-shadow: inset 0 0 0 3px #86FF6E,
+                0 0 22px 4px rgba(76,255,60,0.85),
+                0 0 48px 10px rgba(76,255,60,0.36);
   }
   .cell.mag::after, .nextlist .dot.mag::after { animation: none; transform: translateX(-130%); }
   .cell.mag, .nextlist .dot.mag { box-shadow: inset 0 0 0 3px #D4A24C, 0 0 5px rgba(212,162,76,0.45); }
@@ -4657,7 +4664,9 @@ window.addEventListener('keydown', (e) => {
   if (k === 'ArrowLeft'  || k === 'a' || k === 'A') move(-1);
   if (k === 'ArrowRight' || k === 'd' || k === 'D') move(1);
   if (k === 'ArrowDown'  || k === 's' || k === 'S') tick();
-  if (k === 'ArrowUp'    || k === 'x' || k === 'X') rotate(1);
+  // W rotates as well as X, so WASD is true and not three quarters true
+  if (k === 'ArrowUp'    || k === 'x' || k === 'X'
+                         || k === 'w' || k === 'W') rotate(1);
   if (k === 'z' || k === 'Z') rotate(-1);
   if (k === ' ') drop();
 });
