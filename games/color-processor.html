@@ -843,6 +843,38 @@ body.reading .hint { visibility: hidden; }
 .deckwrap[hidden] { display: none; }
 .deckwrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
+/* ---- the party's own ink ----
+   The series is printed in process colours because it is printing
+   paintings. Nothing is being printed in here, so the drops are not
+   obliged to be cyan, magenta, yellow and black -- and black is not a
+   colour anybody puts in a club. These are the six the floor already
+   turns, so the drops and the room stop being two schemes sharing a
+   screen, and they sit right round the wheel so no two of them are
+   easy to confuse at the speed this gets to.
+
+   Scoped to the rig, so the readouts above the board keep the process
+   colours they fringe their lettering with. */
+.rig.party {
+  --cyan:     #16E0FF;
+  --magenta:  #FF2FA0;
+  --yellow:   #FFE23D;
+  --key:      #8E7BFF;     /* was black, and black is not a party */
+  --lcyan:    #4CFF3C;
+  --lmagenta: #FF8A3D;
+  --white:    #FFFFFF;
+}
+
+/* Lit from inside rather than sitting on the board, which is what the
+   rest of the room is doing. */
+.rig.party .cell.c,
+.rig.party .cell.m,
+.rig.party .cell.y,
+.rig.party .cell.k,
+.rig.party .cell.lc,
+.rig.party .cell.lm {
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.22), 0 0 10px 1px rgba(255,255,255,0.14);
+}
+
 .rig.party .tubes .tube { height: 26px; width: 8px; border-radius: 3px; }
 .rig.party .tubetags b { opacity: 0.55; }
 
@@ -4143,6 +4175,7 @@ function discoLabels() {
   if (d) d.hidden = !discoOn;
   if (rig) rig.classList.toggle('party', !!discoOn);
   if (!discoOn) paintTubes();                 // back to goals, at their real height
+  paintNext();                                // the queue is a different six now
 }
 
 /* ---- the record ----
@@ -4956,7 +4989,11 @@ function paintNext() {
   });
 }
 
-const colorOf = (ink) => getComputedStyle(document.documentElement)
+/* Read off the rig rather than off the root. The party re-declares the
+   six inks on the rig, and anything that went to the root for them --
+   the next queue did -- kept handing out process colours onto a board
+   that had stopped using them. */
+const colorOf = (ink) => getComputedStyle(document.querySelector('.rig') || document.documentElement)
   .getPropertyValue(VARS[ink] || '--key');
 
 /* The machine at rest, which is what the title screen is standing in
