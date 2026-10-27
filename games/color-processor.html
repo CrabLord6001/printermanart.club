@@ -5220,6 +5220,10 @@ function ready(face) {
   if (face) { showFace(face); return; }
   if (campOn) { showFace('gallery'); return; }   // where you are in the series
   hideFace();
+  /* Every other lane arrives on a face, and the face puts its own music
+     on. This one opens straight onto the board, so nothing changed the
+     cue and the title screen's track was still playing over it. */
+  if (discoOn) setMusic(cueNow());
 }
 
 function begin() {
@@ -7916,7 +7920,9 @@ function buttonsNow() {
        painting just printed. Setup belongs before a print rather than after
        one, so it gives up the slot. */
     menu.hidden = !(wonLast && artwork && artwork.room);
-    menu.textContent = 'View art';
+    /* A club print sends them to the artist rather than to a room, so
+       the button says which. */
+    menu.textContent = artwork && artwork.room === 'club' ? 'See the artist' : 'View art';
     menu.classList.add('ghost');
     menu.classList.remove('on');
     /* Rules are one of the four options on the title screen now, and from
@@ -7944,7 +7950,10 @@ function buttonsNow() {
     menu.textContent = 'Menu';
     menu.classList.remove('on');
     menu.classList.add('ghost');
-    main.textContent = campOn ? 'Play' : 'Practice';
+    /* The button names the lane it is about to start. It said
+       Practice in the party, which is the wrong lane and reads as
+       the mode having failed to load. */
+    main.textContent = campOn ? 'Play' : (discoOn ? 'Endless' : 'Practice');
     return;
   }
 
@@ -7955,7 +7964,9 @@ function buttonsNow() {
      In practice there is no level to be on, so it deals another painting.
      "New print" was from before the series existed and read, in the
      series, as though it would throw the whole gallery away. */
-  const redeal = () => campOn ? 'Restart' : 'New print';
+  /* Nothing is printed in the party, so there is no new print to
+     deal -- there is only going again. */
+  const redeal = () => (campOn || discoOn) ? 'Restart' : 'New print';
 
   if (phase === 'paused') {
     /* Both ways out, always, the way the first panel offers both Setup and
@@ -7985,7 +7996,10 @@ function buttonsNow() {
   /* Opening the settings stops the clock, which is what a pause is, so the
      button says the thing it does rather than the side effect. */
   menu.hidden = false;
-  menu.textContent = campOn ? 'Pause' : 'Settings';
+  /* Settings belong to practice, where the three dials still mean
+     something. The party sets its own ink, its own goal and its own
+     speed, so the slot is the pause instead. */
+  menu.textContent = (campOn || discoOn) ? 'Pause' : 'Settings';
   menu.classList.add('ghost');
   menu.classList.remove('on');
 
@@ -7995,7 +8009,10 @@ function buttonsNow() {
      pause screen instead, which is one deliberate tap away and the only
      place anybody actually means to press it. Practice keeps it: there is
      no run there to lose. */
-  main.hidden = campOn;
+  /* Restart goes behind the pause here for the same reason it does in
+     the series: it is a thumb's width under the board and it throws
+     away a run that is going well without asking. */
+  main.hidden = campOn || discoOn;
   main.textContent = redeal();
 }
 
@@ -8448,8 +8465,10 @@ function finish(won) {
        board now, so the print itself carries only the part worth reading
        the moment it finishes: what it is, who made it, and when. The room
        it came from is one tap away and does not need saying here. */
+    /* A club print has no date on it, and a separator with nothing after
+       it reads as a line that failed to finish. */
     credit.innerHTML = '<b>' + artwork.title + '</b><br>' + artwork.artist
-                     + ' &middot; ' + artwork.date;
+                     + (artwork.date ? ' &middot; ' + artwork.date : '');
     credit.hidden = false;
   } else {
     credit.hidden = true;
@@ -8898,7 +8917,8 @@ function loadArtwork() {
     const w = wall[(Math.random() * wall.length) | 0];
     if (!w || !w.url) return;
     artwork = { file: w.url, id: 'club-' + w.id, room: 'club', roomName: 'The club',
-                title: w.title || 'Untitled', artist: w.artist || 'A club member', date: '' };
+                title: w.title || 'Untitled', artist: w.artist || 'A club member',
+                date: '', slug: w.slug || '' };
     separated = null;
     setArtSrc(w.url);
   }).catch(() => {});
@@ -9034,7 +9054,14 @@ document.getElementById('menuBtn').addEventListener('click', () => {
    back to this window where the top one is another origin. */
 function viewArt() {
   if (!artwork || !artwork.room) return;
-  const to = '/art-history/' + artwork.room + '.html' + (artwork.id ? '#' + artwork.id : '');
+  /* A club print has no room in the art history -- it is somebody's own
+     work, and the place to send anybody who liked it is the page with
+     the rest of their work on it. Sending them to /art-history/club.html
+     sent them to a 404. */
+  const to = artwork.room === 'club'
+    ? (artwork.slug ? '/member-art/artist.html?a=' + encodeURIComponent(artwork.slug)
+                    : '/member-art/')
+    : '/art-history/' + artwork.room + '.html' + (artwork.id ? '#' + artwork.id : '');
   try { (window.top || window).location.href = to; }
   catch (e) { window.location.href = to; }
 }
@@ -9378,18 +9405,22 @@ else if (TRY > 0) openTrial();
         const ids = [...new Set(data.map((r) => r.member_id).filter(Boolean))];
         const { data: who } = await db
           .from('club_members')
-          .select('user_id, display_name')
+          .select('user_id, display_name, artist_slug')
           .in('user_id', ids);
-        for (const m of (who || [])) names[m.user_id] = m.display_name;
+        for (const m of (who || [])) names[m.user_id] = m;
       } catch (e) { names = {}; }
 
       const base = SUPABASE_URL.replace(/\/+$/, '') + '/storage/v1/object/public/member-art/';
-      return data.filter((r) => r.image_path).map((r) => ({
-        id: r.id,
-        title: r.title,
-        artist: names[r.member_id] || 'A club member',
-        url: base + r.image_path.split('/').map(encodeURIComponent).join('/')
-      }));
+      return data.filter((r) => r.image_path).map((r) => {
+        const who = names[r.member_id] || {};
+        return {
+          id: r.id,
+          title: r.title,
+          artist: who.display_name || 'A club member',
+          slug: who.artist_slug || '',
+          url: base + r.image_path.split('/').map(encodeURIComponent).join('/')
+        };
+      });
     },
 
     async discoBoard(limit) {
