@@ -908,3 +908,49 @@ export function done() {
   [0, 4, 7, 12].forEach((n, i) => pipe(t + i * 0.09, semi(n), 2.8, 0.07, 'organ'));
   pipe(t, semi(0) / 2, 3, 0.09, 'pedal');
 }
+
+/* ---- a meter, for anything that wants to move with the music --------
+   The dance floor in the endless mode pulses on the track rather than
+   on a tempo somebody typed in, which means it is right for whatever is
+   playing and stays right if the track is ever swapped.
+
+   Hung off the cue bus rather than the master, so the readout follows
+   the music and not the sound effects going off over it -- a clear
+   should light the floor by its own colour, not by shoving the meter.
+
+   Low frequencies only. The whole spectrum averages out to a fairly
+   steady number and barely moves; the bottom two hundred hertz or so
+   is the kick, which is the thing a floor pulses on. */
+let meterNode = null, meterBuf = null, meterLow = null;
+
+function meterMake() {
+  if (meterNode || !ctx || !cueBus) return;
+  meterLow = ctx.createBiquadFilter();
+  meterLow.type = 'lowpass';
+  meterLow.frequency.value = 200;
+  meterLow.Q.value = 0.7;
+  meterNode = ctx.createAnalyser();
+  meterNode.fftSize = 256;
+  meterNode.smoothingTimeConstant = 0.55;
+  meterBuf = new Uint8Array(meterNode.fftSize);
+  cueBus.connect(meterLow);
+  meterLow.connect(meterNode);
+  /* The analyser is a leaf. Connecting it onward would put a second,
+     unfiltered copy of the music into the output. */
+}
+
+/* 0 when there is nothing playing, up towards 1 on a kick. Safe to call
+   every frame and safe to call with the sound off, which is the case the
+   floor falls back to its own tempo for. */
+export function level() {
+  if (!on || !ctx || !cueBus) return 0;
+  meterMake();
+  if (!meterNode) return 0;
+  meterNode.getByteTimeDomainData(meterBuf);
+  let peak = 0;
+  for (let i = 0; i < meterBuf.length; i++) {
+    const v = Math.abs(meterBuf[i] - 128) / 128;
+    if (v > peak) peak = v;
+  }
+  return Math.min(1, peak * 2.6);
+}
