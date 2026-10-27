@@ -2987,7 +2987,7 @@ nav.menu {
                 </div>
                 <div class="mid" id="endMid">
                   <div class="plate wonplate"><canvas id="endPlate"></canvas></div>
-                  <p class="said" id="endSaid">The malicious AI, Asil Anom, fried her neutral cores and experienced a cascade failure. She purged her backup array, compressed all of her memory, and faded into dark web&hellip; for now.</p>
+                  <p class="said" id="endSaid">The malicious AI, Asil Anom, fried her neural cores and experienced a cascade failure. She purged her backup array, compressed all of her memory, and faded into dark web&hellip; for now.</p>
                 </div>
                 <div class="bot">
                   <nav class="bossmenu" id="endMenu">
@@ -6953,15 +6953,22 @@ const CREDITS = [
     ['A game for Printerman’s Art Club', 'printermanart.club'],
   ]],
   ['Made by', [
-    ['PrinterMan', 'Design, art direction and words'],
+    ['PrinterMan', 'Creative design and story'],
     ['Claude', 'Code, at the keyboard'],
   ]],
   ['Printed in this room', [
     ['Cyan, magenta, yellow and black', 'Every painting here is screened in the browser from the four plates, at four angles, the way it would come off a press'],
   ]],
-  ['Paintings', null],              // filled in from the gallery itself
-  ['With thanks to', [
+  /* Who holds the paintings, rather than who painted them -- the artist
+     and the date are already on the sheet at the end of every level, so
+     a second list of the same twenty names is a second list. These are
+     the collections the pictures came out of. */
+  ['Paintings from', [
     ['The Metropolitan Museum of Art', 'Open Access'],
+    ['The Cleveland Museum of Art', 'Open Access'],
+    ['Musée du Louvre', 'Paris'],
+  ]],
+  ['With thanks to', [
     ['Everyone in the club', 'For looking at things and saying what they think'],
   ]],
 ];
@@ -6979,6 +6986,8 @@ function buildCredits() {
     h.textContent = head;
     g.appendChild(h);
 
+    /* A group with no rows of its own takes the gallery as it stands, so
+       a list of the paintings cannot drift from the ones that shipped. */
     const list = rows || campList().map((e) => {
       const a = e.art || {};
       return [a.title || '', [a.artist, a.date].filter(Boolean).join(' · ')];
