@@ -496,6 +496,14 @@ html.embed .title { display: none; }
   100% { transform: translate(-50%, -112%) scale(1.06) rotate(-7deg); opacity: 0; }
 }
 
+/* Four and up is rare enough to be worth a different colour: white
+   hot rather than gold, and thrown further. */
+.bonus b.big {
+  color: #FFF6E2;
+  text-shadow: 0 0 10px #FFD98A, 0 0 28px rgba(255,170,60,0.9),
+               0 0 60px rgba(255,120,30,0.7), 0 3px 0 rgba(20,13,2,0.55);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bonus b { animation: bonusFade 760ms linear forwards; }
   @keyframes bonusFade {
@@ -3661,9 +3669,6 @@ let mode = 'office', virusRate = VIRUS_FROM;
 const GROUP_POINTS = { 4: 10, 5: 15, 6: 25 };
 const BIG_GROUP    = 50;
 const CHAIN_CAP    = 8;
-/* What a chained pass is worth to the plates it feeds. Deliberately not
-   CHAIN_CAP: see the clear loop. */
-const CHAIN_INK    = 2;
 
 const groupPoints = (n) => (n >= 7 ? BIG_GROUP : GROUP_POINTS[n] || 0);
 
@@ -4842,10 +4847,11 @@ function fitRail() {
    Measured off a real tile rather than worked out from the cell size,
    because the grid carries its own padding and gaps and the arithmetic
    for that is one more thing to keep in step with the CSS. */
-function popBonus(clumps) {
+function popBonus(clumps, mult) {
   const host = document.getElementById('bonus');
   const well = host && host.parentElement;
   if (!host || !well || !clumps || !clumps.length || !tiles.length) return;
+  const by = Math.max(2, Math.round(mult || 2));
 
   let sx = 0, sy = 0, n = 0;
   for (const g of clumps) for (const [x, y] of g) { sx += x; sy += y; n++; }
@@ -4857,7 +4863,10 @@ function popBonus(clumps) {
   const w = well.getBoundingClientRect();
   if (!t.width) return;
 
-  const fs = Math.max(17, Math.round(cellPx * 1.05));
+  /* Bigger the deeper it went. A two is a good moment; a five is the
+     best thing that will happen in that run, and it should not arrive
+     at the same size as a two. */
+  const fs = Math.max(17, Math.round(cellPx * (0.95 + Math.min(by, 6) * 0.11)));
 
   /* Kept off the edges. The group that earns a chain is usually on the
      floor of the well, which is exactly where a badge centred on it
@@ -4867,8 +4876,9 @@ function popBonus(clumps) {
   const y = t.top - w.top + t.height / 2;
 
   const el = document.createElement('b');
-  el.textContent = '2\u00d7';
+  el.textContent = by + '\u00d7';
   el.style.fontSize = fs + 'px';
+  if (by >= 4) el.classList.add('big');
   el.style.left = Math.min(Math.max(x, pad), w.width - pad) + 'px';
   el.style.top = Math.min(Math.max(y, pad * 1.2), w.height - pad) + 'px';
   host.appendChild(el);
@@ -5599,17 +5609,20 @@ async function resolve() {
     /* A chain pays ink as well as points now. It used to pay points
        only -- and the series is ranked on time, so a mechanic the game
        put in the top row of readouts and flashed at you was one the
-       clock punished you for using. Double ink is roughly what the two
-       or three drops of setup cost you, so chaining comes out about
-       even on the clock with upside, which is where something rare
-       should sit: worth doing, not the only thing worth doing.
+       clock punished you for using.
 
-       Flat, rather than the points curve. Points run to eight times;
-       ink at eight times would fill most of a plate in one go and par
-       would stop meaning anything. And from the second pass on, since
-       the first clear is not a chain -- it is a clear that happened to
-       be followed by one, and paying for that is paying for luck. */
-    const inkMult = chain >= 2 ? CHAIN_INK : 1;
+       On the same curve as the points, not a flat double. A deep chain
+       can take a plate down in one cascade, and that is the intent: a
+       five chain is not something a board hands you, it is something
+       somebody built by stacking high and betting on what was coming,
+       and the fast time that comes out the other side is earned rather
+       than a hole in the measurement. Par is a target for an ordinary
+       run; beating it by playing well is what it is there for.
+
+       From the second pass on, since the first clear is not a chain --
+       it is a clear that happened to be followed by one, and paying for
+       that is paying for luck rather than for the setup. */
+    const inkMult = chain >= 2 ? mult : 1;
 
     for (const group of clumps) {
       pass += groupPoints(group.length) * mult;
@@ -5625,7 +5638,7 @@ async function resolve() {
     }
 
     /* And it has to be seen to be collected. */
-    if (inkMult > 1 && !discoOn) popBonus(clumps);
+    if (inkMult > 1 && !discoOn) popBonus(clumps, inkMult);
 
     points += pass;
     sayPts(points);
