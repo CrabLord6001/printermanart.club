@@ -779,21 +779,25 @@ export function clear(chain) {
 /* A virus going off.
    ------------------------------------------------------------------
    Not an explosion. The shop is a machine and what just happened is a
-   fault in it, so this is a fault: a tone falling away where the bell
-   on a clear rises, rung against a fixed one so it comes out metallic
-   instead of musical, and quantised hard enough to sound like
-   something that went wrong in the signal rather than in the room.
+   fault in it, so this is a fault: a tone bent down hard while a gate
+   chops it on and off in lengthening slices. What that does is stop it
+   being a sound and make it a signal that has gone wrong -- the same
+   note arriving in pieces, each piece longer than the last, until the
+   whole thing gives up.
 
-   It goes through the same bus as the rest, so it takes the room with
-   it and ducks under her voice the way everything else does. Quiet on
-   purpose -- it is a reading, not a jump scare. */
+   Quantised through a five step transfer curve, which is a bitcrusher
+   by another name and the reason the pieces have an edge on them.
+   Through the same bus as the rest, so it takes the room with it and
+   ducks under her voice the way everything else does.
+
+   Picked by ear from five, against a spark, a discharge, an arc and a
+   plain falling tone. */
 export function zap() {
   if (!on || !ctx) return;
   const t = ctx.currentTime;
 
-  // the grit: a stepped transfer curve, which is a bitcrusher by another name
   const crush = ctx.createWaveShaper();
-  const steps = 9, curve = new Float32Array(1024);
+  const steps = 5, curve = new Float32Array(1024);
   for (let i = 0; i < curve.length; i++) {
     const x = (i / (curve.length - 1)) * 2 - 1;
     curve[i] = Math.round(x * steps) / steps;
@@ -801,54 +805,49 @@ export function zap() {
   crush.curve = curve;
 
   const out = ctx.createGain();
-  out.gain.setValueAtTime(0.0001, t);
-  out.gain.linearRampToValueAtTime(0.085, t + 0.006);
-  out.gain.exponentialRampToValueAtTime(0.0001, t + 0.42);
+  out.gain.value = 0.11;
   crush.connect(out);
   out.connect(voice);
 
-  // closing down as it falls, so the end of it is all bottom
   const low = ctx.createBiquadFilter();
   low.type = 'lowpass';
-  low.frequency.setValueAtTime(2600, t);
-  low.frequency.exponentialRampToValueAtTime(240, t + 0.34);
-  low.Q.value = 6;
+  low.Q.value = 3;
+  low.frequency.setValueAtTime(4200, t);
+  low.frequency.exponentialRampToValueAtTime(300, t + 0.38);
   low.connect(crush);
 
-  // the tone, two octaves and a third down over three hundred milliseconds
-  const o = ctx.createOscillator();
-  o.type = 'square';
-  o.frequency.setValueAtTime(semi(-5), t);
-  o.frequency.exponentialRampToValueAtTime(semi(-5) / 5, t + 0.3);
+  /* The stutter. Hard steps rather than ramps, because a signal
+     breaking up does not fade in and out, and each slice is longer
+     than the one before it so the thing slows down as it dies. */
+  const gate = ctx.createGain();
+  gate.gain.setValueAtTime(0, t);
+  let at = t;
+  for (let i = 0; i < 11; i++) {
+    gate.gain.setValueAtTime(i % 2 ? 0 : 1, at);
+    at += 0.012 + i * 0.006;
+  }
+  gate.gain.setValueAtTime(0, at);
+  gate.connect(low);
 
-  /* Rung against a fixed tone. The modulator is wired to the gain of a
-     node whose own gain is zero, so what comes out is the product of
-     the two rather than the sum -- which is what takes the music out
-     of it and leaves the machine. */
+  const o = ctx.createOscillator();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(semi(-2), t);
+  o.frequency.exponentialRampToValueAtTime(semi(-2) / 6, t + 0.36);
+
+  /* Rung against a fixed tone. The modulator drives the gain of a node
+     whose own gain is zero, so what comes out is the product of the two
+     rather than the sum, which is what takes the music out of it. */
   const ring = ctx.createOscillator();
-  ring.type = 'sine';
-  ring.frequency.value = 83;
+  ring.type = 'square';
+  ring.frequency.value = 112;
   const rg = ctx.createGain();
   rg.gain.value = 0;
   ring.connect(rg.gain);
   o.connect(rg);
-  rg.connect(low);
+  rg.connect(gate);
 
-  // and the tear at the head of it
-  const len = Math.floor(ctx.sampleRate * 0.09);
-  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-  const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
-  const n = ctx.createBufferSource();
-  n.buffer = buf;
-  const ng = ctx.createGain();
-  ng.gain.setValueAtTime(0.5, t);
-  ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
-  n.connect(ng);
-  ng.connect(low);
-
-  o.start(t); ring.start(t); n.start(t);
-  o.stop(t + 0.5); ring.stop(t + 0.5); n.stop(t + 0.12);
+  o.start(t); ring.start(t);
+  o.stop(t + 0.5); ring.stop(t + 0.5);
 }
 
 /* A plate landing: the chord swells underneath. */

@@ -4183,13 +4183,27 @@ function spawn() {
 
 const ZAP_RED = '#FF003C', ZAP_CYAN = '#00F0FF', ZAP_GOLD = '#FCEE0A';
 
-/* The discharge. Red is already spoken for -- it is what a virus looks
-   like sitting there -- so the moment one goes off is a different
-   colour on purpose: the blue white of a spark, which is what a fault
-   in a machine looks like and reads instantly against the red lamps it
-   just came out of. The dots stay the virus's own ink, because those
-   are the ink leaving the page. */
-const ZAP_ARC = '#CFEBFF', ZAP_ARC_DEEP = '#4FA8FF';
+/* The discharge, in the one colour the shop does not own.
+
+   Red was already spoken for -- it is what a virus looks like sitting
+   there -- so the warning and the event would have worn the same thing.
+   Blue had a worse problem: cyan is one of the four plates, so a blue
+   white flash reads as cyan spilling across the print, which is the
+   opposite of what happened. Nothing in this press lays down green. So
+   when the well goes green for a tenth of a second it can only be the
+   thing that does not belong, which is exactly what she is.
+
+   The dots stay the virus's own ink, because those are the ink leaving
+   the page. */
+const ZAP_ARC = '#E8FFB0', ZAP_ARC_DEEP = '#4CFF3C';
+
+/* What falls through the strike: columns of code, bright at the head
+   and trailing off behind. Digits and shop marks rather than katakana,
+   because a glyph the device has no font for is a box, and a box is
+   worse than no rain at all. */
+const RAIN_SET = '0123456789CMYK%#*/|<>=+-';
+const RAIN_MS = 520;
+let zapRain = [];
 
 /* Long enough to watch. At two thirds of a second all anybody saw was a
    white flicker: the flash was over before the eye got there and the
@@ -4220,6 +4234,26 @@ function zapBurst(blown) {
   const { w, h } = size;
   const well = document.getElementById('zap').parentElement;
   const box = well.getBoundingClientRect();
+
+  /* The rain comes down the columns the viruses were in, so it reads as
+     coming out of them rather than as weather. */
+  const cols = new Set();
+  for (const g of blown) cols.add(g.at % COLS);
+  const colW = w / COLS;
+  for (const c of cols) {
+    for (let k = -1; k <= 1; k++) {
+      const col = c + k;
+      if (col < 0 || col >= COLS) continue;
+      zapRain.push({
+        x: colW * (col + 0.5) + (Math.random() - 0.5) * colW * 0.3,
+        y: -h * (0.1 + Math.random() * 0.5),
+        sp: h * (1.5 + Math.random() * 1.1),
+        n: 10 + Math.floor(Math.random() * 8),
+        step: Math.max(8, Math.round(h / 30)),
+        seed: Math.floor(Math.random() * 999)
+      });
+    }
+  }
 
   for (const g of blown) {
     const t = tiles[g.at];
@@ -4305,6 +4339,32 @@ function zapDraw(now) {
     cx2.globalAlpha = 1;
   }
 
+  /* The code, falling through the first half of it. Drawn before the
+     rings and the dots so the damage lands on top of it. */
+  if (t < 1 && zapRain.length) {
+    const u = t * (ZAP_MS / RAIN_MS);
+    cx2.globalCompositeOperation = 'screen';
+    cx2.textAlign = 'center';
+    cx2.textBaseline = 'middle';
+    for (const r of zapRain) {
+      const head = r.y + r.sp * Math.min(u, 1) * (RAIN_MS / 1000);
+      const size = Math.round(r.step * 0.95);
+      cx2.font = '700 ' + size + 'px ui-monospace, Menlo, Consolas, monospace';
+      // every column its own stream, so they do not fall in step
+      for (let i = 0; i < r.n; i++) {
+        const y = head - i * r.step;
+        if (y < -r.step || y > h + r.step) continue;
+        const fade = Math.max(0, 1 - i / r.n) * Math.max(0, 1 - Math.max(0, u - 0.55) / 0.45);
+        if (fade <= 0.01) continue;
+        const ch = RAIN_SET[(r.seed + i * 7 + Math.floor(now / 70 + i)) % RAIN_SET.length];
+        cx2.fillStyle = i === 0 ? '#F2FFE0' : ZAP_ARC_DEEP;
+        cx2.globalAlpha = (i === 0 ? 0.95 : 0.7) * fade;
+        cx2.fillText(ch, r.x, y);
+      }
+    }
+    cx2.globalAlpha = 1;
+  }
+
   cx2.globalCompositeOperation = 'source-over';
 
   /* Two rings out of every cell, the second a beat behind the first, so
@@ -4341,6 +4401,7 @@ function zapDraw(now) {
   if (t >= 1) {
     zapBits = [];
     zapRings = [];
+    zapRain = [];
     cx2.clearRect(0, 0, w, h);
     zapRaf = 0;
     return;
