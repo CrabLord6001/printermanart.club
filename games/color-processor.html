@@ -6672,9 +6672,15 @@ function paintBoardPick() {
   if (boardKind !== 'level') return;
   const list = campList();
   const n = boardLvAt();
-  const e = n ? list[n - 1] : null;
   const name = document.getElementById('boardPickName');
-  if (name) name.textContent = e && e.art ? n + '. ' + e.art.title : 'Level ' + n;
+  /* The slot, not the painting in it. This said "9. Young Woman
+     Knitting", which is true of the deal in front of this player and
+     not of anybody else's -- the gallery deals its slots from larger
+     pools and rotates them. A heading on a table of other people's
+     times has to name what is actually being compared, and what is
+     being compared is level nine. Whose painting it was is on the card
+     at the end of the run, where it belongs. */
+  if (name) name.textContent = 'Level ' + n;
   const prev = document.getElementById('boardPrev');
   const next = document.getElementById('boardNext');
   if (prev) prev.disabled = n <= 1;
