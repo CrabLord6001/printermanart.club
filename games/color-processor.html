@@ -6736,6 +6736,18 @@ const discoWon = () => campDone.length >= campList().length;
    so it lives on the device rather than on the account, next to the
    other two things kept there. Clearing it is what makes the option
    offer a restart again. */
+/* Whether anybody has been shown how this game works on this device.
+   The instructions exist and there is a button for them, but a player
+   who has never met a falling-block puzzle has no reason to press it --
+   and four connected rather than three is not a thing anyone guesses.
+   So the first run is handed the page instead. Once only: the series
+   restarts from the first level whenever somebody replays it for a
+   better time, and a tutorial on every restart is a toll gate. */
+const TAUGHT_KEY = 'cp-taught';
+
+const taught = () => { try { return localStorage.getItem(TAUGHT_KEY) === '1'; } catch (e) { return true; } };
+const taughtSet = () => { try { localStorage.setItem(TAUGHT_KEY, '1'); } catch (e) {} };
+
 const SPOT_KEY = 'cp-camp-spot';
 
 function spotGet() {
@@ -6944,6 +6956,34 @@ document.getElementById('rankBtn').addEventListener('click', () => {
 
 document.getElementById('rulesBack').addEventListener('click', () => goRules(rulesPage - 1));
 document.getElementById('rulesNext').addEventListener('click', () => goRules(rulesPage + 1));
+
+/* The arrows are there and they work, but on a phone the thumb is
+   already on the page and every other reader on the device turns with a
+   swipe. Only a clearly sideways one counts: the board inside this same
+   panel scrolls, and a drag that is mostly up or down belongs to it. A
+   swipe that starts on a button belongs to the button. */
+(function rulesSwipe() {
+  /* Looked up rather than taken from elRules(), which is a const declared
+     further down the file: calling it from here is a dead-zone error, and
+     a throw at this point takes every declaration after it with it. */
+  const panel = document.getElementById('overRules');
+  if (!panel) return;
+  let from = null;
+  panel.addEventListener('pointerdown', (e) => {
+    from = e.target.closest('button') ? null
+         : { x: e.clientX, y: e.clientY, t: Date.now() };
+  });
+  panel.addEventListener('pointercancel', () => { from = null; });
+  panel.addEventListener('pointerup', (e) => {
+    const s = from;
+    from = null;
+    if (!s || boardUp || rulesPages() < 2) return;
+    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (Date.now() - s.t > 700) return;                  // a drag, not a flick
+    if (Math.abs(dx) < 44 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    goRules(rulesPage + (dx < 0 ? 1 : -1));              // leftward turns forward
+  });
+})();
 
 /* ---- the panel's two faces, and the pause ---- */
 
@@ -8863,13 +8903,21 @@ function buttonsNow() {
      and says where it goes. */
   if (rulesUp) {
     menu.hidden = true;
-    main.hidden = true;
+    /* Every other time, the instructions are something you opened and
+       the only thing to do down here is leave. The first run is the one
+       exception: nobody opened this, it was handed over, so the way on
+       is a button of its own rather than a way back to a screen they
+       were not on. */
+    const teach = !!(rulesFrom && rulesFrom.teach);
+    main.hidden = !teach;
+    if (teach) main.textContent = 'Continue';
     if (rules) {
       rules.hidden = !rulesFrom;
       rules.classList.remove('on');
-      rules.textContent = !rulesFrom ? 'Back'
-        : (rulesFrom.wasPlaying ? 'Resume'
-          : (rulesFrom.face === 'home' ? 'Menu' : 'Back'));
+      rules.textContent = teach ? 'Menu'
+        : (!rulesFrom ? 'Back'
+          : (rulesFrom.wasPlaying ? 'Resume'
+            : (rulesFrom.face === 'home' ? 'Menu' : 'Back')));
     }
     return;
   }
@@ -9998,6 +10046,15 @@ function asilHush() {
 
 /* The right-hand button: start the first print, or start the next one. */
 document.getElementById('again').addEventListener('click', () => {
+  /* Continue, on the page handed over before the first print. Marked as
+     taught here and not when it opened, so somebody who backs out to
+     the menu without reading gets it again. */
+  if (rulesFrom && rulesFrom.teach) {
+    taughtSet();
+    rulesFrom = null;
+    begin();
+    return;
+  }
   // the rules are no longer always up, so the state says what this does
   if (phase === 'ready') {
     /* One screen stands between the last card and the last level, and it
@@ -10052,7 +10109,14 @@ document.getElementById('credMenu').addEventListener('click', (e) => {
 document.getElementById('vicMenu').addEventListener('click', (e) => {
   const b = e.target.closest('[data-vic]');
   if (!b) return;
-  if (b.dataset.vic === 'begin' && !meeting) { begin(); return; }
+  if (b.dataset.vic === 'begin' && !meeting) {
+    /* He has just told them why they are here. What he has not told
+       them is how any of it works, and this is the last moment anybody
+       is looking at a screen rather than at falling blocks. */
+    if (!taught()) { showFace('rules'); rulesFrom = { teach: true }; buttons(); return; }
+    begin();
+    return;
+  }
   leaveMeeting();
   showFace('home');
 });
@@ -10176,6 +10240,9 @@ function leaveRun() {
 }
 
 document.getElementById('rulesBtn').addEventListener('click', () => {
+  /* They were handed the instructions and left without them. Not marked
+     taught: they did not read it, so it comes back. */
+  if (rulesFrom && rulesFrom.teach) { rulesFrom = null; showFace('home'); return; }
   // on a finished print, and on a paused one, this is the way back out
   if ((phase === 'done' || phase === 'paused') && (elOver.hidden || elRules().hidden)) {
     if (phase === 'paused') leaveRun();
