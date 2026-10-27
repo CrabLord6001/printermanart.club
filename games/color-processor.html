@@ -2515,15 +2515,11 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 .over.endface2 > .over-in > h2,
 .over.endface2 > .over-in > p { display: none; }
 
-.endface .tag { color: var(--accent); text-shadow: 0 0 14px rgba(212,162,76,0.55); }
-.endface .aname { text-shadow: 2px 0 0 rgba(76,255,60,0.55), -2px 0 0 rgba(22,224,255,0.45), 0 0 24px rgba(0,0,0,0.9); }
-
-/* The win, in the middle of the screen, off the same press as everything
-   else: the shop's last job is saying you fixed it. */
+/* The win at the top, where a level card carries its title, off the same
+   press as everything else: the shop's last job is saying you fixed it. */
 .endface .mid {
   position: absolute;
-  left: 14px; right: 14px; top: 50%;
-  transform: translateY(-50%);
+  left: 14px; right: 14px; top: 16px;
 }
 
 .endface .wonplate {
@@ -2537,7 +2533,14 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 .endface .wonplate canvas { display: block; width: 100%; height: auto; }
 
-.endface .mid .said { margin: 16px auto 0 !important; }
+.endface .mid .said {
+  max-width: min(100%, 22rem);        /* the sheet's own measure */
+  margin: 16px auto 0 !important;
+  /* The size the level cards set their copy at, since this is the card
+     at the end of the series and reads next to the other twenty-one. */
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
 
 /* Nothing is readable while she is still coming apart behind it, and
    both ends come up together so the screen settles in one move. */
@@ -2547,8 +2550,6 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 .endface.said .bot { opacity: 1; }
 
 /* And the whole thing stands down into the credits. */
-.endface.going .in { opacity: 0; transition: opacity 760ms ease; }
-.endface.going canvas { opacity: 0; transition: opacity 760ms ease; }
 
 /* ---- the party's own door ----
    The floor is already running behind it, so the panel is a sheet of
@@ -3301,14 +3302,17 @@ nav.menu {
             <div class="rules bossface endface" id="overEnd" hidden>
               <canvas id="endArt"></canvas>
               <div class="veil"></div>
+              <!-- No heading over this one. The sheet is the title, the
+                   way a level card's is, and the scene behind it has
+                   just spent three seconds saying whose report this is.
+                   The eyebrow it used to carry was set in the credits'
+                   own heading style, which made two unrelated screens
+                   look like one series. -->
               <div class="in">
-                <div class="top">
-                  <p class="tag">Incident report</p>
-                  <p class="aname">Asil Anom</p>
-                </div>
                 <div class="mid" id="endMid">
                   <div class="plate wonplate"><canvas id="endPlate"></canvas></div>
-                  <p class="said" id="endSaid">The malicious AI, Asil Anom, fried her neural cores and experienced a cascade failure. She purged her backup array, compressed all of her memory, and faded into dark web&hellip; for now.</p>
+                  <p class="said" id="endSaid">The malicious AI, Asil Anom, fried her neural cores and experienced a cascade failure.</p>
+                  <p class="said">She purged her backup array, compressed all of her memory, and faded into dark web&hellip; for now.</p>
                 </div>
                 <div class="bot">
                   <nav class="bossmenu" id="endMenu">
@@ -7931,11 +7935,6 @@ const END_RUN = END_RAIN + END_FACE + END_PANIC + END_DIE;
 const EYE_GREEN = [76, 255, 60], EYE_RED = [255, 48, 48];
 const CODE_SET = '01CMYK%#*/|<>=+-アカサタナ';
 
-/* How long the win stands before the reel starts. Long enough to be sat
-   with; the two buttons are there the whole time for anybody who has
-   read it once already and does not want to wait through it again. */
-const END_HOLD = 15000, END_FADE = 760;
-
 const ENDING = { raf: 0, t0: 0, cols: null, said: false };
 
 /* Her picture is fetched the first time anybody gets this far, and a
@@ -7945,7 +7944,6 @@ const ENDING = { raf: 0, t0: 0, cols: null, said: false };
    own loop over whatever is there now, and draws from frames that were
    cleared underneath it. */
 let endGen = 0;
-let endGo = 0, endFade = 0;
 
 /* The animation is finished; the screen is not. */
 function endRest() {
@@ -7958,22 +7956,22 @@ function endStop() {
   endGen++;
   endRest();
   sayMusic('endRoomStop');       // the credits bring their own music in
-  if (endGo) { clearTimeout(endGo); endGo = 0; }
-  if (endFade) { clearTimeout(endFade); endFade = 0; }
 }
 
-/* The report arrives, stands, and then stands down into the reel. Called
-   from the loop and from the case where there is no picture of her to
-   show, so the screen behaves the same either way. */
+/* The report arrives, and then it stands there. Called from the loop and
+   from the case where there is no picture of her to show, so the screen
+   behaves the same either way.
+
+   It used to stand down into the reel on a fifteen second timer, which
+   was wrong twice over. The screen carries two buttons: asking somebody
+   to choose and then choosing for them is a screen arguing with itself.
+   And fifteen seconds is a reading speed, not a fact -- it is plenty for
+   somebody who wrote the paragraph and short for a slower reader or
+   anybody meeting it in their second language. The room underneath now
+   loops, so waiting costs nothing. */
 function endSaid(face) {
   if (!face || face.classList.contains('said')) return;
   face.classList.add('said');
-  const mine = endGen;
-  endGo = setTimeout(() => {
-    if (mine !== endGen) return;
-    face.classList.add('going');
-    endFade = setTimeout(() => { if (mine === endGen) showFace('credits'); }, END_FADE);
-  }, END_HOLD);
 }
 
 function endStart() {
@@ -7982,7 +7980,7 @@ function endStart() {
   const cv = document.getElementById('endArt');
   const face = document.getElementById('overEnd');
   if (!cv || !face) return;
-  face.classList.remove('said', 'going');
+  face.classList.remove('said');
   paintPlate(document.getElementById('endPlate'), WON_WORDS, true);
 
   const r = cv.getBoundingClientRect();

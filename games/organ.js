@@ -1040,13 +1040,18 @@ export function powerDown() {
    Deliberately not pitched off nothing -- the tones sit on the same D
    the organ is in, so this is in the same key as the rest of the game
    without ever playing a tune in it. */
-let roomBus = null, roomLive = [], roomGen = 0;
+let roomBus = null, roomGen = 0, roomTimer = 0;
+let roomAt = 0, roomBarN = 0;
+/* Only the drone is held: it loops forever and has to be stopped by
+   hand. The one-shots all carry their own stop() and are let go, or the
+   list would grow a note at a time for as long as somebody reads. */
+let roomLive = [];
 
 const ROOM_BPM = 70;                // slow enough to read as a pulse, not a beat
 const RBEAT = 60 / ROOM_BPM;
 const REIGHTH = RBEAT / 2;
 const RBAR = RBEAT * 4;
-const ROOM_BARS_OUT = 7;            // ~24s, comfortably past the screen
+const ROOM_LOOK = 2.2;              // how far ahead the bars are written
 
 /* One second of white noise, made once. Every click, thump and breath of
    air in here is a window onto this buffer with a different filter over
@@ -1078,7 +1083,6 @@ function burst(at, dur, type, hz, q, level, from) {
   src.connect(f); f.connect(g); g.connect(roomBus);
   src.start(at, Math.random());     // a different slice each time
   src.stop(at + dur + 0.06);
-  roomLive.push(src);
 }
 
 /* The thump a steel enclosure makes when something heavy inside it
@@ -1095,7 +1099,6 @@ function thump(at, level) {
   g.gain.exponentialRampToValueAtTime(0.0001, at + 0.3);
   o.connect(g); g.connect(roomBus);
   o.start(at); o.stop(at + 0.34);
-  roomLive.push(o);
   burst(at, 0.05, 'lowpass', 420, 1, level * 0.5);     // the panel with it
 }
 
@@ -1127,7 +1130,6 @@ function blip(at, n, iv, level) {
     g.gain.exponentialRampToValueAtTime(0.0001, at + 0.26);
     o.connect(g); g.connect(roomBus);
     o.start(at); o.stop(at + 0.3);
-    roomLive.push(o);
   }
 }
 
@@ -1154,13 +1156,12 @@ function warble(at, dur, level) {
   o.connect(band); band.connect(g); g.connect(roomBus);
   o.start(at); o.stop(at + dur + 0.06);
   lfo.start(at); lfo.stop(at + dur + 0.06);
-  roomLive.push(o, lfo);
 }
 
 /* The bed under all of it: moving air and the mains. The fan comes up
    over two bars rather than arriving, because her supply is still dying
    through the first one and two things going at once reads as neither. */
-function roomDrone(at, until) {
+function roomDrone(at) {
   const src = ctx.createBufferSource();
   src.buffer = noiseOnce();
   src.loop = true;
@@ -1170,7 +1171,7 @@ function roomDrone(at, until) {
   g.gain.setValueAtTime(0.0001, at);
   g.gain.linearRampToValueAtTime(0.055, at + 2.4);
   src.connect(f); f.connect(g); g.connect(roomBus);
-  src.start(at); src.stop(until);
+  src.start(at);
   roomLive.push(src);
 
   /* Sixty cycles and its octave. This is the sound of a building, not of
@@ -1183,7 +1184,7 @@ function roomDrone(at, until) {
     og.gain.setValueAtTime(0.0001, at);
     og.gain.linearRampToValueAtTime(amp, at + 3);
     o.connect(og); og.connect(roomBus);
-    o.start(at); o.stop(until);
+    o.start(at);
     roomLive.push(o);
   }
 }
@@ -1222,17 +1223,49 @@ export function alertDing(when) {
     g.gain.exponentialRampToValueAtTime(0.0001, t + at + dur);
     o.connect(g); g.connect(soft);
     o.start(t + at); o.stop(t + at + dur + 0.05);
-    roomLive.push(o);
   }
 }
 
-/* Start the room. Everything is written out in one pass: the screen has
-   a fixed length, so a scheduler would be ceremony for no benefit. */
+/* Start the room, and keep writing it for as long as it is up. */
+function roomBar(b, at) {
+  const bar = ROOM_BARS[b % ROOM_BARS.length];
+  /* The kit stays out of the first bar. Her power is still going and a
+     backbeat over it would make her death the intro to a track. */
+  const kit = b > 0;
+  const lift = Math.min(1, 0.55 + b * 0.18);      // the room settling in
+  const lap = Math.floor(b / ROOM_BARS.length);
+
+  if (kit) {
+    for (const s of bar.thump) thump(at + s * REIGHTH, (s === 0 ? 0.44 : 0.3) * lift);
+    for (const s of bar.seek) seek(at + s * REIGHTH, (s % 2 ? 0.07 : 0.11) * lift);
+    /* The two loudest ornaments sit out some laps. Four bars under a
+       screen somebody is reading will go round a dozen times, and the
+       stepper arriving on every single one is what turns a room into a
+       loop. */
+    if (bar.step != null && lap % 2 === 0) stepper(at + bar.step * REIGHTH, 7, 0.075 * lift);
+  }
+  for (const [s, n, iv] of bar.blip) blip(at + s * REIGHTH, n, iv, 0.1 * lift);
+  if (bar.warble != null && lap % 3 === 0) warble(at + bar.warble * REIGHTH, 0.3, 0.035 * lift);
+}
+
+/* Written a couple of bars ahead on a timer, the way the cues are, so
+   the room runs for as long as the screen is up. It used to write a
+   fixed two dozen seconds and stop, which was right while the screen
+   moved on by itself and wrong the moment it started waiting for a
+   thumb -- a reader who takes a minute over the report would have spent
+   forty-five seconds of it in silence. */
+function roomWrite() {
+  if (!ctx || !roomBus) return;
+  while (roomAt < ctx.currentTime + ROOM_LOOK) {
+    roomBar(roomBarN, roomAt);
+    roomAt += RBAR;
+    roomBarN++;
+  }
+}
+
 export function endRoom() {
   if (!on || !ctx) return;
   endRoomStop();
-  const mine = ++roomGen;
-  if (mine !== roomGen) return;
 
   roomBus = ctx.createGain();
   roomBus.gain.value = 0.0001;
@@ -1244,32 +1277,18 @@ export function endRoom() {
      difference between two sounds and one scene. */
   roomBus.gain.linearRampToValueAtTime(0.9, t + RBAR * 1.5);
 
-  const until = t + RBAR * ROOM_BARS_OUT + 1;
-  roomDrone(t, until);
-
-  for (let b = 0; b < ROOM_BARS_OUT; b++) {
-    const bar = ROOM_BARS[b % ROOM_BARS.length];
-    const at = t + b * RBAR;
-    /* The kit stays out of the first bar. Her power is still going and
-       a backbeat over it would make her death the intro to a track. */
-    const kit = b > 0 ? 1 : 0;
-    const lift = Math.min(1, 0.55 + b * 0.18);     // the room settling in
-
-    for (const s of bar.thump) if (kit)
-      thump(at + s * REIGHTH, (s === 0 ? 0.44 : 0.3) * lift);
-    for (const s of bar.seek) if (kit)
-      seek(at + s * REIGHTH, (s % 2 ? 0.07 : 0.11) * lift);
-    for (const [s, n, iv] of bar.blip)
-      blip(at + s * REIGHTH, n, iv, 0.1 * lift);
-    if (bar.step != null && kit) stepper(at + bar.step * REIGHTH, 7, 0.075 * lift);
-    if (bar.warble != null) warble(at + bar.warble * REIGHTH, 0.3, 0.035 * lift);
-  }
+  roomDrone(t);
+  roomAt = t;
+  roomBarN = 0;
+  roomWrite();
+  roomTimer = setInterval(roomWrite, 700);
 }
 
 /* Leaving. Faded rather than cut, because the credits bring their own
    music in and a room that stops dead under it sounds like a bug. */
 export function endRoomStop() {
   roomGen++;
+  if (roomTimer) { clearInterval(roomTimer); roomTimer = 0; }
   if (!ctx || !roomBus) { roomLive = []; return; }
   const bus = roomBus, live = roomLive;
   roomBus = null; roomLive = [];
@@ -1302,9 +1321,15 @@ export async function renderRoom(seconds = 21) {
   master.connect(off.destination);
 
   endRoom();
+  /* Offline there is no clock for the writer to chase, so the bars go
+     down in one pass against the length being rendered. The interval
+     endRoom just set would never usefully fire here, and left running
+     it would go on writing into a context nobody is listening to. */
+  if (roomTimer) { clearInterval(roomTimer); roomTimer = 0; }
+  while (roomAt < seconds) { roomBar(roomBarN, roomAt); roomAt += RBAR; roomBarN++; }
+
   alertDing(2.4);                    // where the compression starts on screen
-  /* The screen hands over to the credits at about nineteen seconds, and
-     the fade belongs in the audition too -- a bed that ends by running
+  /* The fade belongs in the audition too -- a bed that ends by running
      out of scheduled bars sounds finished when it is only stopped. */
   if (roomBus) {
     roomBus.gain.setValueAtTime(0.9, seconds - 2.2);
