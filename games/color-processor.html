@@ -1648,12 +1648,26 @@ h2[hidden] { display: none; }
 /* The controls, which are a list of two things wearing a paragraph.
    Ranged left whatever the page is doing and a shade tighter, so the
    two lines read as a pair. */
+/* Two sets of controls, and only one of them is yours. A line break put
+   them one under the other at the same leading as the wrap inside each,
+   so which line belonged to which device was a thing to work out. They
+   are blocks now, with their own gap, and the device is the loud word. */
 .rules .keys {
   text-align: left !important;
   margin-left: auto;
   margin-right: auto;
   max-width: 24rem;
-  line-height: 1.75;
+  line-height: 1.6;
+}
+
+.rules .keys .row { display: block; }
+.rules .keys .row + .row { margin-top: 0.7em; }
+
+.rules .keys b {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* ---- the instruction pages, and the board on the last one ---- */
@@ -2328,6 +2342,101 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 .bossface .hear:hover { color: var(--text); border-color: #3C4454; }
 
+/* ---- the epilogue, and the record ----
+   Her screen again, which is the point: the last thing the series says
+   about her is said in the frame she said hers in. The report is held
+   back until she has finished going out, so the two are not read at
+   once. */
+.over.endface2 { padding: 0; background: #07090D; }
+.over.endface2 .over-in { margin: 0; flex: 1 1 auto; display: flex; flex-direction: column; }
+.over.endface2 > .over-in > h2,
+.over.endface2 > .over-in > p { display: none; }
+
+.endface .tag { color: var(--accent); text-shadow: 0 0 14px rgba(212,162,76,0.55); }
+.endface .aname { text-shadow: 2px 0 0 rgba(76,255,60,0.55), -2px 0 0 rgba(22,224,255,0.45), 0 0 24px rgba(0,0,0,0.9); }
+
+/* Nothing is readable while she is still coming apart behind it. */
+.endface .bot { opacity: 0; transition: opacity 620ms ease; }
+.endface.said .bot { opacity: 1; }
+
+/* ---- the credits ----
+   The panel scrolls by default, which here would have scrolled the
+   whole screen and carried the way out off the bottom of it. The reel
+   is the only thing that moves; min-height lets it shrink under its own
+   content, which is the whole trick to a scrolling box inside a column. */
+.over.credface { padding: 0; background: #07090D; overflow: hidden; }
+.over.credface .over-in { margin: 0; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.over.credface > .over-in > h2,
+.over.credface > .over-in > p { display: none; }
+
+.rules.creditsface {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 14px 14px;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* The reel runs itself, and a thumb can overrule it -- a credit roll
+   nobody can stop is a credit roll nobody reads. */
+.creditsface .roll {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 42px, #000 calc(100% - 30px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 42px, #000 calc(100% - 30px), transparent 100%);
+}
+
+.creditsface .reel { padding: 46px 0 30px; }
+
+.creditsface .cgroup { margin: 0 0 20px; }
+
+.creditsface .chead {
+  margin: 0 0 6px !important;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.creditsface .cname {
+  margin: 0 0 2px !important;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.creditsface .cnote {
+  margin: 2px 0 0 !important;
+  font-size: 0.62rem;
+  line-height: 1.5;
+  color: var(--dim);
+}
+
+.creditsface .cnote a { color: var(--cyan); }
+
+/* The sign off, printed rather than set: the last thing on the reel is
+   the shop's own name off the shop's own press. */
+.creditsface .cmark {
+  margin: 26px 0 0 !important;
+  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: #fff;
+  text-shadow: 2px 0 0 rgba(232,69,155,0.75), -2px 0 0 rgba(22,224,255,0.7);
+}
+
+.creditsface .bossmenu { flex: 0 0 auto; }
+
 /* Side by side. Stacked, the two of them took a fifth of the panel. */
 .bossmenu {
   display: flex;
@@ -2713,7 +2822,7 @@ nav.menu {
               </div>
 
               <div class="pg" id="rulesPg2" hidden>
-              <p class="keys">Desktop: A / D (or Left / Right Arrow), W to rotate, space to drop early<br>Mobile: Swipe to move, Tap to rotate, and Swipe down to drop early</p>
+              <p class="keys"><span class="row"><b>Desktop:</b> A / D (or Left / Right Arrow), W to rotate, space to drop early</span><span class="row"><b>Mobile:</b> Swipe to move, Tap to rotate, and Swipe down to drop early</span></p>
               <p>Beware of suspicious pulsing green coated colors. They land with a timer that counts down every drop afterwards. When it detonates it removes some progress on the image. However, they break like any other colors.</p>
               <p>Magnetic ink has a gold shine and works like the others, but it also drags a matching drop across to sit beside it.</p>
               <!-- Shown rather than described, side by side: the virus
@@ -2832,6 +2941,38 @@ nav.menu {
                   </nav>
                 </div>
               </div>
+            </div>
+
+            <!-- What is left of her. Her own screen, run backwards: she
+                 comes apart, compresses to a line and goes out, and what
+                 the shop writes down afterwards is laid over the dark. -->
+            <div class="rules bossface endface" id="overEnd" hidden>
+              <canvas id="endArt"></canvas>
+              <div class="veil"></div>
+              <div class="in">
+                <div class="top">
+                  <p class="tag">Incident report</p>
+                  <p class="aname">Asil Anom</p>
+                </div>
+                <div class="bot">
+                  <p class="said" id="endSaid">The malicious AI, Asil Anom, fried her neutral cores and experienced a cascade failure. She purged her backup array, compressed all of her memory, and faded into dark web&hellip; for now.</p>
+                  <nav class="bossmenu" id="endMenu">
+                    <button class="mi hot" type="button" data-end="credits">Credits</button>
+                    <button class="mi" type="button" data-end="menu">Menu</button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+
+            <!-- The record of what printed the thing. Scrolls on its own
+                 the way a reel does, and can be taken by hand. -->
+            <div class="rules creditsface" id="overCredits" hidden>
+              <div class="roll" id="creditRoll">
+                <div class="reel" id="creditReel"></div>
+              </div>
+              <nav class="bossmenu" id="credMenu">
+                <button class="mi hot" type="button" data-cred="menu">Menu</button>
+              </nav>
             </div>
 
             <!-- The title screen, and the place every run comes back to.
@@ -4823,11 +4964,14 @@ function shopDraw(o, X, Y, W, H, pl) {
     if (wid) { o.lineWidth = wid * H; o.stroke(); } else o.fill();
   };
 
-  if (pl === 'c') {
-    /* The cowling, with the console cut clean out of it. A dark panel
-       with lamps drawn over it would have gone black under multiply;
-       a hole leaves bare paper, and bare paper is the only thing on
-       this sheet that can be lit. */
+  /* The cowling, with the console cut clean out of it. A dark panel
+     with lamps drawn over it would have gone black under multiply; a
+     hole leaves bare paper, and bare paper is the only thing on this
+     sheet that can be lit.
+
+     Drawn from here rather than inside one plate, because the press
+     takes ink on two of them. */
+  const cowl = () => {
     o.beginPath();
     if (o.roundRect) {
       o.roundRect(u(0.17), v(0.28), 0.43 * W, 0.62 * H, 0.045 * H);
@@ -4838,6 +4982,10 @@ function shopDraw(o, X, Y, W, H, pl) {
       o.rect(u(0.17), v(0.28), 0.43 * W, 0.62 * H);
       o.fill();
     }
+  };
+
+  if (pl === 'c') {
+    cowl();
     box(0.02, 0.60, 0.148, 0.90, 0.018);       // paper waiting at the feed
     box(0.60, 0.70, 0.858, 0.768, 0.022);      // the delivery table
     box(0.872, 0.62, 0.940, 0.872, 0.02);      // the pressman, below the belt
@@ -4860,6 +5008,7 @@ function shopDraw(o, X, Y, W, H, pl) {
   }
 
   if (pl === 'k') {
+    o.globalAlpha = 0.45; cowl(); o.globalAlpha = 1;   // the press, in slate
     /* The sheet coming off the press. It is paper, so nothing but its
        edge takes ink -- drawn heavy, because a hairline breaks up into
        loose dots at this ruling and stops being a line at all. */
@@ -4932,7 +5081,10 @@ function wreckDraw(o, X, Y, W, H, pl) {
     o.closePath();
   };
 
-  if (pl === 'c') {
+  /* The cowling, holed where it burns and where the sheet was chewed.
+     Called from two plates, so the press is not the same flat blue as
+     the men standing next to it. */
+  const cowl = () => {
     o.beginPath();
     if (o.roundRect) {
       o.roundRect(u(0.27), v(0.30), 0.36 * W, 0.60 * H, 0.045 * H);
@@ -4944,6 +5096,10 @@ function wreckDraw(o, X, Y, W, H, pl) {
       o.rect(u(0.27), v(0.30), 0.36 * W, 0.60 * H);
       o.fill();
     }
+  };
+
+  if (pl === 'c') {
+    cowl();
     box(0.078, 0.585, 0.158, 0.868, 0.018);    // the one who gave up, below the belt
     box(0.748, 0.568, 0.868, 0.792, 0.045);    // the one still at it, hunched
     run([[0.754, 0.632], [0.680, 0.676]], 0.052);  // his arm, into the machine
@@ -4967,6 +5123,7 @@ function wreckDraw(o, X, Y, W, H, pl) {
   }
 
   if (pl === 'k') {
+    o.globalAlpha = 0.45; cowl(); o.globalAlpha = 1;   // the press, in slate
     /* Smoke is the one grey thing on the sheet, so it goes down light
        rather than at the weight everything else on this plate takes. */
     o.globalAlpha = 0.40;
@@ -5621,16 +5778,22 @@ const elLevels = () => document.getElementById('overLevels');
 const onBoss = () => !elOver.hidden && !elBoss().hidden;
 const elVictor = () => document.getElementById('overVictor');
 const onVictor = () => !elOver.hidden && !elVictor().hidden;
+const elEnd = () => document.getElementById('overEnd');
+const onEnd = () => !elOver.hidden && !elEnd().hidden;
+const elCred = () => document.getElementById('overCredits');
+const onCred = () => !elOver.hidden && !elCred().hidden;
 
 function faceOff() {
   /* won goes too. It trades the scrim for a gradient that is clear at the
      top so the finished print shows through, which is right for the print
      and unreadable for anything laid over it. closeRules puts it back. */
   elOver.classList.remove('intro', 'menu', 'won', 'boardface', 'lvface');
-  elOver.classList.remove('home', 'boss', 'victor');
+  elOver.classList.remove('home', 'boss', 'victor', 'endface2', 'credface');
   clearGalleryArt();                            // the sheet belongs to one face only
   asilStop();                                   // she stops talking to an empty room
   victorStop();
+  endStop();
+  creditStop();
   elRules().hidden = true;
   elSetup().hidden = true;
   elGallery().hidden = true;
@@ -5638,6 +5801,8 @@ function faceOff() {
   elBoss().hidden = true;
   elLevels().hidden = true;
   elVictor().hidden = true;
+  elEnd().hidden = true;
+  elCred().hidden = true;
 }
 
 /* No face at all: the board as it stands, with the buttons under it. */
@@ -5777,6 +5942,23 @@ function showFace(which) {
     /* Said once. Coming back from the board is not a fresh arrival, so
        she is already standing there having finished. */
     asilStart(bossSpoken);
+    return;
+  }
+
+  /* The two screens after she is beaten. Both take the whole panel the
+     way hers does, and neither carries the panel's own furniture. */
+  if (which === 'end' || which === 'credits') {
+    const cred = which === 'credits';
+    elOver.classList.add(cred ? 'credface' : 'endface2');
+    (cred ? elCred() : elEnd()).hidden = false;
+    document.getElementById('overTitle').hidden = true;
+    document.getElementById('overCredit').hidden = true;
+    document.getElementById('overText').innerHTML = '';
+    document.getElementById('overBoard').hidden = true;
+    elOver.hidden = false;
+    buttons();
+    if (cred) { buildCredits(); setMusic('title'); }
+    else { setMusic(null); endStart(); }         // she goes out in silence
     return;
   }
 
@@ -6559,6 +6741,238 @@ function asilStop() {
   if (ASIL.audio) { try { ASIL.audio.pause(); ASIL.audio.currentTime = 0; } catch (e) {} }
 }
 
+/* ---- her going out -----------------------------------------------
+   Her arrival, run backwards. She came apart into focus over a second
+   and a bit; she leaves by coming apart the rest of the way, folding
+   down to a line and going dark. The line is the virus green, because
+   that is the colour this game has spent twenty levels teaching you to
+   read as something failing.
+
+   The report is held off until the screen is empty, so it is read
+   against the dark rather than over her face. */
+const END_FRY = 1150, END_FOLD = 820, END_GONE = 640;
+const END_RUN = END_FRY + END_FOLD + END_GONE;
+
+const ENDING = { raf: 0, t0: 0, frames: [], src: null };
+
+/* Her picture is fetched the first time anybody gets this far, and a
+   fetch takes as long as it takes. Whatever started the screen has to
+   be able to find out, when it comes back, that the screen moved on
+   without it -- otherwise a run that has been thrown away installs its
+   own loop over whatever is there now, and draws from frames that were
+   cleared underneath it. */
+let endGen = 0;
+
+function endStop() {
+  endGen++;
+  if (ENDING.raf) { cancelAnimationFrame(ENDING.raf); ENDING.raf = 0; }
+  ENDING.frames = [];
+  ENDING.src = null;
+}
+
+async function endStart() {
+  endStop();
+  const mine = endGen;
+  const cv = document.getElementById('endArt');
+  const face = document.getElementById('overEnd');
+  if (!cv || !face) return;
+  face.classList.remove('said');
+
+  /* Her own canvas is sized by the panel, like hers is. */
+  const r = cv.getBoundingClientRect();
+  cv.width = Math.max(2, Math.round(r.width || ASIL_W));
+  cv.height = Math.max(2, Math.round(r.height || ASIL_H));
+
+  let ok = false;
+  try { ok = await asilLoad(); } catch (e) { ok = false; }
+  if (mine !== endGen) return;                   // the screen moved on
+  /* No picture of her is not a reason to withhold the report. */
+  if (!ok || !ASIL.base) { face.classList.add('said'); return; }
+
+  /* Four frames of her coming apart, built once -- the same trick the
+     level cards use, for the same reason.
+
+     moshFrame works out its own resolution from the source against the
+     size it is handed, so she is copied to the panel's size first.
+     Handed her own 400 by 800 she would have been built at that and
+     stretched up, which is a soft picture of a sharp one. */
+  const base = document.createElement('canvas');
+  base.width = cv.width; base.height = cv.height;
+  base.getContext('2d').drawImage(ASIL.base, 0, 0, cv.width, cv.height);
+
+  ENDING.src = base;
+  ENDING.frames = [];
+  for (let i = 0; i < 4; i++) {
+    ENDING.frames.push(moshFrame(base, cv.width, cv.height, 0.35 + i * 0.42, 23 + i * 61, null));
+  }
+
+  if (mine !== endGen) return;
+  ENDING.t0 = performance.now();
+  ENDING.raf = requestAnimationFrame(endTick);
+}
+
+function endTick(now) {
+  const cv = document.getElementById('endArt');
+  const face = document.getElementById('overEnd');
+  if (!cv || !face || face.hidden) { endStop(); return; }
+
+  if (!ENDING.src || ENDING.frames.length < 4) { endStop(); face.classList.add('said'); return; }
+
+  /* The stamp a frame is handed is when that frame began, which can be
+     before the clock was read to start this -- so the first tick can
+     arrive at a negative age and index off the front of the reel. */
+  const ms = Math.max(0, now - ENDING.t0);
+  const w = cv.width, h = cv.height;
+  const cx = cv.getContext('2d');
+  cx.setTransform(1, 0, 0, 1, 0, 0);
+  cx.globalCompositeOperation = 'source-over';
+  cx.globalAlpha = 1;
+  cx.clearRect(0, 0, w, h);
+
+  if (ms < END_FRY) {
+    /* Frying. The frames come faster as she loses it, and she is
+       herself for a moment between them -- which is worse. */
+    const t = ms / END_FRY;
+    const step = 190 - t * 130;
+    const k = Math.floor(ms / step);
+    const hold = (k % 5) === 3 && t < 0.72;      // a beat of her, still there
+    const src = hold ? ENDING.src
+      : ENDING.frames[Math.min(3, Math.max(0, Math.floor(t * 4)))];
+    cx.drawImage(src, 0, 0, w, h);
+    if (t > 0.55) {                              // the green getting into her
+      cx.globalCompositeOperation = 'screen';
+      cx.globalAlpha = (t - 0.55) / 0.45 * 0.32;
+      cx.fillStyle = ZAP_ARC_DEEP;
+      cx.fillRect(0, 0, w, h);
+    }
+  } else if (ms < END_FRY + END_FOLD) {
+    /* Compressing. She folds to a line through the middle of the frame,
+       and the line is the only thing left lit. */
+    const t = (ms - END_FRY) / END_FOLD;
+    const e = t * t;                             // slow, then all at once
+    const bh = Math.max(2, h * (1 - e));
+    cx.globalAlpha = 1 - e * 0.35;
+    cx.drawImage(ENDING.frames[3], 0, 0, w, h, 0, (h - bh) / 2, w, bh);
+    cx.globalAlpha = 1;
+    cx.globalCompositeOperation = 'screen';
+    const glow = cx.createLinearGradient(0, h / 2 - 26, 0, h / 2 + 26);
+    glow.addColorStop(0, 'rgba(76,255,60,0)');
+    glow.addColorStop(0.5, 'rgba(76,255,60,' + (0.25 + e * 0.6).toFixed(3) + ')');
+    glow.addColorStop(1, 'rgba(76,255,60,0)');
+    cx.fillStyle = glow;
+    cx.fillRect(0, h / 2 - 26, w, 52);
+  } else if (ms < END_RUN) {
+    /* And out. The line narrows to nothing from both ends, the way a
+       tube goes dark rather than the way a light switches off. */
+    const t = (ms - END_FRY - END_FOLD) / END_GONE;
+    const half = (w / 2) * (1 - t * t);
+    cx.globalCompositeOperation = 'screen';
+    cx.globalAlpha = 1 - t;
+    cx.fillStyle = ZAP_ARC;
+    cx.fillRect(w / 2 - half, h / 2 - 1.5, half * 2, 3);
+  }
+
+  if (ms > END_FRY + END_FOLD + 120) face.classList.add('said');
+
+  if (ms > END_RUN + 400) { endStop(); return; }
+  ENDING.raf = requestAnimationFrame(endTick);
+}
+
+/* ---- the record --------------------------------------------------
+   Built rather than written into the markup so the painting list is the
+   one the game actually shipped with, not a copy of it that goes stale
+   the next time a room changes. */
+const CREDITS = [
+  ['Gallery Printshop', [
+    ['A game for Printerman’s Art Club', 'printermanart.club'],
+  ]],
+  ['Made by', [
+    ['PrinterMan', 'Design, art direction and words'],
+    ['Claude', 'Code, at the keyboard'],
+  ]],
+  ['Printed in this room', [
+    ['Cyan, magenta, yellow and black', 'Every painting here is screened in the browser from the four plates, at four angles, the way it would come off a press'],
+  ]],
+  ['Paintings', null],              // filled in from the gallery itself
+  ['With thanks to', [
+    ['The Metropolitan Museum of Art', 'Open Access'],
+    ['Everyone in the club', 'For looking at things and saying what they think'],
+  ]],
+];
+
+function buildCredits() {
+  const reel = document.getElementById('creditReel');
+  if (!reel) return;
+  reel.innerHTML = '';
+
+  for (const [head, rows] of CREDITS) {
+    const g = document.createElement('div');
+    g.className = 'cgroup';
+    const h = document.createElement('p');
+    h.className = 'chead';
+    h.textContent = head;
+    g.appendChild(h);
+
+    const list = rows || campList().map((e) => {
+      const a = e.art || {};
+      return [a.title || '', [a.artist, a.date].filter(Boolean).join(' · ')];
+    });
+
+    for (const [name, note] of list) {
+      if (!name) continue;
+      const n = document.createElement('p');
+      n.className = 'cname';
+      n.textContent = name;
+      g.appendChild(n);
+      if (note) {
+        const s = document.createElement('p');
+        s.className = 'cnote';
+        s.textContent = note;
+        g.appendChild(s);
+      }
+    }
+    reel.appendChild(g);
+  }
+
+  const mark = document.createElement('p');
+  mark.className = 'cmark';
+  mark.textContent = 'PRINTERMAN’S ART CLUB';
+  reel.appendChild(mark);
+
+  /* Starts at the top however it was left, and runs itself from there
+     until a thumb touches it. */
+  const roll = document.getElementById('creditRoll');
+  if (roll) { roll.scrollTop = 0; creditRoll(roll); }
+}
+
+let credRaf = 0, credAt = 0, credHand = false;
+
+function creditStop() {
+  if (credRaf) { cancelAnimationFrame(credRaf); credRaf = 0; }
+}
+
+function creditRoll(roll) {
+  creditStop();
+  credHand = false;
+  credAt = 0;
+  const hand = () => { credHand = true; creditStop(); };
+  roll.addEventListener('wheel', hand, { once: true, passive: true });
+  roll.addEventListener('touchstart', hand, { once: true, passive: true });
+
+  let last = performance.now();
+  const tick = (now) => {
+    const face = document.getElementById('overCredits');
+    if (!face || face.hidden || credHand) { creditStop(); return; }
+    const dt = Math.min(90, now - last); last = now;
+    credAt += dt * 0.022;                        // a reading pace, not a scroll
+    const end = roll.scrollHeight - roll.clientHeight;
+    roll.scrollTop = Math.min(credAt, Math.max(0, end));
+    if (credAt < end + 40) credRaf = requestAnimationFrame(tick);
+    else credRaf = 0;
+  };
+  credRaf = requestAnimationFrame(tick);
+}
+
 async function asilStart(silent) {
   asilStop();
   const ok = await asilLoad();
@@ -6934,7 +7348,7 @@ function buttonsNow() {
   /* On the title screen the options are the interface. Three more buttons
      under the board would only be a second way to say the same four
      things, so they stand down until there is a board to act on. */
-  if (onHome() || onBoss() || onVictor()) {
+  if (onHome() || onBoss() || onVictor() || onEnd() || onCred()) {
     menu.hidden = true;
     main.hidden = true;
     if (rules) rules.hidden = true;
@@ -7192,6 +7606,34 @@ function asilFace() {
   return asilFaceJob;
 }
 
+/* She is working her way through the collection and settling on this
+   one, so the cards do not show a painting or show a villain -- they
+   show the change happening. The portrait is run through the same
+   corrupt() the finale uses, at an amount that climbs with the level:
+   the painting, intact, when she first appears; most of the way to the
+   thing you fight by the last card; and the whole of it in the fight.
+
+   One canvas, rebuilt only when the amount changes, because a player is
+   on one card at a time. */
+/* How far along she is at the end of the ramp. The list counts her own
+   print as the twenty-first, and she never shows herself a card, so the
+   last one a player actually sees stops a little short of this. */
+const ASSUME_TO = 0.74;
+let asilAssumed = null, asilAssumedAt = -1;
+
+function asilBecoming(a) {
+  if (!asilFaceImg) return null;
+  if (a <= 0.01) return asilFaceImg;
+  const key = Math.round(a * 50);
+  if (asilAssumed && asilAssumedAt === key) return asilAssumed;
+  const cv = asilAssumed || document.createElement('canvas');
+  cv.width = ASIL_W; cv.height = ASIL_H;
+  try { corrupt(cv.getContext('2d'), asilFaceImg, ASIL_W, ASIL_H, a, 7); }
+  catch (e) { return asilFaceImg; }
+  asilAssumed = cv; asilAssumedAt = key;
+  return cv;
+}
+
 /* One damaged frame. Bands of the sheet are lifted from somewhere else
    on it and dropped back shifted, some of them tinted and laid over in
    screen so the plates read as having slipped apart, and a few rows are
@@ -7246,7 +7688,7 @@ function moshFrame(src, w, h, amount, seed, face) {
      Screen was the first attempt and it did nothing -- her picture is
      dark and so is the sheet, so blending one into the other left
      nothing to see. */
-  if (face && asilFaceImg) {
+  if (face) {
     /* The top third of the card is spoken for -- the level plate and the
        par bar sit there -- so a portrait centred the usual way hides the
        one part of it worth seeing. She is placed by her face instead of
@@ -7257,8 +7699,8 @@ function moshFrame(src, w, h, amount, seed, face) {
     const FACE_AT = 0.27, EYES_AT = 0.21, SITS_AT = 0.58, FILL = 1.25;
     const CLEAR_TOP = 0.34, CLEAR_BOT = 0.96;    // between the cards and the footer
 
-    const sc = Math.max(w / asilFaceImg.width, h / asilFaceImg.height) * FILL;
-    const dh = asilFaceImg.height * sc;
+    const sc = Math.max(w / face.width, h / face.height) * FILL;
+    const dh = face.height * sc;
     const top = h * SITS_AT - dh * FACE_AT;
     const eyes = top + dh * EYES_AT;
 
@@ -7283,9 +7725,9 @@ function moshFrame(src, w, h, amount, seed, face) {
     const ox = (rnd() - 0.5) * w * 0.12;         // never quite registered
     cx.globalCompositeOperation = 'source-over';
     cx.globalAlpha = 0.62 + 0.3 * amount;
-    cx.drawImage(asilFaceImg,
-      (w - asilFaceImg.width * sc) / 2 + ox, top,
-      asilFaceImg.width * sc, dh);
+    cx.drawImage(face,
+      (w - face.width * sc) / 2 + ox, top,
+      face.width * sc, dh);
 
     // and the plates slipped on her too, so she arrives as damage
     cx.globalCompositeOperation = 'screen';
@@ -7321,13 +7763,20 @@ async function galHaunt(level, total, W, H) {
   const bursts = 1 + Math.floor(t * 3.2);
   const hold = 70 + t * 620;
   const amount = 0.16 + t * 0.95;
-  const face = t > 0.68;
+  const FACE_FROM = 0.68;
+  const shows = t > FACE_FROM;
 
-  if (face) await asilFace();
+  /* How far into the change she is on this card: nothing on the first
+     one that shows her, nearly the whole of it on the last. */
+  let face = null;
+  if (shows) {
+    await asilFace();
+    face = asilBecoming(ASSUME_TO * (t - FACE_FROM) / (1 - FACE_FROM));
+  }
 
   galFrames = [];
   for (let i = 0; i < 4; i++) {
-    galFrames.push(moshFrame(galClean, W, H, amount * (0.6 + i * 0.16), 11 + i * 97 + level * 7, face && i >= 2));
+    galFrames.push(moshFrame(galClean, W, H, amount * (0.6 + i * 0.16), 11 + i * 97 + level * 7, i >= 2 ? face : null));
   }
 
   /* The timeline, built once. Each burst is a run of damaged frames with
@@ -7910,8 +8359,22 @@ document.getElementById('again').addEventListener('click', () => {
     begin();
     return;
   }
-  if (phase === 'done' && campOn && wonLast && isFinale(artwork)) { showWin(); return; }
+  /* The end of the series goes through her before it goes to the title
+     screen: what happened to her, then who printed it, then YOU WIN. */
+  if (phase === 'done' && campOn && wonLast && isFinale(artwork)) { showFace('end'); return; }
   newPrint();
+});
+
+document.getElementById('endMenu').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-end]');
+  if (!b) return;
+  if (b.dataset.end === 'credits') { showFace('credits'); return; }
+  showWin();
+});
+
+document.getElementById('credMenu').addEventListener('click', (e) => {
+  if (!e.target.closest('[data-cred]')) return;
+  showWin();
 });
 
 document.getElementById('vicMenu').addEventListener('click', (e) => {
