@@ -4349,6 +4349,7 @@ async function resolve() {
   if (blown.length) {
     for (const g of blown) tiles[g.at].className = 'cell hit';
     zapBurst(blown);
+    sayMusic('zap');
     await wait(120);
     settle(well);
     paint();
