@@ -123,7 +123,7 @@ async function start() {
     nav.insertAdjacentElement('afterend', bar);
 
     // The footer still says "Sign in", which is nonsense to somebody who
-    // already is. It is static markup on twelve pages, so it is relabelled
+    // already is. It is static markup on twelve pages, so it is relabeled
     // here rather than duplicated as two versions in each one.
     document.querySelectorAll('a[href="/member-art/submit.html"]').forEach((el) => {
       if (el !== ownLink && el.textContent.trim() === 'Sign in') el.textContent = 'Submit art';

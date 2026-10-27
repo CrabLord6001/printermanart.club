@@ -2267,7 +2267,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   --lvw: calc((100% - 4 * var(--lvgap)) / 5);
 }
 
-/* The stage names were small grey caps in the body face, which made six
+/* The stage names were small gray caps in the body face, which made six
    chapters read as one long list with faint dividers. Saira Stencil One
    is already loaded for the press furniture and is the right register
    here -- a stencilled crate marking, not the neon the party sign uses.
@@ -3984,8 +3984,13 @@ const LIGHT_WORTH = { lc: 0.8, lm: 0.8 };
    One player's pace and one bot's drops. The board already records a
    time per level, so once more people have printed these, par can be
    taken from what people actually do. Treat these as a first pass. */
-const PAR = [50, 55, 60, 65, 65, 65, 75, 70, 80, 75, 80,
-             90, 95, 105, 110, 100, 130, 120, 115, 120, 135];
+/* The old twenty-level curve stretched across thirty and rounded to
+   fives. Same shape, same ends: the difficulty itself comes from
+   levelSetup(), which reads normalised position, so it restretched on
+   its own -- this is only the target time following it. */
+const PAR = [50, 55, 55, 60, 65, 65, 65, 65, 65, 75,
+             70, 70, 80, 75, 75, 80, 85, 90, 95, 100,
+             105, 110, 105, 100, 120, 125, 120, 115, 115, 120, 135];
 
 const parOf = (lv) => PAR[lv - 1] || 0;
 
@@ -8715,9 +8720,12 @@ function asilRuns() {
 
    A room the list has not heard of falls back to however many paintings
    are in it, which is what happens the week a new room opens. */
+/* Five a chapter, six chapters, thirty prints and the finale. It was
+   three a chapter while the gallery was being built out, which left
+   five rooms looking like paintings were missing from them. */
 const CHAPTER_SLOTS = {
-  classics: 3, landscape: 3, figures: 3,
-  faith: 3, fantasy: 3, 'non-western': 5
+  classics: 5, landscape: 5, figures: 5,
+  faith: 5, fantasy: 5, 'non-western': 5
 };
 
 /* ---- the rotation ----
@@ -8756,6 +8764,13 @@ function dealRoom(pool, slots, ci) {
     const j = Math.floor(rnd() * (i + 1));
     const t = bag[i]; bag[i] = bag[j]; bag[j] = t;
   }
+  /* One painting a room opens it, whatever the shuffle wanted. A chapter
+     should start on the piece a stranger is most likely to recognize --
+     the Hokusai wave, the Van Gogh -- rather than on whichever work the
+     hour happened to deal first. The rest of the room still rotates
+     behind it. */
+  const first = bag.findIndex((a) => a.lead);
+  if (first > 0) { const t = bag[0]; bag[0] = bag[first]; bag[first] = t; }
   return bag.slice(0, Math.max(1, Math.min(slots, bag.length)));
 }
 
@@ -10105,7 +10120,34 @@ function newPrint(face) {
    now it is a handful by hand.
    ------------------------------------------------------------ */
 const ARTWORKS = [
-  { file: 'harvesters.jpg',  id: 'the-harvesters', room: 'classics',    roomName: 'Classics',
+  { file: 'pareja.jpg',      id: 'juan-de-pareja', room: 'classics',    roomName: 'Classics',
+    title: 'Juan de Pareja', artist: 'Diego Vel\u00e1zquez', date: '1650' },
+  { file: 'aristotle.jpg',   id: 'aristotle-with-a-bust-of-homer', room: 'classics', roomName: 'Classics',
+    title: 'Aristotle with a Bust of Homer', artist: 'Rembrandt', date: '1653' },
+  { file: 'oxbow.jpg',       id: 'the-oxbow', room: 'landscape',   roomName: 'Landscape',
+    title: 'The Oxbow', artist: 'Thomas Cole', date: '1836' },
+  { file: 'twomen.jpg',      id: 'two-men-contemplating-the-moon', room: 'landscape', roomName: 'Landscape',
+    title: 'Two Men Contemplating the Moon', artist: 'Caspar David Friedrich', date: 'ca. 1825\u201330' },
+  { file: 'madamex.jpg',     id: 'madame-x', lead: true, room: 'figures',     roomName: 'Figures',
+    title: 'Madame X', artist: 'John Singer Sargent', date: '1883\u201384' },
+  { file: 'pygmalion.jpg',   id: 'pygmalion-and-galatea', room: 'figures', roomName: 'Figures',
+    title: 'Pygmalion and Galatea', artist: 'Jean-L\u00e9on G\u00e9r\u00f4me', date: 'ca. 1890' },
+  { file: 'sermon.jpg',      id: 'the-sermon-on-the-mount', lead: true, room: 'faith', roomName: 'Faith',
+    title: 'The Sermon on the Mount', artist: 'Carl Bloch', date: '1877' },
+  { file: 'magdalen.jpg',    id: 'the-penitent-magdalen', room: 'faith', roomName: 'Faith',
+    title: 'The Penitent Magdalen', artist: 'Georges de La Tour', date: 'ca. 1640' },
+  /* Title and date still to confirm with PrinterMan, who found the
+     plate. Bauer illustrated the Bland tomtar och troll annuals from
+     1907 and the hand is plainly his, but which story it belongs to
+     decides both, and a guessed title on an art history project is
+     worse than a quiet one. The card carries the artist alone until
+     then, which is true. */
+  { file: 'bauer.jpg',       id: 'bauer-king-and-troll', lead: true, room: 'fantasy', roomName: 'Fantasy',
+    title: 'Illustration', artist: 'John Bauer', date: '' },
+  { file: 'goblet.jpg',      id: 'the-titans-goblet', room: 'fantasy', roomName: 'Fantasy',
+    title: "The Titan's Goblet", artist: 'Thomas Cole', date: '1833' },
+
+  { file: 'harvesters.jpg',  id: 'the-harvesters', lead: true, room: 'classics',    roomName: 'Classics',
     title: 'The Harvesters', artist: 'Pieter Bruegel the Elder', date: '1565' },
   { file: 'wheatfields.jpg', id: 'wheat-fields', room: 'landscape',   roomName: 'Landscape',
     title: 'Wheat Fields', artist: 'Jacob van Ruisdael', date: 'ca. 1670' },
@@ -10117,7 +10159,7 @@ const ARTWORKS = [
     title: 'Oedipus and the Sphinx', artist: 'Gustave Moreau', date: '1864' },
   { file: 'rooster.jpg',     id: 'hen-and-rooster-with-grapevine', room: 'non-western', roomName: 'Non-Western',
     title: 'Hen and Rooster with Grapevine', artist: 'It\u014d Jakuch\u016b', date: '1792' },
-  { file: 'wave.jpg',        id: 'under-the-wave-off-kanagawa', room: 'non-western', roomName: 'Non-Western',
+  { file: 'wave.jpg',        id: 'under-the-wave-off-kanagawa', lead: true, room: 'non-western', roomName: 'Non-Western',
     title: 'Under the Wave off Kanagawa', artist: 'Katsushika Hokusai', date: 'ca. 1830\u201332' },
   { file: 'venus.jpg',       id: 'the-birth-of-venus', room: 'figures',     roomName: 'Figures',
     title: 'The Birth of Venus', artist: 'Alexandre Cabanel', date: '1875' },
@@ -10129,7 +10171,7 @@ const ARTWORKS = [
     title: 'Cover of Amazing Stories, July 1927', artist: 'Frank R. Paul', date: '1927' },
   { file: 'water-pitcher.jpg', id: 'young-woman-with-a-water-pitcher', room: 'classics', roomName: 'Classics',
     title: 'Young Woman with a Water Pitcher', artist: 'Johannes Vermeer', date: 'ca. 1662' },
-  { file: 'cypresses.jpg', id: 'cypresses', room: 'landscape', roomName: 'Landscape',
+  { file: 'cypresses.jpg', id: 'cypresses', lead: true, room: 'landscape', roomName: 'Landscape',
     title: 'Cypresses', artist: 'Vincent van Gogh', date: '1889' },
   { file: 'hodegetria.jpg', id: 'icon-of-the-virgin-and-child-hodegetria', room: 'faith', roomName: 'Faith',
     title: 'Icon of the Virgin and Child, Hodegetria variant', artist: 'Byzantine or Crusader', date: '13th century' },
