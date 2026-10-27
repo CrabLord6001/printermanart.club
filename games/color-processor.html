@@ -3585,6 +3585,21 @@ let meeting = (MEET === 'asil' || MEET === 'victor') ? MEET : null;
 const TRY = parseInt(new URLSearchParams(location.search).get('try'), 10);
 let trying = 0;                                 // the level being tried, or 0
 
+/* ?end=1 opens the ending -- her going out, the report, the credits --
+   without printing twenty-one levels to earn it. The same bargain as
+   ?meet: it is a viewing, so nothing is recorded, nothing is marked off
+   and the button at the bottom of the reel goes to the menu rather than
+   into a run. Beating her is the only way to actually finish the series.
+
+   Not gated, because there is nobody to gate it against: the club has
+   members but no roles, so an admin check would mean a column on
+   club_members and a trip to the database before the page could decide
+   what to draw. What keeps this honest is the same thing that keeps
+   ?try=21 honest -- it cannot give anybody progress they did not play
+   for, so the worst a stranger can do with the link is spoil the story
+   for themselves. */
+const END_PEEK = new URLSearchParams(location.search).has('end');
+
 const EMBED = new URLSearchParams(location.search).has('embed');
 
 /* On its own page the game is the page: it takes the window, and the one
@@ -7928,6 +7943,7 @@ function endRest() {
 function endStop() {
   endGen++;
   endRest();
+  sayMusic('endRoomStop');       // the credits bring their own music in
   if (endGo) { clearTimeout(endGo); endGo = 0; }
   if (endFade) { clearTimeout(endFade); endFade = 0; }
 }
@@ -7974,10 +7990,13 @@ function endStart() {
     });
   }
   ENDING.said = false;
+  ENDING.dinged = false;
 
   if (mine !== endGen) return;
   ENDING.t0 = performance.now();
   sayMusic('powerDown');
+  /* And the room she is in, which outlasts her by fifteen seconds. */
+  sayMusic('endRoom');
   ENDING.raf = requestAnimationFrame(endTick);
 }
 
@@ -8054,6 +8073,8 @@ function endTick(now) {
 
     const dying = Math.max(0, 1 - Math.max(0, (ms - (END_RUN - END_DIE)) / END_DIE));
     const pull = 1 - dying;                       // how far the compression has got
+    /* The alert, once, on the frame she starts closing. */
+    if (pull > 0.02 && !ENDING.dinged) { ENDING.dinged = true; sayMusic('alertDing'); }
     const R = Math.min(w, h) * 0.19 * (0.6 + 0.4 * born) * (0.9 + 0.1 * beat)
             * (dying * dying * 0.75 + 0.25 * dying);
     const cxp = w / 2, cyp = h * 0.42;
@@ -10214,6 +10235,21 @@ function openMeeting() {
   showFace(meeting === 'asil' ? 'boss' : 'victor');
 }
 
+/* Straight to the ending. trying is set for the same reason openTrial
+   sets it: it is the flag that says none of this counts, and although
+   no level is ever played from here -- so nothing can reach record()
+   anyway -- a screen that can show the last scene should not also be
+   the one screen where that flag is off. */
+function openEnding() {
+  const list = campList();
+  campOn = true;
+  campAt = list.length - 1;
+  trying = list.length;
+  bossSeen = true; bossSpoken = true;
+  vicSeen = true; vicSpoken = true;
+  showFace('end');
+}
+
 function openTrial() {
   const list = campList();
   const n = Math.min(Math.max(1, TRY), list.length);
@@ -10230,6 +10266,7 @@ function openTrial() {
    name of the game rather than a board they have not asked for yet. */
 newPrint('home');
 if (meeting) openMeeting();
+else if (END_PEEK) openEnding();
 else if (TRY > 0) openTrial();
 </script>
 

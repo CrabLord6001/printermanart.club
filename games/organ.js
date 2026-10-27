@@ -1024,3 +1024,295 @@ export function powerDown() {
   tick.connect(tg); tg.connect(out);
   tick.start(t); tick.stop(t + 2.7);
 }
+
+/* ---- the room she dies in ----
+   The end screen runs about nineteen seconds and had three seconds of
+   sound on it, so most of her death was silence. This is the rest of it,
+   and it is not music: it is machine noise put on a grid until it keeps
+   time. A fan holds the drone, a steel case thumps on the downbeats, a
+   drive head ticks the eighths, and two notification tones do the work a
+   melody would -- which is the whole joke, because every sound in here
+   is one a computer actually makes.
+
+   Her own supply is gone by the second bar. What is still running is the
+   building around her, which is the point: the room does not care.
+
+   Deliberately not pitched off nothing -- the tones sit on the same D
+   the organ is in, so this is in the same key as the rest of the game
+   without ever playing a tune in it. */
+let roomBus = null, roomLive = [], roomGen = 0;
+
+const ROOM_BPM = 70;                // slow enough to read as a pulse, not a beat
+const RBEAT = 60 / ROOM_BPM;
+const REIGHTH = RBEAT / 2;
+const RBAR = RBEAT * 4;
+const ROOM_BARS_OUT = 7;            // ~24s, comfortably past the screen
+
+/* One second of white noise, made once. Every click, thump and breath of
+   air in here is a window onto this buffer with a different filter over
+   it, which is cheaper than a buffer each and sounds the same. */
+let noiseBuf = null;
+function noiseOnce() {
+  if (noiseBuf) return noiseBuf;
+  noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+  const d = noiseBuf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return noiseBuf;
+}
+
+/* A filtered burst of that noise. Every percussive sound in the room is
+   one of these with different numbers on it. */
+function burst(at, dur, type, hz, q, level, from) {
+  const src = ctx.createBufferSource();
+  src.buffer = noiseOnce();
+  src.loop = true;
+  const f = ctx.createBiquadFilter();
+  f.type = type;
+  f.Q.value = q;
+  f.frequency.setValueAtTime(from || hz, at);
+  if (from) f.frequency.exponentialRampToValueAtTime(hz, at + dur);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.linearRampToValueAtTime(level, at + 0.004);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+  src.connect(f); f.connect(g); g.connect(roomBus);
+  src.start(at, Math.random());     // a different slice each time
+  src.stop(at + dur + 0.06);
+  roomLive.push(src);
+}
+
+/* The thump a steel enclosure makes when something heavy inside it
+   parks. A sine falling a fifth in a tenth of a second is a kick drum
+   anywhere else; here it is a degauss, and it lands where a kick would. */
+function thump(at, level) {
+  const o = ctx.createOscillator();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(112, at);
+  o.frequency.exponentialRampToValueAtTime(41, at + 0.11);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.linearRampToValueAtTime(level, at + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + 0.3);
+  o.connect(g); g.connect(roomBus);
+  o.start(at); o.stop(at + 0.34);
+  roomLive.push(o);
+  burst(at, 0.05, 'lowpass', 420, 1, level * 0.5);     // the panel with it
+}
+
+/* A head seeking: the hat part. Short, bright, and the only thing in the
+   bar that moves fast enough to carry the tempo on its own. */
+const seek = (at, level) => burst(at, 0.03, 'bandpass', 3400, 2.4, level);
+
+/* A drive stepping through tracks -- a run of clicks where a kit would
+   put a roll, which is the one place this reads most like a drum
+   machine and least like a computer. Used once a loop, no more. */
+function stepper(at, n, level) {
+  for (let i = 0; i < n; i++)
+    burst(at + i * 0.036, 0.015, 'bandpass', 2200 + i * 95, 6,
+          level * (1 - i / (n * 1.7)));
+}
+
+/* The notification tone, doing a melody's job without being one: a sine
+   and one interval above it, struck together and gone inside a quarter
+   second. Two notes is a chime; three would be a tune, and a tune would
+   stop being a computer noise. */
+function blip(at, n, iv, level) {
+  for (const [k, amp] of [[n, 1], [n + iv, 0.7]]) {
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = semi(k) * 4;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(level * amp, at + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + 0.26);
+    o.connect(g); g.connect(roomBus);
+    o.start(at); o.stop(at + 0.3);
+    roomLive.push(o);
+  }
+}
+
+/* Data going somewhere: a tone bent around by a faster one. A handshake
+   is the single most dated sound a computer ever made, so it gets used
+   once, quietly, and never on a downbeat. */
+function warble(at, dur, level) {
+  const o = ctx.createOscillator();
+  o.type = 'square';
+  o.frequency.value = 1070;
+  const lfo = ctx.createOscillator();
+  lfo.type = 'square';
+  lfo.frequency.value = 23;
+  const amt = ctx.createGain();
+  amt.gain.value = 340;
+  lfo.connect(amt); amt.connect(o.frequency);
+  const band = ctx.createBiquadFilter();
+  band.type = 'bandpass'; band.frequency.value = 1300; band.Q.value = 1.2;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.linearRampToValueAtTime(level, at + 0.02);
+  g.gain.setValueAtTime(level, at + dur - 0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+  o.connect(band); band.connect(g); g.connect(roomBus);
+  o.start(at); o.stop(at + dur + 0.06);
+  lfo.start(at); lfo.stop(at + dur + 0.06);
+  roomLive.push(o, lfo);
+}
+
+/* The bed under all of it: moving air and the mains. The fan comes up
+   over two bars rather than arriving, because her supply is still dying
+   through the first one and two things going at once reads as neither. */
+function roomDrone(at, until) {
+  const src = ctx.createBufferSource();
+  src.buffer = noiseOnce();
+  src.loop = true;
+  const f = ctx.createBiquadFilter();
+  f.type = 'lowpass'; f.frequency.value = 340; f.Q.value = 0.6;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.linearRampToValueAtTime(0.055, at + 2.4);
+  src.connect(f); f.connect(g); g.connect(roomBus);
+  src.start(at); src.stop(until);
+  roomLive.push(src);
+
+  /* Sixty cycles and its octave. This is the sound of a building, not of
+     a machine, and it is the reason the room does not feel switched off
+     when she does. */
+  for (const [hz, amp] of [[60, 0.032], [120, 0.014]]) {
+    const o = ctx.createOscillator();
+    o.type = 'sine'; o.frequency.value = hz;
+    const og = ctx.createGain();
+    og.gain.setValueAtTime(0.0001, at);
+    og.gain.linearRampToValueAtTime(amp, at + 3);
+    o.connect(og); og.connect(roomBus);
+    o.start(at); o.stop(until);
+    roomLive.push(o);
+  }
+}
+
+/* Four bars, looped. Eighths are slots 0..7. The notes are scale steps
+   off D: 0 D, 3 F, 5 G, 7 A, 10 C -- D minor without ever landing on the
+   root hard enough to resolve, because she does not get a resolution.
+   blip entries are [slot, note, interval]. */
+const ROOM_BARS = [
+  { thump: [0, 5],    seek: [2, 4, 6, 7], blip: [[0, 7, 5], [6, 3, 5]] },
+  { thump: [0, 4, 6], seek: [2, 7],       blip: [[2, 5, 7]] },
+  { thump: [0, 5],    seek: [2, 4, 6],    blip: [[0, 7, 5], [4, 5, 4]], step: 7 },
+  { thump: [0, 4],    seek: [2, 6, 7],    blip: [[0, 3, 4]], warble: 6 },
+];
+
+/* The alert, in the tradition and not out of anybody's asset folder: two
+   falling tones, a minor third apart, on a square with its corners taken
+   off. Every system of that era had one of these and they all sounded
+   like this because they were all a two-operator chip doing the cheapest
+   thing available -- which is a genre, not a recording. Fires where she
+   compresses, so the picture of her closing has a sound for it. */
+export function alertDing(when) {
+  if (!on || !ctx || !roomBus) return;
+  const t = when != null ? when : ctx.currentTime + 0.01;
+  const soft = ctx.createBiquadFilter();
+  soft.type = 'lowpass'; soft.frequency.value = 2600; soft.Q.value = 0.8;
+  soft.connect(roomBus);
+  for (const [k, at, dur] of [[12, 0, 0.14], [9, 0.13, 0.42]]) {
+    const o = ctx.createOscillator();
+    o.type = 'square';
+    o.frequency.value = semi(k) * 4;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t + at);
+    g.gain.linearRampToValueAtTime(0.1, t + at + 0.008);
+    g.gain.setValueAtTime(0.1, t + at + dur * 0.55);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + at + dur);
+    o.connect(g); g.connect(soft);
+    o.start(t + at); o.stop(t + at + dur + 0.05);
+    roomLive.push(o);
+  }
+}
+
+/* Start the room. Everything is written out in one pass: the screen has
+   a fixed length, so a scheduler would be ceremony for no benefit. */
+export function endRoom() {
+  if (!on || !ctx) return;
+  endRoomStop();
+  const mine = ++roomGen;
+  if (mine !== roomGen) return;
+
+  roomBus = ctx.createGain();
+  roomBus.gain.value = 0.0001;
+  roomBus.connect(master);
+
+  const t = ctx.currentTime + 0.05;
+  /* Up over a bar and a half. She is still sagging through the first one,
+     and the room arriving under her rather than with her is the
+     difference between two sounds and one scene. */
+  roomBus.gain.linearRampToValueAtTime(0.9, t + RBAR * 1.5);
+
+  const until = t + RBAR * ROOM_BARS_OUT + 1;
+  roomDrone(t, until);
+
+  for (let b = 0; b < ROOM_BARS_OUT; b++) {
+    const bar = ROOM_BARS[b % ROOM_BARS.length];
+    const at = t + b * RBAR;
+    /* The kit stays out of the first bar. Her power is still going and
+       a backbeat over it would make her death the intro to a track. */
+    const kit = b > 0 ? 1 : 0;
+    const lift = Math.min(1, 0.55 + b * 0.18);     // the room settling in
+
+    for (const s of bar.thump) if (kit)
+      thump(at + s * REIGHTH, (s === 0 ? 0.44 : 0.3) * lift);
+    for (const s of bar.seek) if (kit)
+      seek(at + s * REIGHTH, (s % 2 ? 0.07 : 0.11) * lift);
+    for (const [s, n, iv] of bar.blip)
+      blip(at + s * REIGHTH, n, iv, 0.1 * lift);
+    if (bar.step != null && kit) stepper(at + bar.step * REIGHTH, 7, 0.075 * lift);
+    if (bar.warble != null) warble(at + bar.warble * REIGHTH, 0.3, 0.035 * lift);
+  }
+}
+
+/* Leaving. Faded rather than cut, because the credits bring their own
+   music in and a room that stops dead under it sounds like a bug. */
+export function endRoomStop() {
+  roomGen++;
+  if (!ctx || !roomBus) { roomLive = []; return; }
+  const bus = roomBus, live = roomLive;
+  roomBus = null; roomLive = [];
+  const t = ctx.currentTime;
+  try {
+    bus.gain.cancelScheduledValues(t);
+    bus.gain.setValueAtTime(Math.max(0.0001, bus.gain.value), t);
+    bus.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+  } catch (e) { /* already gone */ }
+  setTimeout(() => {
+    for (const n of live) { try { n.stop(); } catch (e) {} }
+    try { bus.disconnect(); } catch (e) {}
+  }, 620);
+}
+
+/* ---- auditioning the room ----
+   Renders the bed to a buffer offline, so it can be listened to and
+   argued about without beating the game to get to it. It runs the real
+   endRoom() rather than a copy of it -- the module's own ctx and master
+   are pointed at the offline context for the length of the render and
+   put back after -- so what comes out of here is what ships. If that
+   ever stops being true it is a bug in this function, not a difference
+   of opinion between two versions of the pattern. */
+export async function renderRoom(seconds = 21) {
+  const keep = { ctx, master, on, roomBus, roomLive, noiseBuf };
+  const off = new OfflineAudioContext(1, Math.ceil(44100 * seconds), 44100);
+  ctx = off; on = true; noiseBuf = null; roomBus = null; roomLive = [];
+  master = off.createGain();
+  master.gain.value = 1;
+  master.connect(off.destination);
+
+  endRoom();
+  alertDing(2.4);                    // where the compression starts on screen
+  /* The screen hands over to the credits at about nineteen seconds, and
+     the fade belongs in the audition too -- a bed that ends by running
+     out of scheduled bars sounds finished when it is only stopped. */
+  if (roomBus) {
+    roomBus.gain.setValueAtTime(0.9, seconds - 2.2);
+    roomBus.gain.exponentialRampToValueAtTime(0.0001, seconds - 1.7);
+  }
+
+  const buf = await off.startRendering();
+  ctx = keep.ctx; master = keep.master; on = keep.on;
+  roomBus = keep.roomBus; roomLive = keep.roomLive; noiseBuf = keep.noiseBuf;
+  return buf;
+}
