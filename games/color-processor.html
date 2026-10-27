@@ -578,22 +578,26 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   inset: -2px;
   border-radius: 50%;
   background: conic-gradient(from 0deg,
-    rgba(255,42,68,0.92) 0deg, rgba(255,42,68,0) 44deg,
-    rgba(255,42,68,0) 180deg, rgba(255,42,68,0.92) 180deg,
-    rgba(255,42,68,0) 224deg, rgba(255,42,68,0) 360deg);
+    rgba(255,42,68,0.95) 0deg, rgba(255,42,68,0) 48deg,
+    rgba(255,42,68,0) 180deg, rgba(255,42,68,0.95) 180deg,
+    rgba(255,42,68,0) 228deg, rgba(255,42,68,0) 360deg);
   animation: bugSweep 1.5s linear infinite;
   pointer-events: none;
   mix-blend-mode: screen;
 }
 
-/* The bulb under the number. */
+/* The bulb under the number, kept well down. It used to be the brightest
+   thing in the cell and the count was sitting on top of it, which made
+   the one piece of information on a virus the hardest part to read. The
+   warning is the sweep and the halo; this is only the lamp having a
+   source. */
 .cell.virus::after {
   content: '';
   position: absolute;
-  width: 46%;
-  height: 46%;
+  width: 62%;
+  height: 62%;
   border-radius: 50%;
-  background: radial-gradient(circle, #FFE9ED 0%, #FF3350 55%, rgba(255,0,60,0) 100%);
+  background: radial-gradient(circle, rgba(255,120,140,0.42) 0%, rgba(255,51,80,0.18) 60%, rgba(255,0,60,0) 100%);
   animation: bugBulb 1.5s ease-in-out infinite;
   pointer-events: none;
 }
@@ -601,8 +605,8 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 @keyframes bugSweep { to { transform: rotate(360deg); } }
 
 @keyframes bugBulb {
-  0%, 100% { opacity: 0.35; transform: scale(0.82); }
-  50%      { opacity: 0.95; transform: scale(1.06); }
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50%      { opacity: 0.6;  transform: scale(1.02); }
 }
 
 /* The halo breathing, so a virus is doing something even when the lamp
@@ -4179,6 +4183,14 @@ function spawn() {
 
 const ZAP_RED = '#FF003C', ZAP_CYAN = '#00F0FF', ZAP_GOLD = '#FCEE0A';
 
+/* The discharge. Red is already spoken for -- it is what a virus looks
+   like sitting there -- so the moment one goes off is a different
+   colour on purpose: the blue white of a spark, which is what a fault
+   in a machine looks like and reads instantly against the red lamps it
+   just came out of. The dots stay the virus's own ink, because those
+   are the ink leaving the page. */
+const ZAP_ARC = '#CFEBFF', ZAP_ARC_DEEP = '#4FA8FF';
+
 /* Long enough to watch. At two thirds of a second all anybody saw was a
    white flicker: the flash was over before the eye got there and the
    dots were gone before the board stopped moving. */
@@ -4251,25 +4263,26 @@ function zapDraw(now) {
   const t = Math.min(1, (now - zapFrom) / ZAP_MS);
   const dt = 1 / 60;
 
-  /* The hit on the print. A white flash was the wrong colour and the
-     wrong length -- it read as the screen blinking rather than as the
-     picture being hurt. This is the hot red laid over the whole well,
-     hard for a tenth of a second and then bleeding off across half of
-     it, so the painting goes the colour of the thing that attacked it
-     and comes back. */
+  /* The hit on the print: a discharge rather than a blast. The strike
+     is the pale blue of a spark, hard for a tenth of a second, and then
+     it falls away to the deeper blue over half of it -- the picture
+     goes cold and comes back rather than going the colour of the thing
+     that hit it. Red stays what a virus looks like; this is what one
+     doing something looks like. */
   if (t < 0.5) {
     const k = 1 - t / 0.5;
     const hit = t < 0.09 ? 1 : k;
 
     cx2.globalCompositeOperation = 'screen';
-    cx2.fillStyle = ZAP_RED;
-    cx2.globalAlpha = 0.62 * hit * hit;
+    cx2.fillStyle = t < 0.14 ? ZAP_ARC : ZAP_ARC_DEEP;
+    cx2.globalAlpha = 0.58 * hit * hit;
     cx2.fillRect(0, 0, w, h);
 
-    // a touch of white only at the very front of it, as the strike
-    if (t < 0.07) {
+    /* Two frames of white at the very front. A spark is overexposed at
+       the moment it jumps and nothing else about it is. */
+    if (t < 0.05) {
       cx2.fillStyle = '#FFF';
-      cx2.globalAlpha = 0.34 * (1 - t / 0.07);
+      cx2.globalAlpha = 0.55 * (1 - t / 0.05);
       cx2.fillRect(0, 0, w, h);
     }
     cx2.globalAlpha = 1;
@@ -4285,7 +4298,7 @@ function zapDraw(now) {
       const y = (i * 0.19 + (now / 900) % 1) * h % h;
       const band = h * (0.03 + Math.random() * 0.05);
       const off = (Math.random() - 0.5) * 52 * k;
-      cx2.fillStyle = (i % 2 ? ZAP_CYAN : ZAP_RED);
+      cx2.fillStyle = (i % 2 ? ZAP_CYAN : ZAP_ARC_DEEP);
       cx2.globalAlpha = 0.34 * k;
       cx2.fillRect(off, y, w, band);
     }
@@ -4302,7 +4315,7 @@ function zapDraw(now) {
       if (u <= 0 || u >= 1) continue;
       cx2.beginPath();
       cx2.arc(r.x, r.y, r.r0 + (r.r1 - r.r0) * u, 0, Math.PI * 2);
-      cx2.strokeStyle = lag ? ZAP_CYAN : ZAP_RED;
+      cx2.strokeStyle = lag ? ZAP_ARC_DEEP : ZAP_ARC;
       cx2.globalAlpha = 0.85 * (1 - u) * (1 - u);
       cx2.lineWidth = 3.5 * (1 - u) + 0.6;
       cx2.stroke();
