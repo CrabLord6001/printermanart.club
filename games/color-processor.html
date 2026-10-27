@@ -116,7 +116,7 @@ body {
    Not done with user-scalable=no in the viewport tag: WebKit has
    ignored that since iOS 10, deliberately, because it also kills pinch
    zoom for anybody who needs to enlarge the type. */
-body { touch-action: manipulation; }
+html, body { touch-action: manipulation; }
 
 /* ---- readout ---- */
 
@@ -346,7 +346,15 @@ html.embed .title { display: none; }
    The intro panel is the one place inside the rig that genuinely scrolls,
    so it keeps the vertical gesture. */
 .rig { touch-action: none; }
-.over { touch-action: pan-y; }
+/* manipulation rather than pan-y. Both are meant to take the double tap
+   away and pan-y is the tighter rule, but WebKit's suppression of double
+   tap hangs specifically off manipulation -- a directional value tells
+   it which way to pan without telling it to stop zooming. The panels are
+   where the buttons live, so they are exactly where somebody taps twice
+   when the first one did not seem to land. Panning sideways is not
+   something any panel here does anyway, so the looser value costs
+   nothing. */
+.over { touch-action: manipulation; }
 
 .stack { display: flex; flex-direction: column; align-items: center; }
 
