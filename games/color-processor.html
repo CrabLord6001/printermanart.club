@@ -9921,11 +9921,14 @@ function record(ran) {
   if (!board) return;
 
   if (!window.CPBoard || !window.CPBoard.signedIn()) {
-    /* It still counted for this visit -- the level is printed and the
-       series moves on. It just has nowhere to be written down, and saying
-       nothing at all read as the board being broken. */
-    board.textContent = 'Not signed in \u00b7 this run is not on the board';
-    board.hidden = false;
+    /* This used to say the run was not on the board. It made sense while
+       a saved run printed its standing here, and stopped making sense
+       when that came out: the member finishing a print got silence and
+       the visitor got a paragraph, which is backwards. The rail carries
+       a sign-in button the whole time anyway. The level is printed and
+       the series moves on either way. */
+    board.textContent = '';
+    board.hidden = true;
     return;
   }
 
