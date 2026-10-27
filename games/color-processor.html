@@ -13,7 +13,11 @@
      nothing, a blank board while a font loads is not. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&display=swap">
+<!-- Monoton is a neon tube with a gap down the middle of every stroke,
+     which is what a bent glass sign actually looks like. It is only
+     asked for on the party door, so the swap keeps it off the
+     critical path for everything else. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&family=Monoton&display=swap">
 
 <style>
 /* ============================================================
@@ -2489,30 +2493,52 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   box-shadow: 0 0 0 1px rgba(22,224,255,0.12), 0 18px 48px rgba(0,0,0,0.6);
 }
 
-.partyface .ptag {
-  margin: 0 0 8px !important;
-  font-size: 0.52rem;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: #FFE23D;
-}
-
+/* A sign on the wall rather than a heading on a panel. Neon is a lit
+   tube seen through its own haze, so it is built the way that reads: a
+   white hot core, the gas colour tight around it, and the wall glow
+   thrown well past the letters. Sized to hold one line at any width. */
 .partyface .pask {
   margin: 0 !important;
-  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
-  font-size: clamp(1.05rem, 5.4vw, 1.45rem);
-  line-height: 1.18;
-  color: #fff;
-  text-shadow: 2px 0 0 #FF2FA0, -2px 0 0 #16E0FF, 0 0 24px rgba(255,47,160,0.45);
-  animation: cnewLamp 1.9s ease-in-out infinite;
+  font-family: 'Monoton', 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
+  font-weight: 400;
+  /* Set from the panel rather than from the viewport: Monoton is far
+     wider per character than the rest of the game's type, and a size
+     that fits on a desk ran the Y off the end of a phone. fitSign
+     measures the real thing and writes this. */
+  font-size: var(--signFs, 1.4rem);
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #FFF2FB;
+  text-shadow:
+    0 0 4px #fff,
+    0 0 11px #FF57B8,
+    0 0 22px #FF2FA0,
+    0 0 44px rgba(255,47,160,0.75),
+    0 0 78px rgba(255,47,160,0.45);
+  animation: neonHum 3.1s ease-in-out infinite;
 }
 
+/* Mains hum rather than a blink: a real tube wavers, it does not strobe. */
+@keyframes neonHum {
+  0%, 100% { opacity: 1; }
+  46%      { opacity: 0.93; }
+  48%      { opacity: 1; }
+  72%      { opacity: 0.96; }
+}
+
+/* Each of the three is a sentence, and a wrap inside one reads as two
+   of them. Non breaking spaces inside each, so a break can only fall at
+   a full stop. */
 .partyface .pnote {
-  margin: 12px auto 0 !important;
-  max-width: 18rem;
-  font-size: 0.68rem;
-  line-height: 1.55;
+  margin: 14px auto 0 !important;
+  max-width: 20rem;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  /* The panel's paragraphs are ranged left everywhere else in the game,
+     which is right for a paragraph and wrong for three short sentences
+     under a sign. */
+  text-align: center !important;
   color: var(--dim);
 }
 
@@ -2521,6 +2547,9 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 @media (prefers-reduced-motion: reduce) {
   .partyface .pask { animation: none; }
 }
+
+/* The sign is the widest thing in the box, so the box gives it room. */
+.partyface .pin { padding: 24px 14px 16px; }
 
 /* ---- the credits ----
    The panel scrolls by default, which here would have scrolled the
@@ -3200,9 +3229,8 @@ nav.menu {
                  after the mode, which reads as a game that has hung. -->
             <div class="rules partyface" id="overParty" hidden>
               <div class="pin">
-                <p class="ptag">Endless</p>
-                <p class="pask">Are you ready to groove?</p>
-                <p class="pnote">No prints, no plates, no viruses. Points for every clear and more for a chain, and the press winds on until it jams.</p>
+                <p class="pask">Ready to Party?</p>
+                <p class="pnote">Points for every&nbsp;clear. Chains combo more&nbsp;points. Party ends when you&nbsp;jam.</p>
                 <nav class="bossmenu" id="partyMenu">
                   <button class="mi hot" type="button" data-party="go">Let’s groove</button>
                   <button class="mi" type="button" data-party="menu">Menu</button>
@@ -3835,6 +3863,15 @@ const FLOOR_INK = {
   lm: '#FF86C5', y:  '#FFE23D', k:  '#8E7BFF'
 };
 
+/* ---- the club before anybody arrives ----
+   The room is dark until the first drop lands. A spotlight picks that
+   drop up on its way down and follows it, and the moment it settles the
+   black goes and the panels come up underneath -- so the party does not
+   start when the menu is clicked, it starts when the first piece is
+   placed. Nobody turns the lights on in an empty room. */
+let discoDark = true, discoLit = 0;            // discoLit: when the room came up
+const DISCO_RISE = 900;                        // how long the black takes to go
+
 let floorRaf = 0, floorFrom = 0, floorHue = 'c', floorWas = 'm', floorTurn = 0;
 let floorHit = 0;                          // when the last clear landed
 let floorLast = 0;
@@ -3871,6 +3908,7 @@ function floorStart() {
   floorFrom = performance.now();
   floorTurn = floorFrom - 4000;
   floorHit = 0;
+  floorLast = 0;
   floorRaf = requestAnimationFrame(floorDraw);
 }
 
@@ -3879,6 +3917,105 @@ const mix = (a, b, t) => {
   const A = p(a), B = p(b);
   return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',') + ')';
 };
+
+/* The rig. Four beams hung above the board: two that stand still and
+   two that sweep, plus a hard one that follows whatever is falling.
+   Drawn as cones narrowing to the lamp, laid in screen so they add
+   light rather than paint over the room. */
+const SPOT_HUES = ['#16E0FF', '#FF2FA0', '#FFE23D', '#4CFF3C'];
+
+/* The sign is one line by design, so it is measured and sized to the
+   box it is in rather than trusted to a viewport unit. Run on arrival
+   and on resize, like every other thing here that has to fit. */
+function fitSign() {
+  const el = document.querySelector('.partyface .pask');
+  const box = el && el.parentElement;
+  if (!el || !box) return;
+  const room = box.clientWidth - 10;
+  if (room < 40) return;
+  const r = document.documentElement;
+
+  /* Guessed from one measurement and it was wrong every time on a
+     phone: the first measure happens before the web font has arrived,
+     so it is the fallback being measured and the real letters turn out
+     wider. Stepped down until it actually fits instead, which does not
+     care when the font lands. */
+  let px = 32;
+  r.style.setProperty('--signFs', px + 'px');
+  for (let i = 0; i < 14 && px > 12; i++) {
+    if (el.scrollWidth <= room) break;
+    px = Math.max(12, Math.min(px - 1, Math.floor(px * room / el.scrollWidth)));
+    r.style.setProperty('--signFs', px + 'px');
+  }
+}
+
+function spotDraw(cx, ms, lit, beat, fade) {
+  const f = fade === undefined ? 1 : Math.max(0, fade);
+  if (f <= 0.001) return;
+  const t = ms / 1000;
+
+  cx.save();
+  cx.globalCompositeOperation = 'screen';
+
+  for (let i = 0; i < SPOT_HUES.length; i++) {
+    const sway = Math.sin(t * (0.42 + i * 0.17) + i * 1.9);
+    const lampX = PW * (0.14 + i * 0.24);
+    const hitX = lampX + sway * PW * 0.3;
+    const half = PW * (0.1 + 0.035 * Math.sin(t * 0.9 + i));
+
+    const g = cx.createLinearGradient(lampX, 0, hitX, PH);
+    g.addColorStop(0, SPOT_HUES[i]);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    cx.globalAlpha = (0.17 + 0.1 * beat) * f;
+    cx.fillStyle = g;
+    cx.beginPath();
+    cx.moveTo(lampX - PW * 0.012, 0);
+    cx.lineTo(lampX + PW * 0.012, 0);
+    cx.lineTo(hitX + half, PH);
+    cx.lineTo(hitX - half, PH);
+    cx.closePath();
+    cx.fill();
+  }
+
+  /* And the one that is actually doing a job: it holds the piece on its
+     way down, which is the only thing in the room worth looking at. */
+  if (piece) {
+    const cells = pieceCells(piece);
+    let sx = 0, sy = 0, n = 0;
+    for (const [x, y] of cells) { sx += x + 0.5; sy += y + 0.5; n++; }
+    if (n) {
+      const px = (sx / n) / COLS * PW;
+      const py = (sy / n) / ROWS * PH;
+      const lampX = px * 0.45 + PW * 0.275;
+      const half = PW * 0.1;
+
+      const g = cx.createLinearGradient(lampX, 0, px, PH);
+      g.addColorStop(0, 'rgba(255,255,255,0.9)');
+      g.addColorStop(Math.min(0.96, Math.max(0.05, py / PH)), lit);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      cx.globalAlpha = (0.42 + 0.18 * beat) * f;
+      cx.fillStyle = g;
+      cx.beginPath();
+      cx.moveTo(lampX - PW * 0.02, 0);
+      cx.lineTo(lampX + PW * 0.02, 0);
+      cx.lineTo(px + half, PH);
+      cx.lineTo(px - half, PH);
+      cx.closePath();
+      cx.fill();
+
+      // the pool it throws where the piece is
+      cx.globalAlpha = (0.5 + 0.3 * beat) * f;
+      const pool = cx.createRadialGradient(px, py, 1, px, py, PW * 0.3);
+      pool.addColorStop(0, '#fff');
+      pool.addColorStop(0.35, lit);
+      pool.addColorStop(1, 'rgba(0,0,0,0)');
+      cx.fillStyle = pool;
+      cx.fillRect(0, 0, PW, PH);
+    }
+  }
+
+  cx.restore();
+}
 
 function floorDraw(now) {
   const page = pageEl();
@@ -3906,6 +4043,20 @@ function floorDraw(now) {
   cx.globalAlpha = 1;
   cx.fillStyle = '#0A0710';
   cx.fillRect(0, 0, PW, PH);
+
+  /* Nothing is lit yet. A beam from the rig picks out whatever is on its
+     way down and nothing else -- the rest of the room stays where it
+     was before anybody walked in. */
+  if (discoDark) {
+    cx.fillStyle = '#000';
+    cx.fillRect(0, 0, PW, PH);
+    spotDraw(cx, ms, lit, beat);
+    const dtd = floorLast ? Math.min(0.1, (now - floorLast) / 1000) : 0;
+    floorLast = now;
+    deckDraw(now, beat, lit, dtd);
+    floorRaf = requestAnimationFrame(floorDraw);
+    return;
+  }
 
   const cw = PW / FLOOR_COLS, ch = PH / FLOOR_ROWS;
   const wave = ms / 1000;
@@ -3946,6 +4097,22 @@ function floorDraw(now) {
   cx.fillRect(0, 0, PW, PH);
   cx.globalAlpha = 1;
   cx.globalCompositeOperation = 'source-over';
+
+  /* And the room coming up, the first time. The black lifts off the
+     floor rather than the floor fading in, so the panels are already
+     going underneath by the time they can be seen. */
+  if (discoLit) {
+    const up = (now - discoLit) / DISCO_RISE;
+    if (up < 1) {
+      cx.globalAlpha = Math.max(0, 1 - up * up);
+      cx.fillStyle = '#000';
+      cx.fillRect(0, 0, PW, PH);
+      cx.globalAlpha = 1;
+      spotDraw(cx, ms, lit, beat, 1 - up);     // the beam bows out with it
+    } else {
+      discoLit = 0;
+    }
+  }
 
   /* The meters, fed from the same frame. Four elements a frame is
      nothing, and it saves running a second loop for them. */
@@ -5200,6 +5367,8 @@ function lock() {
     const want = discoFall();
     if (want !== fallMs) { fallMs = want; if (!over && !paused) startTick(); }
     sayGoal(String(discoStep()));
+    /* The first one placed is what turns the lights on. */
+    if (discoDark) { discoDark = false; discoLit = performance.now(); }
   }
   for (const [x, y, code] of pieceCells(piece)) {
     if (inside(x, y)) put(well, x, y, code);
@@ -6636,6 +6805,11 @@ function showFace(which) {
     document.getElementById('overBoard').hidden = true;
     elOver.hidden = false;
     buttons();
+    fitSign();
+    /* And again once the tube has actually arrived. */
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => { if (onParty()) fitSign(); }).catch(() => {});
+    }
     setMusic(cueNow());
     return;
   }
@@ -8272,6 +8446,7 @@ function buttonsNow() {
    row wrap or unwrap, which would call back in here forever. */
 let footWas = 0, refitting = false;
 const refit = () => {
+  if (onParty()) fitSign();                     // the sign is one line at any width
   const foot = document.querySelector('.foot');
   if (!foot || refitting || !tiles.length) return;
   const h = foot.offsetHeight;
@@ -9017,6 +9192,7 @@ function newPrint(face) {
 
   inkPer = Math.max(3, Number(document.getElementById('setTarget').value) || 10);
   discoDrops = 0;
+  discoDark = true; discoLit = 0;               // every party starts in the dark
   for (const pl of TUBE_ORDER) discoVu[pl] = 0;
   discoLabels();
   fallMs = discoOn ? discoFall() : fallMsNow();
