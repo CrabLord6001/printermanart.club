@@ -331,3 +331,47 @@ export async function highMe(game, variant) {
   }
   return (data && data[0]) || null;
 }
+
+/* ---- one level, everybody's time on it ----
+   The campaign board ranks whole runs: how many levels and how long they
+   took in total. That tells somebody where they sit in the club and
+   nothing at all about the level they just finished. Par answers "was
+   that good" against a fixed number; this answers it against people.
+
+   Keyed on the level rather than the painting. A level is not its
+   picture: the gallery deals its twenty-one slots from larger pools and
+   rotates them, while the difficulty -- ink per plate, fall speed, virus
+   rate -- comes from the slot index alone. Two paintings in the same
+   slot are the same job, and keying on art would split every board
+   across rotations so that a time ranked only against whoever happened
+   to be dealt the same picture.
+
+   NOTE: club_level_board and club_level_me are not in the database yet.
+   The migration that creates them was cancelled twice. Until it lands
+   these return null, which the board reads as "unavailable" -- nothing
+   calls them yet either way. */
+export async function levelBoard(game, level, limit) {
+  const { data, error } = await db.rpc('club_level_board', {
+    p_game: game,
+    p_level: level,
+    p_limit: limit || 10
+  });
+
+  if (error) {
+    console.warn('[club-auth] level board failed:', error.message);
+    return null;
+  }
+  return data || [];
+}
+
+/* Their own place on that level, and how many people are on it -- first
+   out of three is a different sentence from first out of thirty. */
+export async function levelMe(game, level) {
+  const { data, error } = await db.rpc('club_level_me', { p_game: game, p_level: level });
+
+  if (error) {
+    console.warn('[club-auth] level standing failed:', error.message);
+    return null;
+  }
+  return (data && data[0]) || null;
+}

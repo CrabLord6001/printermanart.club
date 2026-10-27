@@ -3642,13 +3642,13 @@ let trying = 0;                                 // the level being tried, or 0
    and the button at the bottom of the reel goes to the menu rather than
    into a run. Beating her is the only way to actually finish the series.
 
-   Not gated, because there is nobody to gate it against: the club has
-   members but no roles, so an admin check would mean a column on
-   club_members and a trip to the database before the page could decide
-   what to draw. What keeps this honest is the same thing that keeps
-   ?try=21 honest -- it cannot give anybody progress they did not play
-   for, so the worst a stranger can do with the link is spoil the story
-   for themselves. */
+   Not gated yet, though it could be: club_members carries is_admin and
+   club_is_admin() already reads it, so the check is a call rather than a
+   schema change. (An earlier version of this comment said the club had
+   no roles. It was wrong -- nobody looked.) What keeps the link honest
+   in the meantime is the same thing that keeps ?try=21 honest: it cannot
+   give anybody progress they did not play for, so the worst a stranger
+   can do with it is spoil the story for themselves. */
 const END_PEEK = new URLSearchParams(location.search).has('end');
 
 const EMBED = new URLSearchParams(location.search).has('embed');
@@ -10501,7 +10501,12 @@ else if (TRY > 0) openTrial();
      script through one small bridge. Same origin as the arcade page, so
      anyone signed in there is already signed in here. -->
 <script type="module">
-  import { db, onMember, signIn, signOut, postScore, campaignBoard, campaignMe, highBoard, highMe } from '/games/club-auth.js';
+  /* levelBoard/levelMe come in under other names: the bridge exposes
+     methods called levelBoard and levelStanding, and a method whose body
+     calls a module function of its own name reads like recursion even
+     when it is not. */
+  import { db, onMember, signIn, signOut, postScore, campaignBoard, campaignMe, highBoard, highMe,
+           levelBoard as fetchLevelBoard, levelMe as fetchLevelMe } from '/games/club-auth.js';
   import { SUPABASE_URL } from '/club-config.js';
 
   const GAME = 'color-processor';
@@ -10616,6 +10621,18 @@ else if (TRY > 0) openTrial();
 
     async discoBoard(limit) {
       return await highBoard(GAME, 'endless', limit || 10);
+    },
+
+    /* One level's times, keyed on the slot rather than the painting in
+       it -- the gallery rotates, the difficulty does not. */
+    async levelBoard(level, limit) {
+      if (!level) return null;
+      return await fetchLevelBoard(GAME, level, limit || 10);
+    },
+
+    async levelStanding(level) {
+      if (!member || !level) return null;
+      return await fetchLevelMe(GAME, level);
     },
 
     async discoStanding() {
