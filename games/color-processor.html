@@ -99,10 +99,24 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* touch-action deliberately does NOT live here. It used to, and it works,
-   but it is intersected down the tree: with none on the body nothing
-   inside can pan either, and the intro panel has to be able to scroll.
-   It sits on .rig instead, which is the part you steer on. */
+/* none does not belong here: touch-action intersects down the tree, so
+   none on the body means nothing inside can pan either, and the intro
+   panel has to scroll. That is why the board's own none sits on .rig.
+
+   manipulation is the value that does belong here. It is not none -- it
+   keeps panning and keeps pinch zoom, which is the one people actually
+   need -- and all it takes away is double tap to zoom. The game asks you
+   to tap to rotate, so a player turning a piece quickly is performing
+   the zoom gesture by accident, and lands zoomed into a board they can
+   no longer see. .rig was already covered; this is everything around it
+   -- the readouts, the foot, and the buttons on the panels, which are
+   exactly the things somebody taps twice when a tap does not seem to
+   have registered.
+
+   Not done with user-scalable=no in the viewport tag: WebKit has
+   ignored that since iOS 10, deliberately, because it also kills pinch
+   zoom for anybody who needs to enlarge the type. */
+body { touch-action: manipulation; }
 
 /* ---- readout ---- */
 
