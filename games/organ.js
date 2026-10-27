@@ -727,7 +727,12 @@ export function arm() {
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
-    ctx = new AC();
+    /* The page makes one of these inside the gesture itself, because by
+       the time this module has been fetched and run the gesture is over
+       and Safari will not resume a context for it. If there is one
+       waiting, it is already running -- take it rather than opening a
+       second one that is not allowed to make a sound. */
+    ctx = window.__cpCtx || new AC();
     build();
     cueBuild();
   }

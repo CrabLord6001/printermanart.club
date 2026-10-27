@@ -9899,7 +9899,30 @@ sndBtn.addEventListener('click', async () => {
    it hears about it. Turning it on while somebody is mid sentence used to
    do nothing audible: the screen had already decided there was no voice
    to play and carried on silently to the end. */
+/* Safari will not start a context outside the gesture that asked for it,
+   and it means the gesture's own task -- not "some time after a tap".
+   The path from here used to be: await the organ module, then arm(),
+   then resume. On a cold load that await goes to the network, the task
+   ends, and the resume that finally arrives belongs to nobody. Refresh
+   and the module is cached, the promise settles in a microtask, and it
+   works -- which is why this reads as flaky rather than broken.
+
+   So the context is made and resumed right here instead, synchronously,
+   while the gesture is still on the stack. The module adopts it when it
+   turns up. Called before any await in setSound for that reason: an
+   async function runs to its first await synchronously, and this has to
+   be inside that part. */
+function primeAudio() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!window.__cpCtx) window.__cpCtx = new AC();
+    if (window.__cpCtx.state === 'suspended') window.__cpCtx.resume().catch(() => {});
+  } catch (e) { /* no audio here; the rest of the page does not care */ }
+}
+
 async function setSound(next) {
+  if (next) primeAudio();
   const ok = await wantSound(next);
   if (!ok) return false;
   sndBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
