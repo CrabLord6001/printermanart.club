@@ -327,6 +327,22 @@ html.embed .title { display: none; }
   .head { gap: 7px; }
   .stat { font-size: 0.56rem; letter-spacing: 0.06em; }
   .stat b { font-size: 0.82rem; margin-left: 3px; }
+
+  /* A phone's board is held back by the height of the window, never the
+     width of it: ten cells across fit easily, twenty rows do not. So every
+     row of chrome above and below the casing is paid for twice -- once in
+     the space it takes, and again in the cell size the board gives up to
+     make room, which is what leaves the bare strips down either side.
+
+     Nothing here is removed, only closed up: the readout, the casing and
+     the bank of buttons all stand nearer each other, and the board spends
+     what they hand back on being bigger. */
+  body { padding: 5px 10px 7px; }
+  .head { padding-bottom: 3px; }
+  .score { padding: 3px 3px 4px; gap: 1px; }
+  .foot { padding-top: 3px; gap: 6px; }
+  .foot .msg { margin-top: 0; }
+  .msg { font-size: 0.72rem; }
 }
 
 /* A long print on a small phone -- a five figure score and a time past ten
@@ -893,11 +909,6 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 .rankbtn.on .rankdial { color: var(--accent); border-color: var(--accent); }
 .rankbtn.on .lbl { color: var(--accent); }
 
-/* On a screen somebody is reading, nothing is falling, so the line about
-   how to steer it has nothing to say. The level card keeps it: there the
-   next thing is Play. */
-body.reading .hint { visibility: hidden; }
-
 .tubes { display: flex; justify-content: center; gap: 6px; }
 
 /* ---- the deck ----
@@ -1031,7 +1042,6 @@ body.reading .hint { visibility: hidden; }
 
 /* The bank first, then whatever the game has to say under it. */
 .foot .msg { order: 2; margin-top: 2px; }
-.foot .hint { order: 3; }
 
 .foot.center { justify-content: center; }
 
@@ -1196,13 +1206,6 @@ button.go:not(.ghost):hover {
   background: linear-gradient(168deg, #F6CE85 0%, #CE9C41 58%, #DEAC54 100%);
 }
 
-.hint {
-  flex: 1 1 100%;
-  font-size: 0.62rem;
-  color: var(--dim);
-  margin: 2px 0 0;
-  text-align: center;
-}
 
 /* ---- end of a print ---- */
 
@@ -3594,8 +3597,11 @@ nav.menu {
       <button class="go" id="again" type="button">New print</button>
       <button class="go ghost" id="rulesBtn" type="button">Rules</button>
     </div>
+    <!-- The line of touch controls that used to sit here is gone. It was
+         printed under every screen in the game, including the ones with
+         nothing falling, and the Rules page says the same thing on
+         purpose. One tap away beats permanently in the way. -->
     <p class="msg" id="msg">&nbsp;</p>
-    <p class="hint" id="hint">Drag to steer &middot; tap to rotate &middot; swipe down to drop</p>
   </div>
 
 
@@ -5107,6 +5113,15 @@ function sizeBoard() {
   // Measure what the rest of the page is actually taking rather than
   // guessing at it, then give the well the remainder.
   const bar = document.getElementById('siteBar');
+
+  /* The last term covers the page's own padding, the casing and the well.
+     Measuring it instead of counting it was tried and taken back out: it
+     is honest about the chrome, and the board it hands back is bigger
+     than the rail beside it can match, so the buttons under the board go
+     off the bottom of a phone. The rail has a floor of its own -- see the
+     pass below, which gives cells back and then refuses to keep giving
+     them when the rail is what is really holding the page open. Until the
+     rail can shrink further, this number is what keeps the two in step. */
   const used = document.querySelector('.head').offsetHeight
              + document.querySelector('.foot').offsetHeight
              + ((bar && !bar.hidden) ? bar.offsetHeight : 0)
