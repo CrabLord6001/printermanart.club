@@ -725,6 +725,15 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
      Six rooms have to land inside the board, not past the bottom of it. */
   .over.lvface { padding: 8px; }
   .over.lvface h2 { font-size: 0.9rem; margin-bottom: 8px; }
+
+  /* The deck costs height the rail does not have on a short phone, and
+     a rail taller than the board is paid for out of the board -- the
+     cells shrink to make room for it. The record is the part worth
+     keeping: it carries the colour and the speed between them. The
+     meters under it are decoration, so they go first. */
+  .rig.party .tubes,
+  .rig.party .tubetags { display: none; }
+  .rig.party .deckwrap { margin-bottom: 0; }
 }
 
 .nextbox {
@@ -807,6 +816,31 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 body.reading .hint { visibility: hidden; }
 
 .tubes { display: flex; justify-content: center; gap: 6px; }
+
+/* ---- the deck ----
+   The rail is a narrow column, so the record is as wide as the column
+   and the meters go under it as a short strip rather than as the long
+   tubes they are everywhere else. */
+/* Square, and sized by the rail rather than by the canvas.
+
+   The canvas is taken out of the flow on purpose. A canvas carries an
+   intrinsic size from its width and height attributes, the rail is a
+   flex column sized by what is in it, and the two together shouldered
+   the rail out to three hundred pixels -- wider than the board's own
+   margin -- the moment the deck appeared. Absolutely positioned inside
+   a square box it contributes nothing to that measurement, and the box
+   takes its width from the rail rather than the other way round. */
+.deckwrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin: 0 0 7px;
+}
+.deckwrap[hidden] { display: none; }
+.deckwrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+.rig.party .tubes .tube { height: 26px; width: 8px; border-radius: 3px; }
+.rig.party .tubetags b { opacity: 0.55; }
 
 .tubes .tube {
   width: 10px;
@@ -2423,6 +2457,71 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 .endface.going .in { opacity: 0; transition: opacity 760ms ease; }
 .endface.going canvas { opacity: 0; transition: opacity 760ms ease; }
 
+/* ---- the party's own door ----
+   The floor is already running behind it, so the panel is a sheet of
+   smoked glass over the top rather than the flat scrim every other face
+   uses: the room should be visible through the question. */
+.over.party { padding: 0; background: rgba(8,5,14,0.62); }
+.over.party .over-in { margin: 0; flex: 1 1 auto; display: flex; flex-direction: column; }
+.over.party > .over-in > h2,
+.over.party > .over-in > p { display: none; }
+
+.rules.partyface {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 14px;
+  text-align: center;
+}
+
+.partyface .pin {
+  width: 100%;
+  max-width: 21rem;
+  padding: 20px 16px 16px;
+  border: 1px solid rgba(255,47,160,0.35);
+  border-radius: 12px;
+  background: linear-gradient(168deg, rgba(20,8,28,0.92) 0%, rgba(10,6,16,0.95) 100%);
+  box-shadow: 0 0 0 1px rgba(22,224,255,0.12), 0 18px 48px rgba(0,0,0,0.6);
+}
+
+.partyface .ptag {
+  margin: 0 0 8px !important;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #FFE23D;
+}
+
+.partyface .pask {
+  margin: 0 !important;
+  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
+  font-size: clamp(1.05rem, 5.4vw, 1.45rem);
+  line-height: 1.18;
+  color: #fff;
+  text-shadow: 2px 0 0 #FF2FA0, -2px 0 0 #16E0FF, 0 0 24px rgba(255,47,160,0.45);
+  animation: cnewLamp 1.9s ease-in-out infinite;
+}
+
+.partyface .pnote {
+  margin: 12px auto 0 !important;
+  max-width: 18rem;
+  font-size: 0.68rem;
+  line-height: 1.55;
+  color: var(--dim);
+}
+
+.partyface .bossmenu { margin-top: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .partyface .pask { animation: none; }
+}
+
 /* ---- the credits ----
    The panel scrolls by default, which here would have scrolled the
    whole screen and carried the way out off the bottom of it. The reel
@@ -3094,6 +3193,23 @@ nav.menu {
               </div>
             </div>
 
+            <!-- The party asks first. Every other lane opens onto a card
+                 or a panel that says where you are and what the button
+                 under it will do; this one opened straight onto a board
+                 with a drop already sitting on it and a button named
+                 after the mode, which reads as a game that has hung. -->
+            <div class="rules partyface" id="overParty" hidden>
+              <div class="pin">
+                <p class="ptag">Endless</p>
+                <p class="pask">Are you ready to groove?</p>
+                <p class="pnote">No prints, no plates, no viruses. Points for every clear and more for a chain, and the press winds on until it jams.</p>
+                <nav class="bossmenu" id="partyMenu">
+                  <button class="mi hot" type="button" data-party="go">Let’s groove</button>
+                  <button class="mi" type="button" data-party="menu">Menu</button>
+                </nav>
+              </div>
+            </div>
+
             <!-- The record of what printed the thing. Scrolls on its own
                  the way a reel does, and can be taken by hand. -->
             <div class="rules creditsface" id="overCredits" hidden>
@@ -3200,6 +3316,10 @@ nav.menu {
            that has little of that ink to show for it. -->
       <div class="nextbox platebox">
         <p class="lbl" id="tubeLbl">Plates</p>
+        <!-- What the four tubes become at the party: a record turning at
+             whatever the tempo has wound on to, lit by whatever colour
+             came off the board last. -->
+        <div class="deckwrap" id="deckWrap" hidden><canvas id="deck"></canvas></div>
         <div class="tubes" id="tubes"></div>
         <div class="tubetags" id="tubetags"></div>
       </div>
@@ -3831,6 +3951,7 @@ function floorDraw(now) {
      nothing, and it saves running a second loop for them. */
   const dt = floorLast ? Math.min(0.1, (now - floorLast) / 1000) : 0;
   floorLast = now;
+  deckDraw(now, beat, lit, dt);
   for (const pl of TUBE_ORDER) {
     discoVu[pl] = Math.max(0, discoVu[pl] - dt * 0.85);
     const tube = document.getElementById('tube-' + pl);
@@ -3843,13 +3964,122 @@ function floorDraw(now) {
 }
 
 /* What the two readouts that named plates say instead, since there are
-   none. The one on the rail is a mixer; the one above the board is the
+   none. The one on the rail is the deck; the one above the board is the
    thing that is actually rising, which is the speed. */
 function discoLabels() {
   const a = document.getElementById('tubeLbl');
   const b = document.getElementById('goalLbl');
-  if (a) a.textContent = discoOn ? 'Mixer' : 'Plates';
+  const d = document.getElementById('deckWrap');
+  const rig = document.querySelector('.rig');
+  if (a) a.textContent = discoOn ? 'Deck' : 'Plates';
   if (b) b.textContent = discoOn ? 'Tempo' : 'Plates';
+  if (d) d.hidden = !discoOn;
+  if (rig) rig.classList.toggle('party', !!discoOn);
+  if (!discoOn) paintTubes();                 // back to goals, at their real height
+}
+
+/* ---- the record ----
+   A deck in the rail, turning at whatever the tempo has wound on to and
+   labelled in whatever colour came off the board last. It is the one
+   thing on screen that says how fast this has got without printing a
+   number at you: by the last tempo step it is spinning hard enough to
+   be a blur.
+
+   Drawn off the floor's own frame, like the meters, so the party still
+   runs on a single loop. */
+let deckSpin = 0;
+
+function deckDraw(now, beat, lit, dt) {
+  const cv = document.getElementById('deck');
+  const wrap = cv && cv.parentElement;
+  if (!cv || !wrap || wrap.hidden) return;
+
+  /* The box it is laid out in decides the size, and both dimensions are
+     checked -- testing only the width let a canvas that happened to be
+     the right width keep the wrong height. */
+  const w = Math.max(40, Math.round(wrap.clientWidth));
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const want = Math.round(w * dpr);
+  if (cv.width !== want || cv.height !== want) { cv.width = want; cv.height = want; }
+
+  const cx = cv.getContext('2d');
+  const R = cv.width / 2;
+  cx.setTransform(1, 0, 0, 1, 0, 0);
+  cx.clearRect(0, 0, cv.width, cv.height);
+
+  /* Faster as the press does: a third of a turn a second at the start,
+     a bit over two by the end. */
+  const rpm = 0.33 + 1.9 * Math.min(1, discoDrops / DISCO_OVER);
+  deckSpin = (deckSpin + dt * rpm * Math.PI * 2) % (Math.PI * 2);
+
+  cx.save();
+  cx.translate(R, R);
+
+  // the platter
+  cx.beginPath();
+  cx.arc(0, 0, R * 0.96, 0, Math.PI * 2);
+  cx.fillStyle = '#0B0D12';
+  cx.fill();
+
+  // the record, with the light on it from one side
+  const vinyl = cx.createLinearGradient(-R, -R, R, R);
+  vinyl.addColorStop(0, '#24262E');
+  vinyl.addColorStop(0.45, '#121419');
+  vinyl.addColorStop(1, '#1C1F26');
+  cx.beginPath();
+  cx.arc(0, 0, R * 0.9, 0, Math.PI * 2);
+  cx.fillStyle = vinyl;
+  cx.fill();
+
+  cx.rotate(deckSpin);
+
+  // grooves, and one bright one so the turn is visible at any speed
+  cx.lineWidth = Math.max(1, R * 0.012);
+  for (let i = 0; i < 7; i++) {
+    const rr = R * (0.36 + i * 0.077);
+    cx.beginPath();
+    cx.arc(0, 0, rr, 0, Math.PI * 2);
+    cx.strokeStyle = 'rgba(255,255,255,0.05)';
+    cx.stroke();
+  }
+  cx.beginPath();
+  cx.arc(0, 0, R * 0.74, -0.5, 0.5);
+  cx.strokeStyle = 'rgba(255,255,255,0.22)';
+  cx.lineWidth = Math.max(1, R * 0.03);
+  cx.stroke();
+
+  // the label, in the room's colour, breathing on the beat
+  const lab = R * (0.34 + 0.03 * beat);
+  cx.beginPath();
+  cx.arc(0, 0, lab, 0, Math.PI * 2);
+  cx.fillStyle = lit;
+  cx.fill();
+  cx.globalAlpha = 0.35 + 0.4 * beat;
+  cx.beginPath();
+  cx.arc(0, 0, lab, 0, Math.PI * 2);
+  cx.strokeStyle = '#fff';
+  cx.lineWidth = Math.max(1, R * 0.02);
+  cx.stroke();
+  cx.globalAlpha = 1;
+
+  // the hole and the spindle
+  cx.beginPath();
+  cx.arc(0, 0, R * 0.075, 0, Math.PI * 2);
+  cx.fillStyle = '#05060A';
+  cx.fill();
+
+  cx.restore();
+
+  /* The light the label throws back into the rail. */
+  cx.globalCompositeOperation = 'screen';
+  cx.globalAlpha = 0.14 + 0.3 * beat;
+  const g = cx.createRadialGradient(R, R, R * 0.1, R, R, R);
+  g.addColorStop(0, lit);
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  cx.fillStyle = g;
+  cx.fillRect(0, 0, cv.width, cv.height);
+  cx.globalCompositeOperation = 'source-over';
+  cx.globalAlpha = 1;
 }
 
 /* Ten steps between the opening pace and the fastest it gets, so the
@@ -5219,16 +5449,14 @@ function ready(face) {
      one occasion they need it. */
   if (face) { showFace(face); return; }
   if (campOn) { showFace('gallery'); return; }   // where you are in the series
+  if (discoOn) { showFace('party'); return; }   // it asks before it starts
   hideFace();
-  /* Every other lane arrives on a face, and the face puts its own music
-     on. This one opens straight onto the board, so nothing changed the
-     cue and the title screen's track was still playing over it. */
-  if (discoOn) setMusic(cueNow());
 }
 
 function begin() {
   rulesFrom = null;
   faceOff();
+  if (!piece) spawn();                          // dealt at the door, not before
   started = true; paused = false; phase = 'playing';
   elOver.hidden = true;
   pageEl().style.opacity = '1';                 // the blank sheet goes in the press
@@ -6219,6 +6447,8 @@ const elEnd = () => document.getElementById('overEnd');
 const onEnd = () => !elOver.hidden && !elEnd().hidden;
 const elCred = () => document.getElementById('overCredits');
 const onCred = () => !elOver.hidden && !elCred().hidden;
+const elParty = () => document.getElementById('overParty');
+const onParty = () => !elOver.hidden && !elParty().hidden;
 
 function faceOff() {
   /* The floor is behind the board, not on a face -- but every face
@@ -6229,7 +6459,7 @@ function faceOff() {
      top so the finished print shows through, which is right for the print
      and unreadable for anything laid over it. closeRules puts it back. */
   elOver.classList.remove('intro', 'menu', 'won', 'boardface', 'lvface');
-  elOver.classList.remove('home', 'boss', 'victor', 'endface2', 'credface');
+  elOver.classList.remove('home', 'boss', 'victor', 'endface2', 'credface', 'party');
   clearGalleryArt();                            // the sheet belongs to one face only
   asilStop();                                   // she stops talking to an empty room
   victorStop();
@@ -6244,6 +6474,7 @@ function faceOff() {
   elVictor().hidden = true;
   elEnd().hidden = true;
   elCred().hidden = true;
+  elParty().hidden = true;
 }
 
 /* No face at all: the board as it stands, with the buttons under it. */
@@ -6390,6 +6621,22 @@ function showFace(which) {
     /* Said once. Coming back from the board is not a fresh arrival, so
        she is already standing there having finished. */
     asilStart(bossSpoken);
+    return;
+  }
+
+  /* The door into the party. The floor is already turning behind it,
+     which is the point -- the question is asked over the room it is
+     asking about. */
+  if (which === 'party') {
+    elOver.classList.add('party');
+    elParty().hidden = false;
+    document.getElementById('overTitle').hidden = true;
+    document.getElementById('overCredit').hidden = true;
+    document.getElementById('overText').innerHTML = '';
+    document.getElementById('overBoard').hidden = true;
+    elOver.hidden = false;
+    buttons();
+    setMusic(cueNow());
     return;
   }
 
@@ -7870,7 +8117,7 @@ function buttonsNow() {
   /* On the title screen the options are the interface. Three more buttons
      under the board would only be a second way to say the same four
      things, so they stand down until there is a board to act on. */
-  if (onHome() || onBoss() || onVictor() || onEnd() || onCred()) {
+  if (onHome() || onBoss() || onVictor() || onEnd() || onCred() || onParty()) {
     menu.hidden = true;
     main.hidden = true;
     if (rules) rules.hidden = true;
@@ -8800,7 +9047,11 @@ function newPrint(face) {
   show('');
 
   sizeBoard();
-  spawn();
+  /* A drop sitting still at the top of a board nobody has started reads
+     as a game that has hung -- which is exactly how the party looked
+     while it was waiting behind its own question. Nothing is dealt here
+     until there is somebody to deal to. */
+  if (!discoOn) spawn();
   ready(face);
 }
 
@@ -9002,6 +9253,13 @@ document.getElementById('again').addEventListener('click', () => {
      screen: what happened to her, then who printed it, then YOU WIN. */
   if (phase === 'done' && campOn && wonLast && isFinale(artwork)) { showFace('end'); return; }
   newPrint();
+});
+
+document.getElementById('partyMenu').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-party]');
+  if (!b) return;
+  if (b.dataset.party === 'go') { begin(); return; }
+  showFace('home');
 });
 
 document.getElementById('endMenu').addEventListener('click', (e) => {
