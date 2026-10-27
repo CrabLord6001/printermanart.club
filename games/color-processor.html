@@ -2236,7 +2236,10 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   text-align: center;
 }
 
-.bossface canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* The backdrop, and only the backdrop. Left unscoped this caught any
+   canvas the face happened to contain, which pinned the epilogue's
+   printed title to all four corners behind its own words. */
+.bossface > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
 /* Clear across her face and heavy at both ends, which is where the words
    are. A flat scrim would put her behind frosted glass. */
@@ -2355,9 +2358,37 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 .endface .tag { color: var(--accent); text-shadow: 0 0 14px rgba(212,162,76,0.55); }
 .endface .aname { text-shadow: 2px 0 0 rgba(76,255,60,0.55), -2px 0 0 rgba(22,224,255,0.45), 0 0 24px rgba(0,0,0,0.9); }
 
-/* Nothing is readable while she is still coming apart behind it. */
+/* The win, in the middle of the screen, off the same press as everything
+   else: the shop's last job is saying you fixed it. */
+.endface .mid {
+  position: absolute;
+  left: 14px; right: 14px; top: 50%;
+  transform: translateY(-50%);
+}
+
+.endface .wonplate {
+  width: min(100%, 22rem);
+  margin: 0 auto;
+  padding: 10px 12px;
+  border-radius: 3px;
+  background: #F2EFE6;
+  box-shadow: 0 10px 34px rgba(0,0,0,0.6);
+}
+
+.endface .wonplate canvas { display: block; width: 100%; height: auto; }
+
+.endface .mid .said { margin: 16px auto 0 !important; }
+
+/* Nothing is readable while she is still coming apart behind it, and
+   both ends come up together so the screen settles in one move. */
+.endface .mid,
 .endface .bot { opacity: 0; transition: opacity 620ms ease; }
+.endface.said .mid,
 .endface.said .bot { opacity: 1; }
+
+/* And the whole thing stands down into the credits. */
+.endface.going .in { opacity: 0; transition: opacity 760ms ease; }
+.endface.going canvas { opacity: 0; transition: opacity 760ms ease; }
 
 /* ---- the credits ----
    The panel scrolls by default, which here would have scrolled the
@@ -2954,8 +2985,11 @@ nav.menu {
                   <p class="tag">Incident report</p>
                   <p class="aname">Asil Anom</p>
                 </div>
-                <div class="bot">
+                <div class="mid" id="endMid">
+                  <div class="plate wonplate"><canvas id="endPlate"></canvas></div>
                   <p class="said" id="endSaid">The malicious AI, Asil Anom, fried her neutral cores and experienced a cascade failure. She purged her backup array, compressed all of her memory, and faded into dark web&hellip; for now.</p>
+                </div>
+                <div class="bot">
                   <nav class="bossmenu" id="endMenu">
                     <button class="mi hot" type="button" data-end="credits">Credits</button>
                     <button class="mi" type="button" data-end="menu">Menu</button>
@@ -5365,6 +5399,7 @@ function repaintScores() {
 let titleWords = ['GALLERY', 'PRINTSHOP'];
 const TITLE_WORDS  = ['GALLERY', 'PRINTSHOP'];
 const WIN_WORDS    = ['YOU', 'WIN'];
+const WON_WORDS    = ['YOU WON!'];
 const OVER_WORDS   = ['GAME OVER :(', 'TRY AGAIN?'];
 const FINALE_WORDS = ['THE LAST', 'PRINT'];
 
@@ -6753,6 +6788,11 @@ function asilStop() {
 const END_FRY = 1150, END_FOLD = 820, END_GONE = 640;
 const END_RUN = END_FRY + END_FOLD + END_GONE;
 
+/* How long the win stands before the reel starts. Long enough to be sat
+   with; the two buttons are there the whole time for anybody who has
+   read it once already and does not want to wait through it again. */
+const END_HOLD = 15000, END_FADE = 760;
+
 const ENDING = { raf: 0, t0: 0, frames: [], src: null };
 
 /* Her picture is fetched the first time anybody gets this far, and a
@@ -6762,12 +6802,37 @@ const ENDING = { raf: 0, t0: 0, frames: [], src: null };
    own loop over whatever is there now, and draws from frames that were
    cleared underneath it. */
 let endGen = 0;
+let endGo = 0, endFade = 0;
 
-function endStop() {
-  endGen++;
+/* Her going out is finished, but the screen is not: the report is still
+   standing there waiting out its hold. This drops the loop and the
+   frames and leaves the hold alone. */
+function endRest() {
   if (ENDING.raf) { cancelAnimationFrame(ENDING.raf); ENDING.raf = 0; }
   ENDING.frames = [];
   ENDING.src = null;
+}
+
+/* Leaving the screen, which is the other thing entirely. */
+function endStop() {
+  endGen++;
+  endRest();
+  if (endGo) { clearTimeout(endGo); endGo = 0; }
+  if (endFade) { clearTimeout(endFade); endFade = 0; }
+}
+
+/* The report arrives, stands, and then stands down into the reel. Called
+   from the loop and from the case where there is no picture of her to
+   show, so the screen behaves the same either way. */
+function endSaid(face) {
+  if (!face || face.classList.contains('said')) return;
+  face.classList.add('said');
+  const mine = endGen;
+  endGo = setTimeout(() => {
+    if (mine !== endGen) return;
+    face.classList.add('going');
+    endFade = setTimeout(() => { if (mine === endGen) showFace('credits'); }, END_FADE);
+  }, END_HOLD);
 }
 
 async function endStart() {
@@ -6776,7 +6841,8 @@ async function endStart() {
   const cv = document.getElementById('endArt');
   const face = document.getElementById('overEnd');
   if (!cv || !face) return;
-  face.classList.remove('said');
+  face.classList.remove('said', 'going');
+  paintPlate(document.getElementById('endPlate'), WON_WORDS, true);
 
   /* Her own canvas is sized by the panel, like hers is. */
   const r = cv.getBoundingClientRect();
@@ -6787,7 +6853,7 @@ async function endStart() {
   try { ok = await asilLoad(); } catch (e) { ok = false; }
   if (mine !== endGen) return;                   // the screen moved on
   /* No picture of her is not a reason to withhold the report. */
-  if (!ok || !ASIL.base) { face.classList.add('said'); return; }
+  if (!ok || !ASIL.base) { endSaid(face); return; }
 
   /* Four frames of her coming apart, built once -- the same trick the
      level cards use, for the same reason.
@@ -6816,7 +6882,7 @@ function endTick(now) {
   const face = document.getElementById('overEnd');
   if (!cv || !face || face.hidden) { endStop(); return; }
 
-  if (!ENDING.src || ENDING.frames.length < 4) { endStop(); face.classList.add('said'); return; }
+  if (!ENDING.src || ENDING.frames.length < 4) { endRest(); endSaid(face); return; }
 
   /* The stamp a frame is handed is when that frame began, which can be
      before the clock was read to start this -- so the first tick can
@@ -6872,9 +6938,9 @@ function endTick(now) {
     cx.fillRect(w / 2 - half, h / 2 - 1.5, half * 2, 3);
   }
 
-  if (ms > END_FRY + END_FOLD + 120) face.classList.add('said');
+  if (ms > END_FRY + END_FOLD + 120) endSaid(face);
 
-  if (ms > END_RUN + 400) { endStop(); return; }
+  if (ms > END_RUN + 400) { endRest(); return; }
   ENDING.raf = requestAnimationFrame(endTick);
 }
 
