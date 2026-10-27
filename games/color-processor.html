@@ -8032,7 +8032,17 @@ function endTick(now) {
   }
   cx.globalAlpha = 1;
 
-  /* ---- and her, in the middle of it ---- */
+  /* ---- and her, in the middle of it ----
+     She is made of the code, not lit in front of it. A sphere of the
+     same characters churning inside a boundary, bright at the core and
+     falling off to the rim, with the face cut out of it as absence --
+     the eyes and the mouth are where the data is not. A glow alone was
+     a blob with a smiley on it; this is a thing with something going on
+     inside it.
+
+     The end is a compression, which is the word her own report uses.
+     The characters spiral inward and the sphere closes on a point
+     rather than dimming where it stands. */
   if (ms > END_RAIN * 0.55) {
     const born = Math.min(1, (ms - END_RAIN * 0.55) / 420);
 
@@ -8043,90 +8053,170 @@ function endTick(now) {
         + (Math.random() < gone * 0.3 ? -0.45 : 0);
 
     const dying = Math.max(0, 1 - Math.max(0, (ms - (END_RUN - END_DIE)) / END_DIE));
-    const R = Math.min(w, h) * 0.17 * (0.6 + 0.4 * born) * (0.86 + 0.14 * beat) * dying;
+    const pull = 1 - dying;                       // how far the compression has got
+    const R = Math.min(w, h) * 0.19 * (0.6 + 0.4 * born) * (0.9 + 0.1 * beat)
+            * (dying * dying * 0.75 + 0.25 * dying);
     const cxp = w / 2, cyp = h * 0.42;
 
     if (R > 0.5) {
+      /* The halo it sits in. */
       cx.globalCompositeOperation = 'screen';
-      const g = cx.createRadialGradient(cxp, cyp, 0, cxp, cyp, R * 2.6);
-      g.addColorStop(0, '#FFFFFF');
-      g.addColorStop(0.18, hue);
+      const g = cx.createRadialGradient(cxp, cyp, 0, cxp, cyp, R * 2.4);
+      g.addColorStop(0, hue);
+      g.addColorStop(0.3, hue);
       g.addColorStop(1, 'rgba(0,0,0,0)');
-      cx.globalAlpha = (0.55 + 0.45 * beat) * born;
+      cx.globalAlpha = (0.18 + 0.2 * beat) * born;
       cx.fillStyle = g;
       cx.fillRect(0, 0, w, h);
 
-      /* Not a flat disc. A core that falls off into its own halo, with
-         the surface broken up -- it should look like something boiling
-         rather than like a circle somebody filled in. */
-      cx.globalCompositeOperation = 'source-over';
-      cx.globalAlpha = born;
-      const body = cx.createRadialGradient(cxp, cyp - R * 0.2, R * 0.1, cxp, cyp, R);
-      body.addColorStop(0, '#FFFFFF');
-      body.addColorStop(0.35, hue);
-      body.addColorStop(1, 'rgba(0,0,0,0)');
+      /* ---- the face ----
+         Drooping lids over a wide lazy curve reads as stoned, not as
+         anything frightening -- so neither is here. Winning, she is
+         watchful rather than gleeful: level slits and a short smirk set
+         off to one side, which is a thing paying attention to you.
+         Failing, the mouth opens and the eyes go uneven, because alarm
+         is not a frown -- a frown is sad, and she is not sad.
+
+         Laid out once, because the churn has to keep out of exactly the
+         shapes that get cut, and two copies of this geometry would come
+         apart the first time either was touched. */
+      const flick = gone > 0.18 && ((ms / 90) | 0) % 2 === 0;
+      const grim = gone > 0.55 ? 1 : (flick ? 1 : 0);
+      const showFaceNow = ms > END_RAIN + 220 && dying > 0.2 && ((ms / 110) | 0) % 5 !== 3;
+
+      /* Round eyes and an open mouth came out as a cartoon being
+         startled. She is not startled, she is coming apart -- so the
+         features stay slits and lose their registration instead,
+         sliding out of line with each other the way the rest of this
+         game's damage does. */
+      const jit = (k) => {
+        if (!grim) return 0;
+        let v = ((((ms / 70) | 0) * 2654435761 + k * 40503) >>> 0) / 4294967296;
+        return (v - 0.5) * R * 0.3;
+      };
+      const eyeX = R * 0.36, eyeY = cyp - R * 0.14;
+      const EYE = grim
+        ? { rx: R * 0.31, ry: R * 0.085, tilt: 0.1, drop: R * 0.07 }
+        : { rx: R * 0.3,  ry: R * 0.06,  tilt: 0,   drop: 0 };
+      const mouthY = cyp + R * 0.3;
+      const mouthR = R * 0.3;
+      const skew = grim ? 0 : R * 0.1;
+
+      const hole = (px, py) => {
+        if (!showFaceNow) return 0;
+        let v = 0;
+        for (const sx of [-1, 1]) {
+          const ox = px - (cxp + sx * eyeX + jit(sx));
+          const oy = py - (eyeY + sx * EYE.drop);
+          const an = sx * EYE.tilt;
+          const rx = ox * Math.cos(an) + oy * Math.sin(an);
+          const ry = -ox * Math.sin(an) + oy * Math.cos(an);
+          const d = (rx * rx) / (EYE.rx * EYE.rx) + (ry * ry) / (EYE.ry * EYE.ry);
+          if (d < 1) v = Math.max(v, 1 - d * 0.5);
+        }
+        if (grim) {
+          /* A thin straight tear where the smirk was. */
+          const mx = px - cxp - jit(7), my = py - mouthY - R * 0.06;
+          if (Math.abs(my) < R * 0.075 && Math.abs(mx) < mouthR * 0.8) {
+            v = Math.max(v, 1 - Math.abs(my) / (R * 0.075) * 0.5);
+          }
+        } else {
+          const mx = px - cxp - skew, my = py - mouthY;
+          const md = Math.abs(Math.hypot(mx, my) - mouthR);
+          if (my > 0 && md < R * 0.055 && mx > -mouthR * 0.2 && mx < mouthR * 0.95) {
+            v = Math.max(v, 1 - md / (R * 0.055) * 0.5);
+          }
+        }
+        return v;
+      };
+
+      /* The churn. Points laid on a disc that reads as a sphere -- the
+         square root keeps them from piling up in the middle -- each
+         carrying a character of its own, each spiralling in as she
+         compresses. */
+      cx.globalCompositeOperation = 'screen';
+      const n = 150;
+      const sz = Math.max(8, R * 0.19);
+      cx.font = sz + 'px ui-monospace, Menlo, Consolas, monospace';
+      cx.textAlign = 'center';
+      cx.textBaseline = 'middle';
+      let q = 97;
+      for (let i = 0; i < n; i++) {
+        q = (q * 1664525 + 1013904223) >>> 0;
+        const seed = q;
+        const base = (seed >>> 8) / 16777216;
+        q = (q * 1664525 + 1013904223) >>> 0;
+        const rad = Math.sqrt((q >>> 8) / 16777216);
+        q = (q * 1664525 + 1013904223) >>> 0;
+        const spin = 0.4 + ((q >>> 8) / 16777216) * 1.5;
+
+        /* Inward as she goes, and faster the further out it started. */
+        const rr = rad * (1 - pull * (0.55 + rad * 0.45));
+        const an = base * Math.PI * 2 + ms / 1000 * spin * (1 + pull * 5)
+                 + pull * rad * 7;
+        const px = cxp + Math.cos(an) * rr * R;
+        const py = cyp + Math.sin(an) * rr * R * 0.98;
+
+        /* Bright in the middle, thin at the rim, and gone where the
+           face is. */
+        const depth = 1 - rr * 0.8;
+        const a2 = (0.25 + depth * 0.75) * born * (1 - hole(px, py));
+        if (a2 <= 0.02) continue;
+        cx.globalAlpha = a2;
+        cx.fillStyle = rr < 0.3 ? '#FFFFFF' : hue;
+        const ch = CODE_SET[((seed >>> 13) + ((ms / 90) | 0)) % CODE_SET.length];
+        cx.fillText(ch, px, py);
+      }
+
+      /* The core, which is what the face is read against. */
+      const core = cx.createRadialGradient(cxp, cyp, 0, cxp, cyp, R * 0.8);
+      core.addColorStop(0, '#FFFFFF');
+      core.addColorStop(0.45, hue);
+      core.addColorStop(1, 'rgba(0,0,0,0)');
+      cx.globalAlpha = (0.42 + 0.26 * beat) * born;
+      cx.fillStyle = core;
       cx.beginPath();
-      cx.arc(cxp, cyp, R, 0, Math.PI * 2);
-      cx.fillStyle = body;
+      cx.arc(cxp, cyp, R * 0.8, 0, Math.PI * 2);
       cx.fill();
 
-      cx.globalCompositeOperation = 'screen';
-      let ns = ((ms / 60) | 0) * 2654435761 >>> 0;
-      for (let i = 0; i < 26; i++) {
-        ns = (ns * 1664525 + 1013904223) >>> 0;
-        const an = (ns >>> 8) / 16777216 * Math.PI * 2;
-        ns = (ns * 1664525 + 1013904223) >>> 0;
-        const rr = Math.sqrt((ns >>> 8) / 16777216) * R * 0.92;
-        cx.globalAlpha = 0.1 * born;
-        cx.beginPath();
-        cx.arc(cxp + Math.cos(an) * rr, cyp + Math.sin(an) * rr, R * 0.17, 0, Math.PI * 2);
-        cx.fillStyle = '#fff';
-        cx.fill();
-      }
-      cx.globalCompositeOperation = 'source-over';
-
-      /* The face. Barely there, and only once the orb has settled --
-         the eyes first, the mouth a moment behind them. */
-      if (ms > END_RAIN + 260 && dying > 0.25) {
-        const look = Math.min(1, (ms - END_RAIN - 260) / 340);
-        /* Smiling while she is still winning; by the end she is not.
-           Flashes rather than a tween, so it reads as her losing hold
-           of it rather than as an expression changing. */
-        const flick = gone > 0.18 && ((ms / 90) | 0) % 2 === 0;
-        const grim = gone > 0.55 ? 1 : (flick ? 1 : 0);
-
-        /* Drawn once at full strength this was an emoji -- a solid
-           smiley sitting in a circle. It is thin slits and a thread of
-           a line now, laid at low alpha and dropped entirely on some
-           frames, so it surfaces out of the thing rather than being
-           painted on the front of it. Never quite resolving is the
-           whole effect. */
-        const here = ((ms / 110) | 0) % 5 !== 3;
-        if (here) {
-          cx.globalAlpha = look * (0.3 + 0.22 * gone) * dying;
-          cx.fillStyle = '#000';
-          const ew = R * 0.26, eh = R * (0.045 + 0.03 * grim);
-          for (const sx of [-1, 1]) {
-            cx.save();
-            cx.translate(cxp + sx * R * 0.33, cyp - R * 0.16);
-            cx.rotate(sx * (grim ? -0.3 : 0.16));
-            cx.beginPath();
-            cx.ellipse(0, 0, ew, eh, 0, 0, Math.PI * 2);
-            cx.fill();
-            cx.restore();
-          }
-
+      /* And the face taken back out of the core, so it is absence all
+         the way through rather than a shape laid on top. */
+      if (showFaceNow) {
+        cx.globalCompositeOperation = 'destination-out';
+        cx.globalAlpha = (0.6 + 0.25 * gone) * dying;
+        cx.fillStyle = '#000';
+        for (const sx of [-1, 1]) {
+          cx.save();
+          cx.translate(cxp + sx * eyeX + jit(sx), eyeY + sx * EYE.drop);
+          cx.rotate(sx * EYE.tilt);
+          cx.beginPath();
+          cx.ellipse(0, 0, EYE.rx, EYE.ry, 0, 0, Math.PI * 2);
+          cx.fill();
+          cx.restore();
+        }
+        if (grim) {
+          cx.beginPath();
+          cx.ellipse(cxp + jit(7), mouthY + R * 0.06, mouthR * 0.8, R * 0.075, 0, 0, Math.PI * 2);
+          cx.fill();
+        } else {
           cx.strokeStyle = '#000';
-          cx.lineWidth = Math.max(1, R * 0.045);
+          cx.lineWidth = Math.max(1, R * 0.055);
           cx.lineCap = 'round';
           cx.beginPath();
-          /* Up at the ends is a smile; down is the other thing. */
-          cx.arc(cxp, cyp + R * (grim ? 0.5 : 0.1), R * 0.34,
-                 grim ? Math.PI * 1.26 : Math.PI * 0.26,
-                 grim ? Math.PI * 1.74 : Math.PI * 0.74);
+          cx.arc(cxp + skew, mouthY, mouthR, Math.PI * 0.08, Math.PI * 0.62);
           cx.stroke();
         }
+        cx.globalCompositeOperation = 'screen';
       }
+
+      /* A rim, so it is a sphere and not a smudge. */
+      cx.globalCompositeOperation = 'screen';
+      cx.globalAlpha = (0.25 + 0.25 * beat) * born * dying;
+      cx.strokeStyle = hue;
+      cx.lineWidth = Math.max(1, R * 0.035);
+      cx.beginPath();
+      cx.arc(cxp, cyp, R * 0.97, 0, Math.PI * 2);
+      cx.stroke();
     }
 
     /* The last thing: one white flicker as the light goes. */
