@@ -1269,6 +1269,20 @@ button.go:not(.ghost):hover {
 
 .over-in { text-align: center; }
 
+/* The dot between the two halves of the headline stands back: it is
+   punctuation, not a third thing being said. */
+.over h2 .sep { color: var(--dim); font-weight: 400; padding: 0 2px; }
+.over h2 .ran { font-variant-numeric: tabular-nums; }
+
+/* Under par. Gold is what every other mark of it on this screen uses --
+   the ring on a level chip, the rule under a printed one -- so the time
+   joins them rather than inventing a color for itself. */
+.over h2 .starred {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 16px rgba(212,162,76,0.45);
+}
+
 .over h2 {
   margin: 0 0 14px;
   font-size: 1.25rem;
@@ -1316,6 +1330,11 @@ button.go:not(.ghost):hover {
    printed face -- because this is a label on the screen you are looking
    at, and the printed face belongs to things that went through the
    press. Out of the flow, so the rest stays down on the scrim. */
+/* Sized to hold one line now that it carries the time as well. At the
+   old fixed 1.05rem with wide tracking it wrapped on a 375px phone at
+   every time on the clock -- and a two line heading eats exactly the
+   painting this screen was cleared to show. The tracking gives first,
+   because tracking is what was costing the width. */
 .over.won h2 {
   position: absolute;
   top: 14px;
@@ -1331,6 +1350,14 @@ button.go:not(.ghost):hover {
 
 .over.won h2,
 .over.won p { text-shadow: 0 2px 14px rgba(0,0,0,0.95); }
+
+/* The well on a small phone is narrower than the screen -- the gauge
+   rail takes its cut -- so the heading has about 250px to say two
+   things in. Tracking goes first and the size after it: a tenth of an
+   em across twenty-odd uppercase letters is most of a word. */
+@media (max-width: 430px) {
+  .over.won h2 { font-size: 0.74rem; letter-spacing: 0.02em; }
+}
 
 /* what was printed */
 .plate-line {
@@ -8180,7 +8207,7 @@ function asilStop() {
    painting is whole on the screen behind this, and it stays whole.
 
    Green to red across the scene: green is what a virus is on a
-   computer screen and the colour this game has used for her all the
+   computer screen and the color this game has used for her all the
    way through, and red is what it turns when the thing is failing.
    The face is held back almost to nothing on purpose. Two slits and a
    curve that barely resolve out of the noise read as worse than a
@@ -8292,7 +8319,7 @@ function endTick(now) {
      just a virus, everything by the time the light goes. */
   const gone = Math.min(1, Math.max(0, (ms - END_RAIN - END_FACE) / (END_PANIC + END_DIE)));
   /* Held green and then turned, rather than crossfaded. A long stretch
-     of orange in the middle looks like a third colour on purpose; a
+     of orange in the middle looks like a third color on purpose; a
      failure should arrive, not be eased into. */
   const turn = gone < 0.3 ? 0 : Math.min(1, (gone - 0.3) / 0.25);
   const hue = mixRGB(EYE_GREEN, EYE_RED, turn);
@@ -9725,7 +9752,26 @@ function finish(won) {
   }
 
   document.getElementById('overTitle').hidden = false;
-  document.getElementById('overTitle').textContent = won ? 'Print Complete' : 'Paper jam';
+  /* The headline carries the time. The readout above the board has it
+     too, but that one is a clock that has been running and this is the
+     number the run finished on -- a different fact in the same digits,
+     and the only place it is said as a result rather than as a reading.
+
+     A star on it when the run came in under par. Par is the level's own
+     target, so it only exists in the series: a practice print gets its
+     time and nothing to measure it against. The star rides the time
+     rather than replacing the dot, because what was beaten is the
+     clock, not the print. */
+  const title = document.getElementById('overTitle');
+  if (!won) {
+    title.textContent = 'Paper jam';
+  } else {
+    const par = campOn ? parOf(campAt + 1) : 0;
+    const under = par && ran <= par * 1000;
+    title.innerHTML = 'Print Complete <span class="sep">&middot;</span> '
+      + (under ? '<span class="starred">&#9733;&nbsp;' + clockSecs(ran / 1000) + '</span>'
+               : '<span class="ran">' + clockSecs(ran / 1000) + '</span>');
+  }
   /* A finished print says what it is and leaves it there. The time, the
      points, the chain and the plate count are all on the readout above
      the board and have been the whole run -- repeating them under the
