@@ -3493,11 +3493,12 @@ nav.menu {
    ============================================================ */
 
 let music = null;
+let musicJob = null;                  // the import, while it is in flight
 
 async function wantSound(next) {
   if (!music) {
-    try { music = await import('/games/organ.js'); }
-    catch (e) { return false; }
+    try { music = await (musicJob || (musicJob = import('/games/organ.js'))); }
+    catch (e) { musicJob = null; return false; }
   }
   music.setOn(next);
   if (next && !over) music.startMusic();
@@ -3510,6 +3511,19 @@ async function wantSound(next) {
    thrown error in the middle of an animation. */
 const sayMusic = (fn, ...args) => {
   if (music && music.isOn() && typeof music[fn] === 'function') music[fn](...args);
+};
+
+/* A cue asked for inside the first half second of the page is a cue
+   lost: sayMusic goes looking for the module and the import has not
+   landed yet. Everything in the game is minutes past that point -- the
+   exception is a link that opens straight onto a scene, which is where
+   the two sounds that open the ending were going missing. These wait
+   for the module instead of firing into the gap. Late is a scene whose
+   sound arrives a moment after its picture; dropped is a bug. */
+const sayMusicSoon = (fn, ...args) => {
+  if (music) { sayMusic(fn, ...args); return; }
+  if (!musicJob) return;              // nobody has asked for sound at all
+  musicJob.then(() => sayMusic(fn, ...args)).catch(() => {});
 };
 
 /* ---- which music belongs to what is on screen ----
@@ -7994,9 +8008,9 @@ function endStart() {
 
   if (mine !== endGen) return;
   ENDING.t0 = performance.now();
-  sayMusic('powerDown');
+  sayMusicSoon('powerDown');
   /* And the room she is in, which outlasts her by fifteen seconds. */
-  sayMusic('endRoom');
+  sayMusicSoon('endRoom');
   ENDING.raf = requestAnimationFrame(endTick);
 }
 
@@ -10248,6 +10262,22 @@ function openEnding() {
   bossSeen = true; bossSpoken = true;
   vicSeen = true; vicSpoken = true;
   showFace('end');
+
+  /* No browser will make a sound before somebody has touched the page,
+     so a link that opens straight onto the ending opens it silent --
+     and the scene is three seconds long, so by the time a tap has armed
+     the sound the part worth hearing is over. One tap arms it and runs
+     the scene again from the top, which is the only reason the link is
+     worth having. A player never meets this: they have been pressing
+     buttons for twenty-one levels by the time she dies. */
+  const again = async () => {
+    document.removeEventListener('pointerdown', again);
+    document.removeEventListener('keydown', again);
+    try { await setSound(true); } catch (e) { /* refused; the picture still runs */ }
+    if (!elEnd().hidden) endStart();
+  };
+  document.addEventListener('pointerdown', again);
+  document.addEventListener('keydown', again);
 }
 
 function openTrial() {
