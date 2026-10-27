@@ -2038,6 +2038,39 @@ ol.board .sc {
   color: #171308;
 }
 
+.board-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 7px;
+}
+
+.board-pick span {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-pick button {
+  flex: none;
+  width: 26px; height: 26px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #13161D;
+  color: var(--accent);
+  font-size: 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.board-pick button:disabled { opacity: 0.35; cursor: default; }
+
 .board-head {
   display: flex;
   gap: 8px;
@@ -3242,7 +3275,15 @@ nav.menu {
                        until there is a party to rank. -->
                   <div class="board-tabs" id="boardTabs" hidden>
                     <button type="button" data-board="campaign" class="on">Gallery</button>
-                    <button type="button" data-board="endless">Endless</button>
+                    <button type="button" data-board="level">Level</button>
+                    <button type="button" data-board="endless" id="boardTabParty">Endless</button>
+                  </div>
+                  <!-- Which level's times are up. Only the level tab has
+                       one to choose, so it travels with that tab. -->
+                  <div class="board-pick" id="boardPick" hidden>
+                    <button type="button" id="boardPrev" aria-label="Previous level">&lsaquo;</button>
+                    <span id="boardPickName"></span>
+                    <button type="button" id="boardNext" aria-label="Next level">&rsaquo;</button>
                   </div>
                   <div class="board-head" id="cpBoardHead" hidden>
                     <span class="sp"></span><b class="h-lv">Lv</b><b class="h-sc">Time</b>
@@ -6592,6 +6633,18 @@ function boardRow(r, mine) {
     + '</li>';
 }
 
+/* One level's row. No level column -- the whole table is one level, and
+   repeating it down twenty rows says nothing. */
+function levelRow(r, mine) {
+  const cls = [r.place <= 3 ? 'p' + r.place : '', mine ? 'me' : ''].filter(Boolean).join(' ');
+  return '<li' + (cls ? ' class="' + cls + '"' : '') + '>'
+    + medal(r.place)
+    + boardFace(r)
+    + '<span class="nm">' + escHTML(r.display_name) + '</span>'
+    + '<span class="sc">' + clockSecs(r.seconds) + '</span>'
+    + '</li>';
+}
+
 const boardSays = (what) => '<li class="none"><span class="nm">' + what + '</span></li>';
 
 /* Fetched the first time somebody turns to the page rather than on every
@@ -6599,20 +6652,56 @@ const boardSays = (what) => '<li class="none"><span class="nm">' + what + '</spa
    can have changed it. */
 /* Which of the two tables is up. */
 let boardKind = 'campaign';
+/* Which level the level tab is showing, 1-based. Null until it is first
+   opened, when it starts on the one they are standing on -- the level
+   somebody wants to compare is almost always the one they just played. */
+let boardLv = null;
+
+function boardLvAt() {
+  const list = campList();
+  if (!list.length) return null;
+  if (boardLv === null) boardLv = Math.min(campAt + 1, list.length);
+  boardLv = Math.max(1, Math.min(boardLv, list.length));
+  return boardLv;
+}
+
+function paintBoardPick() {
+  const row = document.getElementById('boardPick');
+  if (!row) return;
+  row.hidden = boardKind !== 'level';
+  if (boardKind !== 'level') return;
+  const list = campList();
+  const n = boardLvAt();
+  const e = n ? list[n - 1] : null;
+  const name = document.getElementById('boardPickName');
+  if (name) name.textContent = e && e.art ? n + '. ' + e.art.title : 'Level ' + n;
+  const prev = document.getElementById('boardPrev');
+  const next = document.getElementById('boardNext');
+  if (prev) prev.disabled = n <= 1;
+  if (next) next.disabled = n >= list.length;
+}
 
 function paintBoardTabs() {
   const tabs = document.getElementById('boardTabs');
   if (!tabs) return;
-  tabs.hidden = !discoWon();                  // no party, no second table
+  /* The row used to be the party tab alone, so it hid until there was a
+     party. There is always a level to compare, so it stands either way
+     and the party tab is what comes and goes. */
+  tabs.hidden = false;
+  const party = document.getElementById('boardTabParty');
+  if (party) party.hidden = !discoWon();
+  if (boardKind === 'endless' && !discoWon()) boardKind = 'campaign';
   for (const b of tabs.querySelectorAll('[data-board]')) {
     b.classList.toggle('on', b.dataset.board === boardKind);
   }
   const head = document.getElementById('cpBoardHead');
   if (head) {
     const lv = head.querySelector('.h-lv'), sc = head.querySelector('.h-sc');
-    if (lv) lv.textContent = boardKind === 'endless' ? 'Chain' : 'Lv';
+    /* One level has no level column: the heading above says which. */
+    if (lv) lv.textContent = boardKind === 'endless' ? 'Chain' : (boardKind === 'level' ? '' : 'Lv');
     if (sc) sc.textContent = boardKind === 'endless' ? 'Points' : 'Time';
   }
+  paintBoardPick();
 }
 
 async function loadBoard() {
@@ -6627,11 +6716,25 @@ async function loadBoard() {
   if (!window.CPBoard) { ol.innerHTML = boardSays('Board unavailable right now.'); boardLoaded = false; return; }
 
   const party = boardKind === 'endless';
+  const oneLv = boardKind === 'level';
+  const lvNow = oneLv ? boardLvAt() : null;
   let rows = null, me = null;
   try {
-    rows = party ? await window.CPBoard.discoBoard(10) : await window.CPBoard.board(10);
-    me = party ? await window.CPBoard.discoStanding() : await window.CPBoard.standing();
+    if (oneLv) {
+      rows = await window.CPBoard.levelBoard(lvNow, 10);
+      me = await window.CPBoard.levelStanding(lvNow);
+    } else if (party) {
+      rows = await window.CPBoard.discoBoard(10);
+      me = await window.CPBoard.discoStanding();
+    } else {
+      rows = await window.CPBoard.board(10);
+      me = await window.CPBoard.standing();
+    }
   } catch (e) { rows = null; }
+
+  /* Stepped to another level while this was in flight: that answer is
+     for a table nobody is looking at any more. */
+  if (oneLv && boardLv !== lvNow) return;
 
   if (!ol.isConnected) return;
 
@@ -6642,12 +6745,13 @@ async function loadBoard() {
   if (!rows.length) {
     showHead(false);
     ol.innerHTML = boardSays(party ? 'Nobody has been to the party yet.'
+                           : oneLv ? 'Nobody has printed this one yet.'
                                    : 'Nobody has printed a level yet.');
     return;
   }
 
   showHead(true);
-  const row = party ? discoRow : boardRow;
+  const row = party ? discoRow : (oneLv ? levelRow : boardRow);
   let html = rows.map((r) => row(r, !!me && r.place === me.place)).join('');
 
   // Their own place, when it sits below the last row on display.
@@ -6981,6 +7085,25 @@ document.getElementById('boardTabs').addEventListener('click', (e) => {
   if (ol) ol.innerHTML = boardSays('Loading\u2026');
   loadBoard();
 });
+
+/* Stepping between levels. Each step is a fetch, so the list says it is
+   working rather than showing the level before it while the next one
+   arrives. */
+function boardStep(by) {
+  const list = campList();
+  const was = boardLvAt();
+  const next = Math.max(1, Math.min(was + by, list.length));
+  if (next === was) return;
+  boardLv = next;
+  boardLoaded = false;
+  paintBoardPick();
+  const ol = document.getElementById('cpBoard');
+  if (ol) ol.innerHTML = boardSays('Loading\u2026');
+  loadBoard();
+}
+
+document.getElementById('boardPrev').addEventListener('click', () => boardStep(-1));
+document.getElementById('boardNext').addEventListener('click', () => boardStep(1));
 
 document.getElementById('rankBtn').addEventListener('click', () => {
   const up = !elOver.hidden && !elRules().hidden;

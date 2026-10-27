@@ -345,11 +345,7 @@ export async function highMe(game, variant) {
    slot are the same job, and keying on art would split every board
    across rotations so that a time ranked only against whoever happened
    to be dealt the same picture.
-
-   NOTE: club_level_board and club_level_me are not in the database yet.
-   The migration that creates them was cancelled twice. Until it lands
-   these return null, which the board reads as "unavailable" -- nothing
-   calls them yet either way. */
+ */
 export async function levelBoard(game, level, limit) {
   const { data, error } = await db.rpc('club_level_board', {
     p_game: game,
