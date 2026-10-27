@@ -2267,15 +2267,26 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   --lvw: calc((100% - 4 * var(--lvgap)) / 5);
 }
 
+/* The stage names were small grey caps in the body face, which made six
+   chapters read as one long list with faint dividers. Saira Stencil One
+   is already loaded for the press furniture and is the right register
+   here -- a stencilled crate marking, not the neon the party sign uses.
+   Stencil faces carry their own rhythm, so the heavy tracking comes off
+   as the size goes up. */
 .levelsface .lv-room-name {
-  margin: 0 0 3px;
-  font-size: 0.6rem;
-  line-height: 1;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  margin: 0 0 5px;
+  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.05;
+  font-weight: 400;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--dim);
+  color: var(--muted);
   text-align: center;
+}
+
+@media (max-width: 430px) {
+  .levelsface .lv-room-name { font-size: 0.78rem; }
 }
 
 /* A room is one line of chips, always. The count comes from the room, and
@@ -3981,7 +3992,13 @@ const parOf = (lv) => PAR[lv - 1] || 0;
 /* The best a level has been printed in, kept on the machine so it works
    signed out and answers instantly. The board keeps the real record. */
 let bests = {};
-try { bests = JSON.parse(localStorage.getItem('cp-best') || '{}') || {}; } catch (e) { bests = {}; }
+/* Keyed by level number, so it only means anything against the layout
+   it was set on. The series went from twenty levels to thirty and every
+   number after the third now points at a different painting, so the key
+   carries the layout with it: an old record is simply not found rather
+   than being read as a time on a level nobody played. */
+const BEST_KEY = 'cp-best-30';
+try { bests = JSON.parse(localStorage.getItem(BEST_KEY) || '{}') || {}; } catch (e) { bests = {}; }
 
 const bestOf = (lv) => bests[lv] || 0;
 
@@ -3990,7 +4007,7 @@ function keepBest(lv, ms) {
   const had = bests[lv] || 0;
   if (had && had <= ms) return;
   bests[lv] = ms;
-  try { localStorage.setItem('cp-best', JSON.stringify(bests)); } catch (e) {}
+  try { localStorage.setItem(BEST_KEY, JSON.stringify(bests)); } catch (e) {}
 }
 
 /* Beat the par time on that level. The browser remembers the times it
@@ -9939,6 +9956,18 @@ function record(ran) {
    like itself in both places. The picture is a background image rather
    than an img, so a broken or blocked one leaves the letter standing
    instead of a torn page icon. */
+/* Called when somebody signs out: drop what this browser remembers of
+   their run so the next visitor starts where a new visitor starts. */
+window.CPForget = function () {
+  bests = {};
+  try { localStorage.removeItem(BEST_KEY); } catch (e) {}
+  try { localStorage.removeItem(SPOT_KEY); } catch (e) {}
+  campDone = [];
+  campAt = campFind();
+  buildLevels();
+  buttons();
+};
+
 window.CPMember = function (m) {
   const inBtn = document.getElementById('signIn');
   const meBox = document.getElementById('meBox');
@@ -10839,7 +10868,15 @@ else if (TRY > 0) openTrial();
   };
 
   onMember(async (m) => {
+    const wasIn = !!member;
     member = m;
+    /* Progress comes from the account, but the browser keeps its own
+       record of times so the gold par rings work signed out. Left alone,
+       signing out handed the next person at this browser a stranger's
+       rings on levels they have never opened -- and made it impossible
+       to see what a new visitor sees without clearing site data. The
+       account's own times are on the board and come back on sign-in. */
+    if (wasIn && !m && window.CPForget) window.CPForget();
     if (window.CPMember) window.CPMember(m);
     let p = null;
     try { p = m ? await window.CPBoard.progress() : null; } catch (e) { p = null; }
