@@ -9550,7 +9550,14 @@ async function galHaunt(level, total, W, H) {
   const bursts = 1 + Math.floor(t * 3.2);
   const hold = 70 + t * 620;
   const amount = 0.16 + t * 0.95;
-  const FACE_FROM = 0.68;
+  /* A hair under two thirds, so the first level of the final third is
+     the first card she comes through. levelSetup() splits the series in
+     thirds too -- that same level is where the sixth ink arrives -- so
+     the new chapter, the new ink set and her first flicker land
+     together rather than three prints apart. Tied to the fraction
+     rather than a level number, so it still lands right if the series
+     changes length again. */
+  const FACE_FROM = 2 / 3 - 0.004;
   const shows = t > FACE_FROM;
 
   /* How far into the change she is on this card: nothing on the first
