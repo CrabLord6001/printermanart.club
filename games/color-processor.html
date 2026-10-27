@@ -547,14 +547,22 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    and the steps are hard cuts rather than fades because a glitch does not
    ease. */
 /* A virus wears its own ink: it matches on colour like any other drop,
-   so it has to look like one. What marks it is the ring and the number
-   counting down inside it. The ring is the shop's warning red, not an
-   ink, so it never reads as a seventh colour to match. */
+   so it has to look like one. What marks it is the light on top of it.
+
+   A red outline on its own just read as red. This is a beacon: a lamp
+   sweeping round inside the cell, a hot core under the number, and a
+   halo that spills past the edge onto whatever it is sitting next to.
+   The sweep is a conic gradient turned by a transform, so it costs the
+   compositor a rotation and nothing else. */
 .cell.virus, .nextlist .dot.virus {
   position: relative;
-  box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 6px rgba(232,57,79,0.35);
+  overflow: visible;
   display: grid;
   place-items: center;
+  box-shadow: inset 0 0 0 2.5px #FF2A44,
+              0 0 14px 2px rgba(255,42,68,0.55),
+              0 0 34px 6px rgba(255,0,60,0.22);
+  animation: bugLamp 2.4s ease-in-out infinite;
   font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
   font-weight: 400;
   line-height: 1;
@@ -562,40 +570,94 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   text-shadow: 0 1px 2px rgba(0,0,0,0.85), 0 0 10px rgba(0,0,0,0.5);
 }
 
-/* The last two. The ring pulses once a drop and the cell twitches, which
-   is the whole warning somebody gets -- it has to arrive with enough
-   left on the count to do something about it. */
-.cell.virus.soon {
-  animation: bug 0.9s ease-in-out infinite;
-  color: #FFF;
-  text-shadow: 0 0 6px rgba(232,57,79,0.9), 0 1px 0 rgba(0,0,0,0.6);
+/* The lamp itself, turning. Two lobes opposite each other, the way the
+   mirror in a beacon throws light both ways as it goes round. */
+.cell.virus::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    rgba(255,42,68,0.92) 0deg, rgba(255,42,68,0) 44deg,
+    rgba(255,42,68,0) 180deg, rgba(255,42,68,0.92) 180deg,
+    rgba(255,42,68,0) 224deg, rgba(255,42,68,0) 360deg);
+  animation: bugSweep 1.5s linear infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* The bulb under the number. */
+.cell.virus::after {
+  content: '';
+  position: absolute;
+  width: 46%;
+  height: 46%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFE9ED 0%, #FF3350 55%, rgba(255,0,60,0) 100%);
+  animation: bugBulb 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes bugSweep { to { transform: rotate(360deg); } }
+
+@keyframes bugBulb {
+  0%, 100% { opacity: 0.35; transform: scale(0.82); }
+  50%      { opacity: 0.95; transform: scale(1.06); }
+}
+
+/* The halo breathing, so a virus is doing something even when the lamp
+   is pointing away from you. */
+@keyframes bugLamp {
+  0%, 100% { box-shadow: inset 0 0 0 2.5px #FF2A44,
+                         0 0 14px 2px rgba(255,42,68,0.55),
+                         0 0 34px 6px rgba(255,0,60,0.22); }
+  50%      { box-shadow: inset 0 0 0 3px #FF4D63,
+                         0 0 22px 4px rgba(255,42,68,0.8),
+                         0 0 48px 10px rgba(255,0,60,0.34); }
+}
+
+/* The last three. Everything speeds up and the cell starts to shake --
+   this is the whole warning somebody gets, so it has to arrive with
+   enough left on the count to act on. */
+.cell.virus.soon { animation: bugLamp 0.5s ease-in-out infinite, bugShake 0.42s steps(2, end) infinite; }
+.cell.virus.soon::before { animation-duration: 0.42s; }
+.cell.virus.soon::after  { animation-duration: 0.42s; }
+
+@keyframes bugShake {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(0.9px, -0.7px); }
 }
 
 /* The count has to read on whatever it landed on. Three of the six inks
    are dark enough to take white type and three are not, so the pale ones
-   get it the other way round. This sits after the pulse so it still
-   holds in the last two drops. */
+   get it the other way round. The number sits over the lamp, which is
+   why it is raised out of the stacking order here. */
+.cell.virus { }
 .cell.virus.y, .cell.virus.lc, .cell.virus.lm {
   color: #190B02;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6), 0 0 8px rgba(255,255,255,0.4);
 }
 
-@keyframes bug {
-  0%, 100% { box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 6px rgba(232,57,79,0.35);
-             transform: none; }
-  45%      { box-shadow: inset 0 0 0 3px #FF003C, 0 0 16px rgba(255,0,60,0.95);
-             transform: translate(0.7px, -0.6px); }
-  60%      { box-shadow: inset 0 0 0 3px #00F0FF, 0 0 14px rgba(0,240,255,0.7);
-             transform: translate(-0.7px, 0.5px); }
-}
+/* In the rail a virus is a mark rather than a warning: the lamp would be
+   turning next to four drops that are not going anywhere. */
+.nextlist .dot.virus { animation: none; }
+.nextlist .dot.virus::before, .nextlist .dot.virus::after { display: none; }
 
-
-/* A cell on its way out stops performing, so the white flash reads. */
+/* A cell on its way out stops performing, so the flash reads. */
 .cell.hit { animation: none; }
-.cell.hit::after { display: none; }
+.cell.hit::before, .cell.hit::after { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .cell.mag, .nextlist .dot.mag, .cell.virus, .nextlist .dot.virus { animation: none; }
+  /* The lamp stops turning too, and the halo settles at its brightest
+     so a virus is still the loudest thing on the board. */
+  .cell.virus::before, .cell.virus::after { animation: none; }
+  .cell.virus::before { opacity: 0.5; }
+  .cell.virus {
+    box-shadow: inset 0 0 0 3px #FF4D63,
+                0 0 22px 4px rgba(255,42,68,0.8),
+                0 0 48px 10px rgba(255,0,60,0.34);
+  }
   .cell.mag::after, .nextlist .dot.mag::after { animation: none; transform: translateX(-130%); }
   .cell.mag, .nextlist .dot.mag { box-shadow: inset 0 0 0 3px #D4A24C, 0 0 5px rgba(212,162,76,0.45); }
   .cell.virus, .nextlist .dot.virus { box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 5px rgba(232,57,79,0.3); }
@@ -3962,7 +4024,7 @@ function paintTubes() {
 function classFor(code) {
   if (!code) return 'cell';
   if (isBug(code)) return 'cell ' + inkOf(code) + ' virus'
-                        + (bugLeft(code) <= 2 ? ' soon' : '');
+                        + (bugLeft(code) <= 3 ? ' soon' : '');
   return 'cell ' + inkOf(code) + (isMag(code) ? ' mag' : '');
 }
 
@@ -4116,7 +4178,11 @@ function spawn() {
    ============================================================ */
 
 const ZAP_RED = '#FF003C', ZAP_CYAN = '#00F0FF', ZAP_GOLD = '#FCEE0A';
-const ZAP_MS = 660;
+
+/* Long enough to watch. At two thirds of a second all anybody saw was a
+   white flicker: the flash was over before the eye got there and the
+   dots were gone before the board stopped moving. */
+const ZAP_MS = 1150;
 
 let zapBits = [], zapRings = [], zapFrom = 0, zapRaf = 0;
 
@@ -4153,7 +4219,7 @@ function zapBurst(blown) {
 
     zapRings.push({ x: cx, y: cy, r0: r.width * 0.3, r1: r.width * 2.6 });
 
-    const n = 26;
+    const n = 40;
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + Math.random() * 0.4;
       const sp = (0.5 + Math.random() * 1.6) * (r.width / 44) * 170;
@@ -4163,7 +4229,7 @@ function zapBurst(blown) {
         x: cx, y: cy,
         vx: Math.cos(a) * sp,
         vy: Math.sin(a) * sp - 40,
-        rad: (1.6 + Math.random() * 3.4) * Math.max(0.6, r.width / 44),
+        rad: (2.2 + Math.random() * 4.6) * Math.max(0.6, r.width / 44),
         col: roll < 0.12 ? ZAP_RED : (roll < 0.2 ? ZAP_CYAN : (roll < 0.26 ? ZAP_GOLD : ink)),
         spin: Math.random() * 6
       });
@@ -4185,37 +4251,62 @@ function zapDraw(now) {
   const t = Math.min(1, (now - zapFrom) / ZAP_MS);
   const dt = 1 / 60;
 
-  /* The flash, and the screen slipping. Both are over in the first
-     fifth of it -- long enough to see, short enough that it reads as a
-     fault rather than an effect. */
-  if (t < 0.22) {
-    const k = 1 - t / 0.22;
+  /* The hit on the print. A white flash was the wrong colour and the
+     wrong length -- it read as the screen blinking rather than as the
+     picture being hurt. This is the hot red laid over the whole well,
+     hard for a tenth of a second and then bleeding off across half of
+     it, so the painting goes the colour of the thing that attacked it
+     and comes back. */
+  if (t < 0.5) {
+    const k = 1 - t / 0.5;
+    const hit = t < 0.09 ? 1 : k;
+
     cx2.globalCompositeOperation = 'screen';
-    cx2.fillStyle = 'rgba(255,255,255,' + (0.30 * k).toFixed(3) + ')';
+    cx2.fillStyle = ZAP_RED;
+    cx2.globalAlpha = 0.62 * hit * hit;
     cx2.fillRect(0, 0, w, h);
 
-    for (let i = 0; i < 3; i++) {
-      const y = ((i * 37 + Math.floor(now / 30) * 11) % h);
-      const band = h * 0.05;
-      const off = (Math.random() - 0.5) * 26 * k;
-      cx2.fillStyle = (i % 2 ? ZAP_CYAN : ZAP_RED);
-      cx2.globalAlpha = 0.20 * k;
-      cx2.fillRect(off, y, w, band);
-      cx2.globalAlpha = 1;
+    // a touch of white only at the very front of it, as the strike
+    if (t < 0.07) {
+      cx2.fillStyle = '#FFF';
+      cx2.globalAlpha = 0.34 * (1 - t / 0.07);
+      cx2.fillRect(0, 0, w, h);
     }
+    cx2.globalAlpha = 1;
+  }
+
+  /* The screen slipping: rows of the well shoved sideways, red against
+     cyan, the way a press tears when the plates lose register. Longer
+     and deeper than it was, and they move each frame. */
+  if (t < 0.34) {
+    const k = 1 - t / 0.34;
+    cx2.globalCompositeOperation = 'screen';
+    for (let i = 0; i < 5; i++) {
+      const y = (i * 0.19 + (now / 900) % 1) * h % h;
+      const band = h * (0.03 + Math.random() * 0.05);
+      const off = (Math.random() - 0.5) * 52 * k;
+      cx2.fillStyle = (i % 2 ? ZAP_CYAN : ZAP_RED);
+      cx2.globalAlpha = 0.34 * k;
+      cx2.fillRect(off, y, w, band);
+    }
+    cx2.globalAlpha = 1;
   }
 
   cx2.globalCompositeOperation = 'source-over';
 
+  /* Two rings out of every cell, the second a beat behind the first, so
+     it reads as something going off rather than a circle growing. */
   for (const r of zapRings) {
-    const k = 1 - t;
-    if (k <= 0) continue;
-    cx2.beginPath();
-    cx2.arc(r.x, r.y, r.r0 + (r.r1 - r.r0) * t, 0, Math.PI * 2);
-    cx2.strokeStyle = ZAP_RED;
-    cx2.globalAlpha = 0.75 * k * k;
-    cx2.lineWidth = 2.5 * k + 0.5;
-    cx2.stroke();
+    for (const lag of [0, 0.14]) {
+      const u = (t - lag) / 0.55;
+      if (u <= 0 || u >= 1) continue;
+      cx2.beginPath();
+      cx2.arc(r.x, r.y, r.r0 + (r.r1 - r.r0) * u, 0, Math.PI * 2);
+      cx2.strokeStyle = lag ? ZAP_CYAN : ZAP_RED;
+      cx2.globalAlpha = 0.85 * (1 - u) * (1 - u);
+      cx2.lineWidth = 3.5 * (1 - u) + 0.6;
+      cx2.stroke();
+    }
     cx2.globalAlpha = 1;
   }
 
@@ -4223,8 +4314,8 @@ function zapDraw(now) {
   for (const b of zapBits) {
     b.x += b.vx * dt;
     b.y += b.vy * dt;
-    b.vy += 620 * dt;
-    b.vx *= 0.985;
+    b.vy += 430 * dt;
+    b.vx *= 0.99;
     const k = 1 - t;
     cx2.beginPath();
     cx2.arc(b.x, b.y, b.rad * (0.5 + 0.5 * k), 0, Math.PI * 2);
@@ -4350,13 +4441,16 @@ async function resolve() {
     for (const g of blown) tiles[g.at].className = 'cell hit';
     zapBurst(blown);
     sayMusic('zap');
-    await wait(120);
+    show(blown.length + (blown.length === 1 ? ' virus' : ' viruses') + ' went off');
+    /* The board holds while the print takes it. Settling straight away
+       put the drops back over the top of the burst and all that was
+       left of it was a flicker. */
+    await wait(300);
     settle(well);
     paint();
     layPlates();
     paintTubes();
-    show(blown.length + (blown.length === 1 ? ' virus' : ' viruses') + ' went off');
-    await wait(150);
+    await wait(380);
   }
 
   /* The pull used to happen between frames, which meant nobody ever saw it
