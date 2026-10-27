@@ -9938,6 +9938,22 @@ if (!soundWanted()) {
   sndBtn.setAttribute('aria-label', 'Turn sound on');
 }
 
+/* Tried the moment the page opens, because a game that comes up silent
+   reads as a game with no music rather than as a game waiting for
+   permission. Whether it actually sounds is the browser's call and not
+   ours: nothing may make noise before somebody has touched the page.
+   But a browser that has decided this site is one you use -- Chrome
+   keeps a running score of that, and Safari lets you say so per site --
+   will allow it, and until now the game never asked.
+
+   If it is refused, nothing is lost: the context comes up suspended,
+   arm() re-asserts the cue the moment it is resumed, and the handler
+   below is still waiting for the first touch. */
+(function openLoud() {
+  if (!soundWanted()) return;
+  setSound(true).catch(() => { /* refused, and the touch below covers it */ });
+})();
+
 (function armOnFirstTouch() {
   if (!soundWanted()) return;
   const go = async (e) => {

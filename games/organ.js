@@ -731,7 +731,15 @@ export function arm() {
     build();
     cueBuild();
   }
-  if (ctx.state === 'suspended') ctx.resume();
+  /* Resuming is a promise, and it is the moment the context stops being
+     silent. Anything the page asked for while it was suspended -- which
+     is everything, if the page tried to open with music on -- has to be
+     re-asserted here, or the cue sits there wanted and never started. */
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(() => {
+      if (on && cueWant && cueWant !== cueHave) setCue(cueWant);
+    }).catch(() => { /* still not allowed; the next gesture tries again */ });
+  }
 }
 
 export function isOn() { return on; }
