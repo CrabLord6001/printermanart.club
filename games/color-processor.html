@@ -537,26 +537,47 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    never a flat disc, so it cannot be taken for magenta however red it goes,
    and the steps are hard cuts rather than fades because a glitch does not
    ease. */
+/* A virus wears its own ink: it matches on colour like any other drop,
+   so it has to look like one. What marks it is the ring and the number
+   counting down inside it. The ring is the shop's warning red, not an
+   ink, so it never reads as a seventh colour to match. */
 .cell.virus, .nextlist .dot.virus {
-  background:
-    repeating-linear-gradient(90deg, rgba(232,57,79,0.20) 0 1px, transparent 1px 4px),
-    repeating-linear-gradient(0deg,  rgba(34,184,230,0.13) 0 1px, transparent 1px 3px),
-    #12161D;
-  animation: bug 2.2s steps(1, end) infinite;
+  position: relative;
+  box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 6px rgba(232,57,79,0.35);
+  display: grid;
+  place-items: center;
+  font: 700 clamp(9px, 46%, 20px)/1 'Poppins', system-ui, sans-serif;
+  color: #FFF;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+/* The last two. The ring pulses once a drop and the cell twitches, which
+   is the whole warning somebody gets -- it has to arrive with enough
+   left on the count to do something about it. */
+.cell.virus.soon {
+  animation: bug 0.9s ease-in-out infinite;
+  color: #FFF;
+  text-shadow: 0 0 6px rgba(232,57,79,0.9), 0 1px 0 rgba(0,0,0,0.6);
+}
+
+/* The count has to read on whatever it landed on. Three of the six inks
+   are dark enough to take white type and three are not, so the pale ones
+   get it the other way round. This sits after the pulse so it still
+   holds in the last two drops. */
+.cell.virus.y, .cell.virus.lc, .cell.virus.lm {
+  color: #190B02;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }
 
 @keyframes bug {
-  0%,  40%  { box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 5px rgba(232,57,79,0.3);
-              transform: none; }
-  44%       { box-shadow: inset 0 0 0 2.5px #22B8E6, 0 0 12px rgba(232,57,79,0.65);
-              transform: translate(0.9px, -0.7px); }
-  48%       { box-shadow: inset 0 0 0 2.5px #FF6B7D, 0 0 16px rgba(232,57,79,0.9);
-              transform: translate(-0.9px, 0.6px); }
-  52%       { box-shadow: inset 0 0 0 2.5px #22B8E6, 0 0 9px rgba(34,184,230,0.55);
-              transform: translate(0.5px, 0.5px); }
-  56%, 100% { box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 5px rgba(232,57,79,0.3);
-              transform: none; }
+  0%, 100% { box-shadow: inset 0 0 0 2.5px #E8394F, 0 0 6px rgba(232,57,79,0.35);
+             transform: none; }
+  45%      { box-shadow: inset 0 0 0 3px #FF003C, 0 0 16px rgba(255,0,60,0.95);
+             transform: translate(0.7px, -0.6px); }
+  60%      { box-shadow: inset 0 0 0 3px #00F0FF, 0 0 14px rgba(0,240,255,0.7);
+             transform: translate(-0.7px, 0.5px); }
 }
+
 
 /* A cell on its way out stops performing, so the white flash reads. */
 .cell.hit { animation: none; }
@@ -2595,7 +2616,7 @@ nav.menu {
                   <div class="cell flip"></div>
                   <div class="cell"></div>
                   <div class="cell flip b"></div>
-                  <div class="cell virus"></div>
+                  <div class="cell m virus soon">2</div>
                   <div class="cell flip c3"></div>
                 </div></div>
                 <div class="half"><div class="mg">
@@ -2973,26 +2994,46 @@ let INKS = PALETTES.office.inks;
      'c*'   cyan, magnetic
      '#'    a virus
      '#!'   a virus that has just landed and has not corrupted yet          */
-const VIRUS = '#', VIRUS_NEW = '#!';
+/* A virus is an ordinary drop that happens to be counting. It carries
+   its ink like any other cell, so it matches on colour and feeds its
+   plate on colour, and clearing it is just clearing it. What makes it a
+   virus is the number after the bang: one off every drop, and at zero it
+   goes off and takes ink back off the plate it was going to feed.
 
-const inkOf  = (v) => (!v || v === VIRUS || v === VIRUS_NEW) ? null
-                    : (v.endsWith('*') ? v.slice(0, -1) : v);
+   It used to be a cell with no colour at all that scrambled whatever it
+   landed next to, and the only way off the board was a chain. The
+   measurement said that cure fired about once for every seven of them,
+   so in practice there was no way off the board at all. */
+const FUSE = '!';
+const isBug   = (v) => !!v && v.indexOf(FUSE) !== -1;
+const bugLeft = (v) => isBug(v) ? Number(v.slice(v.indexOf(FUSE) + 1)) : 0;
+const bugSet  = (v, n) => v.slice(0, v.indexOf(FUSE) + 1) + n;
+const inkOf  = (v) => !v ? null
+                    : (isBug(v) ? v.slice(0, v.indexOf(FUSE))
+                    : (v.endsWith('*') ? v.slice(0, -1) : v));
 const isMag  = (v) => !!v && v.endsWith('*');
-const isBug  = (v) => v === VIRUS || v === VIRUS_NEW;
 
 /* How often the machine misbehaves. The magnet is the reward and stays put;
    the virus is the punishment and gets worse as the printer gets harder. */
 const MAG_RATE = 0.12;
-const VIRUS_RATE = { 'office': 0.03, 'five-lc': 0.05, 'photo': 0.07 };
+/* A few in the first rooms so somebody meets one while it is cheap, a
+   real cost by the middle, and something the last print has to be played
+   around. Per drop rather than per level, so a long level carries more
+   of them than a short one -- which is the right way round. */
+const VIRUS_FROM = 0.03, VIRUS_TO = 0.05;
 
-/* Two ways to burn the corruption off, because one was not enough: a chain
-   of this many links, or a single clump of this size. The second matters --
-   it gives a player who cannot chain yet a route that is only about
-   patience, and on six inks a three link chain was a wall. */
-const CURE_AT = { 'office': 2, 'five-lc': 2, 'photo': 2 };
-const CURE_CLUMP = 6;
+/* Eight drops. Measured: at four even a player who is not looking for
+   them defuses barely half, so the fuse decides the run rather than the
+   player; past ten the rate flattens and it stops being a threat. Eight
+   is where it is your own fault. */
+const FUSE_DROPS = 8;
 
-let mode = 'office', virusRate = 0.05, cureAt = 2;
+/* What one costs when it goes off: a share of the plate goal, so it
+   stays proportionate as the goals grow. A clear of four is worth a
+   fifth of a plate, so this is a little under one clear undone. */
+const bugCost = () => Math.max(1, Math.round(inkPer * 0.15));
+
+let mode = 'office', virusRate = VIRUS_FROM;
 
 /* Puyo clears start at four, so the table shifts up one from the one we
    drew for a swap board: the smallest clear pays 10, and it climbs the
@@ -3891,16 +3932,22 @@ function paintTubes() {
 
 function classFor(code) {
   if (!code) return 'cell';
-  if (isBug(code)) return 'cell virus';
+  if (isBug(code)) return 'cell ' + inkOf(code) + ' virus'
+                        + (bugLeft(code) <= 2 ? ' soon' : '');
   return 'cell ' + inkOf(code) + (isMag(code) ? ' mag' : '');
 }
 
 function paint() {
-  for (let i = 0; i < tiles.length; i++) tiles[i].className = classFor(well[i]);
+  for (let i = 0; i < tiles.length; i++) {
+    tiles[i].className = classFor(well[i]);
+    tiles[i].textContent = isBug(well[i]) ? bugLeft(well[i]) : '';
+  }
 
   if (piece) {
     for (const [x, y, code] of pieceCells(piece)) {
-      if (inside(x, y)) tiles[idx(x, y)].className = classFor(code) + ' live';
+      if (!inside(x, y)) continue;
+      tiles[idx(x, y)].className = classFor(code) + ' live';
+      tiles[idx(x, y)].textContent = isBug(code) ? bugLeft(code) : '';
     }
   }
 
@@ -3937,7 +3984,8 @@ function paintNext() {
       /* Only the plain ink color is set here. A wildcard's face and ring
          are animated, which an inline style would override, so the
          stylesheet is left to dress those by class. */
-      if (!isBug(code)) el.style.background = colorOf(inkOf(code));
+      el.style.background = colorOf(inkOf(code));
+      if (isBug(code)) el.textContent = bugLeft(code);
       row.appendChild(el);
     }
 
@@ -3990,7 +4038,9 @@ function fits(p) {
 
 /* One drop. Mostly plain ink; sometimes magnetic, sometimes a virus. */
 function roll() {
-  if (Math.random() < virusRate) return VIRUS_NEW;
+  // never magnetic as well: one thing for a cell to be saying at a time
+  if (Math.random() < virusRate) { window.__vMade = (window.__vMade || 0) + 1;
+    return rand() + FUSE + FUSE_DROPS; }
   return rand() + (Math.random() < MAG_RATE ? '*' : '');
 }
 
@@ -4015,29 +4065,50 @@ function spawn() {
   paint();
 }
 
-/* A virus rewrites the cells it is touching, once, at the moment it settles.
-   Only its four neighbours and never again after -- enough to hurt, bounded
-   enough that you can look at the board and see what it cost you. */
-function corruptNew() {
-  let bit = false;
+/* One off every count on the board, once a drop. Anything that reaches
+   zero goes off: the cell leaves and the plate it was going to feed
+   gives ink back instead.
 
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
-      if (at(well, x, y) !== VIRUS_NEW) continue;
-      put(well, x, y, VIRUS);
-      bit = true;
+   The cost comes off its own plate, which is what makes it readable --
+   the colour of the thing tells you which tube is about to drop. If that
+   plate has not got it, the rest comes off the fullest one, so landing
+   on an empty plate early is never free. */
+function burnDown() {
+  const gone = [];
 
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-        const nx = x + dx, ny = y + dy;
-        if (!inside(nx, ny)) continue;
-        const v = at(well, nx, ny);
-        if (!v || isBug(v)) continue;
-        put(well, nx, ny, rand());          // the magnet mark is lost with it
-      }
+  for (let i = 0; i < well.length; i++) {
+    const v = well[i];
+    if (!isBug(v)) continue;
+    const left = bugLeft(v) - 1;
+    if (left > 0) { well[i] = bugSet(v, left); continue; }
+    gone.push({ at: i, ink: inkOf(v) });
+    window.__vOff = (window.__vOff || 0) + 1;
+    window.__vLost = (window.__vLost || 0) + bugCost();
+  }
+
+  if (!gone.length) return [];
+
+  for (const g of gone) {
+    well[g.at] = null;
+    let owed = bugCost();
+    const mine = PLATE_OF[g.ink];
+    if (mine) {
+      const take = Math.min(owed, cleared[mine] || 0);
+      cleared[mine] = Math.round((cleared[mine] - take) * 100) / 100;
+      owed -= take;
+    }
+    // whatever it could not take from its own, it takes from the best work
+    while (owed > 0.001) {
+      let top = null;
+      for (const pl of PLATES) if (!top || (cleared[pl] || 0) > (cleared[top] || 0)) top = pl;
+      if (!top || !(cleared[top] > 0)) break;
+      const take = Math.min(owed, cleared[top]);
+      cleared[top] = Math.round((cleared[top] - take) * 100) / 100;
+      owed -= take;
     }
   }
 
-  return bit;
+  return gone;
 }
 
 /* Magnetic ink drags its own color out of a diagonal and into line: if the
@@ -4095,7 +4166,17 @@ async function resolve() {
   settle(well);
 
   // a virus bites where it came to rest, not where it was dropped
-  if (corruptNew()) { paint(); await wait(150); }
+  const blown = burnDown();
+  if (blown.length) {
+    for (const g of blown) tiles[g.at].className = 'cell hit';
+    await wait(120);
+    settle(well);
+    paint();
+    layPlates();
+    paintTubes();
+    show(blown.length + (blown.length === 1 ? ' virus' : ' viruses') + ' went off');
+    await wait(150);
+  }
 
   /* The pull used to happen between frames, which meant nobody ever saw it
      and nobody learned what the gold ring was for. Now it flashes and says
@@ -4135,29 +4216,17 @@ async function resolve() {
       }
     }
 
-    /* A chain this long burns the corruption off the board along with the
-       clump that earned it. */
-    let cured = 0;
-    const bigClump = clumps.some(g => g.length >= CURE_CLUMP);
-    if (chain >= cureAt || bigClump) {
-      for (let i = 0; i < well.length; i++) {
-        if (isBug(well[i])) { tiles[i].className = 'cell hit'; cured++; }
-      }
-    }
-
     points += pass;
     sayPts(points);
     sayMusic('clear', chain);
     elChain.textContent = chain > 1 ? 'Chain ×' + mult : '';
     show((chain > 1
       ? 'Chain <b>&times;' + mult + '</b> &mdash; ' + pass + ' points'
-      : clumps.map(g => g.length + ' touching').join(', ') + ' &mdash; <b>' + pass + '</b>')
-      + (cured ? ' &middot; burned off ' + cured + ' virus' + (cured === 1 ? '' : 'es') : ''));
+      : clumps.map(g => g.length + ' touching').join(', ') + ' &mdash; <b>' + pass + '</b>'));
 
     await wait(170);
 
     for (const group of clumps) for (const [x, y] of group) put(well, x, y, null);
-    if (cured) for (let i = 0; i < well.length; i++) if (isBug(well[i])) well[i] = null;
 
     settle(well);
     if (pullMagnets()) settle(well);
@@ -6219,7 +6288,8 @@ function levelSetup(i, n) {
   return {
     mode: ['office', 'five-lc', 'photo'][band],
     inkPer: Math.round(from + (to - from) * within),
-    fallMs: Math.round(900 - 570 * t)
+    fallMs: Math.round(900 - 570 * t),
+    virusRate: VIRUS_FROM + (VIRUS_TO - VIRUS_FROM) * t
   };
 }
 
@@ -7038,8 +7108,8 @@ function newPrint(face) {
   mode = document.getElementById('setInks').value;
   const pick = PALETTES[mode] || PALETTES.office;
   INKS = pick.inks;
-  virusRate = VIRUS_RATE[mode] || 0.05;
-  cureAt = CURE_AT[mode] || 2;
+  virusRate = campOn ? levelSetup(Math.min(campAt, campList().length - 1), campList().length).virusRate
+                     : VIRUS_FROM;
 
   inkPer = Math.max(3, Number(document.getElementById('setTarget').value) || 10);
   fallMs = fallMsNow();
