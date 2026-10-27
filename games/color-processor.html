@@ -9739,12 +9739,20 @@ function record(ran) {
       board.textContent = 'That run did not save.';
       return;
     }
-    const st = r.standing;
-    /* How many they have printed, not how many there are. The length of
-       the gallery is still something you find out by printing it. */
-    board.innerHTML = campDone.length + ' printed'
-      + (st ? ' \u00b7 <b>' + clockSecs(st.total_seconds) + '</b> total'
-            + ' \u00b7 <b>' + ordinal(st.place) + '</b> on the board' : '');
+    /* Saved, and the card says so by standing there finished. What used
+       to go here -- how many printed, the running total, the place on
+       the board -- took a third of the painting to tell somebody three
+       things about the series, on the one screen that is about this
+       painting. None of it compares this run to anything: the total is
+       every level added up and the place is the whole campaign. The
+       comparison that would belong here, how this time sits against
+       other people's on this level, is not something the board can
+       answer yet.
+
+       A failed save still speaks, below. Silence is fine for the case
+       where nothing went wrong and wrong for the case where it did. */
+    board.textContent = '';
+    board.hidden = true;
   }).catch(() => { board.textContent = 'That run did not save.'; });
 }
 
