@@ -9077,6 +9077,11 @@ let galArtKey = '';
 
 let galClean = null;                 // the sheet as printed
 let galFrames = [];                  // and the same sheet, damaged
+/* Her portrait is fetched the first time anybody reaches the level it
+   starts showing on, and a fetch takes as long as it takes. Whatever
+   began the haunt has to be able to find out, when it comes back, that
+   the card it was damaging is gone. */
+let galGen = 0;
 let galHauntRaf = 0, galHauntPlan = null, galHauntFrom = 0;
 let asilFaceImg = null, asilFaceJob = null;
 
@@ -9232,6 +9237,7 @@ function moshFrame(src, w, h, amount, seed, face) {
 }
 
 function galHauntStop() {
+  galGen++;                          // anything still loading belongs to nobody
   if (galHauntRaf) cancelAnimationFrame(galHauntRaf);
   galHauntRaf = 0;
   galHauntPlan = null;
@@ -9248,6 +9254,7 @@ function galHauntStop() {
    and by the last print a hold long enough to be looked at. */
 async function galHaunt(level, total, W, H) {
   galHauntStop();
+  const mine = galGen;
   if (!galClean) return;
 
   const t = total > 1 ? Math.min(1, Math.max(0, (level - 1) / (total - 1))) : 0;
@@ -9262,6 +9269,13 @@ async function galHaunt(level, total, W, H) {
   let face = null;
   if (shows) {
     await asilFace();
+    /* The card can be gone by the time she lands -- dismissed, or the
+       next print started -- and clearGalleryArt takes the clean sheet
+       with it. This was checked before the await and not after, so a
+       player who moved on during the fetch left moshFrame reading
+       .width off null. Only levels from fourteen could hit it: they are
+       the only ones with an await to be interrupted in. */
+    if (mine !== galGen || !galClean) return;
     face = asilBecoming(ASSUME_TO * (t - FACE_FROM) / (1 - FACE_FROM));
   }
 
