@@ -4808,9 +4808,20 @@ function buildGrid() {
   elGrid.innerHTML = '';
   elGrid.style.gridTemplateColumns = 'repeat(' + COLS + ', 1fr)';
   tiles = [];
+  /* Built at whatever the board is currently measured at. The cells are
+     sized by hand rather than by the grid, and the one function that
+     does that sizing lives inside sizeBoard where nothing else can
+     reach it -- so a grid rebuilt by anybody else came out with no size
+     at all and stayed that way until something happened to trigger a
+     re measure. Walking out of a run rebuilds the grid, and on the way
+     to the title screen nothing triggers one. */
+  const digit = Math.round(cellPx * 0.56) + 'px';
   for (let i = 0; i < COLS * ROWS; i++) {
     const d = document.createElement('div');
     d.className = 'cell';
+    d.style.width = cellPx + 'px';
+    d.style.height = cellPx + 'px';
+    d.style.fontSize = digit;
     elGrid.appendChild(d);
     tiles.push(d);
   }
@@ -9695,8 +9706,9 @@ document.getElementById('partyMenu').addEventListener('click', (e) => {
   if (b.dataset.party === 'resume') { resume(); return; }
   /* Leaving a paused party gives the run up, the same as walking out of
      a level does -- and a party only ends one way, so there is nothing
-     here to bank. */
-  leaveRun();
+     here to bank. At the door there is no run yet, so there is nothing
+     to give up either. */
+  if (started) leaveRun();
   showFace('home');
 });
 
