@@ -962,3 +962,65 @@ export function level() {
   }
   return Math.min(1, peak * 2.6);
 }
+
+/* ---- a machine losing power ----
+   The end of her. Not an explosion: a thing whose supply has gone. The
+   pitch sags because the clock driving it is slowing down, the filter
+   shuts because there is less and less left to get through it, and the
+   mains hum underneath it drops away last -- which is the part that
+   actually reads as "off" rather than as "quiet". */
+export function powerDown() {
+  if (!on || !ctx) return;
+  const t = ctx.currentTime;
+
+  const out = ctx.createGain();
+  out.gain.value = 0.0001;
+  out.gain.exponentialRampToValueAtTime(0.16, t + 0.08);
+  out.gain.setValueAtTime(0.16, t + 1.9);
+  out.gain.exponentialRampToValueAtTime(0.0001, t + 3.1);
+  out.connect(voice);
+
+  const low = ctx.createBiquadFilter();
+  low.type = 'lowpass';
+  low.Q.value = 7;
+  low.frequency.setValueAtTime(5200, t);
+  low.frequency.exponentialRampToValueAtTime(140, t + 2.7);
+  low.connect(out);
+
+  /* The thing itself: two detuned saws sagging away together, which is
+     what a falling clock does to anything built on one. */
+  for (const off of [0, 7]) {
+    const o = ctx.createOscillator();
+    o.type = 'sawtooth';
+    const f0 = semi(-5) + off;
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.exponentialRampToValueAtTime(f0 / 9, t + 2.6);
+    const g = ctx.createGain();
+    g.gain.value = off ? 0.35 : 0.6;
+    o.connect(g); g.connect(low);
+    o.start(t); o.stop(t + 3.2);
+  }
+
+  /* The hum, going last. */
+  const hum = ctx.createOscillator();
+  hum.type = 'sine';
+  hum.frequency.setValueAtTime(60, t);
+  hum.frequency.exponentialRampToValueAtTime(28, t + 2.9);
+  const hg = ctx.createGain();
+  hg.gain.setValueAtTime(0.22, t);
+  hg.gain.setValueAtTime(0.22, t + 2.2);
+  hg.gain.exponentialRampToValueAtTime(0.0001, t + 3.0);
+  hum.connect(hg); hg.connect(out);
+  hum.start(t); hum.stop(t + 3.1);
+
+  /* And the last flicker of the lamp, a beat before it is dark. */
+  const tick = ctx.createOscillator();
+  tick.type = 'square';
+  tick.frequency.value = 1800;
+  const tg = ctx.createGain();
+  tg.gain.setValueAtTime(0, t);
+  tg.gain.setValueAtTime(0.05, t + 2.52);
+  tg.gain.setValueAtTime(0, t + 2.56);
+  tick.connect(tg); tg.connect(out);
+  tick.start(t); tick.stop(t + 2.7);
+}

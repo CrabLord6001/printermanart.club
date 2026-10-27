@@ -3505,7 +3505,12 @@ async function wantSound(next) {
   return true;
 }
 
-const sayMusic = (fn, ...args) => { if (music && music.isOn()) music[fn](...args); };
+/* Named rather than called directly so a cue the module does not have
+   -- an older organ.js out of a cache, say -- is silence rather than a
+   thrown error in the middle of an animation. */
+const sayMusic = (fn, ...args) => {
+  if (music && music.isOn() && typeof music[fn] === 'function') music[fn](...args);
+};
 
 /* ---- which music belongs to what is on screen ----
    One cue per chapter, cut from a single piece along its own structure.
@@ -7874,15 +7879,35 @@ function asilStop() {
 
    The report is held off until the screen is empty, so it is read
    against the dark rather than over her face. */
-const END_FRY = 1150, END_FOLD = 820, END_GONE = 640;
-const END_RUN = END_FRY + END_FOLD + END_GONE;
+/* ---- what was in the painting -------------------------------------
+   The level restores the picture; this is what comes off it. For
+   twenty one levels she has only ever been seen wearing something --
+   a painting with her face spliced into the damage -- so the last
+   thing anybody sees is her without one.
+
+   The first version of this tore the Mona Lisa to pieces, which is the
+   opposite of what the player just spent the whole game doing. The
+   painting is whole on the screen behind this, and it stays whole.
+
+   Green to red across the scene: green is what a virus is on a
+   computer screen and the colour this game has used for her all the
+   way through, and red is what it turns when the thing is failing.
+   The face is held back almost to nothing on purpose. Two slits and a
+   curve that barely resolve out of the noise read as worse than a
+   drawn face, and they survive being small on a phone, which a drawn
+   face does not. */
+const END_RAIN = 620, END_FACE = 900, END_PANIC = 860, END_DIE = 820;
+const END_RUN = END_RAIN + END_FACE + END_PANIC + END_DIE;
+
+const EYE_GREEN = [76, 255, 60], EYE_RED = [255, 48, 48];
+const CODE_SET = '01CMYK%#*/|<>=+-アカサタナ';
 
 /* How long the win stands before the reel starts. Long enough to be sat
    with; the two buttons are there the whole time for anybody who has
    read it once already and does not want to wait through it again. */
 const END_HOLD = 15000, END_FADE = 760;
 
-const ENDING = { raf: 0, t0: 0, frames: [], src: null };
+const ENDING = { raf: 0, t0: 0, cols: null, said: false };
 
 /* Her picture is fetched the first time anybody gets this far, and a
    fetch takes as long as it takes. Whatever started the screen has to
@@ -7893,13 +7918,10 @@ const ENDING = { raf: 0, t0: 0, frames: [], src: null };
 let endGen = 0;
 let endGo = 0, endFade = 0;
 
-/* Her going out is finished, but the screen is not: the report is still
-   standing there waiting out its hold. This drops the loop and the
-   frames and leaves the hold alone. */
+/* The animation is finished; the screen is not. */
 function endRest() {
   if (ENDING.raf) { cancelAnimationFrame(ENDING.raf); ENDING.raf = 0; }
-  ENDING.frames = [];
-  ENDING.src = null;
+  ENDING.cols = null;
 }
 
 /* Leaving the screen, which is the other thing entirely. */
@@ -7924,7 +7946,7 @@ function endSaid(face) {
   }, END_HOLD);
 }
 
-async function endStart() {
+function endStart() {
   endStop();
   const mine = endGen;
   const cv = document.getElementById('endArt');
@@ -7933,103 +7955,194 @@ async function endStart() {
   face.classList.remove('said', 'going');
   paintPlate(document.getElementById('endPlate'), WON_WORDS, true);
 
-  /* Her own canvas is sized by the panel, like hers is. */
   const r = cv.getBoundingClientRect();
-  cv.width = Math.max(2, Math.round(r.width || ASIL_W));
-  cv.height = Math.max(2, Math.round(r.height || ASIL_H));
+  cv.width = Math.max(2, Math.round(r.width || 360));
+  cv.height = Math.max(2, Math.round(r.height || 720));
 
-  let ok = false;
-  try { ok = await asilLoad(); } catch (e) { ok = false; }
-  if (mine !== endGen) return;                   // the screen moved on
-  /* No picture of her is not a reason to withhold the report. */
-  if (!ok || !ASIL.base) { endSaid(face); return; }
-
-  /* Four frames of her coming apart, built once -- the same trick the
-     level cards use, for the same reason.
-
-     moshFrame works out its own resolution from the source against the
-     size it is handed, so she is copied to the panel's size first.
-     Handed her own 400 by 800 she would have been built at that and
-     stretched up, which is a soft picture of a sharp one. */
-  const base = document.createElement('canvas');
-  base.width = cv.width; base.height = cv.height;
-  base.getContext('2d').drawImage(ASIL.base, 0, 0, cv.width, cv.height);
-
-  ENDING.src = base;
-  ENDING.frames = [];
-  for (let i = 0; i < 4; i++) {
-    ENDING.frames.push(moshFrame(base, cv.width, cv.height, 0.35 + i * 0.42, 23 + i * 61, null));
+  /* One column of falling characters per strip of the panel. Each keeps
+     its own head position and speed so they do not march in step. */
+  const w = cv.width;
+  const step = Math.max(12, Math.round(w / 22));
+  ENDING.cols = [];
+  for (let x = step / 2; x < w; x += step) {
+    ENDING.cols.push({
+      x: x,
+      y: -Math.random() * cv.height,
+      v: cv.height * (0.45 + Math.random() * 0.75),
+      n: 6 + ((Math.random() * 10) | 0),
+      seed: (Math.random() * 1e6) | 0
+    });
   }
+  ENDING.said = false;
 
   if (mine !== endGen) return;
   ENDING.t0 = performance.now();
+  sayMusic('powerDown');
   ENDING.raf = requestAnimationFrame(endTick);
 }
+
+const mixRGB = (a, b, t) => 'rgb(' + a.map((v, i) =>
+  Math.round(v + (b[i] - v) * t)).join(',') + ')';
 
 function endTick(now) {
   const cv = document.getElementById('endArt');
   const face = document.getElementById('overEnd');
-  if (!cv || !face || face.hidden) { endStop(); return; }
+  if (!cv || !face || face.hidden || !ENDING.cols) { endRest(); return; }
 
-  if (!ENDING.src || ENDING.frames.length < 4) { endRest(); endSaid(face); return; }
-
-  /* The stamp a frame is handed is when that frame began, which can be
-     before the clock was read to start this -- so the first tick can
-     arrive at a negative age and index off the front of the reel. */
+  /* A frame is handed the time that frame began, which can be before
+     the clock was read to start this. */
   const ms = Math.max(0, now - ENDING.t0);
   const w = cv.width, h = cv.height;
   const cx = cv.getContext('2d');
   cx.setTransform(1, 0, 0, 1, 0, 0);
   cx.globalCompositeOperation = 'source-over';
   cx.globalAlpha = 1;
-  cx.clearRect(0, 0, w, h);
+  cx.fillStyle = '#000';
+  cx.fillRect(0, 0, w, h);
 
-  if (ms < END_FRY) {
-    /* Frying. The frames come faster as she loses it, and she is
-       herself for a moment between them -- which is worse. */
-    const t = ms / END_FRY;
-    const step = 190 - t * 130;
-    const k = Math.floor(ms / step);
-    const hold = (k % 5) === 3 && t < 0.72;      // a beat of her, still there
-    const src = hold ? ENDING.src
-      : ENDING.frames[Math.min(3, Math.max(0, Math.floor(t * 4)))];
-    cx.drawImage(src, 0, 0, w, h);
-    if (t > 0.55) {                              // the green getting into her
+  /* How far through her failure she is: nothing while she is still
+     just a virus, everything by the time the light goes. */
+  const gone = Math.min(1, Math.max(0, (ms - END_RAIN - END_FACE) / (END_PANIC + END_DIE)));
+  /* Held green and then turned, rather than crossfaded. A long stretch
+     of orange in the middle looks like a third colour on purpose; a
+     failure should arrive, not be eased into. */
+  const turn = gone < 0.3 ? 0 : Math.min(1, (gone - 0.3) / 0.25);
+  const hue = mixRGB(EYE_GREEN, EYE_RED, turn);
+
+  /* ---- the code she is made of ---- */
+  const dt = Math.min(0.05, (now - (ENDING.last || now)) / 1000);
+  ENDING.last = now;
+  const fade = ms > END_RUN - END_DIE ? Math.max(0, 1 - (ms - (END_RUN - END_DIE)) / END_DIE) : 1;
+  const type = Math.max(11, Math.round(w / 26));
+  cx.font = type + 'px ui-monospace, Menlo, Consolas, monospace';
+  cx.textAlign = 'center';
+  for (const c of ENDING.cols) {
+    c.y += c.v * dt;
+    if (c.y - c.n * type > h) { c.y = -type * c.n * Math.random(); c.v = h * (0.45 + Math.random() * 0.75); }
+    let sd = c.seed;
+    for (let i = 0; i < c.n; i++) {
+      const yy = c.y - i * type;
+      if (yy < -type || yy > h + type) continue;
+      sd = (sd * 1664525 + 1013904223) >>> 0;
+      const ch = CODE_SET[(sd >>> 8) % CODE_SET.length];
+      cx.globalAlpha = (i === 0 ? 0.95 : Math.max(0, 0.5 - i / c.n * 0.5)) * fade;
+      cx.fillStyle = i === 0 ? '#FFFFFF' : hue;
+      cx.fillText(ch, c.x, yy);
+    }
+  }
+  cx.globalAlpha = 1;
+
+  /* ---- and her, in the middle of it ---- */
+  if (ms > END_RAIN * 0.55) {
+    const born = Math.min(1, (ms - END_RAIN * 0.55) / 420);
+
+    /* Steady while she is winning, ragged once she is not. */
+    const beat = gone < 0.25
+      ? 0.5 + 0.5 * Math.sin(ms / 240)
+      : 0.5 + 0.5 * Math.sin(ms / (240 - gone * 170)) * (1 - gone * 0.4)
+        + (Math.random() < gone * 0.3 ? -0.45 : 0);
+
+    const dying = Math.max(0, 1 - Math.max(0, (ms - (END_RUN - END_DIE)) / END_DIE));
+    const R = Math.min(w, h) * 0.17 * (0.6 + 0.4 * born) * (0.86 + 0.14 * beat) * dying;
+    const cxp = w / 2, cyp = h * 0.42;
+
+    if (R > 0.5) {
       cx.globalCompositeOperation = 'screen';
-      cx.globalAlpha = (t - 0.55) / 0.45 * 0.32;
-      cx.fillStyle = ZAP_ARC_DEEP;
+      const g = cx.createRadialGradient(cxp, cyp, 0, cxp, cyp, R * 2.6);
+      g.addColorStop(0, '#FFFFFF');
+      g.addColorStop(0.18, hue);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      cx.globalAlpha = (0.55 + 0.45 * beat) * born;
+      cx.fillStyle = g;
+      cx.fillRect(0, 0, w, h);
+
+      /* Not a flat disc. A core that falls off into its own halo, with
+         the surface broken up -- it should look like something boiling
+         rather than like a circle somebody filled in. */
+      cx.globalCompositeOperation = 'source-over';
+      cx.globalAlpha = born;
+      const body = cx.createRadialGradient(cxp, cyp - R * 0.2, R * 0.1, cxp, cyp, R);
+      body.addColorStop(0, '#FFFFFF');
+      body.addColorStop(0.35, hue);
+      body.addColorStop(1, 'rgba(0,0,0,0)');
+      cx.beginPath();
+      cx.arc(cxp, cyp, R, 0, Math.PI * 2);
+      cx.fillStyle = body;
+      cx.fill();
+
+      cx.globalCompositeOperation = 'screen';
+      let ns = ((ms / 60) | 0) * 2654435761 >>> 0;
+      for (let i = 0; i < 26; i++) {
+        ns = (ns * 1664525 + 1013904223) >>> 0;
+        const an = (ns >>> 8) / 16777216 * Math.PI * 2;
+        ns = (ns * 1664525 + 1013904223) >>> 0;
+        const rr = Math.sqrt((ns >>> 8) / 16777216) * R * 0.92;
+        cx.globalAlpha = 0.1 * born;
+        cx.beginPath();
+        cx.arc(cxp + Math.cos(an) * rr, cyp + Math.sin(an) * rr, R * 0.17, 0, Math.PI * 2);
+        cx.fillStyle = '#fff';
+        cx.fill();
+      }
+      cx.globalCompositeOperation = 'source-over';
+
+      /* The face. Barely there, and only once the orb has settled --
+         the eyes first, the mouth a moment behind them. */
+      if (ms > END_RAIN + 260 && dying > 0.25) {
+        const look = Math.min(1, (ms - END_RAIN - 260) / 340);
+        /* Smiling while she is still winning; by the end she is not.
+           Flashes rather than a tween, so it reads as her losing hold
+           of it rather than as an expression changing. */
+        const flick = gone > 0.18 && ((ms / 90) | 0) % 2 === 0;
+        const grim = gone > 0.55 ? 1 : (flick ? 1 : 0);
+
+        /* Drawn once at full strength this was an emoji -- a solid
+           smiley sitting in a circle. It is thin slits and a thread of
+           a line now, laid at low alpha and dropped entirely on some
+           frames, so it surfaces out of the thing rather than being
+           painted on the front of it. Never quite resolving is the
+           whole effect. */
+        const here = ((ms / 110) | 0) % 5 !== 3;
+        if (here) {
+          cx.globalAlpha = look * (0.3 + 0.22 * gone) * dying;
+          cx.fillStyle = '#000';
+          const ew = R * 0.26, eh = R * (0.045 + 0.03 * grim);
+          for (const sx of [-1, 1]) {
+            cx.save();
+            cx.translate(cxp + sx * R * 0.33, cyp - R * 0.16);
+            cx.rotate(sx * (grim ? -0.3 : 0.16));
+            cx.beginPath();
+            cx.ellipse(0, 0, ew, eh, 0, 0, Math.PI * 2);
+            cx.fill();
+            cx.restore();
+          }
+
+          cx.strokeStyle = '#000';
+          cx.lineWidth = Math.max(1, R * 0.045);
+          cx.lineCap = 'round';
+          cx.beginPath();
+          /* Up at the ends is a smile; down is the other thing. */
+          cx.arc(cxp, cyp + R * (grim ? 0.5 : 0.1), R * 0.34,
+                 grim ? Math.PI * 1.26 : Math.PI * 0.26,
+                 grim ? Math.PI * 1.74 : Math.PI * 0.74);
+          cx.stroke();
+        }
+      }
+    }
+
+    /* The last thing: one white flicker as the light goes. */
+    if (dying <= 0.02 && ms < END_RUN + 90) {
+      cx.globalCompositeOperation = 'screen';
+      cx.globalAlpha = Math.max(0, 1 - (ms - (END_RUN - 60)) / 150) * 0.5;
+      cx.fillStyle = '#fff';
       cx.fillRect(0, 0, w, h);
     }
-  } else if (ms < END_FRY + END_FOLD) {
-    /* Compressing. She folds to a line through the middle of the frame,
-       and the line is the only thing left lit. */
-    const t = (ms - END_FRY) / END_FOLD;
-    const e = t * t;                             // slow, then all at once
-    const bh = Math.max(2, h * (1 - e));
-    cx.globalAlpha = 1 - e * 0.35;
-    cx.drawImage(ENDING.frames[3], 0, 0, w, h, 0, (h - bh) / 2, w, bh);
-    cx.globalAlpha = 1;
-    cx.globalCompositeOperation = 'screen';
-    const glow = cx.createLinearGradient(0, h / 2 - 26, 0, h / 2 + 26);
-    glow.addColorStop(0, 'rgba(76,255,60,0)');
-    glow.addColorStop(0.5, 'rgba(76,255,60,' + (0.25 + e * 0.6).toFixed(3) + ')');
-    glow.addColorStop(1, 'rgba(76,255,60,0)');
-    cx.fillStyle = glow;
-    cx.fillRect(0, h / 2 - 26, w, 52);
-  } else if (ms < END_RUN) {
-    /* And out. The line narrows to nothing from both ends, the way a
-       tube goes dark rather than the way a light switches off. */
-    const t = (ms - END_FRY - END_FOLD) / END_GONE;
-    const half = (w / 2) * (1 - t * t);
-    cx.globalCompositeOperation = 'screen';
-    cx.globalAlpha = 1 - t;
-    cx.fillStyle = ZAP_ARC;
-    cx.fillRect(w / 2 - half, h / 2 - 1.5, half * 2, 3);
   }
 
-  if (ms > END_FRY + END_FOLD + 120) endSaid(face);
+  cx.globalAlpha = 1;
+  cx.globalCompositeOperation = 'source-over';
 
-  if (ms > END_RUN + 400) { endRest(); return; }
+  if (!ENDING.said && ms > END_RUN - 120) { ENDING.said = true; endSaid(face); }
+  if (ms > END_RUN + 300) { endRest(); return; }
   ENDING.raf = requestAnimationFrame(endTick);
 }
 
