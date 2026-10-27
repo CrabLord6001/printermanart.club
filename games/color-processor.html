@@ -2583,6 +2583,12 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 /* The sign is the widest thing in the box, so the box gives it room. */
 .partyface .pin { padding: 24px 14px 16px; }
 
+/* Held: the card carries the sign and the board carries everything
+   else. The panel's own scrim is what fades the game behind it. */
+.partyface.held .pin { padding: 20px 14px; }
+.partyface.held .pnote[hidden],
+.partyface.held .bossmenu[hidden] { display: none; }
+
 /* ---- the credits ----
    The panel scrolls by default, which here would have scrolled the
    whole screen and carried the way out off the bottom of it. The reel
@@ -3261,8 +3267,8 @@ nav.menu {
                  after the mode, which reads as a game that has hung. -->
             <div class="rules partyface" id="overParty" hidden>
               <div class="pin">
-                <p class="pask">Ready to Party?</p>
-                <p class="pnote">Points for every&nbsp;clear. Chains combo more&nbsp;points. Party ends when you&nbsp;jam.</p>
+                <p class="pask" id="partyAsk">Ready to Party?</p>
+                <p class="pnote" id="partyNote">Points for every&nbsp;clear. Chains combo more&nbsp;points. Party ends when you&nbsp;jam.</p>
                 <nav class="bossmenu" id="partyMenu">
                   <button class="mi hot" type="button" data-party="go">Let’s groove</button>
                   <button class="mi" type="button" data-party="menu">Menu</button>
@@ -3956,6 +3962,28 @@ const mix = (a, b, t) => {
    light rather than paint over the room. */
 const SPOT_HUES = ['#16E0FF', '#FF2FA0', '#FFE23D', '#4CFF3C'];
 
+/* The same panel, twice: the door on the way in and the pause once
+   somebody is inside. One sign, two things for it to say -- there is
+   no sense building a second neon box for a screen that wants the same
+   shape, and at a pause the numbers are the thing worth putting under
+   it rather than the rules they already know. */
+function paintParty() {
+  const face = document.getElementById('overParty');
+  const ask = document.getElementById('partyAsk');
+  const note = document.getElementById('partyNote');
+  const menu = document.getElementById('partyMenu');
+  const held = phase === 'paused';
+
+  /* Paused, the card is the sign and nothing else. The numbers were
+     already on the readout above the board -- which is still there,
+     behind the scrim -- and the way out is already on the row under it,
+     so a second copy of both inside the card was two of everything. */
+  if (face) face.classList.toggle('held', held);
+  if (ask) ask.textContent = held ? 'Endless' : 'Ready to Party?';
+  if (note) note.hidden = held;
+  if (menu) menu.hidden = held;
+}
+
 /* The sign is one line by design, so it is measured and sized to the
    box it is in rather than trusted to a viewport unit. Run on arrival
    and on resize, like every other thing here that has to fit. */
@@ -3972,9 +4000,11 @@ function fitSign() {
      so it is the fallback being measured and the real letters turn out
      wider. Stepped down until it actually fits instead, which does not
      care when the font lands. */
-  let px = 32;
+  const face = el.closest('.partyface');
+  const top = (face && face.classList.contains('held')) ? 72 : 32;
+  let px = top;
   r.style.setProperty('--signFs', px + 'px');
-  for (let i = 0; i < 14 && px > 12; i++) {
+  for (let i = 0; i < 40 && px > 12; i++) {
     if (el.scrollWidth <= room) break;
     px = Math.max(12, Math.min(px - 1, Math.floor(px * room / el.scrollWidth)));
     r.style.setProperty('--signFs', px + 'px');
@@ -4282,9 +4312,14 @@ function deckDraw(now, beat, lit, dt) {
   cx.globalAlpha = 1;
 }
 
-/* Ten steps between the opening pace and the fastest it gets, so the
-   number means something to look at rather than being milliseconds. */
-const discoStep = () => 1 + Math.round(9 * Math.min(1, discoDrops / DISCO_OVER));
+/* Ten steps between the opening pace and the fastest it gets. Shown
+   against its own ceiling, because "Tempo 4" is a number with no scale
+   attached -- four of what? -- where "4/10" says both where it is and
+   that there is a top to reach. The plate count it replaced read the
+   same way, so the slot keeps its shape. */
+const DISCO_STEPS = 10;
+const discoStep = () => 1 + Math.round((DISCO_STEPS - 1) * Math.min(1, discoDrops / DISCO_OVER));
+const discoSays = () => discoStep() + '/' + DISCO_STEPS;
 
 function blankPage() {
   laid = { c: false, m: false, y: false, k: false };
@@ -5403,7 +5438,7 @@ function lock() {
     discoDrops++;
     const want = discoFall();
     if (want !== fallMs) { fallMs = want; if (!over && !paused) startTick(); }
-    sayGoal(String(discoStep()));
+    sayGoal(discoSays());
     /* The first one placed is what turns the lights on. */
     if (discoDark) { discoDark = false; discoLit = performance.now(); }
   }
@@ -6461,6 +6496,48 @@ function paintRules() {
    thing that happens rather than a thing that appears. */
 const discoWon = () => campDone.length >= campList().length;
 
+/* ---- going round again ----------------------------------------------
+   What is printed and where you are standing are two different things,
+   and they only look like one thing until the gallery is finished. Up
+   to that point "the next level" is "the first one not printed", which
+   is why campFind was enough. Afterwards every level is printed, so
+   that question has no answer and the series parked itself on the last
+   print for good.
+
+   The second run keeps its own place. It is not progress -- nothing is
+   being unlocked twice and no time is being beaten by starting over --
+   so it lives on the device rather than on the account, next to the
+   other two things kept there. Clearing it is what makes the option
+   offer a restart again. */
+const SPOT_KEY = 'cp-camp-spot';
+
+function spotGet() {
+  try {
+    const v = localStorage.getItem(SPOT_KEY);
+    if (v === null) return null;
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  } catch (e) { return null; }
+}
+
+function spotSet(n) {
+  try {
+    if (n === null) localStorage.removeItem(SPOT_KEY);
+    else localStorage.setItem(SPOT_KEY, String(n));
+  } catch (e) { /* a run that cannot be written down is still a run */ }
+}
+
+/* A run through is on when there is a place kept and the gallery is
+   printed; before that the series has its own answer. */
+const onSecondRun = () => discoWon() && spotGet() !== null;
+
+/* Where Play Gallery puts them. */
+function campStart() {
+  const spot = spotGet();
+  if (discoWon() && spot !== null) return Math.min(spot, campList().length - 1);
+  return campFind();
+}
+
 /* Gold until it has been played once, so it reads as new exactly as long
    as it is new. Kept on the device rather than on the account: it is a
    label on a button, not a score. */
@@ -6489,14 +6566,14 @@ function whereInSeries() {
   const el = document.getElementById('miWhere');
   if (!el) return;
   const list = campList();
-  const at = Math.min(campFind(), list.length - 1);
+  const at = Math.min(campStart(), list.length - 1);
   const lv = list[at];
   /* Finished, and the option still has to do something. It goes back to
      the first level and runs forward from there. What was printed stays
      printed -- the rings on the level select, the times, and the mode
      the series unlocked are all still theirs; this moves where they are
      standing, not what they have done. */
-  el.textContent = discoWon()
+  el.textContent = (discoWon() && !onSecondRun())
     ? 'Complete, restart from beginning?'
     : 'Level ' + (at + 1)
       + (lv ? ' \u00b7 ' + (lv.finale ? 'The last print' : lv.art.roomName) : '');
@@ -6583,7 +6660,11 @@ function homeGo(go) {
      on a detour; carrying on with the series means carrying on. */
   if (go === 'gallery')  {
     trying = 0; campOn = true; discoOn = false;
-    campAt = discoWon() ? 0 : campFind();     // printed out, so round again
+    /* Printed out and not already going round again: this is the press
+       of the button that starts the second run. Otherwise it resumes --
+       the gap in the series, or the place the second run reached. */
+    if (discoWon() && !onSecondRun()) { campAt = 0; spotSet(0); }
+    else campAt = campStart();
     if (campAt === 0) { vicSeen = false; vicSpoken = false; }
     hideFace(); newPrint('gallery'); return;
   }
@@ -6836,6 +6917,7 @@ function showFace(which) {
   if (which === 'party') {
     elOver.classList.add('party');
     elParty().hidden = false;
+    paintParty();
     document.getElementById('overTitle').hidden = true;
     document.getElementById('overCredit').hidden = true;
     document.getElementById('overText').innerHTML = '';
@@ -8328,7 +8410,11 @@ function buttonsNow() {
   /* On the title screen the options are the interface. Three more buttons
      under the board would only be a second way to say the same four
      things, so they stand down until there is a board to act on. */
-  if (onHome() || onBoss() || onVictor() || onEnd() || onCred() || onParty()) {
+  /* Those faces carry their own controls. The party's does too -- until
+     it is a pause, when the row under the board is the way out and the
+     card is only a sign. */
+  if (onHome() || onBoss() || onVictor() || onEnd() || onCred()
+      || (onParty() && phase !== 'paused')) {
     menu.hidden = true;
     main.hidden = true;
     if (rules) rules.hidden = true;
@@ -8501,7 +8587,12 @@ function pause() {
   stopTick();
   stopClock();
   sayMusic('stopMusic');
-  showFace(campOn ? 'gallery' : 'setup');
+  /* Settings are practice's business -- three dials that change the
+     next print. The party sets its own ink, its own goal and its own
+     speed, so pausing into the settings panel offered a page of
+     controls that do nothing and read as the wrong mode opening. It
+     pauses onto its own door instead. */
+  showFace(campOn ? 'gallery' : (discoOn ? 'party' : 'setup'));
 }
 
 function resume() {
@@ -8974,7 +9065,7 @@ function finish(won) {
        missing -- there was no picture. */
     jam.innerHTML = discoOn
       ? points + '&nbsp;pts &middot; chain&nbsp;&times;' + bestChain
-        + ' &middot; tempo&nbsp;' + discoStep()
+        + ' &middot; tempo&nbsp;' + discoSays()
       : down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
         + ' &middot; chain&nbsp;&times;' + bestChain;
     jam.hidden = false;
@@ -9094,6 +9185,10 @@ function record(ran) {
      level fourteen. Resuming from the menu still finds the gap -- that
      is what the menu is for. */
   campAt = Math.min(i + 1, list.length - 1);
+  /* A second run keeps its place as it goes, and gives it up at the
+     end -- which is what puts the offer to start over back on the
+     menu. */
+  if (onSecondRun()) spotSet(i >= list.length - 1 ? null : campAt);
 
   if (!board) return;
 
@@ -9184,7 +9279,7 @@ window.CPArrived = function (p) {
      them off it -- and it did: ?try=21 was quietly rewritten to level
      one the moment the session settled, so the last print was never the
      level being played and its music was never the one being heard. */
-  if (!meeting && !trying) campAt = campFind();
+  if (!meeting && !trying) campAt = campStart();
 
   if (onGallery()) buildGallery();
   if (onHome()) whereInSeries();
@@ -9252,7 +9347,7 @@ function newPrint(face) {
   blankPage();
 
   sayPts(0);
-  sayGoal(discoOn ? '1' : '0/4');
+  sayGoal(discoOn ? discoSays() : '0/4');
   sayTime('0:00');
   sayChain(0);
   elChain.textContent = '';
@@ -9472,6 +9567,11 @@ document.getElementById('partyMenu').addEventListener('click', (e) => {
   const b = e.target.closest('[data-party]');
   if (!b) return;
   if (b.dataset.party === 'go') { begin(); return; }
+  if (b.dataset.party === 'resume') { resume(); return; }
+  /* Leaving a paused party gives the run up, the same as walking out of
+     a level does -- and a party only ends one way, so there is nothing
+     here to bank. */
+  leaveRun();
   showFace('home');
 });
 
@@ -9781,7 +9881,7 @@ else if (TRY > 0) openTrial();
      script through one small bridge. Same origin as the arcade page, so
      anyone signed in there is already signed in here. -->
 <script type="module">
-  import { db, onMember, signIn, signOut, postScore, campaignBoard, campaignMe, leaderboard, myBest } from '/games/club-auth.js';
+  import { db, onMember, signIn, signOut, postScore, campaignBoard, campaignMe, highBoard, highMe } from '/games/club-auth.js';
   import { SUPABASE_URL } from '/club-config.js';
 
   const GAME = 'color-processor';
@@ -9895,12 +9995,12 @@ else if (TRY > 0) openTrial();
     },
 
     async discoBoard(limit) {
-      return await leaderboard(GAME, 'endless', limit || 10);
+      return await highBoard(GAME, 'endless', limit || 10);
     },
 
     async discoStanding() {
       if (!member) return null;
-      return await myBest(GAME, 'endless');
+      return await highMe(GAME, 'endless');
     },
 
     /* A jam is how every party ends, so a jam is what posts. There is no
@@ -9909,7 +10009,7 @@ else if (TRY > 0) openTrial();
       if (!member) return null;
       const posted = await postScore(GAME, points, detail, 'endless');
       if (!posted.ok) return { ok: false, reason: posted.reason };
-      return { ok: true, standing: await myBest(GAME, 'endless') };
+      return { ok: true, standing: await highMe(GAME, 'endless') };
     },
 
     async record(variant, seconds, detail) {

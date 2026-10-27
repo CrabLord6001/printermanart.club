@@ -297,3 +297,37 @@ export async function myBest(game, variant) {
   if (error || !data || !data.length) return null;
   return data[0].score;
 }
+
+/* ---- a board for a game where the highest number wins ----
+   The campaign is ranked on levels then on time, and club_leaderboard
+   returns a name and a number and nothing else. Endless needs the same
+   furniture the campaign board has -- a place, a face, and the detail
+   the run was saved with -- so it has its own pair, shaped to match
+   club_campaign_board and club_campaign_me. One row per player: their
+   best run, not every run they have had. */
+export async function highBoard(game, variant, limit) {
+  const { data, error } = await db.rpc('club_high_board', {
+    p_game: game,
+    p_variant: variant || 'classic',
+    p_limit: limit || 10
+  });
+
+  if (error) {
+    console.warn('[club-auth] high board failed:', error.message);
+    return null;
+  }
+  return data || [];
+}
+
+export async function highMe(game, variant) {
+  const { data, error } = await db.rpc('club_high_me', {
+    p_game: game,
+    p_variant: variant || 'classic'
+  });
+
+  if (error) {
+    console.warn('[club-auth] high standing failed:', error.message);
+    return null;
+  }
+  return (data && data[0]) || null;
+}
