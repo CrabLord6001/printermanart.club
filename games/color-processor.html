@@ -7247,21 +7247,45 @@ function moshFrame(src, w, h, amount, seed, face) {
      dark and so is the sheet, so blending one into the other left
      nothing to see. */
   if (face && asilFaceImg) {
+    /* The top third of the card is spoken for -- the level plate and the
+       par bar sit there -- so a portrait centred the usual way hides the
+       one part of it worth seeing. She is placed by her face instead of
+       by her frame: FACE_AT is where her face sits in the source, SITS_AT
+       is where it should land on the sheet, and the draw is solved back
+       from those two. Her shoulders run off the bottom, which is what a
+       cut-in frame does anyway. */
+    const FACE_AT = 0.27, EYES_AT = 0.21, SITS_AT = 0.58, FILL = 1.25;
+    const CLEAR_TOP = 0.34, CLEAR_BOT = 0.96;    // between the cards and the footer
+
+    const sc = Math.max(w / asilFaceImg.width, h / asilFaceImg.height) * FILL;
+    const dh = asilFaceImg.height * sc;
+    const top = h * SITS_AT - dh * FACE_AT;
+    const eyes = top + dh * EYES_AT;
+
+    /* Where the bands fall is luck, and on an unlucky draw the reveal is
+       a chin. One band is spent on her eyes -- still ragged, still a
+       different height every time, but it is there -- and the rest fall
+       where they like. */
     const n = 2 + Math.round(rnd() * 2);
     cx.save();
     cx.beginPath();
     for (let i = 0; i < n; i++) {
       const bh = Math.round(h * (0.07 + rnd() * 0.16));
-      cx.rect(0, Math.round(rnd() * (h - bh)), w, bh);
+      let y;
+      if (i === 0) y = eyes - bh * (0.3 + rnd() * 0.45);
+      else {
+        const room = h * (CLEAR_BOT - CLEAR_TOP) - bh;
+        y = h * CLEAR_TOP + Math.max(0, room) * rnd();
+      }
+      cx.rect(0, Math.round(Math.min(Math.max(y, h * CLEAR_TOP), h * CLEAR_BOT - bh)), w, bh);
     }
     cx.clip();
-    const sc = Math.max(w / asilFaceImg.width, h / asilFaceImg.height);
     const ox = (rnd() - 0.5) * w * 0.12;         // never quite registered
     cx.globalCompositeOperation = 'source-over';
     cx.globalAlpha = 0.62 + 0.3 * amount;
     cx.drawImage(asilFaceImg,
-      (w - asilFaceImg.width * sc) / 2 + ox, (h - asilFaceImg.height * sc) / 2,
-      asilFaceImg.width * sc, asilFaceImg.height * sc);
+      (w - asilFaceImg.width * sc) / 2 + ox, top,
+      asilFaceImg.width * sc, dh);
 
     // and the plates slipped on her too, so she arrives as damage
     cx.globalCompositeOperation = 'screen';
