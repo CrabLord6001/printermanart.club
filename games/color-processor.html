@@ -947,11 +947,11 @@ body.reading .hint { visibility: hidden; }
 
 .tubes .tube i {
   position: absolute;
-  left: 0; right: 0; top: 0;
+  left: 0; right: 0; bottom: 0;
   transition: height 0.35s ease;
 }
 
-.tubes .tube.spent { box-shadow: inset 0 0 0 1px var(--accent); }
+.tubes .tube.full { box-shadow: inset 0 0 0 1px var(--accent); }
 
 .tube.c i { background: var(--cyan); }
 .tube.m i { background: var(--magenta); }
@@ -962,13 +962,14 @@ body.reading .hint { visibility: hidden; }
 
 .tubetags b {
   width: 10px;
+  font-variant-numeric: tabular-nums;
   text-align: center;
   font-size: 0.48rem;
   font-weight: 700;
   color: var(--dim);
 }
 
-.tubetags b.spent { color: var(--accent); }
+.tubetags b.full { color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
   .tubes .tube i { transition: none; }
@@ -4283,7 +4284,7 @@ function floorDraw(now) {
     const tube = document.getElementById('tube-' + pl);
     if (!tube || !tube.firstChild) continue;
     const v = Math.min(1, discoVu[pl] + beat * 0.12);
-    tube.firstChild.style.height = ((1 - v) * 100).toFixed(1) + '%';
+    tube.firstChild.style.height = (v * 100).toFixed(1) + '%';
   }
 
   floorRaf = requestAnimationFrame(floorDraw);
@@ -4301,6 +4302,14 @@ function discoLabels() {
   if (b) b.textContent = discoOn ? 'Tempo' : 'Plates';
   if (d) d.hidden = !discoOn;
   if (rig) rig.classList.toggle('party', !!discoOn);
+  /* The tubes are a mixer in here, not a gauge, so the tags go back to
+     naming their channel. Left as they were they would sit under a
+     bouncing VU reading whatever percentage the last painting stopped
+     at -- a number about a print that is already finished. */
+  if (discoOn) for (const pl of TUBE_ORDER) {
+    const tag = document.getElementById('tubetag-' + pl);
+    if (tag) { tag.textContent = TAGS[pl] || ''; tag.classList.remove('full'); }
+  }
   if (!discoOn) paintTubes();                 // back to goals, at their real height
   paintNext();                                // the queue is a different six now
 }
@@ -5102,11 +5111,23 @@ function paintTubes() {
     const tube = document.getElementById('tube-' + pl);
     if (!tube) continue;
     const done = rest ? 0 : Math.min(cleared[pl] || 0, inkPer);
-    const spent = done >= inkPer;
-    tube.firstChild.style.height = (inkPer ? (1 - done / inkPer) * 100 : 0).toFixed(1) + '%';
-    tube.classList.toggle('spent', spent);
+    const full = done >= inkPer;
+    tube.firstChild.style.height = (inkPer ? (done / inkPer) * 100 : 0).toFixed(1) + '%';
+    tube.classList.toggle('full', full);
     const tag = document.getElementById('tubetag-' + pl);
-    if (tag) tag.classList.toggle('spent', spent);
+    if (tag) {
+      tag.classList.toggle('full', full);
+      /* The letter goes and the number takes its place. Three of the four
+         inks say which plate they are by being that color, and the fourth
+         is the one at the end of a row that is always C M Y K. A tick at
+         a hundred, because three digits do not fit in ten pixels and
+         because "done" is worth more than the number it finished on. */
+      const pc = inkPer ? Math.round((done / inkPer) * 100) : 0;
+      /* Before anything is printed the number is four zeros, which says
+         nothing twice. The letters are the useful thing on a screen
+         where no plate has started. */
+      tag.textContent = rest ? (TAGS[pl] || '') : (full ? '\u2713' : String(pc));
+    }
   }
 }
 
