@@ -496,7 +496,7 @@ html.embed .title { display: none; }
   100% { transform: translate(-50%, -112%) scale(1.06) rotate(-7deg); opacity: 0; }
 }
 
-/* Four and up is rare enough to be worth a different colour: white
+/* Four and up is rare enough to be worth a different color: white
    hot rather than gold, and thrown further. */
 .bonus b.big {
   color: #FFF6E2;
@@ -607,7 +607,7 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    never a flat disc, so it cannot be taken for magenta however red it goes,
    and the steps are hard cuts rather than fades because a glitch does not
    ease. */
-/* A virus wears its own ink: it matches on colour like any other drop,
+/* A virus wears its own ink: it matches on color like any other drop,
    so it has to look like one. What marks it is the light on top of it.
 
    The lamp is green, which is the same argument as the strike: nothing
@@ -617,7 +617,7 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    means a player can be told to watch for green and never have to be
    told what else green might be.
 
-   A coloured outline on its own just read as a colour. This is a
+   A colored outline on its own just read as a color. This is a
    beacon: a lamp sweeping round inside the cell, a core under the
    number, and a halo that spills past the edge onto whatever it is
    sitting next to. The sweep is a conic gradient turned by a transform,
@@ -790,7 +790,7 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   /* The deck costs height the rail does not have on a short phone, and
      a rail taller than the board is paid for out of the board -- the
      cells shrink to make room for it. The record is the part worth
-     keeping: it carries the colour and the speed between them. The
+     keeping: it carries the color and the speed between them. The
      meters under it are decoration, so they go first. */
   .rig.party .tubes,
   .rig.party .tubetags { display: none; }
@@ -901,16 +901,16 @@ body.reading .hint { visibility: hidden; }
 .deckwrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
 /* ---- the party's own ink ----
-   The series is printed in process colours because it is printing
+   The series is printed in process colors because it is printing
    paintings. Nothing is being printed in here, so the drops are not
    obliged to be cyan, magenta, yellow and black -- and black is not a
-   colour anybody puts in a club. These are the six the floor already
+   color anybody puts in a club. These are the six the floor already
    turns, so the drops and the room stop being two schemes sharing a
    screen, and they sit right round the wheel so no two of them are
    easy to confuse at the speed this gets to.
 
    Scoped to the rig, so the readouts above the board keep the process
-   colours they fringe their lettering with. */
+   colors they fringe their lettering with. */
 .rig.party {
   --cyan:     #16E0FF;
   --magenta:  #FF2FA0;
@@ -2584,7 +2584,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* A sign on the wall rather than a heading on a panel. Neon is a lit
    tube seen through its own haze, so it is built the way that reads: a
-   white hot core, the gas colour tight around it, and the wall glow
+   white hot core, the gas color tight around it, and the wall glow
    thrown well past the letters. Sized to hold one line at any width. */
 .partyface .pask {
   margin: 0 !important;
@@ -2714,7 +2714,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 /* The sign off, printed rather than set: the last thing on the reel is
    the shop's own name off the shop's own press. */
 /* The unlock, at the bottom of the reel. Set in the stencil the press
-   uses for its own name, out of register and in the party's colours
+   uses for its own name, out of register and in the party's colors
    rather than the shop's gold -- it belongs to the new mode, not to the
    one that just ended. */
 .creditsface .cnew {
@@ -3442,7 +3442,7 @@ nav.menu {
       <div class="nextbox platebox">
         <p class="lbl" id="tubeLbl">Plates</p>
         <!-- What the four tubes become at the party: a record turning at
-             whatever the tempo has wound on to, lit by whatever colour
+             whatever the tempo has wound on to, lit by whatever color
              came off the board last. -->
         <div class="deckwrap" id="deckWrap" hidden><canvas id="deck"></canvas></div>
         <div class="tubes" id="tubes"></div>
@@ -3623,12 +3623,12 @@ let INKS = PALETTES.office.inks;
      '#'    a virus
      '#!'   a virus that has just landed and has not corrupted yet          */
 /* A virus is an ordinary drop that happens to be counting. It carries
-   its ink like any other cell, so it matches on colour and feeds its
-   plate on colour, and clearing it is just clearing it. What makes it a
+   its ink like any other cell, so it matches on color and feeds its
+   plate on color, and clearing it is just clearing it. What makes it a
    virus is the number after the bang: one off every drop, and at zero it
    goes off and takes ink back off the plate it was going to feed.
 
-   It used to be a cell with no colour at all that scrambled whatever it
+   It used to be a cell with no color at all that scrambled whatever it
    landed next to, and the only way off the board was a chain. The
    measurement said that cure fired about once for every seven of them,
    so in practice there was no way off the board at all. */
@@ -3935,7 +3935,7 @@ function pageEl() { return document.getElementById('page'); }
    The dance floor
    ============================================================
    What is behind the board when there is no painting to print. A grid
-   of light panels, lit in the colour of whatever was cleared last and
+   of light panels, lit in the color of whatever was cleared last and
    pulsing on the music -- on the music itself rather than on a tempo
    typed in here, so it is right for the track that is playing and stays
    right if the track is ever changed. With the sound off there is
@@ -3954,7 +3954,7 @@ const FLOOR_BPM = 134;                    // the track's own, for the quiet case
 
 /* Lit in the inks the press carries, so the floor belongs to this
    machine rather than to a stock rainbow. Light cyan and light magenta
-   are in because six colours around the wheel beats four. */
+   are in because six colors around the wheel beats four. */
 const FLOOR_INK = {
   c:  '#16E0FF', lc: '#7BE8FF', m:  '#FF2FA0',
   lm: '#FF86C5', y:  '#FFE23D', k:  '#8E7BFF'
@@ -3975,7 +3975,7 @@ let floorLast = 0;
 
 /* The four tubes are goals in every other lane -- how much of that ink
    the print still wants. There is no print here, so they are meters
-   instead: each one jumps when its colour comes off the board and
+   instead: each one jumps when its color comes off the board and
    falls back on its own, which is a mixer rather than a target. */
 const discoVu = { k: 0, c: 0, m: 0, y: 0 };
 
@@ -3983,7 +3983,7 @@ function floorStop() {
   if (floorRaf) { cancelAnimationFrame(floorRaf); floorRaf = 0; }
 }
 
-/* A colour was cleared, so the room turns that colour. The old one is
+/* A color was cleared, so the room turns that color. The old one is
    kept and mixed out of over a beat or so, which is what makes it read
    as the lights turning rather than as a swap. */
 function floorTurnTo(ink) {
@@ -4269,7 +4269,7 @@ function discoLabels() {
 
 /* ---- the record ----
    A deck in the rail, turning at whatever the tempo has wound on to and
-   labelled in whatever colour came off the board last. It is the one
+   labeled in whatever color came off the board last. It is the one
    thing on screen that says how fast this has got without printing a
    number at you: by the last tempo step it is spinning hard enough to
    be a blur.
@@ -4337,7 +4337,7 @@ function deckDraw(now, beat, lit, dt) {
   cx.lineWidth = Math.max(1, R * 0.03);
   cx.stroke();
 
-  // the label, in the room's colour, breathing on the beat
+  // the label, in the room's color, breathing on the beat
   const lab = R * (0.34 + 0.03 * beat);
   cx.beginPath();
   cx.arc(0, 0, lab, 0, Math.PI * 2);
@@ -4880,7 +4880,7 @@ function popBonus(clumps, mult) {
   const fs = Math.max(17, Math.round(cellPx * (0.95 + Math.min(by, 6) * 0.11)));
 
   /* Kept off the edges. The group that earns a chain is usually on the
-     floor of the well, which is exactly where a badge centred on it
+     floor of the well, which is exactly where a badge centered on it
      hangs over the side and gets clipped. */
   const pad = fs * 0.85;
   const x = t.left - w.left + t.width / 2;
@@ -5141,7 +5141,7 @@ function paintNext() {
 
 /* Read off the rig rather than off the root. The party re-declares the
    six inks on the rig, and anything that went to the root for them --
-   the next queue did -- kept handing out process colours onto a board
+   the next queue did -- kept handing out process colors onto a board
    that had stopped using them. */
 const colorOf = (ink) => getComputedStyle(document.querySelector('.rig') || document.documentElement)
   .getPropertyValue(VARS[ink] || '--key');
@@ -5230,13 +5230,13 @@ function spawn() {
 
    The accents are the two the shop does not print with: a hot red
    and a hot cyan. Everything else in the burst is the virus's own
-   ink, because what you are watching is that colour coming back
+   ink, because what you are watching is that color coming back
    off the page.
    ============================================================ */
 
 const ZAP_RED = '#FF003C', ZAP_CYAN = '#00F0FF', ZAP_GOLD = '#FCEE0A';
 
-/* The discharge, in the one colour the shop does not own.
+/* The discharge, in the one color the shop does not own.
 
    Red was already spoken for -- it is what a virus looks like sitting
    there -- so the warning and the event would have worn the same thing.
@@ -5322,7 +5322,7 @@ function zapBurst(blown) {
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + Math.random() * 0.4;
       const sp = (0.5 + Math.random() * 1.6) * (r.width / 44) * 170;
-      // a few sparks in the hot colours; the rest is the ink it took
+      // a few sparks in the hot colors; the rest is the ink it took
       const roll = Math.random();
       zapBits.push({
         x: cx, y: cy,
@@ -5353,7 +5353,7 @@ function zapDraw(now) {
   /* The hit on the print: a discharge rather than a blast. The strike
      is the pale blue of a spark, hard for a tenth of a second, and then
      it falls away to the deeper blue over half of it -- the picture
-     goes cold and comes back rather than going the colour of the thing
+     goes cold and comes back rather than going the color of the thing
      that hit it. Red stays what a virus looks like; this is what one
      doing something looks like. */
   if (t < 0.5) {
@@ -5467,7 +5467,7 @@ function zapDraw(now) {
    gives ink back instead.
 
    The cost comes off its own plate, which is what makes it readable --
-   the colour of the thing tells you which tube is about to drop. If that
+   the color of the thing tells you which tube is about to drop. If that
    plate has not got it, the rest comes off the fullest one, so landing
    on an empty plate early is never free. */
 function burnDown() {
@@ -5654,8 +5654,8 @@ async function resolve() {
     points += pass;
     sayPts(points);
     /* The lights turn to whatever just came off the board. The biggest
-       group in the pass wins it, so a chain that clears three colours
-       at once turns the room the colour it mostly was. */
+       group in the pass wins it, so a chain that clears three colors
+       at once turns the room the color it mostly was. */
     if (discoOn) {
       let big = null, bigN = 0;
       for (const g of clumps) {
@@ -6069,7 +6069,7 @@ function wreckDraw(o, X, Y, W, H, pl) {
 
   if (pl === 'k') {
     o.globalAlpha = 0.45; cowl(); o.globalAlpha = 1;   // the press, in slate
-    /* Smoke is the one grey thing on the sheet, so it goes down light
+    /* Smoke is the one gray thing on the sheet, so it goes down light
        rather than at the weight everything else on this plate takes. */
     o.globalAlpha = 0.40;
     disc(0.350, 0.258, 0.092);
@@ -6252,7 +6252,7 @@ function paintScore(cv, text) {
   if (wide > ROOM) fs = Math.max(12, Math.floor(fs * ROOM / wide));
 
   /* One height for all four, whatever size the figures inside them end
-     up: a long score must not make its box shorter than its neighbours. */
+     up: a long score must not make its box shorter than its neighbors. */
   const H = Math.round(BOX_FS * 1.26);
   cv.width = Math.round(W * dpr);
   cv.height = Math.round(H * dpr);
@@ -7221,7 +7221,7 @@ const VIC_RUNS = 17.1;                          // how long he takes, with the t
 
 /* The screen is as fine as the frame it is printed in. A fixed cell gave
    him about fifty dots across the face on a phone, which is a man you
-   cannot recognise; this keeps the count near a hundred wherever he
+   cannot recognize; this keeps the count near a hundred wherever he
    hangs, and stops the dots disappearing on a big one. */
 const vicCell = (w) => Math.max(1.5, Math.min(3.4, w / 95));
 
@@ -7869,7 +7869,7 @@ function asilStop() {
    Her arrival, run backwards. She came apart into focus over a second
    and a bit; she leaves by coming apart the rest of the way, folding
    down to a line and going dark. The line is the virus green, because
-   that is the colour this game has spent twenty levels teaching you to
+   that is the color this game has spent twenty levels teaching you to
    read as something failing.
 
    The report is held off until the screen is empty, so it is read
@@ -8214,7 +8214,7 @@ function rotateCheck(anyway) {
 function dealRoom(pool, slots, ci) {
   let s = ((galleryHour * 2654435761) ^ ((ci + 1) * 40503)) >>> 0;
   const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
-  rnd(); rnd();                                 // neighbouring seeds start too much alike
+  rnd(); rnd();                                 // neighboring seeds start too much alike
   const bag = pool.slice();
   for (let i = bag.length - 1; i > 0; i--) {
     const j = Math.floor(rnd() * (i + 1));
@@ -8787,10 +8787,10 @@ let galArtKey = '';
 /* ============================================================
    Her, in the file
    ============================================================
-   The sheet behind the level card is the painting with its colour
+   The sheet behind the level card is the painting with its color
    taken out. That was only ever so the card could show the job
    without handing over the reward -- but a picture drained of
-   colour is a picture something has been done to, and something
+   color is a picture something has been done to, and something
    has: she has been in these files the whole time. Printing a
    level is not making an image, it is putting back what she took.
 
@@ -8911,7 +8911,7 @@ function moshFrame(src, w, h, amount, seed, face) {
      nothing to see. */
   if (face) {
     /* The top third of the card is spoken for -- the level plate and the
-       par bar sit there -- so a portrait centred the usual way hides the
+       par bar sit there -- so a portrait centered the usual way hides the
        one part of it worth seeing. She is placed by her face instead of
        by her frame: FACE_AT is where her face sits in the source, SITS_AT
        is where it should land on the sheet, and the draw is solved back

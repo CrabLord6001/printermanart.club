@@ -924,7 +924,7 @@ export function done() {
 
    Hung off the cue bus rather than the master, so the readout follows
    the music and not the sound effects going off over it -- a clear
-   should light the floor by its own colour, not by shoving the meter.
+   should light the floor by its own color, not by shoving the meter.
 
    Low frequencies only. The whole spectrum averages out to a fairly
    steady number and barely moves; the bottom two hundred hertz or so
