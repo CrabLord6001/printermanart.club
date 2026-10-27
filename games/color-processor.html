@@ -6776,7 +6776,7 @@ function buildGallery() {
   }
 
   fitChapter();
-  paintGalleryArt(here);
+  paintGalleryArt(here, i + 1, list.length);
 
   set('galSaved', trying
     ? 'Trial run \u2014 nothing from here is saved'
@@ -7148,16 +7148,227 @@ function fitChapter() {
 
 let galArtKey = '';
 
+
+/* ============================================================
+   Her, in the file
+   ============================================================
+   The sheet behind the level card is the painting with its colour
+   taken out. That was only ever so the card could show the job
+   without handing over the reward -- but a picture drained of
+   colour is a picture something has been done to, and something
+   has: she has been in these files the whole time. Printing a
+   level is not making an image, it is putting back what she took.
+
+   So the sheet comes apart, briefly, before it settles. Once and
+   barely in the first room; by the last one it holds long enough
+   that there is a face in it. The glitch is not warning you she is
+   coming. It is evidence she was already here.
+
+   Frames are moshed once and then flickered between, rather than
+   drawn live. A film reel is discrete frames and so is this, it
+   costs one pass instead of sixty a second, and a phone can
+   afford it.
+   ============================================================ */
+
+let galClean = null;                 // the sheet as printed
+let galFrames = [];                  // and the same sheet, damaged
+let galHauntRaf = 0, galHauntPlan = null, galHauntFrom = 0;
+let asilFaceImg = null, asilFaceJob = null;
+
+/* Her picture, loaded only when a level is deep enough to need it, so
+   the early rooms never pay for a face they do not show. */
+function asilFace() {
+  if (asilFaceImg) return Promise.resolve(asilFaceImg);
+  if (!asilFaceJob) {
+    asilFaceJob = new Promise((ok) => {
+      const f = (typeof FINALE === 'object' && FINALE && FINALE.file) ? FINALE.file : null;
+      if (!f) { ok(null); return; }
+      const im = new Image();
+      im.onload = () => { asilFaceImg = im; ok(im); };
+      im.onerror = () => ok(null);
+      im.src = '/games/img/' + f;
+    });
+  }
+  return asilFaceJob;
+}
+
+/* One damaged frame. Bands of the sheet are lifted from somewhere else
+   on it and dropped back shifted, some of them tinted and laid over in
+   screen so the plates read as having slipped apart, and a few rows are
+   stretched down the sheet the way a torn scan smears. */
+function moshFrame(src, w, h, amount, seed, face) {
+  const cv = document.createElement('canvas');
+  cv.width = src.width; cv.height = src.height;
+  const cx = cv.getContext('2d');
+  const dpr = src.width / w;
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  cx.drawImage(src, 0, 0, w, h);
+
+  let st = seed || 11;
+  const rnd = () => (st = (st * 1664525 + 1013904223) >>> 0) / 4294967296;
+
+  const bands = Math.round(5 + amount * 16);
+  for (let i = 0; i < bands; i++) {
+    const bh = Math.max(2, Math.round(h * (0.004 + rnd() * 0.055 * (0.4 + amount))));
+    const dy = Math.round(rnd() * (h - bh));
+    const sy = Math.round(rnd() * (h - bh));
+    const dx = Math.round((rnd() - 0.5) * w * 0.5 * amount);
+    cx.drawImage(src, 0, sy * dpr, src.width, bh * dpr, dx, dy, w, bh);
+
+    // the plates slipping apart: the same band again, tinted, over the top
+    if (rnd() < 0.45 * amount + 0.1) {
+      cx.save();
+      cx.globalCompositeOperation = 'screen';
+      cx.globalAlpha = 0.25 + rnd() * 0.4;
+      cx.fillStyle = rnd() < 0.5 ? DOT.c : DOT.m;
+      cx.fillRect(dx + (rnd() - 0.5) * 20, dy, w, bh);
+      cx.restore();
+    }
+  }
+
+  // a few rows pulled down the sheet, which is what a torn scan does
+  const smears = Math.round(amount * 5);
+  for (let i = 0; i < smears; i++) {
+    const sy = Math.round(rnd() * (h - 2));
+    const dy = sy + Math.round(rnd() * h * 0.3);
+    const len = Math.max(4, Math.round(h * 0.03 + rnd() * h * 0.22 * amount));
+    cx.globalAlpha = 0.65;
+    cx.drawImage(src, 0, sy * dpr, src.width, 1, 0, dy, w, len);
+    cx.globalAlpha = 1;
+  }
+
+  /* And her, in the signal. Spliced into a few bands rather than laid
+     over the whole sheet: a frame of a different film cut into the
+     reel, which is what you would actually see on a damaged scan and
+     what makes it read as her being in the file rather than as a
+     portrait put on top of a painting.
+
+     Screen was the first attempt and it did nothing -- her picture is
+     dark and so is the sheet, so blending one into the other left
+     nothing to see. */
+  if (face && asilFaceImg) {
+    const n = 2 + Math.round(rnd() * 2);
+    cx.save();
+    cx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const bh = Math.round(h * (0.07 + rnd() * 0.16));
+      cx.rect(0, Math.round(rnd() * (h - bh)), w, bh);
+    }
+    cx.clip();
+    const sc = Math.max(w / asilFaceImg.width, h / asilFaceImg.height);
+    const ox = (rnd() - 0.5) * w * 0.12;         // never quite registered
+    cx.globalCompositeOperation = 'source-over';
+    cx.globalAlpha = 0.62 + 0.3 * amount;
+    cx.drawImage(asilFaceImg,
+      (w - asilFaceImg.width * sc) / 2 + ox, (h - asilFaceImg.height * sc) / 2,
+      asilFaceImg.width * sc, asilFaceImg.height * sc);
+
+    // and the plates slipped on her too, so she arrives as damage
+    cx.globalCompositeOperation = 'screen';
+    cx.globalAlpha = 0.22;
+    cx.fillStyle = DOT.c;
+    cx.fillRect(ox - 6, 0, w, h);
+    cx.restore();
+  }
+
+  return cv;
+}
+
+function galHauntStop() {
+  if (galHauntRaf) cancelAnimationFrame(galHauntRaf);
+  galHauntRaf = 0;
+  galHauntPlan = null;
+  const cv = document.getElementById('galArt');
+  if (cv && galClean) {
+    const cx = cv.getContext('2d');
+    cx.setTransform(1, 0, 0, 1, 0, 0);
+    cx.clearRect(0, 0, cv.width, cv.height);
+    cx.drawImage(galClean, 0, 0);
+  }
+}
+
+/* How much of her a level gets. One blip you half see in the first room,
+   and by the last print a hold long enough to be looked at. */
+async function galHaunt(level, total, W, H) {
+  galHauntStop();
+  if (!galClean) return;
+
+  const t = total > 1 ? Math.min(1, Math.max(0, (level - 1) / (total - 1))) : 0;
+  const bursts = 1 + Math.floor(t * 3.2);
+  const hold = 70 + t * 620;
+  const amount = 0.16 + t * 0.95;
+  const face = t > 0.68;
+
+  if (face) await asilFace();
+
+  galFrames = [];
+  for (let i = 0; i < 4; i++) {
+    galFrames.push(moshFrame(galClean, W, H, amount * (0.6 + i * 0.16), 11 + i * 97 + level * 7, face && i >= 2));
+  }
+
+  /* The timeline, built once. Each burst is a run of damaged frames with
+     the sheet showing between them -- a reel with holes in it rather
+     than a dissolve. */
+  const plan = [];
+  let at = 420;                                  // a beat of clean first
+  for (let b = 0; b < bursts; b++) {
+    const len = hold * (0.55 + 0.45 * (b + 1) / bursts);
+    let used = 0;
+    while (used < len) {
+      const step = 45 + Math.random() * 70;
+      plan.push({ from: at + used, to: at + used + step, f: Math.floor(Math.random() * galFrames.length) });
+      used += step;
+      if (Math.random() < 0.35) {
+        const gap = 30 + Math.random() * 60;
+        plan.push({ from: at + used, to: at + used + gap, f: -1 });
+        used += gap;
+      }
+    }
+    at += len + 500 + Math.random() * 900;       // and quiet in between
+  }
+
+  galHauntPlan = plan;
+  galHauntFrom = performance.now();
+  galHauntRaf = requestAnimationFrame(galHauntTick);
+}
+
+function galHauntTick(now) {
+  const cv = document.getElementById('galArt');
+  if (!cv || !galHauntPlan || !galClean || cv.hidden) { galHauntStop(); return; }
+  const ms = now - galHauntFrom;
+  const cx = cv.getContext('2d');
+  cx.setTransform(1, 0, 0, 1, 0, 0);
+
+  let shown = -1;
+  for (const p of galHauntPlan) {
+    if (ms >= p.from && ms < p.to) { shown = p.f; break; }
+  }
+
+  const want = shown >= 0 ? galFrames[shown] : galClean;
+  if (want && cv.__was !== want) {
+    cx.clearRect(0, 0, cv.width, cv.height);
+    cx.drawImage(want, 0, 0);
+    cv.__was = want;
+  }
+
+  const last = galHauntPlan[galHauntPlan.length - 1];
+  if (!last || ms > last.to + 60) { galHauntStop(); return; }
+  galHauntRaf = requestAnimationFrame(galHauntTick);
+}
+
 function clearGalleryArt() {
+  galHauntStop();
+  galClean = null;
+  galFrames = [];
   const cv = document.getElementById('galArt');
   const vl = document.getElementById('galVeil');
-  if (cv) cv.hidden = true;
+  if (cv) { cv.hidden = true; cv.__was = null; }
   if (vl) vl.hidden = true;
   if (elOver) elOver.classList.remove('hasart');
   galArtKey = '';
 }
 
-function paintGalleryArt(here) {
+function paintGalleryArt(here, level, total) {
   const cv = document.getElementById('galArt');
   const vl = document.getElementById('galVeil');
   if (!cv) return;
@@ -7175,6 +7386,9 @@ function paintGalleryArt(here) {
     cv.hidden = false;
     if (vl) vl.hidden = false;
     elOver.classList.add('hasart');
+    // she gets her moment every time the card comes up, not only on a
+    // level whose sheet had to be fetched
+    if (level) galHaunt(level, total || 20, W, H);
   };
 
   const key = here.art.file + '|' + W + 'x' + H;
@@ -7195,6 +7409,16 @@ function paintGalleryArt(here) {
     cx.globalCompositeOperation = 'multiply';
     for (const pl of PLATES) screenPlate(cx, sep[pl], W, H, 2.2, ANGLE[pl], DOT[pl]);
     cx.globalCompositeOperation = 'source-over';
+
+    /* The sheet as printed, kept aside. Everything she does to it is
+       built from this rather than from the canvas being shown, so a
+       damaged frame never becomes the thing the next one is damaged
+       from. */
+    galClean = document.createElement('canvas');
+    galClean.width = cv.width; galClean.height = cv.height;
+    galClean.getContext('2d').drawImage(cv, 0, 0);
+    cv.__was = galClean;
+
     galArtKey = key;
     show();
   };
