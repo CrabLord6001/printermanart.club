@@ -158,8 +158,12 @@ def plate(w):
     bits = [b for b in [e(w["artist_bio"]), e(w["date"]), e(w["medium"])] if b]
     line1 = " &middot; ".join(bits)
     acc = f", {e(w['accession'])}" if w["accession"] else ""
-    line2 = (f"{e(w['institution'])}{acc} &middot; {e(w['rights_note'])} &middot; "
-             f"<a href=\"{e(w['object_url'])}\" target=\"_blank\" rel=\"noopener\">{e(w['object_host'])}</a>")
+    # Works outside a museum's open-access set have no catalogue page to send
+    # anyone to, so the tombstone stops after the rights note rather than
+    # printing an empty link.
+    tail = (f" &middot; <a href=\"{e(w['object_url'])}\" target=\"_blank\" "
+            f"rel=\"noopener\">{e(w['object_host'])}</a>") if w["object_url"] else ""
+    line2 = f"{e(w['institution'])}{acc} &middot; {e(w['rights_note'])}{tail}"
     shown = datetime.date.fromisoformat(w["shown"])
     return f"""
     <article class="work" id="{e(w['id'])}">
