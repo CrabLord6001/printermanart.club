@@ -2754,6 +2754,11 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 }
 .endface .unlock.up::before { background: rgba(6,5,10,0.82); }
 
+/* Above the scrim rather than under it. The card outranks the panel at
+   z-index 6, so its scrim washed over the two buttons as well and left
+   the way out of the screen looking switched off. */
+.endface .bot { position: relative; z-index: 7; }
+
 /* The light behind it. Rays rather than a glow, so it reads as a lamp
    coming on rather than a box lighting up. */
 .endface .uburst {
@@ -3098,38 +3103,6 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* The sign off, printed rather than set: the last thing on the reel is
    the shop's own name off the shop's own press. */
-/* The unlock, at the bottom of the reel. Set in the stencil the press
-   uses for its own name, out of register and in the party's colors
-   rather than the shop's gold -- it belongs to the new mode, not to the
-   one that just ended. */
-.creditsface .cnew {
-  margin: 30px 0 0 !important;
-  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
-  font-size: clamp(1.1rem, 6vw, 1.5rem);
-  line-height: 1.15;
-  letter-spacing: 0.04em;
-  color: #fff;
-  text-shadow: 2px 0 0 #FF2FA0, -2px 0 0 #16E0FF, 0 0 26px rgba(255,47,160,0.5);
-  animation: cnewLamp 1.9s ease-in-out infinite;
-}
-
-.creditsface .cnewsub {
-  margin: 8px 0 0 !important;
-  font-size: 0.58rem;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: #FFE23D;
-}
-
-@keyframes cnewLamp {
-  0%, 100% { text-shadow: 2px 0 0 #FF2FA0, -2px 0 0 #16E0FF, 0 0 26px rgba(255,47,160,0.45); }
-  50%      { text-shadow: 3px 0 0 #FFE23D, -3px 0 0 #FF2FA0, 0 0 34px rgba(22,224,255,0.6); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .creditsface .cnew { animation: none; }
-}
-
 .creditsface .cmark {
   margin: 26px 0 0 !important;
   font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
@@ -8886,7 +8859,6 @@ function epiStop() {
   if (epiRaf) cancelAnimationFrame(epiRaf);
   epiRaf = 0;
   epiClock = null;
-  clearTimeout(uTimer); uTimer = 0;
   clearTimeout(uWait); uWait = 0;
   const u = document.getElementById('endUnlock');
   if (u) { u.hidden = true; u.classList.remove('up'); }
@@ -8897,17 +8869,17 @@ function epiStop() {
    until they actually play it -- discoSeen() is set by the menu, not by
    either of the two places that announce it -- so somebody who reaches
    the end and walks away is told again next time. */
-/* It holds for a beat and then stands down. The card dims the whole
-   casing behind it, including the two buttons -- they stay clickable,
-   a box shadow catches nothing, but a dimmed button reads as a dead
-   one, and this screen is where the player decides what to do next. A
-   tap takes it away early. */
-let uTimer = 0, uWait = 0;
+/* It stays. This is the one new thing the player has earned in
+   twenty-one levels and it was timing itself out after six seconds --
+   long enough to notice, not long enough to enjoy. The reason it stood
+   down was that the scrim dimmed the two buttons along with everything
+   else, and a dimmed button reads as a dead one; the footer is lifted
+   above the scrim instead and the card simply remains. A tap takes it
+   away for anyone who wants it gone. */
+let uWait = 0;
 const UNLOCK_WAIT = 1100;
-const UNLOCK_HOLD = 6500;
 
 function unlockOff() {
-  clearTimeout(uTimer); uTimer = 0;
   clearTimeout(uWait); uWait = 0;
   const u = document.getElementById('endUnlock');
   if (!u || u.hidden) return;
@@ -8922,8 +8894,6 @@ function epiUnlock() {
   /* Off the frame that unhid it, or the transition has nothing to move
      from and the thing simply appears. */
   requestAnimationFrame(() => requestAnimationFrame(() => u.classList.add('up')));
-  clearTimeout(uTimer);
-  uTimer = setTimeout(unlockOff, UNLOCK_HOLD);
   u.onclick = unlockOff;
 }
 
@@ -9313,19 +9283,11 @@ function buildCredits() {
   mark.textContent = 'PRINTERMAN’S ART CLUB';
   reel.appendChild(mark);
 
-  /* And what they get for it, at the end of the reel, where the reel is
-     already carrying them. It is only news the first time, so it is
-     only here for as long as the button upstairs is still gold. */
-  if (unlockUp()) {
-    const un = document.createElement('p');
-    un.className = 'cnew';
-    un.textContent = 'New game mode unlocked!';
-    reel.appendChild(un);
-    const sub = document.createElement('p');
-    sub.className = 'cnewsub';
-    sub.textContent = 'Endless is on the menu';
-    reel.appendChild(sub);
-  }
+  /* The reel used to end on the unlock too. It cannot now: Credits sits
+     on the home menu, so this is a page anybody can open at any time,
+     and a mode they have not earned announced to them is an
+     announcement about nothing. The report screen keeps the news, which
+     is where it is earned. */
 
   /* Opened at the top however it was left. There are few enough names
      that they fit a desktop panel whole, so there is nothing to roll --
