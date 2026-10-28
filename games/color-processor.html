@@ -3689,8 +3689,6 @@ function cueNow() {
    -- which is usually a touch that has just changed the screen. Without
    this the cue that was set a moment too early is simply lost, and the
    level plays in silence until the next screen. */
-let chimeDue = false;            // a print was finished and the next card owes a chime
-
 let wantCue = null;
 
 let wantHow = null;
@@ -7562,7 +7560,7 @@ function showFace(which) {
     document.getElementById('overTitle').textContent = 'Levels';
     buildLevels();
   } else if (which === 'gallery') {
-    if (chimeDue) { chimeDue = false; sayMusic('chime'); }
+    /* Silent on purpose. See the note where the win is scored. */
     /* No heading. The chapter carries the screen now, printed large, and
        "The Gallery" above it was a second name for the same place. */
     elOver.classList.add('menu');
@@ -9870,12 +9868,13 @@ function finish(won) {
      whole point of a trial is that nothing from it is kept. */
   if (won && campOn && !trying) keepBest(campAt + 1, ran);
 
-  /* A finished print earns the chime, but it does not sound here -- it
-     sounds on the card for the next level, which is the screen that
-     arrives next and the one screen in the game with nothing else on
-     it. Held as a debt so that reaching that card any other way is
-     still silent. */
-  if (won) chimeDue = true;
+  /* The win sounds here and only here: 'done' resolves the organ up to
+     the major, which is the whole celebration. A chime used to be held
+     as a debt and paid out on the card for the next level, which put a
+     cheerful ring over a greyscale painting the AI has just finished
+     ruining -- congratulating the player on a screen whose job is to
+     show them the next thing that needs saving. One triumph per win,
+     on the picture that was actually restored. */
 
   /* The scoring line is the game talking while you play, and it was only
      ever cleared when the next run started. So the last clear of a run sat
