@@ -6379,14 +6379,14 @@ function shopPlate(w, h, X, Y, SW, SH, pl, wreck) {
    `band` is how much of the sheet the lettering is centered in. It is the
    whole sheet on a plate that carries nothing else, and the top of it
    when the shop is printed underneath. */
-function titlePlate(w, h, lines, fs, lead, dx, dy, dens, band) {
+function titlePlate(w, h, lines, fs, lead, dx, dy, dens, band, weight) {
   const off = document.createElement('canvas');
   off.width = w; off.height = h;
   const o = off.getContext('2d');
   o.fillStyle = '#000';
   o.textAlign = 'center';
   o.textBaseline = 'middle';
-  o.font = '700 ' + fs + 'px ' + TITLE_FONT;
+  o.font = (weight || 700) + ' ' + fs + 'px ' + TITLE_FONT;
   try { o.letterSpacing = Math.round(fs * 0.06) + 'px'; } catch (e) { /* older browsers set it in the font */ }
 
   const bh = band || h;
@@ -6489,6 +6489,22 @@ const SCORE_OFF = {
 };
 const SCORE_LIT = { c: '#39C8F2', m: '#FF4FA8', y: '#FFE04A', k: '#F4F1E8' };
 
+/* The readouts are the one place in the game where legibility beats the
+   house look, so the two things that cost legibility are named here
+   rather than buried in the drawing: the weight of the face, and how
+   coarse the screen is against the letter height. A heavy face screened
+   at a coarse pitch is four dots to a stroke, and four dots is a blur.
+   Lower the weight and the pitch together, never one alone -- thin type
+   under a coarse screen is worse than heavy type under one. */
+const SCORE_WEIGHT = 500;
+const SCORE_SCREEN = 16;
+
+/* Half the skew the paintings print with. The plates still miss each
+   other -- the yellow and the magenta are visible on every digit -- but
+   at readout size a full offset was most of a stroke wide, and three
+   coloured ghosts of a figure is not a figure. */
+const SCORE_SKEW = 0.5;
+
 function paintScore(cv, text) {
   if (!cv || !cv.parentElement) return;
   const W = Math.round(cv.parentElement.clientWidth) - 6;
@@ -6511,7 +6527,7 @@ function paintScore(cv, text) {
   const BOX_FS = Math.max(19, Math.min(30, Math.round(W * 0.31)));
   const ROOM = W - 11;
   let fs = BOX_FS;
-  probe.font = '700 ' + fs + 'px ' + TITLE_FONT;
+  probe.font = SCORE_WEIGHT + ' ' + fs + 'px ' + TITLE_FONT;
   const wide = probe.measureText(text).width;
   if (wide > ROOM) fs = Math.max(12, Math.floor(fs * ROOM / wide));
 
@@ -6528,14 +6544,15 @@ function paintScore(cv, text) {
      the box can be 95px on a desktop and 62px on a phone, and a fixed
      pitch that reads at the first is four dots to a digit at the second.
      Tied to the letter height, the texture is the same at both. */
-  const cell = Math.max(0.9, fs / 11) * dpr;
+  const cell = Math.max(0.9, fs / SCORE_SCREEN) * dpr;
   const ctx = cv.getContext('2d');
   ctx.clearRect(0, 0, cv.width, cv.height);
 
   for (const pl of PLATES) {
     const o = SCORE_OFF[pl];
     const mask = titlePlate(cv.width, cv.height, [text], fs * dpr, H * dpr,
-                            o.x * cell, o.y * cell, 1);
+                            o.x * cell * SCORE_SKEW, o.y * cell * SCORE_SKEW,
+                            1, 0, SCORE_WEIGHT);
     ctx.globalCompositeOperation = pl === 'k' ? 'source-over' : 'lighter';
     screenPlate(ctx, mask, cv.width, cv.height, cell, ANGLE[pl], SCORE_LIT[pl]);
   }
