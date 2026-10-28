@@ -7482,6 +7482,13 @@ function discoNew() {
 }
 function discoSeen() { try { localStorage.setItem(DISCO_SEEN, '1'); } catch (e) {} }
 
+/* ?end=1 is a viewing of the whole ending, and the unlock is part of
+   the ending -- both places that announce it were gated on having
+   actually won, so the one link for looking at the ending was the one
+   way to not see half of it. The peek records nothing either way:
+   discoSeen is still only set by the menu button. */
+const unlockUp = () => discoNew() || END_PEEK;
+
 /* Practice kept its slot in the end. Level select took away its old job
    -- any level, any time, posting nothing -- but it has a better one
    now: it is where the club's own art gets printed, so nobody learns
@@ -8910,7 +8917,7 @@ function unlockOff() {
 
 function epiUnlock() {
   const u = document.getElementById('endUnlock');
-  if (!u || !u.hidden || !discoNew()) return;
+  if (!u || !u.hidden || !unlockUp()) return;
   u.hidden = false;
   /* Off the frame that unhid it, or the transition has nothing to move
      from and the thing simply appears. */
@@ -9309,7 +9316,7 @@ function buildCredits() {
   /* And what they get for it, at the end of the reel, where the reel is
      already carrying them. It is only news the first time, so it is
      only here for as long as the button upstairs is still gold. */
-  if (discoNew()) {
+  if (unlockUp()) {
     const un = document.createElement('p');
     un.className = 'cnew';
     un.textContent = 'New game mode unlocked!';
