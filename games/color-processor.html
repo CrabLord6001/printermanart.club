@@ -7585,7 +7585,7 @@ function homeGo(go) {
   if (go === 'practice') { trying = 0; campOn = false; discoOn = false; hideFace(); newPrint('setup'); return; }
   if (go === 'endless')  { trying = 0; campOn = false; discoOn = true; discoSeen(); hideFace(); newPrint(null); return; }
   if (go === 'levels')   { showFace('levels'); return; }
-  if (go === 'credits')  { showFace('credits'); return; }
+  if (go === 'credits')  { credWon = false; showFace('credits'); return; }
 
   rulesFrom = null;
   showFace('rules');
@@ -11085,16 +11085,27 @@ document.getElementById('partyMenu').addEventListener('click', (e) => {
   showFace('home');
 });
 
+/* Which door the reel was opened by. Menu at the bottom of it used to
+   be showWin() unconditionally, which was right while the only way in
+   was finishing the series: Menu meant "back to the title screen, in
+   the state you just earned". Credits is on the home menu now, so that
+   same button was handing the won title plate, the "All 31 printed"
+   line and the ending music to somebody who had only come to read the
+   credits -- and the ending music is a one shot, so the title loop
+   never came back. */
+let credWon = false;
+
 document.getElementById('endMenu').addEventListener('click', (e) => {
   const b = e.target.closest('[data-end]');
   if (!b) return;
-  if (b.dataset.end === 'credits') { showFace('credits'); return; }
+  if (b.dataset.end === 'credits') { credWon = true; showFace('credits'); return; }
   showWin();
 });
 
 document.getElementById('credMenu').addEventListener('click', (e) => {
   if (!e.target.closest('[data-cred]')) return;
-  showWin();
+  if (credWon) { credWon = false; showWin(); return; }
+  showFace('home');
 });
 
 document.getElementById('vicMenu').addEventListener('click', (e) => {
