@@ -173,7 +173,7 @@ def plate(w):
         <span class="sep" aria-hidden="true">|</span>
         <span class="by">{e(w['artist'])}</span>
         <details class="cite">
-          <summary title="Catalogue details"><span aria-hidden="true">i</span><span class="sr">Catalogue details</span></summary>
+          <summary title="Catalog details"><span aria-hidden="true">i</span><span class="sr">Catalog details</span></summary>
           <div class="cite-panel"><p class="tombstone">{line1}<br>{line2}</p></div>
         </details>
       </div>
