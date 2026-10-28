@@ -6569,10 +6569,17 @@ function sayScore(id, cvId, text) {
   paintScore(document.getElementById(cvId), text);
 }
 
-/* Any plain setting of the score cancels a sum waiting to settle, so a
-   new run cannot be caught by a timer belonging to the last one. */
-let ptsGen = 0;
-const sayPts   = (v) => { ptsGen++; sayScore('pts', 'prPts', String(v)); };
+/* Any plain setting of the score ends whatever burst was running, so a
+   new print cannot be caught by a timer belonging to the last one. */
+let ptsGen = 0, runBase = null, runGain = 0, runTimer = 0;
+const PTS_HOLD = 900;                      // quiet before the sum adds up
+
+const sayPts = (v) => {
+  ptsGen++;
+  clearTimeout(runTimer);
+  runBase = null; runGain = 0;
+  sayScore('pts', 'prPts', String(v));
+};
 
 /* What a clear was worth, said where the player is already looking.
    It used to be printed under the buttons as "4 touching -- 10", which
@@ -6580,10 +6587,30 @@ const sayPts   = (v) => { ptsGen++; sayScore('pts', 'prPts', String(v)); };
    left on screen long after the clear it described. Now the box itself
    carries the sum for a moment and then adds up. */
 function sayPtsGain(was, gain) {
-  if (!gain) { sayPts(was); return; }
+  if (!gain) return;
+  /* A burst is everything that lands before the box goes quiet: both
+     halves of a double clear, every pass of a chain, two drops played
+     fast enough to run together. The base is whatever the score was
+     when the burst opened and it does not move again; the gain adds up
+     and the clock starts over. A chain that reads +10, +40, +90 is the
+     chain happening in front of you. Three separate +10s is the same
+     points pretending to be nothing much. */
+  if (runBase === null) runBase = was;
+  runGain += gain;
   const mine = ++ptsGen;
-  sayScore('pts', 'prPts', was + ' + ' + gain);
-  setTimeout(() => { if (mine === ptsGen) sayPts(was + gain); }, 900);
+  sayScore('pts', 'prPts', runBase + ' + ' + runGain);
+  clearTimeout(runTimer);
+  runTimer = setTimeout(() => {
+    if (mine === ptsGen) sayPts(runBase + runGain);
+  }, PTS_HOLD);
+}
+
+/* A run can end with a burst still on the box -- the last clear of a
+   print wins it, and the sum was still counting. Nothing is going to
+   settle it after that, so the board would carry 2450 + 120 under Game
+   Over for as long as anyone looked at it. */
+function settlePts(total) {
+  if (runBase !== null || runTimer) sayPts(total);
 }
 const sayGoal  = (v) => sayScore('tg',  'prTg',  v);
 const sayTime  = (v) => sayScore('tm',  'prTm',  v);
@@ -9841,6 +9868,7 @@ function finish(won) {
      under Game Over saying what some clump was worth, about a game that
      had already ended. Nothing is falling now, so it has nothing to say. */
   show('');
+  settlePts(points);                // and the score adds up before the card
 
   if (!won) {
     /* A jam used to leave them looking at a dead board with a plate count
