@@ -24,6 +24,7 @@
 let ctx = null;
 let on = false;
 let master = null, voice = null, wet = null;
+let bed = null;                     // the written organ, so it can be faded alone
 let timer = null, nextAt = 0, step = 0;
 
 const BPM = 80;
@@ -76,14 +77,24 @@ function build() {
   voice.gain.value = 1;
   voice.connect(master);
   voice.connect(delay);
+
+  /* The written bed goes through here on its way to the same place, so
+     it can be taken down on its own when a recording arrives. */
+  bed = ctx.createGain();
+  bed.gain.value = 1;
+  bed.connect(voice);
 }
 
 /* One note. The organ stops are stacked by hand: the note, its octave and
    its twelfth, which is roughly what a small pipe organ gives you. */
-function pipe(at, hz, dur, level, kind) {
+/* `dest` is for the written bed only. Everything else -- the clear
+   bell, the win, the jam -- hangs off `voice` and must stay there, so
+   that silencing the bed when a recording takes over cannot duck the
+   effects with it. */
+function pipe(at, hz, dur, level, kind, dest) {
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, at);
-  g.connect(voice);
+  g.connect(dest || voice);
 
   const stops = kind === 'pluck' ? [[1, 1], [2, 0.3], [3, 0.12]]
               : kind === 'pedal' ? [[1, 1], [2, 0.22]]
@@ -122,22 +133,22 @@ function schedule() {
 
     if (beat === 0) {
       // the chord, held for the whole bar
-      for (const n of bar.chord) pipe(nextAt, semi(n), BEAT * 4 - 0.05, 0.055, 'organ');
+      for (const n of bar.chord) pipe(nextAt, semi(n), BEAT * 4 - 0.05, 0.055, 'organ', bed);
       // and the pedal, an octave and a half below
-      pipe(nextAt, semi(bar.root) / 2, BEAT * 4 - 0.05, 0.085, 'pedal');
+      pipe(nextAt, semi(bar.root) / 2, BEAT * 4 - 0.05, 0.085, 'pedal', bed);
     }
 
     // A second voice inside the bar, so a held chord is not the only thing
     // happening for three and a half seconds.
     if (beat === 4) {
-      for (const n of bar.chord) pipe(nextAt, semi(n + 12), BEAT * 2 - 0.05, 0.028, 'organ');
+      for (const n of bar.chord) pipe(nextAt, semi(n + 12), BEAT * 2 - 0.05, 0.028, 'organ', bed);
     }
 
     // the plucked line: chord tones, wandering, never the same way twice
     if (beat % 2 === 0 || Math.random() < 0.6) {
       const tone = bar.chord[(Math.random() * bar.chord.length) | 0];
       const up = Math.random() < 0.55 ? 12 : 24;
-      pipe(nextAt, semi(tone + up), SUB * 2.4, 0.03, 'pluck');
+      pipe(nextAt, semi(tone + up), SUB * 2.4, 0.03, 'pluck', bed);
     }
 
     nextAt += SUB;
@@ -533,6 +544,23 @@ export async function setCue(name) {
      before it. */
   clearInterval(timer);
   timer = null;
+
+  /* Stopping the scheduler only stops new bars. A held chord runs very
+     nearly three seconds, so the understudy went on sounding over the
+     opening of the recording -- the organ outro heard after pressing
+     Play. Its own bus comes down over a third of a second, which reads
+     as the end of a phrase rather than a cut. */
+  bedFade(0.0001, 0.35);
+}
+
+/* The written bed's level, moved on its own: the effects hang off voice
+   and must not come down with it. */
+function bedFade(to, secs) {
+  if (!bed || !ctx) return;
+  const t = ctx.currentTime;
+  bed.gain.cancelScheduledValues(t);
+  bed.gain.setValueAtTime(Math.max(bed.gain.value, 0.0001), t);
+  bed.gain.exponentialRampToValueAtTime(Math.max(to, 0.0001), t + secs);
 }
 
 function cueFade(to, mine) {
@@ -768,6 +796,7 @@ export function startMusic() {
      plays instead, so there is never a silent level. */
   if (cueWant) setCue(cueWant);
   if (timer || cueHave) return;
+  bedFade(1, 0.2);                  // back up, if a recording faded it out
   nextAt = ctx.currentTime + 0.1;
   timer = setInterval(schedule, 40);
 }
@@ -1344,16 +1373,20 @@ export function endRoomStop() {
    length of the render and put back after, so what comes out is what
    ships rather than a second opinion about it. */
 export async function renderCue(play, seconds = 4) {
-  const keep = { ctx, master, voice, on, noiseBuf };
+  const keep = { ctx, master, voice, bed, on, noiseBuf };
   const off = new OfflineAudioContext(1, Math.ceil(44100 * seconds), 44100);
   ctx = off; on = true; noiseBuf = null;
   master = off.createGain(); master.gain.value = 1;
   master.connect(off.destination);
   voice = off.createGain(); voice.gain.value = 1;
   voice.connect(master);
+  /* The bed is rebuilt here too. Left pointing at the live context it
+     would be a node from one graph handed to another, which throws. */
+  bed = off.createGain(); bed.gain.value = 1;
+  bed.connect(voice);
   try { play(); } catch (e) { /* the restore below still has to run */ }
   const buf = await off.startRendering();
-  ctx = keep.ctx; master = keep.master; voice = keep.voice;
+  ctx = keep.ctx; master = keep.master; voice = keep.voice; bed = keep.bed;
   on = keep.on; noiseBuf = keep.noiseBuf;
   return buf;
 }
