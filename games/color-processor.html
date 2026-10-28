@@ -4858,7 +4858,22 @@ function paintDemo() {
   }
 }
 
-const platesDown = () => PLATES.filter(pl => laid[pl]).length;
+/* How many plates are full RIGHT NOW.
+
+   This used to count `laid`, which is a latch: set the first time a
+   plate fills and never cleared again. So a virus could take black back
+   under the line -- gauge reading 92, which is what the player sees --
+   and the print still counted as finished, because the latch remembered
+   a moment that was no longer true. The win fired on four latches while
+   the board plainly showed three and a bit.
+
+   Which is most of what a virus is for. Late in a level nearly every
+   plate is done or close, so the one thing a virus could take was the
+   one thing it was not allowed to touch, and the whole threat came to
+   nothing. The gauge and the goal read the same number now, and that
+   number is the one the win is settled on. */
+const plateFull = (pl) => (cleared[pl] || 0) >= inkPer;
+const platesDown = () => PLATES.filter(plateFull).length;
 
 /* Every clear puts its share of that ink on the page. No order between
    the plates: each one develops at the pace the player feeds it, so no
@@ -4872,7 +4887,10 @@ function layPlates() {
     const before = platesDown();
     bossPaint();
     const now = platesDown();
-    if (now !== before) { sayGoal(now + '/4'); sayMusic('lay'); }
+    /* The count can fall now as well as rise, so the readout follows it
+       either way but the sound only plays for a plate going down. A
+       virus taking one back is not an achievement. */
+    if (now !== before) { sayGoal(now + '/4'); if (now > before) sayMusic('lay'); }
     return true;
   }
   if (!separated || !beads || beads.n !== inkPer) return false;
@@ -5861,6 +5879,11 @@ async function resolve() {
     settle(well);
     paint();
     layPlates();
+    /* layPlates only speaks when it has beads to lay, and a virus takes
+       ink away rather than adding any. So the goal readout has to be
+       told here, or it would go on saying 4/4 next to a gauge the burst
+       had just knocked down to 92. */
+    sayGoal(platesDown() + '/4');
     paintTubes();
     await wait(380);
   }
