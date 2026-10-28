@@ -2705,89 +2705,186 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* ---- the unlock ----
    The one piece of good news on a screen that has just finished filing
-   a death. It arrives after the reading rather than during it, and it
-   wears the party's colors rather than the shop's gold, because what it
-   is announcing does not belong to the shop. */
-/* Laid over the panel rather than into it. Everything else on this face
-   is absolutely positioned, so a card in normal flow landed at the top
-   of the well behind the YOU WON sheet and could not be seen at all.
-   Centered in the casing instead, clear of the sheet above and the two
-   buttons below, and above both. */
+   a death, so it is the only thing in the game that is purely a party.
+
+   It had a border and a dark rounded panel, which made it a slightly
+   pinker copy of the Credits button sitting ten pixels under it -- the
+   same object twice, and the announcement lost. There is no card now.
+   The word is the thing: cut in the press's own stencil, inked in the
+   three plates the board drops plus the three the zaps use, over a
+   burst and a scatter of stars. */
 .endface .unlock {
   position: absolute;
   z-index: 6;
   top: 50%;
   left: 50%;
-  width: min(calc(100% - 36px), 20rem);
-  padding: 16px 18px 14px;
-  border: 1px solid rgba(255,47,160,0.45);
-  border-radius: 12px;
-  background:
-    radial-gradient(120% 140% at 50% 0%, rgba(255,47,160,0.16) 0%, transparent 62%),
-    linear-gradient(176deg, #150E1C 0%, #0B0910 100%);
-  /* The last shadow is the scrim: a spread wide enough to cover the
-     casing, clipped by the panel's own overflow. It puts the report
-     behind glass instead of behind the card, which on a phone is the
-     difference between a popup and a collision. */
-  box-shadow: 0 0 34px rgba(255,47,160,0.22),
-              0 18px 50px rgba(0,0,0,0.6),
-              inset 0 1px 0 rgba(255,255,255,0.07),
-              0 0 0 100vmax rgba(6,5,10,0);
+  width: min(calc(100% - 28px), 22rem);
+  padding: 26px 10px 30px;
+  /* The word is sized against this box, not the window. On a phone the
+     casing is a little over half the screen wide, so type set in vw
+     overran it by a third and the ends of ENDLESS fell off both sides
+     of the panel. */
+  container-type: inline-size;
   text-align: center;
   opacity: 0;
   transform: translate(-50%, -44%) scale(0.96);
-  transition: opacity 760ms ease,
-              transform 760ms cubic-bezier(.2,.9,.25,1),
-              box-shadow 760ms ease;
+  transition: opacity 620ms ease,
+              transform 760ms cubic-bezier(.2,.9,.25,1);
 }
-.endface .unlock.up {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-  box-shadow: 0 0 34px rgba(255,47,160,0.22),
-              0 18px 50px rgba(0,0,0,0.6),
-              inset 0 1px 0 rgba(255,255,255,0.07),
-              0 0 0 100vmax rgba(6,5,10,0.78);
-}
+.endface .unlock.up { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 .endface .unlock[hidden] { display: none; }
 
-.endface .unlock .uhead {
-  margin: 0 0 7px !important;
-  font-size: 0.52rem;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: #FFE23D;
+/* The scrim. It was a box-shadow spread, which paints OUTSIDE the
+   border box and so left the card's own rectangle undimmed -- a pale
+   panel around the burst, which is the box I had just taken away.
+   Behind it instead, stretched past the casing and clipped by the
+   panel's overflow. It catches no clicks either way. */
+.endface .unlock::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  left: -100vmax; right: -100vmax; top: -100vmax; bottom: -100vmax;
+  background: rgba(6,5,10,0);
+  /* It covers the whole casing, the two buttons included. A negative
+     z-index puts it behind them but still leaves it catching the
+     click, which would make the footer dead for as long as the card
+     was up. */
+  pointer-events: none;
+  transition: background 620ms ease;
+}
+.endface .unlock.up::before { background: rgba(6,5,10,0.82); }
+
+/* The light behind it. Rays rather than a glow, so it reads as a lamp
+   coming on rather than a box lighting up. */
+.endface .uburst {
+  position: absolute;
+  z-index: -1;
+  left: 50%; top: 50%;
+  width: 150%; aspect-ratio: 1;
+  pointer-events: none;                 /* reaches well past the card */
+  transform: translate(-50%, -50%);
+  background:
+    repeating-conic-gradient(from 0deg at 50% 50%,
+      rgba(22,224,255,0.11) 0deg 4deg, transparent 4deg 14deg,
+      rgba(255,47,160,0.11) 14deg 18deg, transparent 18deg 28deg),
+    radial-gradient(closest-side, rgba(255,47,160,0.26) 0%, rgba(22,224,255,0.14) 48%, transparent 72%);
+  -webkit-mask-image: radial-gradient(closest-side, #000 18%, transparent 74%);
+  mask-image: radial-gradient(closest-side, #000 18%, transparent 74%);
+  animation: uSpin 34s linear infinite;
 }
 
-.endface .unlock .uname {
+@keyframes uSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+/* And the lights catch it on the way in -- two quick passes over the
+   rays, then they settle to the slow turn. */
+.endface .unlock.up .uburst { animation: uSpin 34s linear infinite, uFlash 1500ms ease-out 1; }
+
+@keyframes uFlash {
+  0%   { opacity: 0.25; filter: brightness(1); }
+  14%  { opacity: 1;    filter: brightness(2.6); }
+  30%  { opacity: 0.5;  filter: brightness(1.1); }
+  46%  { opacity: 1;    filter: brightness(2.1); }
+  70%  { opacity: 0.7;  filter: brightness(1.2); }
+  100% { opacity: 1;    filter: brightness(1); }
+}
+
+.endface .uhead {
+  margin: 0 0 10px !important;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  /* .rules p sets text-align left and out-specifies the inherited
+     center, which is what had the whole announcement sitting off to
+     one side of its own burst. */
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.65), 0 0 20px rgba(22,224,255,0.75);
+}
+
+.endface .uname {
   margin: 0 !important;
   font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
-  font-size: clamp(1.5rem, 9vw, 2.1rem);
-  line-height: 1.05;
-  letter-spacing: 0.05em;
-  color: #fff;
-  /* The same out-of-register lamp the reel's unlock wears, so the two
-     announcements are plainly the same news. */
-  animation: uLamp 1.9s ease-in-out infinite;
+  font-size: clamp(1.1rem, 6.5vw, 3.1rem);   /* if cqw is not understood */
+  font-size: min(14cqw, 3.1rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
 }
 
-.endface .unlock .usub {
-  margin: 9px 0 0 !important;
-  font-size: 0.6rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
+/* Two inks, alternating, not six. Six made a rainbow; a dance floor is
+   lit by a couple of colors sweeping over everything, and the party
+   readouts in this game are already cyan and magenta. Yellow is held
+   back for a few of the sparks so it still turns up. */
+.endface .uname span {
+  display: inline-block;
+  color: var(--ink);
+  animation: uPop 520ms cubic-bezier(.2,1.5,.4,1) backwards,
+             uGlow 2.4s ease-in-out infinite;
+}
+.endface .uname span:nth-child(1) { --ink: #16E0FF; animation-delay: 0ms,   0ms; }
+.endface .uname span:nth-child(2) { --ink: #FF2FA0; animation-delay: 70ms,  120ms; }
+.endface .uname span:nth-child(3) { --ink: #16E0FF; animation-delay: 140ms, 240ms; }
+.endface .uname span:nth-child(4) { --ink: #FF2FA0; animation-delay: 210ms, 360ms; }
+.endface .uname span:nth-child(5) { --ink: #16E0FF; animation-delay: 280ms, 480ms; }
+.endface .uname span:nth-child(6) { --ink: #FF2FA0; animation-delay: 350ms, 600ms; }
+.endface .uname span:nth-child(7) { --ink: #16E0FF; animation-delay: 420ms, 720ms; }
+
+@keyframes uPop {
+  from { opacity: 0; transform: translateY(14px) scale(0.8) rotate(-6deg); }
+  to   { opacity: 1; transform: none; }
 }
 
-@keyframes uLamp {
-  0%, 100% { text-shadow: 2px 0 0 #FF2FA0, -2px 0 0 #16E0FF, 0 0 26px rgba(255,47,160,0.45); }
-  50%      { text-shadow: 3px 0 0 #FFE23D, -3px 0 0 #FF2FA0, 0 0 34px rgba(22,224,255,0.6); }
+/* A lit tube is white where the gas is brightest and colored at the
+   edge, so the core sits over the ink rather than replacing it. */
+@keyframes uGlow {
+  0%, 100% { text-shadow: 0 0 2px rgba(255,255,255,0.95), 0 0 7px var(--ink),
+                          0 0 20px var(--ink), 0 0 44px var(--ink); }
+  50%      { text-shadow: 0 0 3px #fff, 0 0 11px var(--ink),
+                          0 0 32px var(--ink), 0 0 68px var(--ink); }
+}
+
+/* Stars and flares, thrown round the word rather than arranged. */
+.endface .usparks { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.endface .sp { position: absolute; display: block; animation: uTwinkle 2.2s ease-in-out infinite; }
+
+.endface .sp.st {
+  width: 13px; height: 13px;
+  background: currentColor;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%,
+                     50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  filter: drop-shadow(0 0 7px currentColor);
+}
+.endface .sp.fl {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #fff 0%, currentColor 42%, transparent 75%);
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.endface .sp.a { color: #FFE23D; left:  7%; top: 16%; animation-delay: 0ms; }
+.endface .sp.b { color: #16E0FF; left: 89%; top: 22%; animation-delay: 420ms; }
+.endface .sp.c { color: #FF2FA0; left: 12%; top: 78%; animation-delay: 840ms; }
+.endface .sp.d { color: #FFE23D; left: 85%; top: 78%; animation-delay: 1260ms; }
+.endface .sp.g { color: #FF2FA0; left: 24%; top: 30%; animation-delay: 220ms; }
+.endface .sp.h { color: #16E0FF; left: 77%; top: 62%; animation-delay: 640ms; }
+.endface .sp.i { color: #16E0FF; left: 35%; top: 92%; animation-delay: 1060ms; }
+.endface .sp.j { color: #FF2FA0; left: 64%; top:  6%; animation-delay: 1480ms; }
+
+@keyframes uTwinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.7) rotate(0deg); }
+  50%      { opacity: 1;    transform: scale(1.15) rotate(28deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .endface .unlock,
   .endface .unlock.up { transition: opacity 300ms ease; transform: translate(-50%, -50%); }
-  .endface .unlock .uname { animation: none; text-shadow: 2px 0 0 #FF2FA0, -2px 0 0 #16E0FF; }
+  .endface .uburst,
+  .endface .unlock.up .uburst { animation: none; }
+  .endface .uname span { animation: none;
+    text-shadow: 0 0 2px rgba(255,255,255,0.95), 0 0 9px var(--ink), 0 0 26px var(--ink); }
+  .endface .sp { animation: none; opacity: 0.85; }
 }
 
 /* Nothing is readable while she is still coming apart behind it, and
@@ -3634,9 +3731,16 @@ nav.menu {
                      has finished reading itself, so the news does not
                      talk over the last thing she is owed. -->
                 <div class="unlock" id="endUnlock" hidden aria-live="polite">
-                  <p class="uhead">New mode unlocked</p>
-                  <p class="uname">Endless</p>
-                  <p class="usub">On the menu, whenever you want it</p>
+                  <span class="uburst" aria-hidden="true"></span>
+                  <span class="usparks" aria-hidden="true">
+                    <i class="sp st a"></i><i class="sp st b"></i><i class="sp st c"></i>
+                    <i class="sp st d"></i><i class="sp fl g"></i><i class="sp fl h"></i>
+                    <i class="sp fl i"></i><i class="sp fl j"></i>
+                  </span>
+                  <p class="uhead">New Mode Unlocked</p>
+                  <p class="uname" aria-label="Endless"><span
+                    >E</span><span>N</span><span>D</span><span>L</span><span
+                    >E</span><span>S</span><span>S</span></p>
                 </div>
                 <div class="bot">
                   <nav class="bossmenu" id="endMenu">
@@ -8760,7 +8864,10 @@ function epiRun() {
     else {
       for (const s of words) { s.classList.add('on'); s.classList.remove('now'); }
       for (const c of carets) c.classList.remove('on');
-      epiUnlock();
+      /* A beat, so the last line is allowed to land before the lights
+         come up on it. */
+      clearTimeout(uWait);
+      uWait = setTimeout(epiUnlock, UNLOCK_WAIT);
     }
   };
   epiRaf = requestAnimationFrame(frame);
@@ -8773,6 +8880,7 @@ function epiStop() {
   epiRaf = 0;
   epiClock = null;
   clearTimeout(uTimer); uTimer = 0;
+  clearTimeout(uWait); uWait = 0;
   const u = document.getElementById('endUnlock');
   if (u) { u.hidden = true; u.classList.remove('up'); }
   sayMusic('epilogueStop');
@@ -8787,11 +8895,13 @@ function epiStop() {
    a box shadow catches nothing, but a dimmed button reads as a dead
    one, and this screen is where the player decides what to do next. A
    tap takes it away early. */
-let uTimer = 0;
+let uTimer = 0, uWait = 0;
+const UNLOCK_WAIT = 1100;
 const UNLOCK_HOLD = 6500;
 
 function unlockOff() {
   clearTimeout(uTimer); uTimer = 0;
+  clearTimeout(uWait); uWait = 0;
   const u = document.getElementById('endUnlock');
   if (!u || u.hidden) return;
   u.classList.remove('up');
