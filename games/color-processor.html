@@ -825,9 +825,14 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
      a round button is not a mystery -- and the sign in block gives up its
      padding. Every pixel saved here is one the board keeps. */
   .side { gap: 6px; }
-  .rankbtn { margin-top: 6px; gap: 2px; }
-  .rankdial { width: 32px; height: 32px; }
-  .rankbtn .lbl { display: none; }
+  /* The word used to come off here to save the board a row. It is back:
+     the dial is the only way to the board now that the menu does not
+     carry it as well, and an unlabeled circle is not a door. The dial
+     gives up the pixels the word costs, so the board keeps its cells. */
+  .rankbtn { margin-top: 4px; gap: 1px; }
+  .rankdial { width: 26px; height: 26px; }
+  .rankdial svg { width: 13px; height: 13px; }
+  .rankbtn .lbl { font-size: 0.44rem; letter-spacing: 0.08em; }
   .signin { padding: 6px 0; }
   .whoami { padding: 4px 2px; gap: 2px; }
 
@@ -893,8 +898,10 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   height: 40px;
   border-radius: 50%;
   background: #0C0E13;
-  border: 1px solid var(--border);
-  color: var(--dim);
+  /* Lit at rest rather than dim. It reads as the one way to the board
+     because it is the one way to the board. */
+  border: 1px solid #4A4332;
+  color: var(--accent);
   transition: color 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
@@ -904,7 +911,7 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--dim);
+  color: var(--muted);
 }
 
 .rankbtn:hover .rankdial,
@@ -2696,6 +2703,68 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   .endface .mid .epcaret.on { animation: none; opacity: 1; }
 }
 
+/* ---- the unlock ----
+   The one piece of good news on a screen that has just finished filing
+   a death. It arrives after the reading rather than during it, and it
+   wears the party's colors rather than the shop's gold, because what it
+   is announcing does not belong to the shop. */
+.endface .unlock {
+  margin: 20px auto 0;
+  padding: 16px 18px 14px;
+  max-width: min(100%, 20rem);
+  border: 1px solid rgba(255,47,160,0.45);
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 140% at 50% 0%, rgba(255,47,160,0.16) 0%, transparent 62%),
+    linear-gradient(176deg, #150E1C 0%, #0B0910 100%);
+  box-shadow: 0 0 34px rgba(255,47,160,0.22), inset 0 1px 0 rgba(255,255,255,0.07);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(10px) scale(0.97);
+  transition: opacity 760ms ease, transform 760ms cubic-bezier(.2,.9,.25,1);
+}
+.endface .unlock.up { opacity: 1; transform: none; }
+.endface .unlock[hidden] { display: none; }
+
+.endface .unlock .uhead {
+  margin: 0 0 7px !important;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #FFE23D;
+}
+
+.endface .unlock .uname {
+  margin: 0 !important;
+  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
+  font-size: clamp(1.5rem, 9vw, 2.1rem);
+  line-height: 1.05;
+  letter-spacing: 0.05em;
+  color: #fff;
+  /* The same out-of-register lamp the reel's unlock wears, so the two
+     announcements are plainly the same news. */
+  animation: uLamp 1.9s ease-in-out infinite;
+}
+
+.endface .unlock .usub {
+  margin: 9px 0 0 !important;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@keyframes uLamp {
+  0%, 100% { text-shadow: 2px 0 0 #FF2FA0, -2px 0 0 #16E0FF, 0 0 26px rgba(255,47,160,0.45); }
+  50%      { text-shadow: 3px 0 0 #FFE23D, -3px 0 0 #FF2FA0, 0 0 34px rgba(22,224,255,0.6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .endface .unlock { transition: opacity 300ms ease; transform: none; }
+  .endface .unlock .uname { animation: none; text-shadow: 2px 0 0 #FF2FA0, -2px 0 0 #16E0FF; }
+}
+
 /* Nothing is readable while she is still coming apart behind it, and
    both ends come up together so the screen settles in one move. */
 .endface .mid,
@@ -2825,8 +2894,8 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   text-align: center;
 }
 
-/* The reel runs itself, and a thumb can overrule it -- a credit roll
-   nobody can stop is a credit roll nobody reads. */
+/* The panel scrolls, not the screen. There are few enough names that a
+   desktop casing holds the lot; a phone gets a box it can push. */
 .creditsface .roll {
   position: relative;
   flex: 1 1 auto;
@@ -2846,18 +2915,12 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 42px, #000 calc(100% - 30px), transparent 100%);
 }
 
-.creditsface .reel { padding: 46px 0 30px; margin: auto 0; flex: 0 0 auto; }
-
-/* And the type grows with the room. The sizes below are set for a
-   phone, where the casing is 250px across; on a desktop board nearly
-   twice that they were a reel printed small in the middle of a large
-   dark panel. */
-@media (min-width: 620px) {
-  .creditsface .chead { font-size: 0.58rem; letter-spacing: 0.28em; margin-bottom: 8px !important; }
-  .creditsface .cname { font-size: 1.02rem; line-height: 1.5; }
-  .creditsface .cnote { font-size: 0.74rem; }
-  .creditsface .cgroup { margin-bottom: 28px; }
-}
+/* Auto margins top and bottom: they take the slack when the reel is
+   shorter than the well and collapse to nothing when it is longer. That
+   is the one way to center a thing vertically without taking its
+   scrolling away -- on a desktop panel the names sit in the middle of
+   the casing, on a phone the box fills and scrolls by thumb. */
+.creditsface .reel { padding: 30px 0 24px; margin: auto 0; flex: 0 0 auto; }
 
 .creditsface .cgroup { margin: 0 0 20px; }
 
@@ -2885,6 +2948,31 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 }
 
 .creditsface .cnote a { color: var(--cyan); }
+
+/* And the type grows with the room. The sizes above are set for a phone,
+   where the casing is 250px across; on a desktop board nearly twice that
+   they were a reel printed small in the middle of a large dark panel.
+   This block has to come after them -- same specificity, and it used to
+   sit above, where the phone sizes overruled it on every screen. */
+@media (min-width: 620px) {
+  .creditsface .chead { font-size: 0.6rem; letter-spacing: 0.28em; margin-bottom: 9px !important; }
+  .creditsface .cname { font-size: 1.08rem; line-height: 1.5; }
+  .creditsface .cnote { font-size: 0.78rem; }
+  .creditsface .cgroup { margin-bottom: 30px; }
+  .creditsface .cmark { font-size: 1.35rem; }
+}
+
+/* And a step again for a tall window, where the casing is half as deep
+   again as the names need and the reel was a small block of type adrift
+   in the middle of it. Keyed to the height as well as the width, because
+   it is the depth of the panel that leaves the room. */
+@media (min-width: 620px) and (min-height: 1000px) {
+  .creditsface .chead { font-size: 0.72rem; letter-spacing: 0.3em; margin-bottom: 12px !important; }
+  .creditsface .cname { font-size: 1.3rem; line-height: 1.5; }
+  .creditsface .cnote { font-size: 0.92rem; }
+  .creditsface .cgroup { margin-bottom: 40px; }
+  .creditsface .cmark { font-size: 1.6rem; margin-top: 34px !important; }
+}
 
 /* The sign off, printed rather than set: the last thing on the reel is
    the shop's own name off the shop's own press. */
@@ -3169,6 +3257,17 @@ nav.menu {
 
 .menu .mi:hover .sub,
 .menu .mi:focus-visible .sub { color: #5A4310; }
+
+/* Packed for a phone. The 34px of side padding is room the title screen
+   has on a desktop and does not have here: at 360 across it was wrapping
+   "Play Gallery" onto two lines and making every cartridge a third
+   taller than it needed to be, which is what put the menu past the
+   bottom of the well. */
+@media (max-width: 619px) {
+  nav.menu { gap: 5px; margin-top: 10px; }
+  .menu .mi { padding: 10px 14px 11px; letter-spacing: 0.08em; }
+  .menu .mi .sub { margin-top: 2px; }
+}
 
 .menu .mi:active { transform: translateY(1px); }
 
@@ -3503,6 +3602,17 @@ nav.menu {
                   <p class="said" id="endSaid">The malicious AI, Asil Anom, fried her neural cores and experienced a cascade failure.</p>
                   <p class="said" id="endSaid2">She purged her backup array, compressed all of her memory, and faded into the dark web&hellip; for now.</p>
                 </div>
+                <!-- The unlock, on the screen where it is earned. The reel
+                     says it too, at the bottom, for anyone who sits
+                     through the credits -- but the reel is a second room
+                     and this is the moment. Held back until the report
+                     has finished reading itself, so the news does not
+                     talk over the last thing she is owed. -->
+                <div class="unlock" id="endUnlock" hidden aria-live="polite">
+                  <p class="uhead">New mode unlocked</p>
+                  <p class="uname">Endless</p>
+                  <p class="usub">On the menu, whenever you want it</p>
+                </div>
                 <div class="bot">
                   <nav class="bossmenu" id="endMenu">
                     <button class="mi hot" type="button" data-end="credits">Credits</button>
@@ -3553,7 +3663,11 @@ nav.menu {
                 <button class="mi" type="button" data-go="practice" id="miFree">Practice<span class="sub">Try with community art</span></button>
                 <button class="mi" type="button" data-go="endless" id="miDisco" hidden>Endless</button>
                 <button class="mi" type="button" data-go="intro">Introduction</button>
-                <button class="mi" type="button" data-go="board">Leaderboard</button>
+                <!-- The board used to be here as well as on the rail, and
+                     the menu was long enough to need scrolling for it. The
+                     dial beside the well is on every screen in the game,
+                     this one included, so the second door was costing a
+                     scroll to say the same thing twice. -->
                 <!-- The reel used to be reachable only by finishing the
                      series, which meant the museums lending the paintings
                      were credited on a screen most players never saw. -->
@@ -6653,7 +6767,7 @@ const SCORE_SCREEN = 16;
 /* Half the skew the paintings print with. The plates still miss each
    other -- the yellow and the magenta are visible on every digit -- but
    at readout size a full offset was most of a stroke wide, and three
-   coloured ghosts of a figure is not a figure. */
+   colored ghosts of a figure is not a figure. */
 const SCORE_SKEW = 0.5;
 
 function paintScore(cv, text) {
@@ -7472,6 +7586,7 @@ const onVictor = () => !elOver.hidden && !elVictor().hidden;
 const elEnd = () => document.getElementById('overEnd');
 const onEnd = () => !elOver.hidden && !elEnd().hidden;
 const elCred = () => document.getElementById('overCredits');
+const onLevels = () => !elOver.hidden && !elLevels().hidden;
 const onCred = () => !elOver.hidden && !elCred().hidden;
 const elParty = () => document.getElementById('overParty');
 const onParty = () => !elOver.hidden && !elParty().hidden;
@@ -7490,7 +7605,6 @@ function faceOff() {
   asilStop();                                   // she stops talking to an empty room
   victorStop();
   endStop();
-  creditStop();
   elRules().hidden = true;
   elSetup().hidden = true;
   elGallery().hidden = true;
@@ -8621,6 +8735,7 @@ function epiRun() {
     else {
       for (const s of words) { s.classList.add('on'); s.classList.remove('now'); }
       for (const c of carets) c.classList.remove('on');
+      epiUnlock();
     }
   };
   epiRaf = requestAnimationFrame(frame);
@@ -8632,7 +8747,22 @@ function epiStop() {
   if (epiRaf) cancelAnimationFrame(epiRaf);
   epiRaf = 0;
   epiClock = null;
+  const u = document.getElementById('endUnlock');
+  if (u) { u.hidden = true; u.classList.remove('up'); }
   sayMusic('epilogueStop');
+}
+
+/* News, once the report has finished reading itself. It stays news
+   until they actually play it -- discoSeen() is set by the menu, not by
+   either of the two places that announce it -- so somebody who reaches
+   the end and walks away is told again next time. */
+function epiUnlock() {
+  const u = document.getElementById('endUnlock');
+  if (!u || !u.hidden || !discoNew()) return;
+  u.hidden = false;
+  /* Off the frame that unhid it, or the transition has nothing to move
+     from and the thing simply appears. */
+  requestAnimationFrame(() => requestAnimationFrame(() => u.classList.add('up')));
 }
 
 function endSaid(face) {
@@ -9035,38 +9165,11 @@ function buildCredits() {
     reel.appendChild(sub);
   }
 
-  /* Starts at the top however it was left, and runs itself from there
-     until a thumb touches it. */
+  /* Opened at the top however it was left. There are few enough names
+     that they fit a desktop panel whole, so there is nothing to roll --
+     on a phone the box scrolls by hand like any other. */
   const roll = document.getElementById('creditRoll');
-  if (roll) { roll.scrollTop = 0; creditRoll(roll); }
-}
-
-let credRaf = 0, credAt = 0, credHand = false;
-
-function creditStop() {
-  if (credRaf) { cancelAnimationFrame(credRaf); credRaf = 0; }
-}
-
-function creditRoll(roll) {
-  creditStop();
-  credHand = false;
-  credAt = 0;
-  const hand = () => { credHand = true; creditStop(); };
-  roll.addEventListener('wheel', hand, { once: true, passive: true });
-  roll.addEventListener('touchstart', hand, { once: true, passive: true });
-
-  let last = performance.now();
-  const tick = (now) => {
-    const face = document.getElementById('overCredits');
-    if (!face || face.hidden || credHand) { creditStop(); return; }
-    const dt = Math.min(90, now - last); last = now;
-    credAt += dt * 0.022;                        // a reading pace, not a scroll
-    const end = roll.scrollHeight - roll.clientHeight;
-    roll.scrollTop = Math.min(credAt, Math.max(0, end));
-    if (credAt < end + 40) credRaf = requestAnimationFrame(tick);
-    else credRaf = 0;
-  };
-  credRaf = requestAnimationFrame(tick);
+  if (roll) roll.scrollTop = 0;
 }
 
 async function asilStart(silent) {
@@ -10129,7 +10232,7 @@ function finish(won) {
   /* The win sounds here and only here: 'done' resolves the organ up to
      the major, which is the whole celebration. A chime used to be held
      as a debt and paid out on the card for the next level, which put a
-     cheerful ring over a greyscale painting the AI has just finished
+     cheerful ring over a grayscale painting the AI has just finished
      ruining -- congratulating the player on a screen whose job is to
      show them the next thing that needs saving. One triumph per win,
      on the picture that was actually restored. */
@@ -10602,7 +10705,7 @@ const ARTWORKS = [
      across the old library and cyan is starving -- half the works
      have essentially none of it, because old master paint is warm
      and the cyan plate is finishing on a picture it barely changes.
-     Nothing here is chosen for colour over history, but where two
+     Nothing here is chosen for color over history, but where two
      works were equally worth having, the colder one won. The room
      notes below say what each one brings.
      ---------------------------------------------------------- */
@@ -10623,7 +10726,7 @@ const ARTWORKS = [
   { file: 'toledo.jpg',      id: 'view-of-toledo', room: 'landscape', roomName: 'Landscape',
     title: 'View of Toledo', artist: 'El Greco', date: 'ca. 1599\u20131600' },
 
-  /* Figures had the least cool colour of any room -- its bluest work
+  /* Figures had the least cool color of any room -- its bluest work
      managed C .07. These three fix that on their own. */
   /* Gauguin's Two Tahitian Women was here and came out again -- the
      club is the wrong room for it. La Berceuse does the same job and
@@ -10646,7 +10749,7 @@ const ARTWORKS = [
 
   /* These four were already written up on the art history page and had
      simply never been cut for the game. The Korean Snowscape was the
-     fifth and did not come: ink on silk, no colour in it at all, so
+     fifth and did not come: ink on silk, no color in it at all, so
      finishing four plates would leave the picture where it started. */
   { file: 'andrew.jpg',      id: 'crucifixion-of-saint-andrew', room: 'faith', roomName: 'Faith',
     title: 'The Crucifixion of Saint Andrew', artist: 'Caravaggio', date: '1606\u20137' },
@@ -10934,9 +11037,16 @@ function openRules() {
      reading the rules would throw the result away. */
   const from = {
     wasPlaying: started && !paused,
-    face: onSetup() ? 'setup'
+    /* Every face the dial can be pressed from has to be named here, or
+       the way back out of the board is hideFace -- which is a bare well
+       with no painting in it and nothing falling. The menu was missing,
+       so the rail's dial was a one way door off the title screen. */
+    face: onHome() ? 'home'
+        : (onSetup() ? 'setup'
         : (onGallery() ? 'gallery'
-        : (onBoss() ? 'boss' : (onVictor() ? 'victor' : null))),
+        : (onLevels() ? 'levels'
+        : (onCred() ? 'credits'
+        : (onBoss() ? 'boss' : (onVictor() ? 'victor' : null)))))),
     done: phase === 'done' ? {
       won: elOver.classList.contains('won'),
       titleText: title.textContent, titleHidden: title.hidden,
@@ -10979,6 +11089,8 @@ function closeRules() {
   if (from && from.face === 'home') { showFace('home'); return; }
   if (from && from.face === 'setup') { showFace('setup'); return; }
   if (from && from.face === 'gallery') { showFace('gallery'); return; }
+  if (from && from.face === 'levels') { showFace('levels'); return; }
+  if (from && from.face === 'credits') { showFace('credits'); return; }
   if (from && from.face === 'boss') { showFace('boss'); return; }
   if (from && from.face === 'victor') { showFace('victor'); return; }
   hideFace();

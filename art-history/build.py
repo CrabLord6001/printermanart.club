@@ -158,7 +158,7 @@ def plate(w):
     bits = [b for b in [e(w["artist_bio"]), e(w["date"]), e(w["medium"])] if b]
     line1 = " &middot; ".join(bits)
     acc = f", {e(w['accession'])}" if w["accession"] else ""
-    # Works outside a museum's open-access set have no catalogue page to send
+    # Works outside a museum's open-access set have no catalog page to send
     # anyone to, so the tombstone stops after the rights note rather than
     # printing an empty link.
     tail = (f" &middot; <a href=\"{e(w['object_url'])}\" target=\"_blank\" "
