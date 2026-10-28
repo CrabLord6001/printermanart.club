@@ -212,6 +212,15 @@ html.embed .title { display: none; }
   gap: 5px;
 }
 
+/* Endless is the only mode where the second box says something the rail
+   does not: in there it reads Tempo, and there is no other tempo
+   anywhere. In the campaign it is a second telling of the plate gauges
+   standing six inches to the right of them, so it comes out, and the
+   width it gives up goes to the score -- which now has a sum to hold
+   rather than a single figure. */
+body:not(.disco) .score.goal { display: none; }
+body:not(.disco) .scores { grid-template-columns: 1.7fr 1fr 1fr; }
+
 /* The cartridge's own shape: its name along the top, what it holds
    underneath. Under glass, the way a cabinet puts a sheet over its
    artwork -- the bevel at the edge and one sweep of reflection across
@@ -4462,7 +4471,14 @@ function discoLabels() {
   const d = document.getElementById('deckWrap');
   const rig = document.querySelector('.rig');
   if (a) a.textContent = discoOn ? 'Deck' : 'Plates';
-  if (b) b.textContent = discoOn ? 'Tempo' : 'Plates';
+  /* "Tempo" was the music talking. The number is the drop interval --
+     900ms down to 165 over the run -- so it says Speed, which is what a
+     player is actually reading it for. The deck and the mixer keep the
+     booth metaphor; this one had a job to do. */
+  if (b) b.textContent = discoOn ? 'Speed' : 'Plates';
+  /* The readout above the board is three boxes wide in the campaign and
+     four in here, which the stylesheet works out from this one class. */
+  document.body.classList.toggle('disco', !!discoOn);
   if (d) d.hidden = !discoOn;
   if (rig) rig.classList.toggle('party', !!discoOn);
   /* The tubes are a mixer in here, not a gauge, so the tags go back to
@@ -5257,7 +5273,21 @@ function sizeBoard() {
   if (elOver && !elOver.hidden && elOver.classList.contains('intro')) paintDemo();
 }
 
-const show = (html) => { elMsg.innerHTML = html; };
+/* The line under the buttons says what just happened -- a virus going
+   off, a magnet pulling. It used to be written and then left there until
+   the run ended, so it sat announcing something from thirty seconds ago
+   over a board that had moved on. It speaks and then stops.
+
+   The space is kept either way: the paragraph holds its own height, and
+   losing it would shorten the footer, grow the board and push the page
+   into the rail's floor on a short phone. */
+let msgGen = 0;
+const show = (html, hold) => {
+  const mine = ++msgGen;
+  elMsg.innerHTML = html || '&nbsp;';
+  if (!html) return;
+  setTimeout(() => { if (mine === msgGen) elMsg.innerHTML = '&nbsp;'; }, hold || 2600);
+};
 
 /* ---- the tanks ---- */
 
@@ -5882,8 +5912,9 @@ async function resolve() {
     /* And it has to be seen to be collected. */
     if (inkMult > 1 && !discoOn) popBonus(clumps, inkMult);
 
+    const wasPts = points;
     points += pass;
-    sayPts(points);
+    sayPtsGain(wasPts, pass);
     /* The lights turn to whatever just came off the board. The biggest
        group in the pass wins it, so a chain that clears three colors
        at once turns the room the color it mostly was. */
@@ -5902,9 +5933,11 @@ async function resolve() {
     }
     sayMusic('clear', chain);
     elChain.textContent = chain > 1 ? 'Chain ×' + mult : '';
-    show((chain > 1
-      ? 'Chain <b>&times;' + mult + '</b> &mdash; ' + pass + ' points'
-      : clumps.map(g => g.length + ' touching').join(', ') + ' &mdash; <b>' + pass + '</b>'));
+    /* Nothing said here about the clear any more. The score box carries
+       what it was worth, the Chain readout carries the multiplier and
+       popBonus stamps it on the board over the group that earned it --
+       three tellings were two too many, and the line under the buttons
+       was the smallest and furthest from where anyone was looking. */
 
     await wait(170);
 
@@ -6519,7 +6552,22 @@ function sayScore(id, cvId, text) {
   paintScore(document.getElementById(cvId), text);
 }
 
-const sayPts   = (v) => sayScore('pts', 'prPts', String(v));
+/* Any plain setting of the score cancels a sum waiting to settle, so a
+   new run cannot be caught by a timer belonging to the last one. */
+let ptsGen = 0;
+const sayPts   = (v) => { ptsGen++; sayScore('pts', 'prPts', String(v)); };
+
+/* What a clear was worth, said where the player is already looking.
+   It used to be printed under the buttons as "4 touching -- 10", which
+   is the score repeated in smaller type two inches from the score, and
+   left on screen long after the clear it described. Now the box itself
+   carries the sum for a moment and then adds up. */
+function sayPtsGain(was, gain) {
+  if (!gain) { sayPts(was); return; }
+  const mine = ++ptsGen;
+  sayScore('pts', 'prPts', was + ' + ' + gain);
+  setTimeout(() => { if (mine === ptsGen) sayPts(was + gain); }, 900);
+}
 const sayGoal  = (v) => sayScore('tg',  'prTg',  v);
 const sayTime  = (v) => sayScore('tm',  'prTm',  v);
 const sayChain = (v) => sayScore('bc',  'prBc',  String(v));
@@ -9796,7 +9844,7 @@ function finish(won) {
        missing -- there was no picture. */
     jam.innerHTML = discoOn
       ? points + '&nbsp;pts &middot; chain&nbsp;&times;' + bestChain
-        + ' &middot; tempo&nbsp;' + discoSays()
+        + ' &middot; speed&nbsp;' + discoSays()
       : down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
         + ' &middot; chain&nbsp;&times;' + bestChain;
     jam.hidden = false;
