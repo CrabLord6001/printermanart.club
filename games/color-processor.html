@@ -2833,11 +2833,31 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* A column, so the reel inside it can be centered by auto margins:
+     they take the slack when the reel is shorter than the well and
+     collapse to nothing when it is longer, which is the one way to
+     center a thing vertically without taking its scrolling away. On a
+     phone the reel fills the well and nothing changes; on a desktop
+     board it used to sit in the top third with the rest of the casing
+     empty under it. */
+  display: flex;
+  flex-direction: column;
   mask-image: linear-gradient(to bottom, transparent 0, #000 42px, #000 calc(100% - 30px), transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 42px, #000 calc(100% - 30px), transparent 100%);
 }
 
-.creditsface .reel { padding: 46px 0 30px; }
+.creditsface .reel { padding: 46px 0 30px; margin: auto 0; flex: 0 0 auto; }
+
+/* And the type grows with the room. The sizes below are set for a
+   phone, where the casing is 250px across; on a desktop board nearly
+   twice that they were a reel printed small in the middle of a large
+   dark panel. */
+@media (min-width: 620px) {
+  .creditsface .chead { font-size: 0.58rem; letter-spacing: 0.28em; margin-bottom: 8px !important; }
+  .creditsface .cname { font-size: 1.02rem; line-height: 1.5; }
+  .creditsface .cnote { font-size: 0.74rem; }
+  .creditsface .cgroup { margin-bottom: 28px; }
+}
 
 .creditsface .cgroup { margin: 0 0 20px; }
 
@@ -3534,6 +3554,10 @@ nav.menu {
                 <button class="mi" type="button" data-go="endless" id="miDisco" hidden>Endless</button>
                 <button class="mi" type="button" data-go="intro">Introduction</button>
                 <button class="mi" type="button" data-go="board">Leaderboard</button>
+                <!-- The reel used to be reachable only by finishing the
+                     series, which meant the museums lending the paintings
+                     were credited on a screen most players never saw. -->
+                <button class="mi" type="button" data-go="credits">Credits</button>
               </nav>
             </div>
 
@@ -3671,9 +3695,20 @@ nav.menu {
 let music = null;
 let musicJob = null;                  // the import, while it is in flight
 
+/* The module is served with a ten minute cache, and this page is not.
+   So a deploy that changes both lands as a new page calling an old
+   organ: the page asks for a cue the cached module has never heard of,
+   the call quietly does nothing, and the scene plays with a piece
+   missing. That is exactly how the epilogue shipped silent for the
+   first ten minutes of its life.
+
+   Bump this whenever organ.js changes. It costs one cache miss and it
+   makes the two files impossible to get out of step. */
+const ORGAN_V = '2026-10-28a';
+
 async function wantSound(next) {
   if (!music) {
-    try { music = await (musicJob || (musicJob = import('/games/organ.js'))); }
+    try { music = await (musicJob || (musicJob = import('/games/organ.js?v=' + ORGAN_V))); }
     catch (e) { musicJob = null; return false; }
   }
   music.setOn(next);
@@ -7327,6 +7362,7 @@ function homeGo(go) {
   if (go === 'practice') { trying = 0; campOn = false; discoOn = false; hideFace(); newPrint('setup'); return; }
   if (go === 'endless')  { trying = 0; campOn = false; discoOn = true; discoSeen(); hideFace(); newPrint(null); return; }
   if (go === 'levels')   { showFace('levels'); return; }
+  if (go === 'credits')  { showFace('credits'); return; }
 
   rulesFrom = null;
   showFace('rules');
