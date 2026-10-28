@@ -965,6 +965,55 @@ export async function chime() {
   src.onended = () => { try { g.disconnect(); } catch (e) {} };
 }
 
+/* The epilogue, read aloud.
+   ------------------------------------------------------------------
+   PrinterMan's own voice, band-limited and slapped so it arrives as a
+   transmission rather than a man in a room, over the top of the lofi
+   bed endRoom is already playing. It goes through the voice bus like
+   her lines do, so the mute and the master both reach it and it sits
+   at a known level against the room rather than a guessed one.
+
+   The caller gets back a clock rather than nothing: the words on
+   screen have to land on the words in the file, and the only honest
+   source for "where are we" is the context that is playing it. */
+let epiBuf = null, epiJob = null, epiSrc = null;
+
+export async function epilogue() {
+  if (!on || !ctx) return null;
+  if (!epiBuf) {
+    if (!epiJob) {
+      epiJob = (async () => {
+        try {
+          const r = await fetch(CUE_DIR + 'epilogue.mp3');
+          if (!r.ok) return null;
+          return await ctx.decodeAudioData(await r.arrayBuffer());
+        } catch (e) { return null; }
+      })();
+    }
+    epiBuf = await epiJob;
+  }
+  if (!epiBuf || !on || !ctx) return null;
+
+  epilogueStop();
+  const src = ctx.createBufferSource();
+  src.buffer = epiBuf;
+  const g = ctx.createGain();
+  g.gain.value = 1;
+  src.connect(g);
+  g.connect(voiceBus || master || ctx.destination);
+  const at = ctx.currentTime + 0.05;
+  src.start(at);
+  epiSrc = src;
+  src.onended = () => { try { g.disconnect(); } catch (e) {} };
+  return () => Math.max(0, ctx.currentTime - at);
+}
+
+export function epilogueStop() {
+  if (!epiSrc) return;
+  try { epiSrc.stop(); } catch (e) {}
+  epiSrc = null;
+}
+
 export function done() {
   if (!on || !ctx) return;
   const t = ctx.currentTime;

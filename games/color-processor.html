@@ -17,7 +17,10 @@
      which is what a bent glass sign actually looks like. It is only
      asked for on the party door, so the swap keeps it off the
      critical path for everything else. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&family=Monoton&display=swap">
+<!-- Share Tech Mono is the epilogue's only job: the report arrives as a
+     transmission from inside the machine, and a terminal face says that
+     before a word of it is read. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&family=Monoton&family=Share+Tech+Mono&display=swap">
 
 <style>
 /* ============================================================
@@ -2652,10 +2655,45 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 .endface .mid .said {
   max-width: min(100%, 22rem);        /* the sheet's own measure */
   margin: 16px auto 0 !important;
-  /* The size the level cards set their copy at, since this is the card
-     at the end of the series and reads next to the other twenty-one. */
-  font-size: 1.05rem;
-  line-height: 1.55;
+  /* A terminal face, and the only place in the game that uses one. The
+     report is a transmission out of the machine, and the type says so
+     before the first word is read. Monospace runs wider than Poppins
+     at the same size, so it is set a little smaller with more air
+     between the lines than the level cards use. */
+  font-family: 'Share Tech Mono', ui-monospace, 'Cascadia Mono', Menlo, monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.015em;
+  line-height: 1.75;
+}
+
+/* Each word arrives on the word being spoken: out of a blur rather
+   than popping, because the scene it lands in is still settling. */
+.endface .mid .epw {
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(4px);
+  transition: opacity 320ms ease, filter 320ms ease, transform 320ms ease;
+}
+.endface .mid .epw.on { opacity: 1; filter: none; transform: none; }
+.endface .mid .epw.now { color: #39C8F2; text-shadow: 0 0 14px rgba(57,200,242,0.42); }
+
+/* The cursor sits at the end of whichever line is being read, and only
+   blinks while it is there -- an animation on the base rule drives its
+   own opacity and the thing shows up half the time whatever the class
+   says. */
+.endface .mid .epcaret {
+  display: inline-block;
+  width: 0.5em; height: 1em;
+  vertical-align: -0.14em;
+  background: #39C8F2;
+  opacity: 0;
+}
+.endface .mid .epcaret.on { animation: epblink 1s steps(1) infinite; }
+@keyframes epblink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .endface .mid .epw { transition: none; filter: none; transform: none; }
+  .endface .mid .epcaret.on { animation: none; opacity: 1; }
 }
 
 /* Nothing is readable while she is still coming apart behind it, and
@@ -3435,8 +3473,15 @@ nav.menu {
               <div class="in">
                 <div class="mid" id="endMid">
                   <div class="plate wonplate"><canvas id="endPlate"></canvas></div>
+                  <!-- The report is read aloud, so the two lines are
+                       built from EPI_SAID rather than written here: the
+                       words on screen come from the same table that
+                       says when they are spoken, and the text cannot
+                       drift from the recording. Left in as plain
+                       sentences for anyone reading the source, and for
+                       a browser that never gets as far as the script. -->
                   <p class="said" id="endSaid">The malicious AI, Asil Anom, fried her neural cores and experienced a cascade failure.</p>
-                  <p class="said">She purged her backup array, compressed all of her memory, and faded into the dark web&hellip; for now.</p>
+                  <p class="said" id="endSaid2">She purged her backup array, compressed all of her memory, and faded into the dark web&hellip; for now.</p>
                 </div>
                 <div class="bot">
                   <nav class="bossmenu" id="endMenu">
@@ -8439,6 +8484,7 @@ function endRest() {
 function endStop() {
   endGen++;
   endRest();
+  epiStop();                     // the reading goes with the scene
   sayMusic('endRoomStop');       // the credits bring their own music in
 }
 
@@ -8453,9 +8499,126 @@ function endStop() {
    somebody who wrote the paragraph and short for a slower reader or
    anybody meeting it in their second language. The room underneath now
    loops, so waiting costs nothing. */
+/* The report, word by word, against the recording of it.
+   ------------------------------------------------------------------
+   The times are read off the waveform of the take rather than guessed:
+   nine runs of speech with the breaths between them, split into the
+   two sentences at the long gap, and each word given a share of its
+   sentence's speaking time by syllable count. So it tracks the reading
+   instead of scrolling at an invented pace.
+
+   The words live here and not in the markup because they have to agree
+   with the file. Two places to change a sentence is one place to
+   forget. */
+const EPI_SAID = [
+  [['The', 1.00], ['malicious', 1.30], ['AI,', 2.10], ['Asil', 2.30], ['Anom,', 2.80],
+   ['fried', 3.40], ['her', 3.60], ['neural', 4.40], ['cores', 4.90], ['and', 5.40],
+   ['experienced', 5.70], ['a', 6.90], ['cascade', 7.40], ['failure.', 7.90]],
+  [['She', 9.20], ['purged', 9.40], ['her', 9.90], ['backup', 10.10], ['array,', 10.50],
+   ['compressed', 11.00], ['all', 12.00], ['of', 12.20], ['her', 12.40], ['memory,', 12.70],
+   ['and', 13.80], ['faded', 14.00], ['into', 14.60], ['the', 15.00], ['dark', 15.20],
+   ['web…', 15.50], ['for', 16.50], ['now.', 16.70]]
+];
+const EPI_END = 17.6;                    // the last word, plus its tail
+
+let epiRaf = 0, epiClock = null, epiBuilt = false;
+
+function epiBuild() {
+  if (epiBuilt) return true;
+  const ps = [document.getElementById('endSaid'), document.getElementById('endSaid2')];
+  if (!ps[0] || !ps[1]) return false;
+  ps.forEach((p, i) => {
+    p.textContent = '';
+    for (const [w, t] of EPI_SAID[i]) {
+      const s = document.createElement('span');
+      s.className = 'epw';
+      s.textContent = w;
+      s.dataset.t = t;
+      p.appendChild(s);
+      p.appendChild(document.createTextNode(' '));
+    }
+    const c = document.createElement('i');
+    c.className = 'epcaret';
+    p.appendChild(c);
+  });
+  epiBuilt = true;
+  return true;
+}
+
+/* Sound off, or the file missing, and the words still arrive on the
+   same beats -- the clock just comes from the page instead of from the
+   context playing the voice. The scene reads the same either way;
+   silence is a setting, not a reason to drop the staging. */
+function epiRun() {
+  const words = [...document.querySelectorAll('.epw')];
+  const carets = [...document.querySelectorAll('.epcaret')];
+  const ends = EPI_SAID.map((l) => l[l.length - 1][1] + 0.9);
+  const mine = endGen;
+
+  const frame = () => {
+    if (mine !== endGen) return;
+    const t = epiClock ? epiClock() : (performance.now() - epiT0) / 1000;
+    for (const s of words) {
+      const at = +s.dataset.t;
+      s.classList.toggle('on', t >= at);
+      s.classList.toggle('now', t >= at && t < at + 0.42);
+    }
+    /* The cursor follows the last word spoken rather than sitting at
+       the end of the paragraph. A word that has not arrived yet is
+       still laid out -- that is what keeps the block from reflowing
+       under itself -- so a caret left in place floats out past the
+       silence with a gap in front of it. */
+    carets.forEach((c, i) => {
+      const from = i === 0 ? 0 : ends[i - 1];
+      const live = t >= from && t < ends[i];
+      c.classList.toggle('on', live);
+      if (!live) return;
+      const mine2 = EPI_SAID[i];
+      let last = null;
+      for (let k = mine2.length - 1; k >= 0; k--) {
+        if (t >= mine2[k][1]) { last = c.parentNode.querySelectorAll('.epw')[k]; break; }
+      }
+      const want = last ? last.nextSibling : c.parentNode.firstChild;
+      if (want && c.previousSibling !== want) c.parentNode.insertBefore(c, want.nextSibling);
+    });
+    if (t < EPI_END) epiRaf = requestAnimationFrame(frame);
+    else {
+      for (const s of words) { s.classList.add('on'); s.classList.remove('now'); }
+      for (const c of carets) c.classList.remove('on');
+    }
+  };
+  epiRaf = requestAnimationFrame(frame);
+}
+
+let epiT0 = 0;
+
+function epiStop() {
+  if (epiRaf) cancelAnimationFrame(epiRaf);
+  epiRaf = 0;
+  epiClock = null;
+  sayMusic('epilogueStop');
+}
+
 function endSaid(face) {
   if (!face || face.classList.contains('said')) return;
   face.classList.add('said');
+
+  /* And the report reads itself. The clock comes back from the context
+     playing the voice, so the words cannot drift from it however long
+     the browser has been busy; if there is no voice -- sound off, or
+     the file did not arrive -- the page keeps time instead and the
+     staging survives. */
+  if (!epiBuild()) return;
+  epiT0 = performance.now();
+  const mine = endGen;
+  epiClock = null;
+  epiRun();
+  const m = music;
+  if (m && m.isOn() && typeof m.epilogue === 'function') {
+    m.epilogue().then((clock) => {
+      if (clock && mine === endGen) { epiClock = clock; epiT0 = performance.now(); }
+    }).catch(() => {});
+  }
 }
 
 function endStart() {
