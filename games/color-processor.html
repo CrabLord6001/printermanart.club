@@ -4890,12 +4890,12 @@ function layPlates() {
     /* The count can fall now as well as rise, so the readout follows it
        either way but the sound only plays for a plate going down. A
        virus taking one back is not an achievement. */
-    if (now !== before) sayGoal(now + '/4');
+    if (now !== before) { sayGoal(now + '/4'); if (now > before) sayMusic('lay'); }
     return true;
   }
   if (!separated || !beads || beads.n !== inkPer) return false;
   const ctx = pageEl().getContext('2d');
-  let did = false;
+  let did = false, sealed = false;
 
   for (const pl of PLATES) {
     const want = Math.min(cleared[pl], inkPer);
@@ -4915,17 +4915,13 @@ function layPlates() {
     ctx.globalCompositeOperation = 'source-over';
 
     did = true;
-    if (!laid[pl] && beadsDrawn[pl] >= inkPer) laid[pl] = true;
+    if (!laid[pl] && beadsDrawn[pl] >= inkPer) { laid[pl] = true; sealed = true; }
   }
 
-  /* A plate sealing used to sound. It was an organ chord over a
-     soundtrack, which took the feel out of the music four times a
-     level, and the gauge filling to a tick says the same thing without
-     talking over anything. The only cue left in a print is the one that
-     ends it. */
   if (did) {
     pageEl().style.opacity = '1';
     sayGoal(platesDown() + '/4');
+    if (sealed) sayMusic('lay');
   }
 
   return did;
