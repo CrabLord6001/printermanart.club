@@ -6032,7 +6032,29 @@ function drop() {
 /* ---- keyboard ---- */
 
 window.addEventListener('keydown', (e) => {
+  /* A browser shortcut is not a game move, and neither is somebody
+     typing their artist name into a field on another part of the site. */
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target;
+  if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+
   const k = e.key;
+
+  /* P is the hand already on the keyboard asking for the same button the
+     thumb gets. It toggles, because a key you press to stop and a
+     different key to start again is two things to remember. */
+  if (k === 'p' || k === 'P') {
+    e.preventDefault();
+    if (over || !started) return;
+    if (paused) resume(); else pause();
+    return;
+  }
+
+  /* The steering keys only steer while something is falling. They used to
+     fire in any state, so a piece could be walked left and right under
+     the pause screen. */
+  if (phase !== 'playing') return;
+
   if (['ArrowLeft','ArrowRight','ArrowDown','ArrowUp',' '].includes(k)) e.preventDefault();
   if (k === 'ArrowLeft'  || k === 'a' || k === 'A') move(-1);
   if (k === 'ArrowRight' || k === 'd' || k === 'D') move(1);
