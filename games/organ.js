@@ -863,11 +863,32 @@ export function zap() {
   o.stop(t + 0.5); ring.stop(t + 0.5);
 }
 
-/* A plate landing: the chord swells underneath. */
+/* A plate landing: two notes, struck and gone.
+
+   It used to be the same swelled organ chord as done(), an octave down
+   and a second and a half long. The idea was good -- an open fifth with
+   no third in it, asking a question all level that done() answers by
+   adding the third -- but it does not survive the room it plays in. The
+   soundtrack is under it at 0.52, and a sustained chord in the bass, on
+   the same pipes, is the one thing guaranteed to muddy a track rather
+   than sit on top of it. Four of these a level and the music is fighting
+   for its own register.
+
+   So the fifth stays and the sustain goes: plucked, up an octave out of
+   the track's way, done inside half a second. The question is still
+   asked, and the only thing left humming in this game is the answer. */
 export function lay() {
   if (!on || !ctx) return;
   const t = ctx.currentTime;
-  for (const n of [0, 7, 12]) pipe(t, semi(n) / 2, 1.6, 0.06, 'organ');
+  /* Levels are not carried over from the chord it replaces. A swelled
+     organ note holds its level for a second and a half; a pluck is at
+     its loudest for a few milliseconds and gone. Matched by the number
+     in the call the new one landed thirteen decibels down and would
+     have disappeared under the track entirely. These are set by what
+     comes out: peak about half the old chord's, over in a fifth of the
+     time. */
+  pipe(t,        semi(0), 0.42, 0.125, 'pluck');
+  pipe(t + 0.05, semi(7), 0.38, 0.095, 'pluck');
 }
 
 /* The page jams. The leading tone, unresolved, falling away. */
@@ -1317,6 +1338,26 @@ export function endRoomStop() {
    put back after -- so what comes out of here is what ships. If that
    ever stops being true it is a bug in this function, not a difference
    of opinion between two versions of the pattern. */
+/* The same trick as renderRoom, for anything short: hand it a function
+   that plays a cue and get back what that cue actually sounds like. The
+   module's own ctx and master are pointed at an offline context for the
+   length of the render and put back after, so what comes out is what
+   ships rather than a second opinion about it. */
+export async function renderCue(play, seconds = 4) {
+  const keep = { ctx, master, voice, on, noiseBuf };
+  const off = new OfflineAudioContext(1, Math.ceil(44100 * seconds), 44100);
+  ctx = off; on = true; noiseBuf = null;
+  master = off.createGain(); master.gain.value = 1;
+  master.connect(off.destination);
+  voice = off.createGain(); voice.gain.value = 1;
+  voice.connect(master);
+  try { play(); } catch (e) { /* the restore below still has to run */ }
+  const buf = await off.startRendering();
+  ctx = keep.ctx; master = keep.master; voice = keep.voice;
+  on = keep.on; noiseBuf = keep.noiseBuf;
+  return buf;
+}
+
 export async function renderRoom(seconds = 21) {
   const keep = { ctx, master, on, roomBus, roomLive, noiseBuf };
   const off = new OfflineAudioContext(1, Math.ceil(44100 * seconds), 44100);
