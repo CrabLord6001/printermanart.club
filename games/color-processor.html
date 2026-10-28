@@ -5734,9 +5734,23 @@ function zapDraw(now) {
 function burnDown() {
   const gone = [];
 
+  /* A virus standing in a group that is about to come off the board has
+     been defused, not survived. The fuse used to tick and fire at the top
+     of this pass, before anything looked for clears, so landing the piece
+     that completed the group on the virus's last drop blew it up anyway
+     -- the game charging the player for being exactly on time. Eight
+     drops is meant to be beatable right to the end of the eighth.
+
+     It carries its ink like any other cell, so findClumps already counts
+     it. Anything in a clump sits this pass out entirely: no tick, no
+     burst, and the clear below takes it. */
+  const spared = new Uint8Array(COLS * ROWS);
+  for (const g of findClumps(well)) for (const [x, y] of g) spared[idx(x, y)] = 1;
+
   for (let i = 0; i < well.length; i++) {
     const v = well[i];
     if (!isBug(v)) continue;
+    if (spared[i]) continue;
     const left = bugLeft(v) - 1;
     if (left > 0) { well[i] = bugSet(v, left); continue; }
     gone.push({ at: i, ink: inkOf(v) });
