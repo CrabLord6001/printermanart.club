@@ -2708,22 +2708,46 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    a death. It arrives after the reading rather than during it, and it
    wears the party's colors rather than the shop's gold, because what it
    is announcing does not belong to the shop. */
+/* Laid over the panel rather than into it. Everything else on this face
+   is absolutely positioned, so a card in normal flow landed at the top
+   of the well behind the YOU WON sheet and could not be seen at all.
+   Centered in the casing instead, clear of the sheet above and the two
+   buttons below, and above both. */
 .endface .unlock {
-  margin: 20px auto 0;
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: 50%;
+  width: min(calc(100% - 36px), 20rem);
   padding: 16px 18px 14px;
-  max-width: min(100%, 20rem);
   border: 1px solid rgba(255,47,160,0.45);
   border-radius: 12px;
   background:
     radial-gradient(120% 140% at 50% 0%, rgba(255,47,160,0.16) 0%, transparent 62%),
     linear-gradient(176deg, #150E1C 0%, #0B0910 100%);
-  box-shadow: 0 0 34px rgba(255,47,160,0.22), inset 0 1px 0 rgba(255,255,255,0.07);
+  /* The last shadow is the scrim: a spread wide enough to cover the
+     casing, clipped by the panel's own overflow. It puts the report
+     behind glass instead of behind the card, which on a phone is the
+     difference between a popup and a collision. */
+  box-shadow: 0 0 34px rgba(255,47,160,0.22),
+              0 18px 50px rgba(0,0,0,0.6),
+              inset 0 1px 0 rgba(255,255,255,0.07),
+              0 0 0 100vmax rgba(6,5,10,0);
   text-align: center;
   opacity: 0;
-  transform: translateY(10px) scale(0.97);
-  transition: opacity 760ms ease, transform 760ms cubic-bezier(.2,.9,.25,1);
+  transform: translate(-50%, -44%) scale(0.96);
+  transition: opacity 760ms ease,
+              transform 760ms cubic-bezier(.2,.9,.25,1),
+              box-shadow 760ms ease;
 }
-.endface .unlock.up { opacity: 1; transform: none; }
+.endface .unlock.up {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  box-shadow: 0 0 34px rgba(255,47,160,0.22),
+              0 18px 50px rgba(0,0,0,0.6),
+              inset 0 1px 0 rgba(255,255,255,0.07),
+              0 0 0 100vmax rgba(6,5,10,0.78);
+}
 .endface .unlock[hidden] { display: none; }
 
 .endface .unlock .uhead {
@@ -2761,7 +2785,8 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .endface .unlock { transition: opacity 300ms ease; transform: none; }
+  .endface .unlock,
+  .endface .unlock.up { transition: opacity 300ms ease; transform: translate(-50%, -50%); }
   .endface .unlock .uname { animation: none; text-shadow: 2px 0 0 #FF2FA0, -2px 0 0 #16E0FF; }
 }
 
@@ -8747,6 +8772,7 @@ function epiStop() {
   if (epiRaf) cancelAnimationFrame(epiRaf);
   epiRaf = 0;
   epiClock = null;
+  clearTimeout(uTimer); uTimer = 0;
   const u = document.getElementById('endUnlock');
   if (u) { u.hidden = true; u.classList.remove('up'); }
   sayMusic('epilogueStop');
@@ -8756,6 +8782,22 @@ function epiStop() {
    until they actually play it -- discoSeen() is set by the menu, not by
    either of the two places that announce it -- so somebody who reaches
    the end and walks away is told again next time. */
+/* It holds for a beat and then stands down. The card dims the whole
+   casing behind it, including the two buttons -- they stay clickable,
+   a box shadow catches nothing, but a dimmed button reads as a dead
+   one, and this screen is where the player decides what to do next. A
+   tap takes it away early. */
+let uTimer = 0;
+const UNLOCK_HOLD = 6500;
+
+function unlockOff() {
+  clearTimeout(uTimer); uTimer = 0;
+  const u = document.getElementById('endUnlock');
+  if (!u || u.hidden) return;
+  u.classList.remove('up');
+  setTimeout(() => { if (!u.classList.contains('up')) u.hidden = true; }, 800);
+}
+
 function epiUnlock() {
   const u = document.getElementById('endUnlock');
   if (!u || !u.hidden || !discoNew()) return;
@@ -8763,6 +8805,9 @@ function epiUnlock() {
   /* Off the frame that unhid it, or the transition has nothing to move
      from and the thing simply appears. */
   requestAnimationFrame(() => requestAnimationFrame(() => u.classList.add('up')));
+  clearTimeout(uTimer);
+  uTimer = setTimeout(unlockOff, UNLOCK_HOLD);
+  u.onclick = unlockOff;
 }
 
 function endSaid(face) {
