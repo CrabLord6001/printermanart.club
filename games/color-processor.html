@@ -5939,7 +5939,21 @@ async function resolve() {
         /* Rounded as it goes. Four fifths does not land on a binary
            fraction, so twenty five of them come to 19.999999999999996 and
            a plate that is full never says so. */
-        if (plate) cleared[plate] = Math.round((cleared[plate] + (LIGHT_WORTH[ink] || 1) * inkMult) * 100) / 100;
+        /* Capped at what the plate needs. It used to go on counting past
+           full, and nothing showed it: the gauge draws Math.min(cleared,
+           inkPer), so a plate sitting on double its goal looked exactly
+           like one sitting on its goal. That surplus was a shield nobody
+           could see -- a virus would take its bite out of ink the player
+           did not know they had, the gauge would not move, and the burst
+           read as having done nothing at all.
+
+           A clear on a plate that is already full is spent rather than
+           banked now, which is what the screen has been saying all
+           along. */
+        if (plate) {
+          cleared[plate] = Math.min(inkPer,
+            Math.round((cleared[plate] + (LIGHT_WORTH[ink] || 1) * inkMult) * 100) / 100);
+        }
         tiles[idx(x, y)].className = 'cell hit';
       }
     }
