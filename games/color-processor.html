@@ -10224,7 +10224,70 @@ const ARTWORKS = [
   { file: 'oriole.jpg',      id: 'black-naped-oriole', room: 'non-western', roomName: 'Non-Western',
     title: 'Black-naped Oriole on a Stem of Rose Mallow', artist: 'Utagawa Hiroshige', date: 'ca. 1834' },
   { file: 'julie-le-brun.jpg', id: 'julie-le-brun-looking-in-a-mirror', room: 'figures',   roomName: 'Figures',
-    title: 'Julie Le Brun Looking in a Mirror', artist: 'Elisabeth Louise Vig\u00e9e Le Brun', date: '1787' }
+    title: 'Julie Le Brun Looking in a Mirror', artist: 'Elisabeth Louise Vig\u00e9e Le Brun', date: '1787' },
+
+  /* ----------------------------------------------------------
+     The bench
+     ----------------------------------------------------------
+     Up to here every room held exactly the five it needed, so four
+     of the six never rotated at all: the same five paintings, every
+     hour, forever. These take each room two or three deep, and the
+     hourly deal does the rest.
+
+     They were also picked for a second reason. Measure the plates
+     across the old library and cyan is starving -- half the works
+     have essentially none of it, because old master paint is warm
+     and the cyan plate is finishing on a picture it barely changes.
+     Nothing here is chosen for colour over history, but where two
+     works were equally worth having, the colder one won. The room
+     notes below say what each one brings.
+     ---------------------------------------------------------- */
+
+  /* Classics. Holbein is the most evenly inked painting in the whole
+     library -- C .20 M .19 Y .24 -- and the Caravaggio is the opposite,
+     no cyan at all. One of each is the point. */
+  { file: 'edwardvi.jpg',    id: 'edward-vi-as-duke-of-cornwall', room: 'classics', roomName: 'Classics',
+    title: 'Edward VI as Duke of Cornwall', artist: 'Hans Holbein the Younger', date: 'ca. 1538' },
+  { file: 'musicians.jpg',   id: 'the-musicians', room: 'classics', roomName: 'Classics',
+    title: 'The Musicians', artist: 'Caravaggio', date: 'ca. 1595' },
+
+  /* Landscape. The Homer is the best-balanced picture found anywhere;
+     the El Greco is the coldest thing in the game and pays for it with
+     almost no magenta. */
+  { file: 'gulfstream.jpg',  id: 'the-gulf-stream', room: 'landscape', roomName: 'Landscape',
+    title: 'The Gulf Stream', artist: 'Winslow Homer', date: '1899' },
+  { file: 'toledo.jpg',      id: 'view-of-toledo', room: 'landscape', roomName: 'Landscape',
+    title: 'View of Toledo', artist: 'El Greco', date: 'ca. 1599\u20131600' },
+
+  /* Figures had the least cool colour of any room -- its bluest work
+     managed C .07. These three fix that on their own. */
+  { file: 'tahitian.jpg',    id: 'two-tahitian-women', room: 'figures', roomName: 'Figures',
+    title: 'Two Tahitian Women', artist: 'Paul Gauguin', date: '1899' },
+  { file: 'siesta.jpg',      id: 'the-siesta', room: 'figures', roomName: 'Figures',
+    title: 'The Siesta', artist: 'Paul Gauguin', date: 'ca. 1892\u201394' },
+  { file: 'faustine.jpg',    id: 'faustine-leo', room: 'figures', roomName: 'Figures',
+    title: 'Faustine L\u00e9o', artist: 'Henri Lehmann', date: '1842' },
+
+  /* Fantasy is the thin bench and these two are the best the museum
+     had. If it ever wants depth, the place to look is the golden-age
+     illustrators -- Dulac, Nielsen -- not a painting gallery. */
+  { file: 'hodler.jpg',      id: 'the-dream-of-the-shepherd', room: 'fantasy', roomName: 'Fantasy',
+    title: 'The Dream of the Shepherd', artist: 'Ferdinand Hodler', date: '1896' },
+  { file: 'puvis.jpg',       id: 'the-shepherds-song', room: 'fantasy', roomName: 'Fantasy',
+    title: "The Shepherd's Song", artist: 'Pierre Puvis de Chavannes', date: '1891' },
+
+  /* These four were already written up on the art history page and had
+     simply never been cut for the game. The Korean Snowscape was the
+     fifth and did not come: ink on silk, no colour in it at all, so
+     finishing four plates would leave the picture where it started. */
+  { file: 'andrew.jpg',      id: 'crucifixion-of-saint-andrew', room: 'faith', roomName: 'Faith',
+    title: 'The Crucifixion of Saint Andrew', artist: 'Caravaggio', date: '1606\u20137' },
+  { file: 'eleousa.jpg',     id: 'icon-of-the-mother-of-god-and-infant-christ', room: 'faith', roomName: 'Faith',
+    title: 'Icon of the Mother of God and Infant Christ', artist: 'Angelos Akotantos', date: 'ca. 1425\u201350' },
+  { file: 'taira.jpg',       id: 'ghosts-of-the-taira-at-daimotsu-bay', room: 'non-western', roomName: 'Non-Western',
+    title: 'Ghosts of the Taira at Daimotsu Bay', artist: 'Utagawa Kuniyoshi', date: '1843\u201347' },
+  { file: 'nurjahan.jpg',    id: 'nur-jahan-holding-a-portrait-of-emperor-jahangir', room: 'non-western', roomName: 'Non-Western',
+    title: 'Nur Jahan Holding a Portrait of Emperor Jahangir', artist: 'Bishandas', date: 'ca. 1627' }
 ];
 
 let artwork = null;
