@@ -1,0 +1,120 @@
+/* ============================================================
+   admin.css — the admin dashboard and its cards
+   ============================================================
+   Loaded alongside gallery.css, which already carries the tokens,
+   the top strip, the page header and the footer, and portal.css,
+   which carries the panels, the gate and the buttons. Only the
+   card deck lives here.
+   ============================================================ */
+
+.deck {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* A whole card is the link. Nothing inside it is separately
+   clickable, so there is no nested target to miss on a phone. */
+.deck .card {
+  display: block;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.deck .card:hover {
+  border-color: var(--blurple-text);
+  transform: translateY(-2px);
+}
+
+.deck .card:focus-visible {
+  outline: 2px solid var(--blurple-text);
+  outline-offset: 3px;
+}
+
+/* The art sits behind the title rather than above it, so a card is
+   the same height whatever the artwork turns out to be. */
+.deck .art {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: var(--ground);
+}
+
+.deck .art svg,
+.deck .art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.deck .art h2 {
+  position: absolute;
+  inset: auto 0 0 0;
+  margin: 0;
+  padding: 26px 16px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  background: linear-gradient(to top, rgba(16, 18, 24, 0.92), rgba(16, 18, 24, 0));
+  text-transform: none;
+}
+
+.deck .what {
+  margin: 0;
+  padding: 12px 16px 16px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* Marks a card that leads somewhere unfinished on purpose. */
+.deck .card .tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  vertical-align: middle;
+}
+
+/* ---- the previews list ---- */
+
+.builds { list-style: none; margin: 0; padding: 0; }
+
+.builds li + li { margin-top: 12px; }
+
+.builds a {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--ground);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.builds a:hover { border-color: var(--blurple-text); }
+.builds a:focus-visible { outline: 2px solid var(--blurple-text); outline-offset: 3px; }
+
+.builds .nm { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+.builds .by { font-size: 0.72rem; color: var(--text-dim); margin-left: auto; }
+
+/* A card for something that does not exist yet. Still readable, visibly
+   not a way in. */
+.deck .card.soon { opacity: 0.62; cursor: default; }
+.deck .card.soon:hover { border-color: var(--border); transform: none; }

@@ -3901,6 +3901,18 @@ nav.menu {
 
 
 <script>
+/* One file serves two addresses. Under /games/dev/ this is a preview build:
+   it keeps its own progress and its own best times under a separate storage
+   prefix, and it records nothing to the leaderboard. Working that out from
+   the path, rather than from an edited copy, is what keeps the dev file and
+   the live file identical -- promoting a build is a copy and nothing more,
+   with no flag anybody has to remember to turn back.
+
+   Browser storage belongs to the whole site, not to one folder, so without
+   the prefix a preview run would overwrite the real campaign spot and the
+   real best times. */
+const DEV_BUILD = location.pathname.includes('/games/dev/');
+const SKEY = DEV_BUILD ? 'cpdev-' : 'cp-';
 /* ============================================================
    Sound
    ============================================================
@@ -4311,7 +4323,7 @@ let bests = {};
    number after the third now points at a different painting, so the key
    carries the layout with it: an old record is simply not found rather
    than being read as a time on a level nobody played. */
-const BEST_KEY = 'cp-best-30';
+const BEST_KEY = SKEY + 'best-30';
 try { bests = JSON.parse(localStorage.getItem(BEST_KEY) || '{}') || {}; } catch (e) { bests = {}; }
 
 const bestOf = (lv) => bests[lv] || 0;
@@ -7411,12 +7423,12 @@ const discoWon = () => campDone.length >= campList().length;
    So the first run is handed the page instead. Once only: the series
    restarts from the first level whenever somebody replays it for a
    better time, and a tutorial on every restart is a toll gate. */
-const TAUGHT_KEY = 'cp-taught';
+const TAUGHT_KEY = SKEY + 'taught';
 
 const taught = () => { try { return localStorage.getItem(TAUGHT_KEY) === '1'; } catch (e) { return true; } };
 const taughtSet = () => { try { localStorage.setItem(TAUGHT_KEY, '1'); } catch (e) {} };
 
-const SPOT_KEY = 'cp-camp-spot';
+const SPOT_KEY = SKEY + 'camp-spot';
 
 function spotGet() {
   try {
@@ -7448,7 +7460,7 @@ function campStart() {
 /* Gold until it has been played once, so it reads as new exactly as long
    as it is new. Kept on the device rather than on the account: it is a
    label on a button, not a score. */
-const DISCO_SEEN = 'cp-endless-seen';
+const DISCO_SEEN = SKEY + 'endless-seen';
 function discoNew() {
   try { return discoWon() && localStorage.getItem(DISCO_SEEN) !== '1'; }
   catch (e) { return discoWon(); }
@@ -11012,7 +11024,7 @@ async function setSound(next) {
   if (!ok) return false;
   sndBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
   sndBtn.setAttribute('aria-label', next ? 'Turn sound off' : 'Turn sound on');
-  try { localStorage.setItem('cp-sound', next ? '1' : '0'); } catch (e) {}
+  try { localStorage.setItem(SKEY + 'sound', next ? '1' : '0'); } catch (e) {}
 
   // whatever the screen asked for while there was nobody to ask
   if (next) setMusic(wantCue, wantHow);
@@ -11291,13 +11303,13 @@ for (const id of ['setInks', 'setTarget', 'setFall']) {
 const elAngles = document.getElementById('cbBtn');
 if (elAngles) {
   let marks = false;
-  try { marks = localStorage.getItem('cp-angles') === '1'; } catch (e) {}
+  try { marks = localStorage.getItem(SKEY + 'angles') === '1'; } catch (e) {}
   const useAngles = () => {
     document.body.classList.toggle('angles', marks);
     elAngles.setAttribute('aria-pressed', marks ? 'true' : 'false');
     elAngles.setAttribute('aria-label', marks ? 'Turn colorblind marks off' : 'Turn colorblind marks on');
     buildPeek();                                // show it on the drops at once
-    try { localStorage.setItem('cp-angles', marks ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem(SKEY + 'angles', marks ? '1' : '0'); } catch (e) {}
   };
   elAngles.addEventListener('click', () => { marks = !marks; useAngles(); });
   useAngles();
@@ -11330,7 +11342,7 @@ window.addEventListener('resize', () => {
    off, here and on the next visit. */
 function soundWanted() {
   try {
-    const v = localStorage.getItem('cp-sound');
+    const v = localStorage.getItem(SKEY + 'sound');
     if (v === '0') return false;
   } catch (e) { /* a browser that will not remember is a browser that agrees */ }
   return true;
@@ -11478,6 +11490,12 @@ else if (TRY > 0) openTrial();
   import { SUPABASE_URL } from '/club-config.js';
 
   const GAME = 'color-processor';
+
+  /* Worked out again here rather than read from the classic script above.
+     A module has its own scope, so leaning on that one being visible
+     across the two would be a quiet dependency for no gain. */
+  const DEV_BUILD = location.pathname.includes('/games/dev/');
+
   let member = null;
 
   /* Discord sends them back to this same address, so they land on the game
@@ -11611,14 +11629,14 @@ else if (TRY > 0) openTrial();
     /* A jam is how every party ends, so a jam is what posts. There is no
        finishing it and nothing to lose by stopping. */
     async discoRecord(points, detail) {
-      if (!member) return null;
+      if (!member || DEV_BUILD) return null;
       const posted = await postScore(GAME, points, detail, 'endless');
       if (!posted.ok) return { ok: false, reason: posted.reason };
       return { ok: true, standing: await highMe(GAME, 'endless') };
     },
 
     async record(variant, seconds, detail) {
-      if (!member) return null;
+      if (!member || DEV_BUILD) return null;
 
       const posted = await postScore(GAME, seconds, detail, variant);
       if (!posted.ok) return { ok: false, reason: posted.reason };

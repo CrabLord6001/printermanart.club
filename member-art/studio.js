@@ -33,6 +33,15 @@ export async function isAdmin() {
   return data === true;
 }
 
+/* Admins and testers both. Same bargain as isAdmin: the database answers,
+   so editing this in a console gets you a page with a link on it and no
+   build you were not already allowed to open. */
+export async function canPreview() {
+  const { data, error } = await db.rpc('club_can_preview');
+  if (error) return false;
+  return data === true;
+}
+
 const FIELDS =
   'id, title, year, medium, description, alt_text, image_path, ' +
   'image_width, image_height, status, review_note, created_at, member_id';

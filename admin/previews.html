@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dev Previews &mdash; PrinterMan's Art Club</title>
+
+<!-- Not indexed, not in sitemap.xml, and no robots.txt entry on purpose. -->
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+<meta name="theme-color" content="#5865F2">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/member-art/gallery.css">
+<link rel="stylesheet" href="/member-art/portal.css">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+<div class="col">
+
+  <nav class="site-strip">
+    <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
+    <a href="/member-art/">Member Art</a>
+    <a class="site-join" href="/games/color-processor.html">Arcade</a>
+  </nav>
+
+  <header class="page">
+    <a class="back" href="/admin/">&larr; Dashboard</a>
+    <h1>Dev Previews</h1>
+    <p class="bio">Builds in progress. Rough on purpose.</p>
+  </header>
+
+  <div class="panel" id="boot">
+    <div class="gate"><p>Checking your account&hellip;</p></div>
+  </div>
+
+  <div class="panel" id="gate" hidden>
+    <div class="gate">
+      <p>Sign in to reach the previews.</p>
+      <button class="btn" id="signIn" type="button">Sign in with Discord</button>
+    </div>
+  </div>
+
+  <div class="panel" id="nope" hidden>
+    <div class="gate">
+      <p>Previews are for admins and testers. Nothing to see here.</p>
+      <button class="btn ghost" id="signOut2" type="button">Sign out</button>
+    </div>
+  </div>
+
+  <div class="panel wide" id="main" hidden>
+    <h2>Playable now</h2>
+    <ul class="builds">
+      <li>
+        <a href="/games/dev/color-processor.html">
+          <span class="nm">Gallery Printshop</span>
+          <span class="by">dev build</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Worth saying on the page rather than only in the commit: a tester who
+         does not know this will think their run vanished. -->
+    <p class="note">A dev build keeps its own progress and its own best times,
+    separate from the live game, and it records nothing to the leaderboard.
+    Finishing a level here will not mark it off there.</p>
+
+    <p class="site-foot">
+      <a href="/admin/">Dashboard</a> &nbsp;&middot;&nbsp;
+      <a href="/">printermanart.club</a> &nbsp;&middot;&nbsp;
+      <button class="btn ghost small" id="signOut" type="button">Sign out</button>
+    </p>
+  </div>
+
+</div>
+
+<script type="module">
+import { onMember, signIn, signOut, canPreview } from '/member-art/studio.js';
+
+const boot = document.getElementById('boot');
+const gate = document.getElementById('gate');
+const nope = document.getElementById('nope');
+const main = document.getElementById('main');
+
+function view(which) {
+  boot.hidden = which !== 'boot';
+  gate.hidden = which !== 'gate';
+  nope.hidden = which !== 'nope';
+  main.hidden = which !== 'main';
+}
+
+document.getElementById('signIn').addEventListener('click', () => signIn());
+document.getElementById('signOut').addEventListener('click', () => signOut());
+document.getElementById('signOut2').addEventListener('click', () => signOut());
+
+onMember(async (member) => {
+  if (!member) { view('gate'); return; }
+  view('boot');
+  // One question for both roles. The database answers it.
+  view((await canPreview()) ? 'main' : 'nope');
+});
+</script>
+
+</body>
+</html>

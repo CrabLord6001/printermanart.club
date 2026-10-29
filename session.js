@@ -2,9 +2,9 @@
    session.js — the signed-in strip, site wide
    ============================================================
    Shows a quiet "sign out" in the top right once somebody is
-   signed in, and an "approvals" link beside it if they are a
-   moderator. Signed out, it shows nothing at all — the way in is
-   the sign-in link in the footer.
+   signed in, and an "admin" link beside it if they are an admin.
+   Signed out, it shows nothing at all — the way in is the sign-in
+   link in the footer.
 
    The important part is what it does NOT do. Loading the Supabase
    client on every page so most visitors can be told they are
@@ -41,7 +41,7 @@ function paint() {
     '.club-session a:hover,.club-session button:hover{color:#D4A24C;}' +
     '.club-session a:focus-visible,.club-session button:focus-visible{' +
     'outline:2px solid #99A2F7;outline-offset:3px;border-radius:2px;}' +
-    '.club-session .approvals{color:#99A2F7;}' +
+    '.club-session .admin{color:#99A2F7;}' +
 
     /* The footer sign-in belongs to the same job as this strip, so its one
        rule lives here too rather than in four separate stylesheets. Matched
@@ -98,8 +98,8 @@ async function start() {
     const bar = document.createElement('div');
     bar.className = 'club-session';
 
-    // Everyone signed in has somewhere of their own to go. Only a moderator
-    // also has everyone else's queue.
+    // Everyone signed in has somewhere of their own to go. An admin also
+    // has the dashboard, which is the way to the queue and everything else.
     const ownLink = document.createElement('a');
     ownLink.href = '/member-art/submit.html';
     ownLink.textContent = 'Submissions';
@@ -107,9 +107,9 @@ async function start() {
 
     if (admin) {
       const link = document.createElement('a');
-      link.className = 'approvals';
-      link.href = '/member-art/review.html';
-      link.textContent = 'Approvals';
+      link.className = 'admin';
+      link.href = '/admin/';
+      link.textContent = 'Admin';
       bar.appendChild(link);
     }
 

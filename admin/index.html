@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin &mdash; PrinterMan's Art Club</title>
+
+<!-- An admin page. Deliberately not indexed and not in sitemap.xml. There is
+     no robots.txt entry either: that file is public, so a Disallow line would
+     advertise the exact path it is meant to keep quiet. -->
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+<meta name="theme-color" content="#5865F2">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/member-art/gallery.css">
+<link rel="stylesheet" href="/member-art/portal.css">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+<div class="col">
+
+  <nav class="site-strip">
+    <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
+    <a href="/member-art/">Member Art</a>
+    <a class="site-join" href="/games/color-processor.html">Arcade</a>
+  </nav>
+
+  <header class="page">
+    <a class="back" href="/">&larr; Home</a>
+    <h1>Dashboard</h1>
+    <p class="bio" id="who">&nbsp;</p>
+  </header>
+
+  <!-- Checking, signed out, refused, and the dashboard itself. One of the
+       four is on screen at any time, and the first one says so rather than
+       flashing an empty page while the database is asked. -->
+  <div class="panel" id="boot">
+    <div class="gate"><p>Checking your account&hellip;</p></div>
+  </div>
+
+  <div class="panel" id="gate" hidden>
+    <div class="gate">
+      <p>Sign in to reach the dashboard.</p>
+      <button class="btn" id="signIn" type="button">Sign in with Discord</button>
+    </div>
+  </div>
+
+  <!-- Says so plainly rather than pretending the page is not here. The
+       database refuses either way, so there is nothing to hide by lying. -->
+  <div class="panel" id="nope" hidden>
+    <div class="gate">
+      <p>This page is for admins. Nothing to see here.</p>
+      <button class="btn ghost" id="signOut2" type="button">Sign out</button>
+    </div>
+  </div>
+
+  <div id="main" hidden>
+    <div class="deck">
+
+      <a class="card" href="/member-art/review.html">
+        <span class="art">
+          <svg viewBox="0 0 320 180" role="img" aria-label="Three framed pictures in a row, the nearest one marked with a check.">
+            <rect width="320" height="180" fill="#101218"/>
+            <rect x="26" y="46" width="76" height="96" rx="2" fill="#171A22" stroke="#272B36" stroke-width="2"/>
+            <rect x="38" y="58" width="52" height="60" fill="#0093D3" opacity=".55"/>
+            <rect x="120" y="46" width="76" height="96" rx="2" fill="#171A22" stroke="#272B36" stroke-width="2"/>
+            <rect x="132" y="58" width="52" height="60" fill="#E6007E" opacity=".55"/>
+            <rect x="214" y="46" width="76" height="96" rx="2" fill="#171A22" stroke="#5865F2" stroke-width="2"/>
+            <rect x="226" y="58" width="52" height="60" fill="#F3E500" opacity=".5"/>
+            <path d="M232 112 l12 12 l26 -30" fill="none" stroke="#5865F2" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h2>Approvals</h2>
+        </span>
+        <p class="what">The member art queue. Approve, reject or write a note back.</p>
+      </a>
+
+      <a class="card" href="/admin/previews.html">
+        <span class="art">
+          <svg viewBox="0 0 320 180" role="img" aria-label="A printer control panel lit up, with a half-finished page coming out of it.">
+            <rect width="320" height="180" fill="#101218"/>
+            <rect x="52" y="30" width="216" height="74" rx="8" fill="#171A22" stroke="#272B36" stroke-width="2"/>
+            <rect x="70" y="46" width="86" height="42" rx="4" fill="#0E1016" stroke="#272B36" stroke-width="2"/>
+            <rect x="78" y="54" width="30" height="12" rx="2" fill="#5865F2" opacity=".8"/>
+            <rect x="114" y="54" width="30" height="12" rx="2" fill="#0093D3" opacity=".7"/>
+            <rect x="78" y="70" width="30" height="12" rx="2" fill="#E6007E" opacity=".7"/>
+            <rect x="114" y="70" width="30" height="12" rx="2" fill="#F3E500" opacity=".6"/>
+            <circle cx="186" cy="56" r="6" fill="#D4A24C"/>
+            <circle cx="208" cy="56" r="6" fill="#272B36"/>
+            <circle cx="230" cy="56" r="6" fill="#272B36"/>
+            <rect x="180" y="74" width="62" height="5" rx="2" fill="#272B36"/>
+            <rect x="96" y="108" width="128" height="48" rx="2" fill="#F2EFE6"/>
+            <g fill="#1A1A1A" opacity=".5">
+              <circle cx="112" cy="122" r="3"/><circle cx="126" cy="122" r="2.4"/><circle cx="140" cy="122" r="1.8"/>
+              <circle cx="112" cy="136" r="2.4"/><circle cx="126" cy="136" r="1.8"/>
+              <circle cx="112" cy="148" r="1.6"/>
+            </g>
+          </svg>
+          <h2>Dev Previews</h2>
+        </span>
+        <p class="what">Unfinished builds, playable before they go live. Open to admins and testers.</p>
+      </a>
+
+
+      <!-- Not a link. The page is not built, and a card that leads to a 404
+           is worse than no card. It is here so the plan is visible. -->
+      <div class="card soon">
+        <span class="art">
+          <svg viewBox="0 0 320 180" role="img" aria-label="Three columns of stacked cards, the way a task board is laid out.">
+            <rect width="320" height="180" fill="#101218"/>
+            <rect x="34" y="34" width="72" height="20" rx="3" fill="#0093D3" opacity=".35"/>
+            <rect x="34" y="62" width="72" height="26" rx="3" fill="#171A22" stroke="#272B36" stroke-width="2"/>
+            <rect x="34" y="96" width="72" height="26" rx="3" fill="#171A22" stroke="#272B36" stroke-width="2"/>
+            <rect x="124" y="34" width="72" height="20" rx="3" fill="#E6007E" opacity=".35"/>
+            <rect x="124" y="62" width="72" height="26" rx="3" fill="#171A22" stroke="#272B36" stroke-width="2"/>
+            <rect x="214" y="34" width="72" height="20" rx="3" fill="#F3E500" opacity=".3"/>
+            <rect x="214" y="62" width="72" height="26" rx="3" fill="#171A22" stroke="#272B36" stroke-width="2"/>
+            <rect x="214" y="96" width="72" height="26" rx="3" fill="#171A22" stroke="#272B36" stroke-width="2"/>
+            <rect x="214" y="130" width="72" height="26" rx="3" fill="#171A22" stroke="#272B36" stroke-width="2"/>
+          </svg>
+          <h2>Taskboard <span class="tag">Not built yet</span></h2>
+        </span>
+        <p class="what">Article and site work, to replace ClickUp.</p>
+      </div>
+
+    </div>
+
+    <p class="site-foot">
+      <a href="/">printermanart.club</a> &nbsp;&middot;&nbsp;
+      <a href="/member-art/">Member Art</a> &nbsp;&middot;&nbsp;
+      <button class="btn ghost small" id="signOut" type="button">Sign out</button>
+    </p>
+  </div>
+
+</div>
+
+<script type="module">
+import { onMember, signIn, signOut, isAdmin } from '/member-art/studio.js';
+
+const boot = document.getElementById('boot');
+const gate = document.getElementById('gate');
+const nope = document.getElementById('nope');
+const main = document.getElementById('main');
+const who  = document.getElementById('who');
+
+function view(which) {
+  boot.hidden = which !== 'boot';
+  gate.hidden = which !== 'gate';
+  nope.hidden = which !== 'nope';
+  main.hidden = which !== 'main';
+  if (which !== 'main') who.innerHTML = '&nbsp;';
+}
+
+document.getElementById('signIn').addEventListener('click', () => signIn());
+document.getElementById('signOut').addEventListener('click', () => signOut());
+document.getElementById('signOut2').addEventListener('click', () => signOut());
+
+onMember(async (member) => {
+  if (!member) { view('gate'); return; }
+
+  view('boot');
+
+  // Asked of the database, not worked out from anything the page knows.
+  // Hiding the cards is tidiness; every page they lead to is gated on its
+  // own, and the policies behind them refuse regardless of what is drawn.
+  if (!(await isAdmin())) { view('nope'); return; }
+
+  who.textContent = 'Signed in as ' + member.displayName;
+  view('main');
+});
+</script>
+
+</body>
+</html>
