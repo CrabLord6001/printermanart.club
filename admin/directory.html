@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Directory &mdash; PrinterMan's Art Club</title>
+
+<!-- An admin page. Not indexed, not in sitemap.xml, no robots.txt entry. -->
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+<meta name="theme-color" content="#5865F2">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/member-art/gallery.css">
+<link rel="stylesheet" href="/member-art/portal.css">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+<div class="col">
+
+  <nav class="site-strip">
+    <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
+    <a href="/admin/">Dashboard</a>
+    <a class="site-join" href="/member-art/review.html">Approvals</a>
+  </nav>
+
+  <header class="page">
+    <a class="back" href="/admin/">&larr; Dashboard</a>
+    <h1>Directory</h1>
+    <p class="bio" id="count">&nbsp;</p>
+  </header>
+
+  <div class="panel" id="boot">
+    <div class="gate"><p>Checking your account&hellip;</p></div>
+  </div>
+
+  <div class="panel" id="gate" hidden>
+    <div class="gate">
+      <p>Sign in to reach the directory.</p>
+      <button class="btn" id="signIn" type="button">Sign in with Discord</button>
+    </div>
+  </div>
+
+  <div class="panel" id="nope" hidden>
+    <div class="gate">
+      <p>This page is for admins. Nothing to see here.</p>
+      <button class="btn ghost" id="signOut2" type="button">Sign out</button>
+    </div>
+  </div>
+
+  <div class="panel wide" id="main" hidden>
+    <div class="dir-bar">
+      <input type="search" class="dir-find" id="find" placeholder="Find a member&hellip;" autocomplete="off" spellcheck="false">
+    </div>
+    <div id="list"></div>
+    <p class="note" id="say" hidden></p>
+
+    <p class="site-foot">
+      <a href="/admin/">Dashboard</a> &nbsp;&middot;&nbsp;
+      <a href="/">printermanart.club</a> &nbsp;&middot;&nbsp;
+      <button class="btn ghost small" id="signOut" type="button">Sign out</button>
+    </p>
+  </div>
+
+</div>
+
+<script type="module">
+import { db, onMember, signIn, signOut, isAdmin, publicUrl } from '/member-art/studio.js';
+
+const boot = document.getElementById('boot');
+const gate = document.getElementById('gate');
+const nope = document.getElementById('nope');
+const main = document.getElementById('main');
+const list = document.getElementById('list');
+const count = document.getElementById('count');
+const find = document.getElementById('find');
+const say = document.getElementById('say');
+
+let rows = [];
+let openFor = null;        // the member whose drawer is open
+
+function view(which) {
+  boot.hidden = which !== 'boot';
+  gate.hidden = which !== 'gate';
+  nope.hidden = which !== 'nope';
+  main.hidden = which !== 'main';
+}
+
+function tell(text, kind) {
+  if (!text) { say.hidden = true; return; }
+  say.hidden = false;
+  say.textContent = text;
+  say.className = 'note' + (kind ? ' ' + kind : '');
+}
+
+function day(ts) {
+  if (!ts) return '—';
+  try {
+    return new Date(ts).toLocaleDateString(undefined,
+      { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch (e) { return '—'; }
+}
+
+/* ---- the list ---- */
+
+async function load() {
+  const { data, error } = await db.rpc('club_directory');
+  if (error) { tell('Could not load the directory: ' + error.message, 'bad'); return; }
+  rows = data || [];
+  draw();
+}
+
+function draw() {
+  const q = find.value.trim().toLowerCase();
+  const shown = rows.filter((r) =>
+    !q || (r.display_name || '').toLowerCase().includes(q)
+       || (r.discord_username || '').toLowerCase().includes(q));
+
+  count.textContent = rows.length + (rows.length === 1 ? ' member' : ' members');
+  list.textContent = '';
+
+  if (!shown.length) {
+    const p = document.createElement('p');
+    p.className = 'note';
+    p.textContent = q ? 'Nobody by that name.' : 'No members yet.';
+    list.appendChild(p);
+    return;
+  }
+
+  shown.forEach((r) => list.appendChild(rowEl(r)));
+}
+
+function rowEl(r) {
+  const wrap = document.createElement('div');
+  wrap.className = 'dir-row';
+
+  const head = document.createElement('button');
+  head.type = 'button';
+  head.className = 'dir-head';
+  head.setAttribute('aria-expanded', openFor === r.user_id ? 'true' : 'false');
+
+  if (r.avatar_url) {
+    const img = document.createElement('img');
+    img.className = 'avatar';
+    img.src = r.avatar_url;
+    img.alt = '';
+    img.width = 30; img.height = 30;
+    head.appendChild(img);
+  }
+
+  const who = document.createElement('span');
+  who.className = 'dir-who';
+  const nm = document.createElement('span');
+  nm.className = 'dir-name';
+  nm.textContent = r.display_name || 'Member';
+  who.appendChild(nm);
+  if (r.discord_username) {
+    const u = document.createElement('span');
+    u.className = 'dir-user';
+    u.textContent = '@' + r.discord_username;
+    who.appendChild(u);
+  }
+  head.appendChild(who);
+
+  if (r.is_admin) head.appendChild(chip('Admin', 'is-admin'));
+  if (r.is_tester) head.appendChild(chip('Tester', 'is-tester'));
+  if (r.admin_notes) head.appendChild(chip('Note', 'has-note'));
+
+  const facts = document.createElement('span');
+  facts.className = 'dir-facts';
+  facts.textContent = 'Joined ' + day(r.joined_at) + ' · '
+    + r.artworks + (r.artworks === 1 ? ' work' : ' works')
+    + ' · last ' + day(r.last_submission);
+  head.appendChild(facts);
+
+  head.addEventListener('click', () => {
+    openFor = openFor === r.user_id ? null : r.user_id;
+    draw();
+  });
+  wrap.appendChild(head);
+
+  if (openFor === r.user_id) wrap.appendChild(drawer(r));
+  return wrap;
+}
+
+function chip(text, cls) {
+  const s = document.createElement('span');
+  s.className = 'dir-chip ' + cls;
+  s.textContent = text;
+  return s;
+}
+
+/* ---- the drawer ---- */
+
+function drawer(r) {
+  const d = document.createElement('div');
+  d.className = 'dir-drawer';
+
+  /* Notes. Nobody but an admin can read these: SELECT on that column is
+     revoked from everybody, and club_directory() is the only way they
+     come back. */
+  const nf = document.createElement('div');
+  nf.className = 'dir-notes';
+  const lab = document.createElement('label');
+  lab.textContent = 'Notes (admins only)';
+  lab.htmlFor = 'note-' + r.user_id;
+  const ta = document.createElement('textarea');
+  ta.id = 'note-' + r.user_id;
+  ta.rows = 3;
+  ta.maxLength = 4000;
+  ta.value = r.admin_notes || '';
+  const nb = document.createElement('button');
+  nb.type = 'button';
+  nb.className = 'btn ghost small';
+  nb.textContent = 'Save note';
+  nb.addEventListener('click', async () => {
+    nb.disabled = true;
+    const { error } = await db.rpc('club_set_note', { p_member: r.user_id, p_note: ta.value });
+    nb.disabled = false;
+    if (error) { tell('Could not save that note: ' + error.message, 'bad'); return; }
+    r.admin_notes = ta.value.trim() || null;
+    tell('Note saved.');
+  });
+  nf.append(lab, ta, nb);
+  d.appendChild(nf);
+
+  /* Their artwork, to fix rather than to ask Claude to fix. */
+  const art = document.createElement('div');
+  art.className = 'dir-art';
+  art.textContent = 'Loading artwork…';
+  d.appendChild(art);
+  loadArt(r, art);
+
+  /* Removal. Last in the drawer, quiet, and it says what it takes with it. */
+  const danger = document.createElement('div');
+  danger.className = 'dir-danger';
+  const warn = document.createElement('span');
+  warn.textContent = 'Removing a member deletes their artwork and image files too. Their run history is archived, not lost.';
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'dir-del';
+  del.textContent = 'Remove ' + (r.display_name || 'this member');
+  del.addEventListener('click', () => remove(r, del));
+  danger.append(warn, del);
+  d.appendChild(danger);
+
+  return d;
+}
+
+async function loadArt(r, box) {
+  const { data, error } = await db
+    .from('club_artworks')
+    .select('id, title, year, status, image_path, created_at')
+    .eq('member_id', r.user_id)
+    .order('created_at', { ascending: false });
+
+  box.textContent = '';
+  if (error) { box.textContent = 'Could not load their artwork.'; return; }
+  if (!data || !data.length) { box.textContent = 'No artwork submitted.'; return; }
+
+  data.forEach((a) => {
+    const line = document.createElement('div');
+    line.className = 'dir-work';
+
+    const thumb = document.createElement('img');
+    thumb.className = 'dir-thumb';
+    thumb.src = publicUrl(a.image_path);
+    thumb.alt = '';
+    thumb.loading = 'lazy';
+    line.appendChild(thumb);
+
+    const t = document.createElement('input');
+    t.type = 'text';
+    t.value = a.title || '';
+    t.maxLength = 200;
+    t.setAttribute('aria-label', 'Title');
+    const y = document.createElement('input');
+    y.type = 'text';
+    y.value = a.year || '';
+    y.maxLength = 20;
+    y.className = 'dir-year';
+    y.setAttribute('aria-label', 'Year');
+    line.append(t, y);
+
+    const st = document.createElement('span');
+    st.className = 'dir-chip status-' + a.status;
+    st.textContent = a.status;
+    line.appendChild(st);
+
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.className = 'btn ghost small';
+    save.textContent = 'Save';
+    save.addEventListener('click', async () => {
+      save.disabled = true;
+      const { error: e2 } = await db.from('club_artworks')
+        .update({ title: t.value.trim(), year: y.value.trim() || null })
+        .eq('id', a.id);
+      save.disabled = false;
+      tell(e2 ? 'Could not save: ' + e2.message : 'Saved.', e2 ? 'bad' : '');
+    });
+
+    const down = document.createElement('button');
+    down.type = 'button';
+    down.className = 'dir-del small';
+    down.textContent = a.status === 'approved' ? 'Take down' : 'Delete';
+    down.addEventListener('click', async () => {
+      if (a.status === 'approved') {
+        down.disabled = true;
+        const { error: e3 } = await db.from('club_artworks')
+          .update({ status: 'rejected', review_note: 'Taken down by an admin.' })
+          .eq('id', a.id);
+        down.disabled = false;
+        if (e3) { tell('Could not take that down: ' + e3.message, 'bad'); return; }
+        tell('Taken down. It is off the public gallery.');
+        loadArt(r, box);
+        return;
+      }
+      if (!confirm('Delete "' + (a.title || 'this piece') + '" for good?')) return;
+      down.disabled = true;
+      await db.storage.from('member-art').remove([a.image_path]);
+      const { error: e4 } = await db.from('club_artworks').delete().eq('id', a.id);
+      down.disabled = false;
+      if (e4) { tell('Could not delete that: ' + e4.message, 'bad'); return; }
+      tell('Deleted.');
+      loadArt(r, box);
+    });
+
+    line.append(save, down);
+    box.appendChild(line);
+  });
+}
+
+/* Two steps on purpose. The image files live in storage, which the database
+   cannot reach, so they go first; then one call takes the rows. */
+async function remove(r, btn) {
+  const name = r.display_name || 'this member';
+  if (!confirm('Remove ' + name + '? Their artwork and image files go too. This cannot be undone.')) return;
+  if (!confirm('Last check: really remove ' + name + '?')) return;
+
+  btn.disabled = true;
+  tell('Removing ' + name + '…');
+
+  const { data: works } = await db
+    .from('club_artworks').select('image_path').eq('member_id', r.user_id);
+  const paths = (works || []).map((w) => w.image_path).filter(Boolean);
+  if (paths.length) {
+    const { error: se } = await db.storage.from('member-art').remove(paths);
+    if (se) {
+      btn.disabled = false;
+      tell('Stopped: could not delete their image files (' + se.message + '). Nothing was removed.', 'bad');
+      return;
+    }
+  }
+
+  const { error } = await db.rpc('club_remove_member', { p_member: r.user_id });
+  btn.disabled = false;
+  if (error) { tell('Could not remove them: ' + error.message, 'bad'); return; }
+
+  openFor = null;
+  tell(name + ' removed, along with ' + paths.length + (paths.length === 1 ? ' image.' : ' images.'));
+  load();
+}
+
+/* ---- wiring ---- */
+
+document.getElementById('signIn').addEventListener('click', () => signIn());
+document.getElementById('signOut').addEventListener('click', () => signOut());
+document.getElementById('signOut2').addEventListener('click', () => signOut());
+find.addEventListener('input', draw);
+
+onMember(async (member) => {
+  if (!member) { view('gate'); return; }
+  view('boot');
+  if (!(await isAdmin())) { view('nope'); return; }
+  view('main');
+  load();
+});
+</script>
+
+</body>
+</html>
