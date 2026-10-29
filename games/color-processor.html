@@ -1122,6 +1122,54 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 .snd[aria-pressed="true"] .snd-off { display: none; }
 .snd[aria-pressed="false"] .snd-on { display: none; }
 
+/* ---- the volume panel ----
+   Anchored to the speaker rather than dropped in the middle of the
+   screen, because it belongs to that button. It is absolutely placed so
+   opening it cannot push the switches row around and move the other
+   buttons out from under a thumb. */
+.sndwrap { position: relative; display: inline-flex; }
+
+.volpop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #11131A;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .55);
+}
+.volpop[hidden] { display: none; }
+
+.volmute {
+  flex: none;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 7px;
+  cursor: pointer;
+}
+.volmute:hover { color: var(--accent); border-color: var(--accent); }
+.volmute[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+
+.volrange {
+  flex: none;
+  width: 110px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 /* ---- the control deck ---- */
 
 /* The row under the board belongs to the machine, not to the website.
@@ -3829,13 +3877,23 @@ nav.menu {
         <button class="whoami-out" id="signOut" type="button">Sign out</button>
       </div>
       <div class="switches">
-      <button class="snd" id="snd" type="button" aria-pressed="true" aria-label="Turn sound off">
+      <div class="sndwrap" id="sndWrap">
+      <button class="snd" id="snd" type="button" aria-pressed="true" aria-expanded="false" aria-label="Sound and volume">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M11 5 6 9H2v6h4l5 4z"/>
           <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
           <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
         </svg>
       </button>
+      <!-- Opening this holds the clock, the way the settings panel does.
+           Nobody should lose seconds off a run because the music was too
+           loud to think over. -->
+      <div class="volpop" id="volPop" hidden>
+        <button class="volmute" id="volMute" type="button" aria-pressed="false">Mute</button>
+        <input class="volrange" id="volRange" type="range" min="0" max="100" step="1" value="100"
+               aria-label="Volume">
+      </div>
+      </div>
       <!-- Not a difficulty: whether the board can be read at all. It sits
            with the mute rather than in a mode, so no one pays for it. -->
       <button class="snd" id="cbBtn" type="button" aria-pressed="false" aria-label="Turn colorblind marks on">
@@ -10986,10 +11044,88 @@ function setArtSrc(src) {
 }
 
 const sndBtn = document.getElementById('snd');
+const volPop = document.getElementById('volPop');
+const volMute = document.getElementById('volMute');
+const volRange = document.getElementById('volRange');
 
-sndBtn.addEventListener('click', async () => {
+/* ---- volume ----
+   Remembered per browser like the sound switch, and handed to the organ
+   whenever it turns up -- the module is imported on the first touch, so
+   a value read at load has nobody to give it to yet. */
+function volWanted() {
+  try {
+    const v = parseInt(localStorage.getItem(SKEY + 'vol'), 10);
+    if (isFinite(v) && v >= 0 && v <= 100) return v;
+  } catch (e) { /* a browser that will not remember plays at full */ }
+  return 100;
+}
+
+function applyVol(pct, remember) {
+  volRange.value = String(pct);
+  if (remember) {
+    try { localStorage.setItem(SKEY + 'vol', String(pct)); } catch (e) {}
+  }
+  if (music && typeof music.setVolume === 'function') music.setVolume(pct / 100);
+}
+
+volRange.value = String(volWanted());
+
+/* The clock while the panel is open. The settings panel pauses outright
+   and swaps the screen for it; this one only has to stop time, because
+   the board stays where it is and the player is looking straight at it.
+   The arithmetic is the same as resume()'s: the run is told what the
+   interruption cost so a finished print reports time spent playing. */
+let volHeldAt = 0;
+
+function volHold() {
+  if (volHeldAt || !started || paused || over) return;
+  volHeldAt = Date.now();
+  stopTick();
+  stopClock();
+}
+
+function volRelease() {
+  if (!volHeldAt) return;
+  startedAt += Date.now() - volHeldAt;
+  volHeldAt = 0;
+  if (!started || paused || over) return;
+  startClock();
+  startTick();
+}
+
+function volOpen(next) {
+  volPop.hidden = !next;
+  sndBtn.setAttribute('aria-expanded', next ? 'true' : 'false');
+  if (next) { volHold(); volRange.focus(); } else volRelease();
+}
+
+sndBtn.addEventListener('click', () => {
+  // The first touch is also what the browser wants before it will let the
+  // page make any noise at all, so prime here as well as in setSound.
+  primeAudio();
+  volOpen(volPop.hidden);
+});
+
+volMute.addEventListener('click', async () => {
   const next = sndBtn.getAttribute('aria-pressed') !== 'true';
   await setSound(next);
+});
+
+volRange.addEventListener('input', () => {
+  applyVol(parseInt(volRange.value, 10) || 0, true);
+});
+
+/* Clicking anywhere else closes it, which is also the thing that gives the
+   clock back. Pointerdown rather than click: a drag that starts outside
+   should close it too. */
+document.addEventListener('pointerdown', (e) => {
+  if (volPop.hidden) return;
+  if (e.target.closest('#sndWrap')) return;
+  volOpen(false);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !volPop.hidden) volOpen(false);
 });
 
 /* One place that turns the sound on or off, so everything that depends on
@@ -11023,8 +11159,13 @@ async function setSound(next) {
   const ok = await wantSound(next);
   if (!ok) return false;
   sndBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
-  sndBtn.setAttribute('aria-label', next ? 'Turn sound off' : 'Turn sound on');
+  sndBtn.setAttribute('aria-label', 'Sound and volume');
+  volMute.setAttribute('aria-pressed', next ? 'false' : 'true');
+  volMute.textContent = next ? 'Mute' : 'Unmute';
   try { localStorage.setItem(SKEY + 'sound', next ? '1' : '0'); } catch (e) {}
+  // The organ is only here once somebody has touched the page, so the
+  // remembered volume is handed over at the first chance there is to.
+  if (next) applyVol(parseInt(volRange.value, 10) || 0, false);
 
   // whatever the screen asked for while there was nobody to ask
   if (next) setMusic(wantCue, wantHow);
@@ -11350,7 +11491,8 @@ function soundWanted() {
 
 if (!soundWanted()) {
   sndBtn.setAttribute('aria-pressed', 'false');
-  sndBtn.setAttribute('aria-label', 'Turn sound on');
+  volMute.setAttribute('aria-pressed', 'true');
+  volMute.textContent = 'Unmute';
 }
 
 /* Tried the moment the page opens, because a game that comes up silent

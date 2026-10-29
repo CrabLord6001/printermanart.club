@@ -781,6 +781,31 @@ export function arm() {
 
 export function isOn() { return on; }
 
+/* How loud the game is overall, as a share of what it has always played
+   at. The slider in the switches row sets it. Nothing goes above 1: the
+   old level is the ceiling, so turning this up can never be louder than
+   the game was before there was a slider. At 0 it is silence, which is
+   why the panel's mute and the bottom of the slider agree. */
+const MASTER_FULL = 0.9;
+let vol = 1;
+
+function masterTarget() {
+  return Math.max(MASTER_FULL * vol, 0.0001);   // an exponential ramp cannot reach 0
+}
+
+export function getVolume() { return vol; }
+
+export function setVolume(v) {
+  v = Number(v);
+  vol = Math.max(0, Math.min(1, isFinite(v) ? v : 1));
+  if (!master || !on) return;                   // remembered either way
+  const t = ctx.currentTime;
+  master.gain.cancelScheduledValues(t);
+  master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), t);
+  // short, because this follows a finger on a slider
+  master.gain.exponentialRampToValueAtTime(masterTarget(), t + 0.08);
+}
+
 export function setOn(next) {
   on = !!next;
   if (on) arm();
@@ -788,7 +813,7 @@ export function setOn(next) {
   const t = ctx.currentTime;
   master.gain.cancelScheduledValues(t);
   master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), t);
-  master.gain.exponentialRampToValueAtTime(on ? 0.9 : 0.0001, t + 0.3);
+  master.gain.exponentialRampToValueAtTime(on ? masterTarget() : 0.0001, t + 0.3);
   if (!on) { cueTurn++; cueSilence(); }
   else if (cueWant && !cueHave) setCue(cueWant);
 }
