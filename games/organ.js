@@ -190,7 +190,11 @@ for (let i = 0; i < XF_STEPS; i++) {
   XF_DOWN[i] = Math.max(0.0001, Math.cos(t));
 }
 const CUE_LOOK = 0.9;               // how far ahead laps are written
-const CUE_LEVEL = 0.52;             // the soundtrack sits under the effects
+const CUE_LEVEL = 0.26;             // the soundtrack sits under the effects
+/* Halved from 0.52 on 29 October: players said the music was too loud and
+   was drowning the voices. This is the music alone -- the voices and the
+   press hang off the master and have not moved, so what changes is the
+   balance, not how loud the game is overall. */
 
 let cueBus = null;                  // everything musical hangs off this
 let cueDuck = null;                 // which steps back while she speaks
