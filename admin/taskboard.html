@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taskboard &mdash; PrinterMan's Art Club</title>
+
+<!-- An admin page. Not indexed, not in sitemap.xml, no robots.txt entry. -->
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+<meta name="theme-color" content="#5865F2">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/member-art/gallery.css">
+<link rel="stylesheet" href="/admin/taskboard.css">
+</head>
+<body>
+
+<nav class="site-strip">
+  <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
+  <a href="/admin/">Dashboard</a>
+  <a class="site-join" href="/member-art/review.html">Approvals</a>
+</nav>
+
+<div class="tb-wrap">
+  <div class="tb-head"><h1>Taskboard</h1></div>
+  <p class="tb-sub">Site and game work. Shared by every admin.</p>
+
+  <div id="tb-gate" class="tb-msg">Checking your account&hellip;</div>
+
+  <div id="tb-app" hidden>
+    <div class="tb-bar">
+      <input type="search" class="tb-search" id="tb-q" placeholder="Filter&hellip;" autocomplete="off" spellcheck="false">
+      <select class="tb-search" id="tb-type" title="Filter by type"><option value="">All types</option></select>
+      <button type="button" class="tb-btn secondary" id="tb-arch">Show archived</button>
+      <span class="tb-count" id="tb-count"></span>
+    </div>
+    <div class="tb-board" id="tb-board"></div>
+  </div>
+</div>
+
+<!-- Move sheet, for touch. iOS Safari never fires the drag events, so a
+     phone needs somewhere to say where a card is going. -->
+<div class="tb-ov" id="tb-mv">
+  <div class="tb-modal" style="max-width:340px">
+    <button type="button" class="tb-x" data-mv="close" aria-label="Close">&#10005;</button>
+    <h2>Move to&hellip;</h2>
+    <div id="tb-mv-list"></div>
+  </div>
+</div>
+
+<!-- Editor -->
+<div class="tb-ov" id="tb-ov">
+  <div class="tb-modal" role="dialog" aria-modal="true" aria-labelledby="tb-mt">
+    <button type="button" class="tb-x" data-tb="close" aria-label="Close">&#10005;</button>
+    <h2 id="tb-mt">Task</h2>
+    <div class="tb-modal-err" id="tb-me"></div>
+
+    <div class="tb-f"><label for="tb-title">Title</label>
+      <input type="text" id="tb-title" maxlength="300" autocomplete="off"></div>
+
+    <div class="tb-f"><label for="tb-desc">Notes</label>
+      <textarea id="tb-desc" maxlength="20000"></textarea></div>
+
+    <div class="tb-row">
+      <div class="tb-f"><label for="tb-status">Status</label><select id="tb-status"></select></div>
+      <div class="tb-f"><label for="tb-prio">Priority</label><select id="tb-prio">
+        <option value="">None</option><option value="urgent">Urgent</option>
+        <option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option>
+      </select></div>
+    </div>
+
+    <div class="tb-row">
+      <div class="tb-f"><label for="tb-due">Due date</label><input type="date" id="tb-due"></div>
+      <div class="tb-f"><label for="tb-parent">Subtask of</label><select id="tb-parent"></select></div>
+    </div>
+
+    <div class="tb-row">
+      <div class="tb-f"><label for="tb-type-in">Type</label>
+        <input type="text" id="tb-type-in" list="tb-types" maxlength="40" autocomplete="off" placeholder="Printshop, Paper Trail, Site&hellip;">
+        <datalist id="tb-types"></datalist></div>
+      <div class="tb-f"><label for="tb-doc">Document link</label>
+        <input type="url" id="tb-doc" placeholder="https://docs.google.com/&hellip;"></div>
+    </div>
+
+    <div class="tb-f"><label for="tb-chat">Claude session link</label>
+      <input type="url" id="tb-chat" placeholder="https://claude.ai/&hellip;"></div>
+    <p class="tb-note">Where this started, so a topic can be traced back.</p>
+
+    <div class="tb-acts">
+      <button type="button" class="tb-btn" data-tb="save">Save</button>
+      <button type="button" class="tb-btn secondary" data-tb="close">Cancel</button>
+      <span class="tb-spacer"></span>
+      <button type="button" class="tb-btn secondary" data-tb="archive" id="tb-archbtn">Archive</button>
+      <button type="button" class="tb-btn danger" data-tb="delete" id="tb-delbtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/admin/taskboard.js"></script>
+
+</body>
+</html>

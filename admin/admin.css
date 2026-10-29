@@ -113,8 +113,3 @@
 
 .builds .nm { font-size: 0.85rem; font-weight: 600; color: var(--text); }
 .builds .by { font-size: 0.72rem; color: var(--text-dim); margin-left: auto; }
-
-/* A card for something that does not exist yet. Still readable, visibly
-   not a way in. */
-.deck .card.soon { opacity: 0.62; cursor: default; }
-.deck .card.soon:hover { border-color: var(--border); transform: none; }

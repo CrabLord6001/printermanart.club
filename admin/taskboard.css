@@ -1,0 +1,170 @@
+/* ============================================================
+   taskboard.css — the club taskboard
+   ============================================================
+   Ported from the Whosoever Believes board. The layout and the
+   behavior are unchanged; what is different is the coat of paint:
+   Poppins on the dark blurple ground instead of Cinzel and
+   EB Garamond on cream.
+
+   Every rule is .tb- prefixed, so nothing here can reach the rest
+   of the site. Colors come from the tokens in gallery.css.
+   ============================================================ */
+
+:root {
+  --tb-accent:     rgba(153, 162, 247, 0.5);   /* blurple-text, for edges */
+  --tb-accent-dim: rgba(153, 162, 247, 0.28);
+  --tb-danger:     #E5737A;
+  --tb-danger-dim: rgba(229, 115, 122, 0.5);
+}
+
+.tb-wrap { max-width: 1600px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+
+.tb-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.35rem; }
+.tb-head h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 0; }
+.tb-sub { color: var(--text-dim); font-size: 0.82rem; margin: 0 0 1.25rem; }
+
+.tb-bar { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.tb-btn { font-family: inherit; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--blurple-text); border: 1px solid var(--tb-accent);
+  padding: 0.55rem 1.1rem; background: none; cursor: pointer; border-radius: 6px; }
+.tb-btn:hover { color: var(--text); border-color: var(--blurple); background: rgba(88, 101, 242, 0.12); }
+.tb-btn:focus-visible { outline: 2px solid var(--blurple-text); outline-offset: 3px; }
+.tb-btn.secondary { color: var(--text-dim); border-color: var(--border); }
+.tb-btn.secondary.on { color: var(--blurple-text); border-color: var(--tb-accent); }
+.tb-btn.danger { color: var(--tb-danger); border-color: var(--tb-danger-dim); }
+.tb-btn:disabled { opacity: .45; cursor: default; }
+.tb-search { background: var(--ground); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+  font-family: inherit; font-size: 0.85rem; padding: 0.5rem 0.7rem; outline: none; min-width: 200px; }
+.tb-search:focus { border-color: var(--blurple-text); }
+.tb-count { color: var(--text-dim); font-size: 0.78rem; margin-left: auto; }
+
+/* Columns. Flex rather than grid: a narrowed column has to actually take
+   less room, which a fixed grid track will not do. Scrolls sideways rather
+   than wrapping — a board is read left to right. */
+.tb-board { display: flex; gap: 0.85rem; align-items: flex-start;
+  overflow-x: auto; padding-bottom: 0.75rem; -webkit-overflow-scrolling: touch; }
+.tb-col { flex: 1 0 215px; }
+@media (max-width: 1250px) {
+  .tb-board { scroll-snap-type: x proximity; }
+  .tb-col { flex: 0 0 min(80vw, 300px); scroll-snap-align: start; }
+}
+
+/* Narrowed: a clickable spine showing name and count. */
+.tb-col.collapsed { flex: 0 0 46px !important; min-width: 46px; cursor: pointer;
+  padding: 0.6rem 0.25rem; align-self: stretch; min-height: 180px; }
+.tb-col.collapsed:hover { border-color: var(--tb-accent); }
+.tb-strip { display: flex; flex-direction: column; align-items: center; gap: 0.55rem; }
+.tb-strip-name { writing-mode: vertical-rl; text-orientation: mixed; white-space: nowrap;
+  font-size: 0.58rem; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-muted); }
+.tb-strip-n { font-size: 0.75rem; color: var(--text-dim); }
+.tb-collapse { background: none; border: none; color: var(--text-dim); cursor: pointer;
+  font-size: 1rem; line-height: 1; padding: 0 0.15rem; }
+.tb-collapse:hover { color: var(--blurple-text); }
+
+.tb-col { background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 0.6rem 0.55rem 0.9rem; min-height: 120px; transition: border-color .15s, background .15s; }
+.tb-col.over { border-color: var(--blurple); background: rgba(88, 101, 242, 0.08); }
+.tb-col-head { display: flex; align-items: center; gap: 0.4rem; padding: 0 0.25rem 0.55rem; }
+.tb-col-name { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+.tb-col-n { font-size: 0.75rem; color: var(--text-dim); margin-left: auto; }
+.tb-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Cards */
+.tb-card { background: var(--ground); border: 1px solid var(--border); border-left-width: 3px;
+  border-radius: 8px; padding: 0.6rem 0.65rem; margin-bottom: 0.5rem; cursor: grab;
+  color: var(--text); line-height: 1.4; }
+.tb-card:hover { border-color: var(--tb-accent-dim); }
+.tb-card.dragging { opacity: .4; }
+.tb-card-title { display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.85rem; }
+.tb-card-text { flex: 1; word-break: break-word; }
+.tb-card-meta { display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap; margin-top: 0.45rem; }
+.tb-tag { font-size: 0.5rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.18rem 0.42rem; border-radius: 3px; border: 1px solid var(--border); color: var(--text-dim); }
+.tb-tag.urgent { color: var(--tb-danger); border-color: var(--tb-danger-dim); }
+.tb-tag.high   { color: var(--accent); border-color: rgba(212, 162, 76, 0.5); }
+.tb-tag.normal { color: var(--text-dim); }
+.tb-tag.low    { color: var(--text-dim); opacity: .75; }
+.tb-tag.type   { color: var(--blurple-text); border-color: var(--tb-accent-dim); }
+.tb-tag.due    { color: var(--text-muted); }
+.tb-tag.due.soon { color: var(--accent); border-color: rgba(212, 162, 76, 0.5); }
+.tb-tag.due.past { color: var(--tb-danger); border-color: var(--tb-danger-dim); }
+.tb-notes { cursor: help; color: var(--text-dim); font-size: 0.85rem; line-height: 1; padding: 0 .2rem; user-select: none; }
+.tb-notes:hover { color: var(--blurple-text); }
+
+/* One shared preview, parented to <body> so a column's bounds can never
+   clip it. pointer-events:none keeps it from stealing the hover that
+   opened it. */
+.tb-pop { position: absolute; z-index: 3000; display: none; pointer-events: none;
+  max-width: 340px; max-height: 280px; overflow: hidden;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.7rem 0.8rem; color: var(--text);
+  font-size: 0.82rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .55); }
+.tb-pop.open { display: block; }
+.tb-chat { text-decoration: none; color: var(--text-dim); font-size: 0.75rem; }
+.tb-chat:hover { color: var(--blurple-text); }
+.tb-kids { margin: 0.5rem 0 0; padding: 0.4rem 0 0; border-top: 1px solid var(--border); list-style: none; }
+.tb-kid { display: flex; gap: 0.4rem; align-items: center; font-size: 0.78rem; color: var(--text-muted);
+  padding: 0.15rem 0; cursor: pointer; }
+.tb-kid:hover { color: var(--text); }
+.tb-kid.done .tb-kid-t { text-decoration: line-through; opacity: .6; }
+.tb-kid-t { word-break: break-word; }
+
+/* Touch devices get an explicit move control: iOS Safari never fires the
+   HTML5 drag events, so dragging silently does nothing there. */
+.tb-move { display: none; background: none; border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text-dim); font-family: inherit; font-size: 0.5rem; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 0.2rem 0.42rem; cursor: pointer; }
+.tb-move:hover { color: var(--blurple-text); border-color: var(--tb-accent-dim); }
+.tb-sub { background: none; border: none; color: var(--text-dim); font-size: 1rem;
+  line-height: 1.1; padding: 0 0.1rem; cursor: pointer; opacity: 0.45; }
+.tb-sub:hover { color: var(--blurple-text); opacity: 1; }
+.tb-quick-sub { margin-top: 0.45rem; }
+body.tb-touch .tb-move { display: inline-block; }
+.tb-move-opt { display: flex; align-items: center; gap: 0.6rem; width: 100%; box-sizing: border-box;
+  background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+  font-family: inherit; font-size: 0.85rem; padding: 0.6rem 0.7rem; margin-bottom: 0.4rem;
+  cursor: pointer; text-align: left; }
+.tb-move-opt:hover { border-color: var(--tb-accent); }
+.tb-move-opt.cur { border-color: var(--blurple); color: var(--blurple-text); }
+
+.tb-add { width: 100%; background: none; border: 1px dashed var(--border); border-radius: 6px; color: var(--text-dim);
+  font-family: inherit; font-size: 0.78rem; padding: 0.45rem; cursor: pointer; }
+.tb-add:hover { color: var(--blurple-text); border-color: var(--tb-accent-dim); }
+.tb-add[hidden] { display: none; }
+.tb-quick { width: 100%; box-sizing: border-box; background: var(--ground);
+  border: 1px solid var(--tb-accent); border-radius: 6px; color: var(--text);
+  font-family: inherit; font-size: 0.82rem; padding: 0.5rem 0.55rem; outline: none; }
+.tb-quick::placeholder { color: var(--text-dim); }
+.tb-quick[hidden] { display: none; }
+
+.tb-msg { color: var(--text-muted); text-align: center; padding: 3rem 1rem; font-size: 0.9rem; }
+.tb-msg .tb-btn { margin-top: 1rem; }
+.tb-err { color: var(--tb-danger); }
+
+/* Editor */
+.tb-ov { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(10, 12, 18, .78);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1rem; }
+.tb-ov.open { display: flex; }
+.tb-modal { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 1.6rem 1.5rem; max-width: 560px; width: 100%; max-height: 92vh; overflow-y: auto;
+  color: var(--text); position: relative; }
+.tb-modal h2 { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--text-dim); margin: 0 0 1.1rem; }
+.tb-x { position: absolute; top: .5rem; right: .8rem; background: none; border: none; color: var(--text-muted);
+  font-size: 1.1rem; cursor: pointer; }
+.tb-x:hover { color: var(--blurple-text); }
+.tb-f { margin-bottom: 0.9rem; }
+.tb-f label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+.tb-f input, .tb-f select, .tb-f textarea { width: 100%; box-sizing: border-box; background: var(--ground);
+  border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: inherit;
+  font-size: 0.85rem; padding: 0.5rem 0.65rem; outline: none; }
+.tb-f input:focus, .tb-f select:focus, .tb-f textarea:focus { border-color: var(--blurple-text); }
+.tb-f textarea { min-height: 110px; resize: vertical; line-height: 1.5; }
+.tb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+@media (max-width: 520px) { .tb-row { grid-template-columns: 1fr; } }
+.tb-acts { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.2rem; }
+.tb-acts .tb-spacer { margin-left: auto; }
+.tb-note { color: var(--text-dim); font-size: 0.75rem; margin: -0.5rem 0 0.9rem; }
+.tb-modal-err { color: var(--tb-danger); font-size: 0.8rem; min-height: 1.2em; margin-bottom: 0.5rem; }
