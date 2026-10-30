@@ -4376,14 +4376,33 @@ let mode = 'office', virusRate = VIRUS_FROM;
    again as fast, so a second and a half is four rows early on and seven
    late -- the same drop would be a different mechanic at either end.
    Rows read the same everywhere. */
-/* Prints with nothing in them but ink. Ten is a chapter and a bit, which
-   is long enough to learn to read a board and short enough that somebody
-   who already can is not kept waiting. */
-const HAZARD_FREE = 10;
+/* ---- which chapter brings in what ----
+   Named by chapter rather than by level number. A level number is not a
+   fact about the design: chapters are five prints long today and the
+   trail map would make them ten, and a hazard pinned to "level 11" would
+   silently move from the second chapter to the first the day that
+   changed. Pinned to the chapter it stays where the plan put it.
+
+   Classics is the warm up and has nothing in it. Somebody is learning to
+   read a board and to see four of a color before it is four of a color,
+   and a drop that eats a plate while they are doing that teaches nothing
+   except that the game is unfair. */
+const HAZARD_CH = {
+  virus:  1,      // Landscape
+  lowink: 4       // Fantasy
+};
+
+/* The chapter a level belongs to, or null outside the series. */
+function chapterOf(i) {
+  if (!campOn) return null;
+  const list = campList();
+  const here = list[Math.min(Math.max(0, i), list.length - 1)];
+  if (!here || here.finale) return 99;          // she gets everything
+  return here.chapter;
+}
 
 const LOW_ROWS = 4;        // how far it falls before it fades
 const LOW_RATE = 0.16;     // of drops, once they start
-const LOW_FROM = 0.66;     // how far in they begin -- level 21 of 31, which is Fantasy
 let lowRate = 0;
 
 /* Puyo clears start at four, so the table shifts up one from the one we
@@ -9749,10 +9768,17 @@ function gallery() {
    the clears step back when it lands and climb again from there. */
 function levelSetup(i, n) {
   const t = n > 1 ? i / (n - 1) : 0;
-  /* Where the hazards are along their own stretch, which starts where the
-     clear prints stop rather than at level one. */
-  const hazSpan = Math.max(1, (n - 1) - HAZARD_FREE);
-  const hazT = Math.min(1, Math.max(0, (i - HAZARD_FREE) / hazSpan));
+  const ch = chapterOf(i);
+  /* Where a hazard is along its own stretch: nothing on the chapter it
+     arrives, full by the end of the series. Keeping it on its own stretch
+     rather than on the whole series means holding something back makes
+     the early game calm without making the late game milder. */
+  const since = (from) => {
+    if (ch === null || ch < from) return -1;            // not yet
+    const span = Math.max(1, (CHAPTERS.length - 1) - from);
+    return Math.min(1, Math.max(0, (Math.min(ch, CHAPTERS.length - 1) - from) / span));
+  };
+  const vT = since(HAZARD_CH.virus);
   const band = t < 1 / 3 ? 0 : (t < 2 / 3 ? 1 : 2);
   const within = Math.min(1, Math.max(0, t * 3 - band));
   const from = [8, 10, 12][band];
@@ -9769,13 +9795,8 @@ function levelSetup(i, n) {
        After that the virus ramps across what is left rather than across
        the whole series, so holding it back makes the early game calm
        without making the late game milder than it was. */
-    virusRate: i < HAZARD_FREE ? 0
-             : VIRUS_FROM + (VIRUS_TO - VIRUS_FROM) * hazT,
-    /* Held at nothing until the back of the campaign, then straight in.
-       Keyed to progress rather than named for a chapter because every
-       other dial here is, and the chapters move when the rotation
-       changes. It lands in Fantasy as things stand. */
-    lowRate: t < LOW_FROM ? 0 : LOW_RATE
+    virusRate: vT < 0 ? 0 : VIRUS_FROM + (VIRUS_TO - VIRUS_FROM) * vT,
+    lowRate: since(HAZARD_CH.lowink) < 0 ? 0 : LOW_RATE
   };
 }
 
