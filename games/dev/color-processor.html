@@ -181,14 +181,17 @@ html.embed .title { display: none; }
    casing starts. Both numbers come from the board once it has sized
    itself; until then it simply takes the page. */
 .head {
-  width: var(--boardw, 100%);
+  width: var(--rigw, var(--boardw, 100%));
   max-width: 100%;
   align-self: flex-start;
-  margin-left: var(--boardx, 0);
+  margin-left: var(--rigx, var(--boardx, 0));
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+  /* One line: the readouts take what is left and the bank keeps the rail's
+     width, so wrapping would drop the bank under the scores instead of
+     beside them. */
+  flex-wrap: nowrap;
   padding: 0 0 6px;
 }
 
@@ -212,7 +215,8 @@ html.embed .title { display: none; }
 /* Four readings, evenly weighted, each the full height of the band. They
    used to be a line of small print above the machine. */
 .scores {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 5px;
@@ -1114,6 +1118,16 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    Empty means that plate is finished and further clears of its color are
    board work rather than print work. */
 .platebox { margin-top: 8px; }
+
+/* In the readout row, over the rail's column: the same width as the rail
+   and the same 10px away from the board, so it lines up with the queue
+   underneath it rather than floating between the two. */
+.head .railopts {
+  flex: none;
+  width: var(--railw, 62px);
+  margin-top: 0;
+  align-self: stretch;
+}
 
 /* One bank of four, chromed like the times strip on a level card: a hair
    line round the outside, a ring of panel outside that, and the divisions
@@ -4200,6 +4214,49 @@ nav.menu {
       <div class="score"><span>Time</span><b id="tm">0:00</b><canvas class="print" id="prTm"></canvas></div>
       <div class="score"><span>Chain</span><b id="bc">0</b><canvas class="print" id="prBc"></canvas></div>
     </div>
+    <!-- Sound, grid, colorblind and the board, in the readout row rather
+         than on the rail: it stands over the rail's own column, which has
+         nothing in it at this height, so the bank costs the board no room
+         and the queue below it none either. -->
+        <div class="railopts">
+        <div class="sndwrap" id="sndWrap">
+        <button class="snd" id="snd" type="button" aria-pressed="true" aria-expanded="false" aria-label="Sound and volume">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6 9H2v6h4l5 4z"/>
+            <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+            <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
+          </svg>
+        </button>
+        <!-- Opening this holds the clock, the way the settings panel does.
+             Nobody should lose seconds off a run because the music was too
+             loud to think over. -->
+        <div class="volpop" id="volPop" hidden>
+          <button class="volmute" id="volMute" type="button" aria-pressed="false">Mute</button>
+          <span class="volcage"><input class="volrange" id="volRange" type="range"
+                min="0" max="100" step="1" value="100" aria-label="Volume"></span>
+        </div>
+        </div>
+        <button class="snd" id="gridBtn" type="button" aria-pressed="false" aria-label="Turn the grid on">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
+          </svg>
+        </button>
+        <button class="snd" id="cbBtn" type="button" aria-pressed="false" aria-label="Turn colorblind marks on">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M5.2 13.8 13.8 5.2M8.4 17.6 17.6 8.4"/>
+          </svg>
+        </button>
+        <button class="rankbtn" id="rankBtn" type="button" aria-label="Rankings">
+          <span class="rankdial">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 20v-4.5M12 20V6M18 20v-8.5"/>
+            </svg>
+          </span>
+          <span class="lbl">Rankings</span>
+        </button>
+        </div>
   </div>
 
   <div class="rig">
@@ -4564,49 +4621,6 @@ nav.menu {
            its job and the slot says who the run is being saved for. The
            same dark cartridge as the sound buttons and the rankings dial,
            because this is now a reading rather than a thing to press. -->
-      <!-- Sound, grid, colorblind and the board, in one bank at the head of
-           the rail. They were tried as apps in a folder and it did not work:
-           a tile cannot show that the grid is on, and a lit cell can. -->
-      <div class="railopts">
-      <div class="sndwrap" id="sndWrap">
-      <button class="snd" id="snd" type="button" aria-pressed="true" aria-expanded="false" aria-label="Sound and volume">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M11 5 6 9H2v6h4l5 4z"/>
-          <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
-          <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
-        </svg>
-      </button>
-      <!-- Opening this holds the clock, the way the settings panel does.
-           Nobody should lose seconds off a run because the music was too
-           loud to think over. -->
-      <div class="volpop" id="volPop" hidden>
-        <button class="volmute" id="volMute" type="button" aria-pressed="false">Mute</button>
-        <span class="volcage"><input class="volrange" id="volRange" type="range"
-              min="0" max="100" step="1" value="100" aria-label="Volume"></span>
-      </div>
-      </div>
-      <button class="snd" id="gridBtn" type="button" aria-pressed="false" aria-label="Turn the grid on">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
-        </svg>
-      </button>
-      <button class="snd" id="cbBtn" type="button" aria-pressed="false" aria-label="Turn colorblind marks on">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M5.2 13.8 13.8 5.2M8.4 17.6 17.6 8.4"/>
-        </svg>
-      </button>
-      <button class="rankbtn" id="rankBtn" type="button" aria-label="Rankings">
-        <span class="rankdial">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 20v-4.5M12 20V6M18 20v-8.5"/>
-          </svg>
-        </span>
-        <span class="lbl">Rankings</span>
-      </button>
-      </div>
-
       <div class="nextbox">
         <p class="lbl">Next</p>
         <div class="nextlist" id="nextlist"></div>
@@ -6518,6 +6532,18 @@ function sizeBoard() {
     const st = document.documentElement.style;
     st.setProperty('--boardw', Math.round(r.width) + 'px');
     st.setProperty('--boardx', Math.round(r.left - left) + 'px');
+    /* The readout row carries the options bank now, which stands over the
+       rail, so the row is as wide as the board and the rail together. */
+    const rg = document.querySelector('.rig');
+    const sd = document.querySelector('.side');
+    if (rg) {
+      const rr = rg.getBoundingClientRect();
+      st.setProperty('--rigw', Math.round(rr.width) + 'px');
+      /* Aligned to the rig rather than to the board: the row reaches over
+         the rail now, and --boardx starts it half a rail too far right. */
+      st.setProperty('--rigx', Math.round(rr.left - left) + 'px');
+    }
+    if (sd) st.setProperty('--railw', Math.round(sd.getBoundingClientRect().width) + 'px');
   }
 
   // the intro is measured off the well, so it is redrawn when the well moves
