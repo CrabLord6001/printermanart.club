@@ -3876,6 +3876,11 @@ body.jamface .deck #again:focus-visible {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
+  /* The depth of this is what the desktop copy is sized against, so the
+     sheet fills whatever board the window gives it. A fixed step could
+     not: the well runs from 496px on a short laptop to 844 on a tall
+     desktop, and one set of sizes left either a gap or an overflow. */
+  container-type: size;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   display: flex;
@@ -3887,16 +3892,17 @@ body.jamface .deck #again:focus-visible {
    white, a gold rule under the name, and the collections set as three
    cards in a row the way a label wall reads. */
 .creditsface .ccard {
-  /* As tall as what is printed on it, standing at the head of the well.
-     Stretching it to fill the well was fine on a phone, where the copy
-     very nearly fills the casing anyway, but a desktop board is twice
-     the height of the credits: centring the copy in a sheet that tall
-     left 227px of blank cream above the title and 229px below the
-     button, against the 22 and 24 of the card's own padding. */
-  flex: 0 0 auto;
+  /* Fills the well, so the board never shows through above or below the
+     sheet. What made that look wrong before was not the height but the
+     type: the two desktop steps below styled .chead, .cgroup and .cmark,
+     none of which this card has ever had, so only .cname and .cnote
+     grew and a 1280 board held phone-sized copy in an 828px sheet. The
+     copy is sized against the well now and fills it. */
+  flex: 1 1 auto;
   margin: 0;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   padding: 16px 18px 18px;
   background: #F2EFE6;
   border: 1px solid #2E333F;
@@ -4062,38 +4068,60 @@ body.jamface .deck #again:focus-visible {
 
 /* And the type grows with the room. The sizes above are set for a phone,
    where the casing is 250px across; on a desktop board nearly twice that
-   they were a card printed small in the middle of a large dark panel.
-   This block has to come after them -- same specificity, and it used to
-   sit above, where the phone sizes overruled it on every screen. */
-@media (min-width: 620px) {
-  .creditsface .chead { font-size: 0.6rem; letter-spacing: 0.28em; margin-bottom: 9px !important; }
-  .creditsface .cname { font-size: 1.08rem; line-height: 1.5; }
-  .creditsface .cnote { font-size: 0.78rem; }
-  .creditsface .cgroup { margin-bottom: 30px; }
-  .creditsface .cmark { font-size: 1.35rem; }
-}
+   they were a card printed small in a large sheet. This block has to come
+   after them -- same specificity, and it used to sit above, where the
+   phone sizes overruled it on every screen.
 
-/* And a step again for a tall window, where the casing is half as deep
-   again as the names need and the card was a small block of type adrift
-   in the middle of it. Keyed to the height as well as the width, because
-   it is the depth of the panel that leaves the room. */
-@media (min-width: 620px) and (min-height: 1000px) {
-  .creditsface .chead { font-size: 0.72rem; letter-spacing: 0.3em; margin-bottom: 12px !important; }
-  .creditsface .cname { font-size: 1.3rem; line-height: 1.5; }
-  .creditsface .cnote { font-size: 0.92rem; }
-  .creditsface .cgroup { margin-bottom: 40px; }
-  .creditsface .cmark { font-size: 1.6rem; margin-top: 34px !important; }
-}
+   It is written in cqh against the well rather than as fixed steps at a
+   breakpoint. Two things forced that. The steps it replaces named .chead,
+   .cgroup and .cmark, which this card has never had -- so only .cname and
+   .cnote ever grew, and the rest of the sheet stayed at phone size on a
+   desktop board. And the well is not one size to aim at: it runs from
+   496px deep on a short laptop to 844 on a tall desktop, so a single set
+   of sizes either left the sheet short or overran it. Sized against the
+   well, the copy fills whatever board the window gives it -- 1 to 63px of
+   cream left over across 620 to 1920 wide, against 35 to 463 before.
 
-/* The sign off, printed rather than set: the last thing on the card is
-   the shop's own name off the shop's own press. */
-.creditsface .cmark {
-  margin: 26px 0 0 !important;
-  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
-  font-size: 1.05rem;
-  letter-spacing: 0.06em;
-  color: #fff;
-  text-shadow: 2px 0 0 rgba(232,69,155,0.75), -2px 0 0 rgba(22,224,255,0.7);
+   The lower bound of each clamp is the phone value, so nothing here can
+   make the copy smaller than the block above already set it. Keyed at
+   430 rather than 620, the same width the houses go three across at: a
+   Pro Max well is 560px deep and was holding 400px of copy, which is the
+   same gap a desktop had, only on a phone. Below 430 the fixed sizes
+   stand -- those wells are short enough that the copy already fills
+   them. */
+@media (min-width: 430px) {
+  .creditsface .ccard {
+    padding: clamp(16px, 3cqh, 40px) 22px clamp(18px, 3cqh, 40px);
+  }
+  .creditsface .ctitle {
+    font-size: clamp(1.5rem, 6.4cqh, 3.5rem);
+    margin: 0 0 clamp(10px, 1.6cqh, 30px);
+  }
+  .creditsface .ctitle::after {
+    width: clamp(54px, 10cqh, 96px);
+    margin: clamp(8px, 1.4cqh, 24px) auto 0;
+  }
+  .creditsface .ckick {
+    font-size: clamp(0.5rem, 1.6cqh, 1.05rem);
+    margin: clamp(11px, 3.4cqh, 64px) 0 clamp(4px, 0.9cqh, 16px);
+  }
+  .creditsface .cname { font-size: clamp(1.05rem, 4cqh, 2.4rem); line-height: 1.4; }
+  .creditsface .cnote {
+    font-size: clamp(0.72rem, 2.4cqh, 1.35rem);
+    margin-top: clamp(2px, 0.5cqh, 8px);
+  }
+  .creditsface .chouses { gap: clamp(6px, 1.4cqh, 22px); }
+  .creditsface .chouse { padding: clamp(5px, 1.5cqh, 26px) clamp(10px, 2cqh, 20px); }
+  .creditsface .chouse svg {
+    width: clamp(30px, 5.4cqh, 76px);
+    height: clamp(25px, 4.5cqh, 63px);
+  }
+  .creditsface .chouse b { font-size: clamp(0.5rem, 1.55cqh, 1.1rem); }
+  .creditsface .chouse i { font-size: clamp(0.48rem, 1.35cqh, 0.95rem); }
+  .creditsface .cjoin {
+    font-size: clamp(0.6rem, 1.7cqh, 1.15rem);
+    padding: clamp(8px, 1.6cqh, 22px) clamp(16px, 3cqh, 32px);
+  }
 }
 
 .creditsface .bossmenu { flex: 0 0 auto; }
