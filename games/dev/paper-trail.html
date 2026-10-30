@@ -177,6 +177,7 @@ body {
             <div class="after" id="pAfter" hidden>
               <button class="btn" id="pBtn" type="button">Print again</button>
               <button class="btn ghost" id="pBack" type="button">Change room</button>
+              <button class="btn ghost" id="pHelp" type="button" aria-expanded="false" aria-controls="pHowto">Help</button>
             </div>
 
             <div class="arc-menu" id="pMenu" hidden>
@@ -252,6 +253,7 @@ const elBtn   = document.getElementById('pBtn');
 const elRooms = document.getElementById('pRooms');
 const elAfter = document.getElementById('pAfter');
 const elBack  = document.getElementById('pBack');
+const elHelp  = document.getElementById('pHelp');
 const elWhere = document.getElementById('pWhere');
 const elWho   = document.getElementById('pWho');
 const elMsg   = document.getElementById('pMsg');
@@ -269,7 +271,8 @@ const elHigh    = document.getElementById('pHigh');
    thing on each one, and reading the heading to work that out was always
    going to break the moment a heading changed. */
 let mode = 'intro';
-let howOpen = true;
+let howOpen = true;      // the strip on the title screen
+let helpOpen = false;    // and the same strip, called up after a run
 
 let mods = null, game = null, signedIn = false, room = 'classic';
 
@@ -315,12 +318,14 @@ const veil = (title, text, button, jammed) => {
 /* The title panel wears the marquee, the menu and the how-to strip. Every
    other panel is the plain centered one. */
 function startChrome(on) {
+  helpOpen = false;
+  elHelp.setAttribute('aria-expanded', 'false');
   elVeil.classList.toggle('start', on);
   elMarquee.hidden = !on;
   elRule.hidden = !on;
   elTrail.hidden = !on;
   elMenu.hidden = !on;
-  elHowto.hidden = !on || !howOpen;
+  elHowto.hidden = on ? !howOpen : true;
   elTitle.hidden = on;                 // the marquee is the title here
   elBtn.classList.toggle('big', on);
   elHow.setAttribute('aria-expanded', howOpen ? 'true' : 'false');
@@ -394,6 +399,7 @@ function makeGame() {
       elRooms.hidden = true;
       elAfter.hidden = false;
       elBack.hidden = true;        // leaving mid-run would lose the run
+      elHelp.hidden = false;
     },
 
     onResume() {
@@ -428,6 +434,7 @@ function makeGame() {
       elRooms.hidden = true;
       elAfter.hidden = false;
       elBack.hidden = false;
+      elHelp.hidden = false;
       startChrome(false);
 
       showBoard();
@@ -481,6 +488,7 @@ function showIntro() {
   elRooms.hidden = true;
   elAfter.hidden = false;
   elBack.hidden = true;
+  elHelp.hidden = true;        // the title screen has How to Play of its own
   veil(LORE, '', 'Play');
   startChrome(true);
 }
@@ -517,6 +525,7 @@ async function showScores() {
   elRooms.hidden = true;
   elAfter.hidden = false;
   elBack.hidden = true;
+  elHelp.hidden = true;
   veil('High Scores', '', 'Back');
 
   const keys = scoreOrder();
@@ -716,6 +725,7 @@ async function boot() {
   elAfter.hidden = false;
   elBack.hidden = true;
   elBtn.disabled = true;
+  elHelp.hidden = true;
   veil(LORE, '', 'Loading\u2026');
   startChrome(true);
   say(null);
@@ -791,6 +801,15 @@ elHow.addEventListener('click', () => {
 });
 
 elHigh.addEventListener('click', () => { if (mods) showScores(); });
+
+/* The same strip the title screen carries, called up where it is otherwise
+   out of reach: once you have jammed there is no way back to the rules
+   without starting a run you did not want. */
+elHelp.addEventListener('click', () => {
+  helpOpen = !helpOpen;
+  elHowto.hidden = !helpOpen;
+  elHelp.setAttribute('aria-expanded', helpOpen ? 'true' : 'false');
+});
 
 showBest();
 boot();
