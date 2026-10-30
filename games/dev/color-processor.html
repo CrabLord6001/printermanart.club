@@ -3058,6 +3058,95 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   pointer-events: none;
 }
 
+/* ---- the fate column ----
+   A pane standing in the well: leaded lights down its length, a tint of
+   the purple that is on every other thing of hers in this game, and the
+   edges sparking. It is see-through on purpose -- the drops behind it
+   are the thing being read, and a window you cannot see the board
+   through is a wall.
+
+   The leading is drawn rather than pictured. A real window is somebody's
+   artwork; this is four strips of glass in a frame, which is what the
+   mechanic needs to say and nothing more. */
+.well > .fate {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 4px;
+  border: 1px solid rgba(178, 120, 255, 0.55);
+  background:
+    repeating-linear-gradient(to bottom,
+      rgba(178, 120, 255, 0.00) 0px,
+      rgba(178, 120, 255, 0.00) 26px,
+      rgba(198, 160, 255, 0.22) 26px,
+      rgba(198, 160, 255, 0.22) 28px),
+    linear-gradient(104deg,
+      rgba(150, 90, 240, 0.17) 0%,
+      rgba(90, 150, 255, 0.09) 38%,
+      rgba(190, 110, 255, 0.19) 100%);
+  box-shadow:
+    0 0 0 1px rgba(120, 70, 190, 0.35),
+    0 0 14px 2px rgba(150, 90, 240, 0.30),
+    inset 0 0 18px rgba(185, 140, 255, 0.16);
+  animation: fatelive 2.2s ease-in-out infinite alternate;
+}
+
+.well > .fate[hidden] { display: none; }
+
+/* The static down the two edges. Not a border that pulses -- a border
+   pulsing is a selected thing, and this is not something you chose. It
+   is a charge running the length of the frame, which is what it is
+   supposed to be: her, still in the machine. */
+.well > .fate::before,
+.well > .fate::after {
+  content: '';
+  position: absolute;
+  top: -2px; bottom: -2px;
+  width: 2px;
+  background: linear-gradient(to bottom,
+              rgba(214, 170, 255, 0) 0%,
+              rgba(214, 170, 255, 0.9) 12%,
+              rgba(150, 90, 240, 0.25) 26%,
+              rgba(214, 170, 255, 0.85) 44%,
+              rgba(150, 90, 240, 0.2) 62%,
+              rgba(230, 200, 255, 0.95) 78%,
+              rgba(214, 170, 255, 0) 100%);
+  background-size: 100% 220%;
+  animation: fatespark 1.1s linear infinite;
+}
+
+.well > .fate::before { left: -1px; }
+.well > .fate::after  { right: -1px; animation-duration: 1.45s; animation-direction: reverse; }
+
+@keyframes fatespark {
+  from { background-position: 0 0; }
+  to   { background-position: 0 220%; }
+}
+
+@keyframes fatelive {
+  from { box-shadow: 0 0 0 1px rgba(120,70,190,0.30), 0 0 10px 1px rgba(150,90,240,0.22),
+                     inset 0 0 14px rgba(185,140,255,0.12); }
+  to   { box-shadow: 0 0 0 1px rgba(120,70,190,0.45), 0 0 20px 3px rgba(150,90,240,0.38),
+                     inset 0 0 22px rgba(185,140,255,0.22); }
+}
+
+/* On the card that introduces it, where it is a drop seen through the
+   glass rather than a pane over a column. */
+.cell.fate {
+  box-shadow: inset 0 0 0 2px rgba(178, 120, 255, 0.8),
+              0 0 10px 1px rgba(150, 90, 240, 0.4);
+  background-image: repeating-linear-gradient(to bottom,
+    rgba(198, 160, 255, 0.00) 0px,
+    rgba(198, 160, 255, 0.00) 9px,
+    rgba(198, 160, 255, 0.30) 9px,
+    rgba(198, 160, 255, 0.30) 10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .well > .fate { animation: none; }
+  .well > .fate::before, .well > .fate::after { animation: none; }
+}
+
 /* The panel's own scrim would sit on top of the sheet and gray it out, so
    while the sheet is up the panel lets it through. The gradient over the
    well does the darkening instead, and it darkens the whole block rather
@@ -4474,6 +4563,10 @@ nav.menu {
         <!-- Where a virus goes off. Over the board and under the panel,
              so the burst covers the print and the drops but never the
              words. -->
+        <!-- The glass over one column, when there is one. Placed from
+             the tiles it stands over, so it keeps its column through a
+             resize without anybody doing arithmetic about the gap. -->
+        <div class="fate" id="fate" aria-hidden="true" hidden></div>
         <canvas class="zap" id="zap" aria-hidden="true"></canvas>
 
         <!-- A mechanic you have not met, the once, on the level that
@@ -5126,6 +5219,7 @@ let mode = 'office', virusRate = VIRUS_FROM;
 const HAZARD_CH = {
   virus:  1,      // Landscape
   glitch: 2,      // Figures
+  fate:   3,      // Faith
   lowink: 4       // Fantasy
 };
 
@@ -5133,6 +5227,26 @@ const HAZARD_CH = {
    can see and play around; past about seven the well stops being a well.
    Ramped across the chapters that are left, like the others. */
 const GLITCH_FROM = 3, GLITCH_TO = 7;
+
+/* ---- the fate column ----
+   A pane of glass standing over one column of the well. Ink behind it is
+   not settled yet: every half of the falling piece that is in that
+   column steps to the next ink, over and over, and whatever it is
+   showing when it leaves -- walked out sideways, or landed -- is what it
+   becomes.
+
+   It is a gamble both ways, which is the point. A player three cyan into
+   a clump can walk a yellow in and wait for the cyan to come round. A
+   player holding exactly the pair they wanted can have it turned into
+   something else by having nowhere else to put it. The pane closes on
+   its own, so the choice is on a clock rather than standing there to be
+   used whenever it suits.
+
+   Five to ten seconds is from the design doc. The wait between panes is
+   what ramps: by Non-Western one is open almost as often as not. */
+const FATE_MS   = [5000, 10000];
+const FATE_GAP  = [7000, 2600];     // Faith, to the end of the series
+const FATE_STEP = 180;              // one ink to the next, while it spins
 
 /* Shapes rather than scatter. A spray of random squares reads as noise;
    a shape reads as something that was put there, which is the point --
@@ -5194,6 +5308,89 @@ function herStart() {
     paint();
     setTimeout(() => { herOn.delete(i); paint(); }, HER_HELD);
   }, HER_EVERY);
+}
+
+/* ---- the glass ----
+   One interval drives the whole thing: the pane's own life, the wait for
+   the next one, and the spin while a piece stands in it. Counted in
+   ticks rather than in clock time, so a pause freezes the pane where it
+   is instead of finding it gone on the way back. */
+let fateCol = -1, fateLeft = 0, fateWait = 0, fateJob = 0;
+
+const fateTicks = (ms) => Math.max(1, Math.round(ms / FATE_STEP));
+const fateSome  = (a, b) => fateTicks(a + Math.random() * (b - a));
+
+function fateStop() {
+  if (fateJob) { clearInterval(fateJob); fateJob = 0; }
+  fateShut();
+}
+
+function fateShut() {
+  fateCol = -1;
+  const el = document.getElementById('fate');
+  if (el) el.hidden = true;
+}
+
+/* Measured off the tiles themselves rather than worked out from the cell
+   size: the grid carries its own gap and the well its own padding, and
+   that arithmetic is one more thing to keep in step with the CSS. */
+function fatePlace() {
+  const el = document.getElementById('fate');
+  if (!el || fateCol < 0 || !tiles.length) return;
+  const top = tiles[idx(fateCol, 0)], bot = tiles[idx(fateCol, ROWS - 1)];
+  const host = el.parentElement;
+  if (!top || !bot || !host) return;
+  const w = host.getBoundingClientRect();
+  const a = top.getBoundingClientRect(), b = bot.getBoundingClientRect();
+  el.style.left   = Math.round(a.left - w.left - 2) + 'px';
+  el.style.top    = Math.round(a.top - w.top - 2) + 'px';
+  el.style.width  = Math.round(a.width + 4) + 'px';
+  el.style.height = Math.round(b.bottom - a.top + 4) + 'px';
+  el.hidden = false;
+}
+
+function fateOpen() {
+  fateCol = (Math.random() * COLS) | 0;
+  fateLeft = fateSome(FATE_MS[0], FATE_MS[1]);
+  fatePlace();
+}
+
+/* One ink to the next, in the order the press holds them, so somebody
+   watching can tell what is coming round. Random would be the same odds
+   and no skill: the whole mechanic is being able to wait for a color.
+   A virus is not an ink and does not spin; a magnet keeps its ring,
+   because the glass changes what the drop is, not what it does. */
+function fateNext(code) {
+  const i = INKS.indexOf(inkOf(code));
+  return INKS[(i < 0 ? 0 : i + 1) % INKS.length] + (isMag(code) ? '*' : '');
+}
+
+function fateSpin() {
+  if (!piece || busy || over) return;
+  const [dx] = ROT[piece.rot];
+  let turned = false;
+  if (piece.gone !== 'a' && piece.x === fateCol && !isBug(piece.a)) {
+    piece.a = fateNext(piece.a); turned = true;
+  }
+  if (piece.gone !== 'b' && piece.x + dx === fateCol && !isBug(piece.b)) {
+    piece.b = fateNext(piece.b); turned = true;
+  }
+  if (turned) paint();
+}
+
+function fateStart(gap) {
+  fateStop();
+  if (!gap) return;
+  /* Never open on the first drop. The piece that is already falling when
+     a print starts has not been steered yet, and having it change under
+     somebody reads as the game doing it rather than as a choice. */
+  fateWait = fateSome(gap, gap * 1.6);
+  fateJob = setInterval(() => {
+    if (!started || paused || over) return;
+    if (fateCol < 0) { if (--fateWait <= 0) fateOpen(); return; }
+    if (--fateLeft <= 0) { fateShut(); fateWait = fateSome(gap * 0.7, gap * 1.3); return; }
+    fateSpin();
+  }, FATE_STEP);
 }
 
 /* The same shape every time a level is played: the series is ranked on
@@ -6641,6 +6838,9 @@ function sizeBoard() {
 
   const lay = (c) => {
     cellPx = c;
+    /* The pane is placed off the tiles, so it has to be placed again
+       whenever they change size. */
+    if (fateCol >= 0) requestAnimationFrame(fatePlace);
     const digit = Math.round(c * 0.56) + 'px';
     for (const t of tiles) {
       t.style.width = c + 'px';
@@ -10997,7 +11197,13 @@ function levelSetup(i, n) {
     glitch: since(HAZARD_CH.glitch) < 0 ? 0
           : Math.round(GLITCH_FROM + (GLITCH_TO - GLITCH_FROM) * since(HAZARD_CH.glitch)),
     glitchLift: since(HAZARD_CH.glitch) < 0 ? 0
-              : Math.round(2 * since(HAZARD_CH.glitch))
+              : Math.round(2 * since(HAZARD_CH.glitch)),
+    /* How long the well goes without one. The pane's own five to ten
+       seconds does not move -- that is how long a gamble is worth
+       standing over -- so what gets harder, or more generous depending
+       on how you are doing, is how often there is one to take. */
+    fateGap: since(HAZARD_CH.fate) < 0 ? 0
+           : Math.round(FATE_GAP[0] + (FATE_GAP[1] - FATE_GAP[0]) * since(HAZARD_CH.fate))
   };
 }
 
@@ -12280,6 +12486,7 @@ function newPrint(face) {
   applied = reading();
 
   herStop();                                    // whatever the last print left running
+  fateStop();
   well = new Array(COLS * ROWS).fill(null);
   /* Practice and the party have none, for the same reason they have no
      virus: one is where a board gets worked out, and the other has no
@@ -12288,6 +12495,7 @@ function newPrint(face) {
     const gd = levelSetup(Math.min(campAt, campList().length - 1), campList().length);
     seedGlitch(gd.glitch, gd.glitchLift);
     if (gd.glitch > 0) herStart();
+    fateStart(gd.fateGap);
   }
   points = 0; bestChain = 0; over = false; busy = false;
   queue = []; piece = null;
@@ -12757,6 +12965,16 @@ const MECHANICS = [
     demo: ['glitch', 'c', 'c', 'c', 'c', '>', '']
   },
   {
+    id: 'fate',
+    kicker: 'New in this chapter',
+    title: 'Fate Columns',
+    say: 'A pane of glass stands over one column for a few seconds. '
+       + 'Any half of your drop inside it keeps changing color until it '
+       + 'leaves. Step out, or land, on the color you want.',
+    live: (d) => d.fateGap > 0,
+    demo: ['c fate', '>', 'y fate', '>', 'y']
+  },
+  {
     id: 'lowink',
     kicker: 'New in this chapter',
     title: 'Low Ink',
@@ -13028,6 +13246,7 @@ function closeRules() {
 function leaveRun() {
   started = false; paused = false; phase = 'ready';
   herStop();
+  fateStop();
   stopTick();
   stopClock();
   well = new Array(COLS * ROWS).fill(null);
