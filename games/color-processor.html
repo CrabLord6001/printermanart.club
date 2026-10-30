@@ -6358,7 +6358,13 @@ function blankPage() {
   ctx.globalCompositeOperation = 'source-over';
   ctx.fillStyle = '#F2EFE6';
   ctx.fillRect(0, 0, PW, PH);
-  page.style.opacity = '0';
+  /* Hidden before a print and in the press during one. This is reached
+     twice: once from newPrint, before anybody has started, and again
+     from preparePrint when the file lands -- which on a Try again is
+     after play has begun, because that path skips the card and the card is
+     what the fetch used to happen behind. Flat zero there blacked the
+     well out until the first clear laid ink and something set it back. */
+  page.style.opacity = started ? '1' : '0';
   page.style.filter = 'none';
 }
 
