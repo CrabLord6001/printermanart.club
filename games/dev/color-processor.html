@@ -8187,8 +8187,12 @@ function begin() {
      straight to the board now, so nothing was closing, and her face sat
      under the whole level at 55%. Taking it down belongs here rather
      than on the retry: every way into a print should leave the card's
-     furniture behind it, not just the one that found this. */
-  clearGalleryArt();
+     furniture behind it, not just the one that found this.
+
+     Down rather than away: the pause screen is the same sheet a moment
+     later, and rebuilding it from the file every time put a second of
+     black over it. */
+  hideGalleryArt();
   if (!piece) spawn();                          // dealt at the door, not before
   started = true; paused = false; phase = 'playing';
   elOver.hidden = true;
@@ -9544,7 +9548,15 @@ function faceOff() {
   document.body.classList.remove('jamface');
   jamStop();
   elOver.classList.remove('home', 'boss', 'victor', 'endface2', 'credface', 'party');
-  clearGalleryArt();                            // the sheet belongs to one face only
+  /* The sheet belongs to one face only, so it comes down with the face.
+     It used to be thrown away here as well, and that is what put a black
+     half second over the pause screen: entering a print is a face
+     change, so the sheet pressed for the level card was destroyed on the
+     way in, and the first pause paid to fetch and press it again. Down
+     is enough. Nothing shows it again without asking paintGalleryArt
+     for the painting it wants, and that checks what is on the canvas
+     before it uses it. */
+  hideGalleryArt();
   asilStop();                                   // she stops talking to an empty room
   victorStop();
   endStop();
@@ -11801,6 +11813,10 @@ function fitChapter() {
 }
 
 let galArtKey = '';
+/* Which painting the panel last asked for. The file that arrives is
+   stale only if the answer has changed since; a panel that has been
+   resized in the meantime still wants the same picture. */
+let galArtWant = '';
 
 
 /* ============================================================
@@ -12102,6 +12118,21 @@ function clearGalleryArt() {
   galArtKey = '';
 }
 
+/* Down, but not thrown away. clearGalleryArt drops the painted canvas
+   and the key it is filed under, so the next panel that wants it pays
+   for the fetch and the press again -- which is right when the art is
+   going to change, and wrong every other time. Pausing wants the same
+   sheet it had a second ago and wants it now: destroying it put a
+   second of black over the pause screen while it was rebuilt. */
+function hideGalleryArt() {
+  galHauntStop();
+  const cv = document.getElementById('galArt');
+  const vl = document.getElementById('galVeil');
+  if (cv) cv.hidden = true;
+  if (vl) vl.hidden = true;
+  if (elOver) elOver.classList.remove('hasart');
+}
+
 function paintGalleryArt(here, level, total) {
   const cv = document.getElementById('galArt');
   const vl = document.getElementById('galVeil');
@@ -12128,7 +12159,7 @@ function paintGalleryArt(here, level, total) {
        whether a run is going. Asking whether play had started took the
        pause screen's backdrop with it: pausing is a card over a live
        board, which is the one case where both are true at once. */
-    if (elOver.hidden) { clearGalleryArt(); return; }
+    if (elOver.hidden) { hideGalleryArt(); return; }
     cv.hidden = false;
     if (vl) vl.hidden = false;
     elOver.classList.add('hasart');
@@ -12140,20 +12171,34 @@ function paintGalleryArt(here, level, total) {
   const key = here.art.file + '|' + W + 'x' + H;
   if (key === galArtKey) { show(); return; }
 
+  galArtWant = here.art.file;
   const img = new Image();
   img.onload = () => {
-    // the card can have moved on while the file was arriving
-    if (key !== here.art.file + '|' + Math.round(panel.clientWidth) + 'x' + Math.round(panel.clientHeight)) return;
+    /* The card can have moved on to another painting while the file was
+       arriving, and that one is not this one. A change of size is a
+       different matter and used to be treated the same: the board is
+       measured when a print starts, so by the time this landed the well
+       was a few pixels off what it was when the sheet was asked for, the
+       whole key missed, and it returned here having painted nothing and
+       keyed nothing. The level then ran with no sheet kept, and the
+       first pause paid for the fetch and the press -- which is the black
+       half second over the pause screen.
+
+       So: stale only if the painting has changed, and paint at whatever
+       the panel measures now. */
+    if (galArtWant !== here.art.file) return;
+    const W2 = Math.round(panel.clientWidth), H2 = Math.round(panel.clientHeight);
+    if (W2 < 40 || H2 < 40) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cv.width = Math.round(W * dpr);
-    cv.height = Math.round(H * dpr);
+    cv.width = Math.round(W2 * dpr);
+    cv.height = Math.round(H2 * dpr);
     const cx = cv.getContext('2d');
     cx.setTransform(dpr, 0, 0, dpr, 0, 0);
     cx.fillStyle = '#F2EFE6';
-    cx.fillRect(0, 0, W, H);
-    const sep = separate(img, W, H);
+    cx.fillRect(0, 0, W2, H2);
+    const sep = separate(img, W2, H2);
     cx.globalCompositeOperation = 'multiply';
-    for (const pl of PLATES) screenPlate(cx, sep[pl], W, H, 2.2, ANGLE[pl], DOT[pl]);
+    for (const pl of PLATES) screenPlate(cx, sep[pl], W2, H2, 2.2, ANGLE[pl], DOT[pl]);
     cx.globalCompositeOperation = 'source-over';
 
     /* The sheet as printed, kept aside. Everything she does to it is
@@ -12165,7 +12210,7 @@ function paintGalleryArt(here, level, total) {
     galClean.getContext('2d').drawImage(cv, 0, 0);
     cv.__was = galClean;
 
-    galArtKey = key;
+    galArtKey = here.art.file + '|' + W2 + 'x' + H2;
     show();
   };
   img.onerror = () => { clearGalleryArt(); };   // no sheet; the card still reads
