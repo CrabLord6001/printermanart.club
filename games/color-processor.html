@@ -527,8 +527,14 @@ body:not(.disco) .scores { grid-template-columns: 1.7fr 1fr 1fr; }
    the cells themselves, so a slot can never drift off the drop that lands
    in it. Square against round ink on purpose: the drops are circles, and
    what they need to be lined up against is the box. */
+/* Two tones, because what is behind this changes. The board starts
+   near black and the print develops into it as the plates fill, so a
+   white line alone would fade out exactly as the page came up. The light
+   line carries it on the dark board, the dark halo carries it on the
+   paper, and neither is strong enough to be read as ink. */
 .gridlines i {
-  border: 1px solid rgba(255, 255, 255, 0.17);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
   border-radius: 3px;
 }
 
