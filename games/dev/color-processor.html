@@ -3897,7 +3897,7 @@ body.jamface .deck #again:focus-visible {
   margin: 0;
   display: flex;
   flex-direction: column;
-  padding: 22px 20px 24px;
+  padding: 16px 18px 18px;
   background: #F2EFE6;
   border: 1px solid #2E333F;
   border-radius: 4px;
@@ -3910,7 +3910,7 @@ body.jamface .deck #again:focus-visible {
 .creditsface .ccard h2 { text-align: center; }
 
 .creditsface .ctitle {
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
   font-size: 1.5rem;
   line-height: 1.1;
@@ -3923,12 +3923,16 @@ body.jamface .deck #again:focus-visible {
   display: block;
   width: 54px;
   height: 2px;
-  margin: 10px auto 0;
+  margin: 8px auto 0;
   background: var(--accent);
 }
 
+/* The air above each label is where the card's height is adjusted. A phone
+   well is 480px at 390 wide and 420 at 360, and the sheet came to 519 -- so
+   Join the club was sliced by the fold, which reads as a broken page rather
+   than a scrollable one. Taken out of the spacing, not the type. */
 .creditsface .ckick {
-  margin: 16px 0 5px;
+  margin: 11px 0 4px;
   font-size: 0.5rem;
   font-weight: 700;
   letter-spacing: 0.22em;
@@ -3957,7 +3961,7 @@ body.jamface .deck #again:focus-visible {
      reading -- so it either spilled out or broke mid-word. Stacked, each
      card has the whole width and the name sits beside its front. */
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -4001,10 +4005,10 @@ body.jamface .deck #again:focus-visible {
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  padding: 7px 10px;
+  padding: 5px 10px;
   text-align: left;
 }
-.creditsface .chouse svg { flex: none; width: 30px; height: 25px; }
+.creditsface .chouse svg { flex: none; width: 26px; height: 22px; }
 .creditsface .chouse b { flex: 1 1 auto; }
 .creditsface .chouse i { flex: none; }
 
@@ -4035,6 +4039,25 @@ body.jamface .deck #again:focus-visible {
   text-decoration: none;
 }
 .creditsface .cjoin:hover, .creditsface .cjoin:focus-visible { background: #4752C4; outline: none; }
+
+/* And it shrinks when there is no room at all. A short phone gets a short
+   board: the well is 403px on a 375x667 handset against 480 on a 390x844
+   one, and the trimmed spacing alone still left Join the club under the
+   fold there. One step down in type, after the spacing had already given
+   what it could, so the sheet is read in full rather than scrolled past
+   its own last button. Comes after the base sizes and before the block
+   that grows them. */
+@media (max-width: 385px) {
+  .creditsface .ccard { padding: 13px 15px 15px; }
+  .creditsface .ctitle { font-size: 1.28rem; margin: 0 0 8px; }
+  .creditsface .ckick { margin: 8px 0 3px; }
+  .creditsface .cname { font-size: 0.92rem; }
+  .creditsface .cnote { font-size: 0.66rem; }
+  .creditsface .chouses { gap: 5px; }
+  .creditsface .chouse { padding: 4px 8px; }
+  .creditsface .chouse b { font-size: 0.44rem; letter-spacing: 0.02em; }
+  .creditsface .chouse svg { width: 22px; height: 19px; }
+}
 
 
 /* And the type grows with the room. The sizes above are set for a phone,
