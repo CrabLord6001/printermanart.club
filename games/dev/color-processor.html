@@ -1862,80 +1862,6 @@ button.go:not(.ghost):hover {
   color: var(--dim);
 }
 
-/* The magnet, shown. Four columns: the gold drop sits under the gap in a
-   row of three, drags the loose drop across into it, and the four that
-   makes clears. Diagonals never match, which is the whole reason the pull
-   is worth anything, and that is hard to say and easy to watch. */
-/* Two demos on one line, each centered in its own half of it, so neither
-   sits off to one side of the other. */
-.magdemo { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 2px 0 12px; flex-wrap: wrap; }
-
-.magdemo .half { flex: 1 1 0; display: flex; justify-content: center; }
-
-.mg {
-  display: grid;
-  grid-template-columns: repeat(4, var(--mgCell, 20px));
-  grid-auto-rows: var(--mgCell, 20px);
-  gap: 3px;
-}
-
-.magdemo .cell { width: var(--mgCell, 20px); height: var(--mgCell, 20px); }
-
-.magdemo .rest    { animation: mg-rest 3.6s ease-in-out infinite; }
-.magdemo .pull-src { animation: mg-slide 3.6s ease-in-out infinite; }
-
-@keyframes mg-rest {
-  0%, 48%   { opacity: 1; box-shadow: none; }
-  54%       { opacity: 1; box-shadow: 0 0 0 3px #fff, 0 0 9px 2px rgba(255,255,255,0.55); }
-  60%       { opacity: 1; box-shadow: none; }
-  70%, 99%  { opacity: 0; box-shadow: none; }
-  100%      { opacity: 1; box-shadow: none; }
-}
-
-@keyframes mg-slide {
-  0%, 20%   { transform: translateX(0);    opacity: 1; box-shadow: none; }
-  34%, 48%  { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 1; box-shadow: none; }
-  54%       { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 1; box-shadow: 0 0 0 3px #fff, 0 0 9px 2px rgba(255,255,255,0.55); }
-  60%       { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 1; box-shadow: none; }
-  70%, 99%  { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 0; box-shadow: none; }
-  100%      { transform: translateX(0);    opacity: 0; box-shadow: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .magdemo .rest, .magdemo .pull-src { animation: none; }
-  .magdemo .pull-src { transform: translateX(calc(var(--mgCell, 20px) + 3px)); }
-}
-
-/* The virus shares the magnet's row rather than taking one of its own.
-   Both are two cells tall, so they sit level, and the pair costs the
-   panel nothing it was not already spending. */
-.vg {
-  display: grid;
-  grid-template-columns: repeat(3, var(--mgCell, 20px));
-  grid-auto-rows: var(--mgCell, 20px);
-  gap: 3px;
-}
-
-/* It sits still and glitching while the drops against it keep turning
-   into something else, which is the whole of what it does. */
-.vg .flip { animation: vir-flip 2.2s steps(1, end) infinite; }
-.vg .flip.b  { animation-delay: -0.73s; }
-.vg .flip.c3 { animation-delay: -1.46s; }
-
-@keyframes vir-flip {
-  0%   { background: var(--cyan); }
-  25%  { background: var(--magenta); }
-  50%  { background: var(--yellow); }
-  75%  { background: var(--key); }
-  100% { background: var(--cyan); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .vg .flip    { animation: none; background: var(--cyan); }
-  .vg .flip.b  { background: var(--yellow); }
-  .vg .flip.c3 { background: var(--magenta); }
-}
-
 /* The two places with something worth copying -- the rules before play
    and the title of the print after it -- keep selection. Neither is a
    surface you steer on. */
@@ -3614,6 +3540,15 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* The panel scrolls, not the screen. There are few enough names that a
    desktop casing holds the lot; a phone gets a box it can push. */
+/* The face takes the board, so the card inside it can. Without this the
+   card sat in the middle with black above and below it. */
+.creditsface {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .creditsface .roll {
   position: relative;
   flex: 1 1 auto;
@@ -3629,8 +3564,6 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
      empty under it. */
   display: flex;
   flex-direction: column;
-  mask-image: linear-gradient(to bottom, transparent 0, #000 42px, #000 calc(100% - 30px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 42px, #000 calc(100% - 30px), transparent 100%);
 }
 
 /* Auto margins top and bottom: they take the slack when the reel is
@@ -3643,8 +3576,13 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    a gold rule under the name, and the collections set as three cards in a
    row the way a label wall reads. */
 .creditsface .reel {
-  flex: 0 0 auto;
-  margin: auto 0;
+  /* Fills the well rather than floating in the middle of it. The copy
+     centers inside the card; the card itself goes edge to edge. */
+  flex: 1 1 auto;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 22px 20px 24px;
   background: #F2EFE6;
   border: 1px solid #2E333F;
@@ -3700,9 +3638,11 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    the generic fronts the idea of a museum is made of. */
 .creditsface .chouses {
   display: grid;
-  /* minmax(0, 1fr): with a plain 1fr the longest museum name sets the
-     column's floor and the third card ran off the side of the card. */
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* One column on a narrow board. Three across leaves 39px of content in
+     each card there, and Metropolitan is 63px at the smallest size worth
+     reading -- so it either spilled out or broke mid-word. Stacked, each
+     card has the whole width and the name sits beside its front. */
+  grid-template-columns: 1fr;
   gap: 8px;
   margin: 0;
   padding: 0;
@@ -3725,11 +3665,12 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   stroke-linecap: round; stroke-linejoin: round;
 }
 .creditsface .chouse b {
-  font-size: 0.52rem;
+  /* Metropolitan is the longest word of the three and it sets the size:
+     at 0.52rem it ran out past the side of its card. */
+  font-size: 0.56rem;
   font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: 0.02em;
-  hyphens: auto;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: #22252E;
 }
@@ -3738,6 +3679,32 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   font-size: 0.48rem;
   letter-spacing: 0.06em;
   color: #8A8475;
+}
+
+/* Stacked: the front sits beside the name rather than over it, so three
+   rows cost about what one row of cards did. */
+.creditsface .chouse {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  text-align: left;
+}
+.creditsface .chouse svg { flex: none; width: 30px; height: 25px; }
+.creditsface .chouse b { flex: 1 1 auto; }
+.creditsface .chouse i { flex: none; }
+
+/* Three across once the board is wide enough to hold the longest name. */
+@media (min-width: 430px) {
+  .creditsface .chouses { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .creditsface .chouse {
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px 6px 9px;
+    text-align: center;
+  }
+  .creditsface .chouse svg { width: 38px; height: 31px; }
+  .creditsface .chouse b { flex: 0 0 auto; font-size: 0.5rem; }
 }
 
 .creditsface .cjoin {
@@ -4425,7 +4392,14 @@ nav.menu {
                    before they have earned it. -->
               <!-- The mechanics, and nothing else. One screen of reading
                    where there is room for it and two where there is not;
-                   the panel works out which when it measures itself. -->
+                   the panel works out which when it measures itself.
+
+                   The virus and the magnet used to be explained here, with
+                   a pair of animations showing them. They each arrive on a
+                   card of their own now, in the chapter that introduces
+                   them, so saying it here as well was telling somebody
+                   about a drop they will not meet for an hour -- and it was
+                   taking the room the printing strip wanted. -->
               <div class="pg" id="rulesPg1">
               <div class="demo" id="demo" hidden></div>
               <p>Welcome to the Gallery Printshop! The chief curator has assigned you to fix the printer. He suspects a virus is corrupting the prints - but hey it probably just needs an alignment calibration. Did you bring the manual? Eh who needs those when we have AI, right?</p>
@@ -4434,32 +4408,6 @@ nav.menu {
 
               <div class="pg" id="rulesPg2" hidden>
               <p class="keys"><span class="row"><b>Desktop:</b> A / D (or Left / Right Arrow), W to rotate, space to drop early</span><span class="row"><b>Mobile:</b> Swipe to move, Tap to rotate, and Swipe down to drop early</span></p>
-              <p>Beware of suspicious pulsing green coated colors. They land with a timer that counts down every drop afterwards. When it detonates it removes some progress on the image. However, they break like any other colors.</p>
-              <p>Magnetic ink has a gold shine and works like the others, but it also drags a matching drop across to sit beside it.</p>
-              <!-- Shown rather than described, side by side: the virus
-                   turning over whatever it touches, and the gold drop
-                   dragging its own color sideways out of the diagonal to
-                   make the four across that clears. -->
-              <div class="magdemo" aria-hidden="true">
-                <div class="half"><div class="vg">
-                  <div class="cell"></div>
-                  <div class="cell flip"></div>
-                  <div class="cell"></div>
-                  <div class="cell flip b"></div>
-                  <div class="cell m virus soon">2</div>
-                  <div class="cell flip c3"></div>
-                </div></div>
-                <div class="half"><div class="mg">
-                  <div class="cell c pull-src"></div>
-                  <div class="cell"></div>
-                  <div class="cell c rest"></div>
-                  <div class="cell c rest"></div>
-                  <div class="cell"></div>
-                  <div class="cell c mag"></div>
-                  <div class="cell"></div>
-                  <div class="cell"></div>
-                </div></div>
-              </div>
               </div>
 
               <!-- The board. Not a page of the rules: it has its own way
@@ -6055,7 +6003,13 @@ function demoMetrics(panel) {
   /* Four across plus the gaps have to fit the width as well as the height.
      Height alone put the fourth thumbnail over the edge of the well. */
   const across = Math.floor((panel.clientWidth - PANEL_PAD - DEMO_GAP * 3) / 4);
-  const dw = Math.max(26, Math.min(Math.round(room * 0.44 * 0.5), across));
+  /* The height a strip may take, raised now that the virus and magnet
+     paragraphs have gone to their own cards. Measured, it rarely binds:
+     four portrait thumbnails across a panel as wide as the board run out
+     of width long before they run out of height, so `across` is what
+     usually decides. It binds on a tall narrow window, which is the only
+     place this number is worth anything. */
+  const dw = Math.max(26, Math.min(Math.round(room * 0.60 * 0.5), across));
   return { dw, dh: dw * 2, across };
 }
 
@@ -6066,7 +6020,6 @@ function demoMetrics(panel) {
 function fitCopy(panel, rules, room) {
   for (let fs = 20; fs >= 11; fs--) {
     panel.style.setProperty('--introFs', fs + 'px');
-    panel.style.setProperty('--mgCell', Math.round(Math.max(18, fs * 1.5)) + 'px');
     if (rules.scrollHeight <= room) return fs;
   }
   return 11;
