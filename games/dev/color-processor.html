@@ -1143,8 +1143,19 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   border-radius: 3px;
   background: #2E333F;
   box-shadow: 0 0 0 3px #15181F, 0 6px 18px rgba(0,0,0,0.5);
-  overflow: hidden;
+  /* Not overflow: hidden. It rounded the bank's corners and it also
+     trapped the volume panel inside the bank, which is where the slider
+     went. The four corner cells carry the rounding themselves. */
 }
+/* The panel below hangs off the bank rather than off the sound cell, or
+   it lands over the bottom row and covers two of the four buttons. */
+.railopts { position: relative; }
+.railopts > .sndwrap { position: static; }
+
+.railopts > *:nth-child(1) { border-top-left-radius: 2px; }
+.railopts > *:nth-child(2) { border-top-right-radius: 2px; }
+.railopts > *:nth-child(3) { border-bottom-left-radius: 2px; }
+.railopts > *:nth-child(4) { border-bottom-right-radius: 2px; }
 
 /* Every cell the same square whatever is in it, so the bank reads as one
    object rather than as four buttons that happen to touch. Each of these
@@ -1183,15 +1194,36 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 
 /* Opening upward, and centred on the bank rather than hung off its edge:
    from down here a panel that drops would go off the foot of the page. */
-/* Downward: the bank sits at the head of the rail now, and a panel that
-   opened upward from there went off the top of the window. */
+/* Under the bank and hung off its right edge, so it reaches back across
+   the board rather than off the side of the window.
+
+   Laid out across rather than up: standing upright it was a 104px slider
+   and a word, both squeezed into the 74px the rail is wide, and Unmute
+   came out as NMUTE with the track too narrow to aim at. */
 .railopts .volpop {
   top: calc(100% + 6px);
   bottom: auto;
-  right: auto;
-  left: 50%;
-  transform: translateX(-50%);
+  left: auto;
+  right: 0;
+  transform: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  width: 212px;
+  max-width: calc(100vw - 24px);
+  padding: 10px 12px;
 }
+.railopts .volpop .volcage {
+  flex: 1 1 auto;
+  width: auto;
+  height: 22px;
+}
+.railopts .volpop .volrange {
+  flex: 1 1 auto;
+  width: 100%;
+  transform: none;
+}
+.railopts .volpop .volmute { flex: none; }
 
 /* The way to the board from inside a run. */
 .rankbtn {
@@ -3606,34 +3638,123 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    is the one way to center a thing vertically without taking its
    scrolling away -- on a desktop panel the names sit in the middle of
    the casing, on a phone the box fills and scrolls by thumb. */
-.creditsface .reel { padding: 30px 0 24px; margin: auto 0; flex: 0 0 auto; }
+/* ---- the credits card ----
+   A sheet the press put out, not a reel climbing the screen: paper white,
+   a gold rule under the name, and the collections set as three cards in a
+   row the way a label wall reads. */
+.creditsface .reel {
+  flex: 0 0 auto;
+  margin: auto 0;
+  padding: 22px 20px 24px;
+  background: #F2EFE6;
+  border: 1px solid #2E333F;
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px #15181F, 0 10px 26px rgba(0,0,0,0.55);
+  text-align: center;
+}
+/* .rules p sets its own left align for the instructions, and it wins on
+   specificity over the card. */
+.creditsface .reel p,
+.creditsface .reel h2 { text-align: center; }
 
-.creditsface .cgroup { margin: 0 0 20px; }
+.creditsface .ctitle {
+  margin: 0 0 14px;
+  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #1A1A1A;
+}
+.creditsface .ctitle::after {
+  content: '';
+  display: block;
+  width: 54px;
+  height: 2px;
+  margin: 10px auto 0;
+  background: var(--accent);
+}
 
-.creditsface .chead {
-  margin: 0 0 6px !important;
+.creditsface .ckick {
+  margin: 16px 0 5px;
   font-size: 0.5rem;
   font-weight: 700;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: #8A8475;
 }
-
 .creditsface .cname {
-  margin: 0 0 2px !important;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  color: var(--text);
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #22252E;
 }
-
 .creditsface .cnote {
-  margin: 2px 0 0 !important;
-  font-size: 0.62rem;
-  line-height: 1.5;
-  color: var(--dim);
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  color: #6E6A5E;
 }
 
-.creditsface .cnote a { color: var(--cyan); }
+/* Three houses, side by side. Their own marks are their own, so these are
+   the generic fronts the idea of a museum is made of. */
+.creditsface .chouses {
+  display: grid;
+  /* minmax(0, 1fr): with a plain 1fr the longest museum name sets the
+     column's floor and the third card ran off the side of the card. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.creditsface .chouse {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 6px 9px;
+  border: 1px solid #CFCABA;
+  border-radius: 3px;
+  background: #F7F5EE;
+}
+.creditsface .chouse svg {
+  width: 38px; height: 31px;
+  fill: none; stroke: #4A5162; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.creditsface .chouse b {
+  font-size: 0.52rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  hyphens: auto;
+  text-transform: uppercase;
+  color: #22252E;
+}
+.creditsface .chouse i {
+  font-style: normal;
+  font-size: 0.48rem;
+  letter-spacing: 0.06em;
+  color: #8A8475;
+}
+
+.creditsface .cjoin {
+  display: inline-block;
+  margin-top: 7px;
+  padding: 6px 16px 7px;
+  border-radius: 999px;
+  background: #5865F2;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.creditsface .cjoin:hover, .creditsface .cjoin:focus-visible { background: #4752C4; outline: none; }
+
 
 /* And the type grows with the room. The sizes above are set for a phone,
    where the casing is 250px across; on a desktop board nearly twice that
@@ -10596,83 +10717,63 @@ function endTick(now) {
    Built rather than written into the markup so the painting list is the
    one the game actually shipped with, not a copy of it that goes stale
    the next time a room changes. */
-const CREDITS = [
-  /* No address under the title: whoever is reading this followed the
-     link an hour ago and is still standing on it. It would earn its
-     place on a version that runs anywhere else. */
-  ['Gallery Printshop', [
-    ['Created for PrinterMan’s Art Club', ''],
-  ]],
-  ['Made by', [
-    ['PrinterMan', 'Creative design and story, with coding directed by Claude'],
-  ]],
+/* A printed card rather than a reel. The scroll was the convention and it
+   was also broken, and a card is what a press puts out anyway.
+
+   "Created for PrinterMan's Art Club" came out from under the title: the
+   club's name is already in the line below it, and whoever is reading
+   this followed a link from the club an hour ago. */
+const CREDITS = {
+  title: 'Gallery Printshop',
+  by: { kicker: 'Made by', name: 'PrinterMan',
+        note: 'Story & design, coding directed by Claude' },
   /* Who holds the paintings, rather than who painted them -- the artist
-     and the date are already on the sheet at the end of every level, so
-     a second list of the same twenty names is a second list. These are
-     the collections the pictures came out of. */
-  ['Paintings from', [
-    ['The Metropolitan Museum of Art', 'Open Access'],
-    ['The Cleveland Museum of Art', 'Open Access'],
-    ['Musée du Louvre', 'Paris'],
-  ]],
-  ['Special Thanks:', [
-    ['Everyone in the club', 'For looking at things and saying what they think'],
-  ]],
-];
+     and the date are already on the sheet at the end of every level, so a
+     second list of the same twenty names is a second list. */
+  art: { kicker: 'Paintings from', houses: [
+    { name: 'Metropolitan Museum of Art', note: 'Open Access', art: 'wide' },
+    { name: 'Cleveland Museum of Art',    note: 'Open Access', art: 'temple' },
+    { name: 'Musée du Louvre',            note: 'Paris',       art: 'pyramid' }
+  ]},
+  /* The club is a Discord server, which is not something the game has
+     said anywhere. Naming it says who is being thanked and the link says
+     where they are. */
+  thanks: { kicker: 'Special thanks', name: 'The Discord community',
+            href: 'https://discord.gg/nn3xjcS745', cta: 'Join the club' }
+};
+
+/* Drawn here rather than fetched: a museum's own mark is its own, and
+   these are the generic fronts the idea of a museum is made of. */
+const HOUSE_ART = {
+  wide: '<path d="M3 30h38M5 30V17M12 30V17M19 30V17M26 30V17M33 30V17M39 30V17"/>'
+      + '<path d="M2 17h40L22 5 2 17z"/><path d="M8 33h28"/>',
+  temple: '<path d="M8 30h28M11 30V16M17 30V16M23 30V16M29 30V16M33 30V16"/>'
+        + '<path d="M7 16h30L22 6 7 16z"/><path d="M5 33h34"/>',
+  pyramid: '<path d="M22 7 6 30h32L22 7z"/><path d="M22 7v23M13 19h18M9.5 25h25"/>'
+         + '<path d="M4 33h36"/>'
+};
 
 function buildCredits() {
   const reel = document.getElementById('creditReel');
   if (!reel) return;
-  reel.innerHTML = '';
+  const C = CREDITS;
+  const house = (h) =>
+    '<li class="chouse"><svg viewBox="0 0 44 36" aria-hidden="true">' + HOUSE_ART[h.art] + '</svg>' +
+    '<b>' + h.name + '</b><i>' + h.note + '</i></li>';
 
-  for (const [head, rows] of CREDITS) {
-    const g = document.createElement('div');
-    g.className = 'cgroup';
-    const h = document.createElement('p');
-    h.className = 'chead';
-    h.textContent = head;
-    g.appendChild(h);
-
-    /* A group with no rows of its own takes the gallery as it stands, so
-       a list of the paintings cannot drift from the ones that shipped. */
-    const list = rows || campList().map((e) => {
-      const a = e.art || {};
-      return [a.title || '', [a.artist, a.date].filter(Boolean).join(' · ')];
-    });
-
-    for (const [name, note] of list) {
-      if (!name) continue;
-      const n = document.createElement('p');
-      n.className = 'cname';
-      n.textContent = name;
-      g.appendChild(n);
-      if (note) {
-        const s = document.createElement('p');
-        s.className = 'cnote';
-        s.textContent = note;
-        g.appendChild(s);
-      }
-    }
-    reel.appendChild(g);
-  }
-
-  const mark = document.createElement('p');
-  mark.className = 'cmark';
-  mark.textContent = 'PRINTERMAN’S ART CLUB';
-  reel.appendChild(mark);
-
-  /* The reel used to end on the unlock too. It cannot now: Credits sits
-     on the home menu, so this is a page anybody can open at any time,
-     and a mode they have not earned announced to them is an
-     announcement about nothing. The report screen keeps the news, which
-     is where it is earned. */
-
-  /* Opened at the top however it was left. There are few enough names
-     that they fit a desktop panel whole, so there is nothing to roll --
-     on a phone the box scrolls by hand like any other. */
-  const roll = document.getElementById('creditRoll');
-  if (roll) roll.scrollTop = 0;
+  reel.innerHTML =
+    '<h2 class="ctitle">' + C.title + '</h2>' +
+    '<p class="ckick">' + C.by.kicker + '</p>' +
+    '<p class="cname">' + C.by.name + '</p>' +
+    '<p class="cnote">' + C.by.note + '</p>' +
+    '<p class="ckick">' + C.art.kicker + '</p>' +
+    '<ul class="chouses">' + C.art.houses.map(house).join('') + '</ul>' +
+    '<p class="ckick">' + C.thanks.kicker + '</p>' +
+    '<p class="cname">' + C.thanks.name + '</p>' +
+    '<p class="cnote"><a class="cjoin" href="' + C.thanks.href +
+      '" target="_blank" rel="noopener">' + C.thanks.cta + '</a></p>';
 }
+
 
 async function asilStart(silent) {
   asilStop();
