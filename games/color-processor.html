@@ -8337,7 +8337,7 @@ function drawSheet(path, svg) {
    All of it is drawn into the band that chapter's prints occupy, worked
    out from where they landed, so it stretches and shrinks with the run
    rather than being positioned by hand. */
-const PP_SKIN = ['paper', 'belts', 'traces', 'laser', 'heat', 'ink'];
+const PP_SKIN = ['paper', 'belts', 'traces', 'drum', 'heat', 'ink'];
 
 /* Where a band has real art, it uses it instead of the shapes written
    here. Tiled rather than stretched: a band is as tall as its chapter's
@@ -8347,7 +8347,11 @@ const PP_SKIN = ['paper', 'belts', 'traces', 'laser', 'heat', 'ink'];
    and not the thing being read. */
 const PP_IMG = {
   paper: { src: '/games/img/path/tray.png',    opacity: 0.30 },
-  belts: { src: '/games/img/path/rollers.png', opacity: 0.22 }
+  belts: { src: '/games/img/path/rollers.png', opacity: 0.22 },
+  /* Lying across, the way it lies in a printer. Turned on its end it
+     made one giant drum that would not tile; across, it stacks into a
+     bank of them and fills the band. */
+  drum:  { src: '/games/img/path/drum.png',    opacity: 0.26, flat: true }
 };
 
 function ppBand(kind, y0, y1, W, rnd) {
@@ -8523,11 +8527,15 @@ function drawDeco(path, svg) {
     if (art) {
       /* One square tile the width of the panel, repeating down the band. */
       const id = 'ppimg-' + kind;
+      /* A square tile for a square drawing; a wide one keeps its own
+         proportions, so a drum stays a drum rather than being squashed
+         into a square. */
+      const th = art.flat ? W * 0.55 : W;
       if (defs.indexOf(id) === -1) {
         defs += '<pattern id="' + id + '" patternUnits="userSpaceOnUse" width="' +
-                W.toFixed(1) + '" height="' + W.toFixed(1) + '">' +
+                W.toFixed(1) + '" height="' + th.toFixed(1) + '">' +
                 '<image href="' + art.src + '" x="0" y="0" width="' + W.toFixed(1) +
-                '" height="' + W.toFixed(1) + '" preserveAspectRatio="xMidYMid slice"/>' +
+                '" height="' + th.toFixed(1) + '" preserveAspectRatio="xMidYMid slice"/>' +
                 '</pattern>';
       }
       out += '<rect x="0" y="' + top.toFixed(1) + '" width="' + W.toFixed(1) +
