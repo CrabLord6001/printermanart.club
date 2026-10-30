@@ -224,6 +224,16 @@ export function take(kind) {
   }
 }
 
+/* The ink letting go of the board and coming in. Short, rising, and over
+   before it lands, so it reads as the thing arriving rather than a reward
+   for it having arrived -- the eat blip is already the reward. */
+export function pull() {
+  if (!on || !ctx) return;
+  const t = ctx.currentTime;
+  tone(sfxBus, t, 52, 0.16, 'triangle', 0.4, 76);
+  hiss(t, 0.05, 0.05);
+}
+
 /* Which motif the loop should be carrying, and whether it is running out.
    Null for neither, which is also what the end of a run passes. */
 export function setPower(kind, warn) {

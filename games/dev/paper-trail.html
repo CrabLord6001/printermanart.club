@@ -373,6 +373,8 @@ function makeGame() {
        to do with both; the game only says what happened. */
     onTake(kind) { mods.sound.take(kind); },
 
+    onPull() { mods.sound.pull(); },
+
     onPower(kind, left) { mods.sound.setPower(kind, left > 0 && left <= 22); },
 
     onPause() {

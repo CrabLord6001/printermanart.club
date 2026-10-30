@@ -93,6 +93,7 @@ const POWER_LIFE  = 110;     // how long one waits on the board to be taken
 const GAP_MIN     = 150;     // steps between one leaving and the next arriving
 const GAP_MAX     = 280;
 const MAGNET_REACH = 3;      // cells, measured as a square around her
+const MAGNET_FLY   = 190;    // ms the ink takes to reach her once it lets go
 
 const POWERS = {
   magnet: { name: 'Magnetic Ink', glow: '#E8394F' },
@@ -499,7 +500,29 @@ function paintPrinter(ctx, cell, dirKey, over, gape) {
    each lobe as the control point keeps every corner rounded. */
 function paintSplat(ctx, blob, now) {
   ctx.save();
-  ctx.translate(blob.x * CELL + CELL / 2, blob.y * CELL + CELL / 2);
+
+  /* On the board it sits in a cell. Pulled by the magnet it comes off the
+     grid entirely and is drawn wherever it has got to, which is the whole
+     point of the thing: a cell at a time was a crawl she could outrun. */
+  const cx = blob.px != null ? blob.px : blob.x * CELL + CELL / 2;
+  const cy = blob.py != null ? blob.py : blob.y * CELL + CELL / 2;
+
+  if (blob.fly) {
+    const back = Math.atan2(blob.fly.y0 - cy, blob.fly.x0 - cx);
+    for (let i = 1; i <= 3; i++) {
+      ctx.save();
+      ctx.globalAlpha = 0.26 / i;
+      ctx.translate(cx + Math.cos(back) * i * 9, cy + Math.sin(back) * i * 9);
+      ctx.scale(U * (1 - i * 0.18), U * (1 - i * 0.18));
+      ctx.fillStyle = blob.ink.fill;
+      ctx.beginPath();
+      ctx.arc(0, 0, 6.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  ctx.translate(cx, cy);
   ctx.scale(U, U);
 
   const pulse = 1 + Math.sin((now - blob.born) / 300) * 0.05;
@@ -731,6 +754,10 @@ export function startPaperTrail(options) {
   // steps it has left. gapLeft: the wait before another turns up.
   let pick = null, power = null, powerLeft = 0, gapLeft = 0;
 
+  // Sheets owed. Eating off the grid finishes between steps, so the growing
+  // has to wait for the next one rather than happening mid-frame.
+  let grow = 0;
+
   function freeCell(...avoid) {
     // Few enough cells that collecting the empty ones is cheaper to reason
     // about than rejection sampling near the end of a long run.
@@ -792,27 +819,56 @@ export function startPaperTrail(options) {
     tellPower();
   }
 
-  /* The magnet. There is only ever one splat on the board, so a pull that
-     only reached the squares touching her would almost never fire: it has
-     to reach far enough to be worth having. It comes in one square a step
-     and stops one short -- closing the last square is still her job, so the
-     pickup saves her the detour rather than playing the game for her. */
-  function pullBlob() {
-    if (!blob) return;
+  /* The magnet. The first version moved the splat one square a step, which
+     is exactly the speed she moves -- so it never gained on her and the
+     whole thing read as broken. It does not crawl now. Once she is within
+     reach the ink lets go of the grid and flies straight at her, and she
+     has it a fifth of a second later wherever she has gone in the meantime.
+
+     Reach is what keeps it from being a vacuum: she still has to get near
+     the ink. What it buys is not having to line up on the exact square,
+     which in a game about not being able to turn around is most of the
+     work. */
+  function maybeFly() {
+    if (!blob || blob.fly) return;
     const h = snake[0];
-    const dx = blob.x - h.x, dy = blob.y - h.y;
-    const away = Math.max(Math.abs(dx), Math.abs(dy));
-    if (away < 2 || away > MAGNET_REACH) return;
+    const away = Math.max(Math.abs(blob.x - h.x), Math.abs(blob.y - h.y));
+    if (away > MAGNET_REACH) return;
 
-    let nx = blob.x, ny = blob.y;
-    if (Math.abs(dx) >= Math.abs(dy)) nx -= Math.sign(dx);
-    else ny -= Math.sign(dy);
+    blob.fly = {
+      t0: performance.now(),
+      x0: blob.x * CELL + CELL / 2,
+      y0: blob.y * CELL + CELL / 2
+    };
+    if (options.onPull) options.onPull();
+  }
 
-    const key = nx + ',' + ny;
-    if (walls.has(key)) return;                         // it cannot come through furniture
-    if (snake.some(s => s.x === nx && s.y === ny)) return;
-    blob.x = nx;
-    blob.y = ny;
+  function takeInk(next) {
+    ink = next;                // reload: sheets from here on come out this color
+    sheets++;
+    if (options.onScore) options.onScore(sheets);
+  }
+
+  /* Runs on the frame clock rather than the step clock, because it is an
+     animation and has to look like one however fast the board is going.
+     It aims at where her head is now, not where it was when the ink let
+     go, so it still lands on her when she is moving across it. */
+  function flyInk(now) {
+    if (!blob || !blob.fly) return;
+
+    const f = blob.fly;
+    const k = Math.min(1, (now - f.t0) / MAGNET_FLY);
+    const ease = 1 - Math.pow(1 - k, 3);
+    const h = snake[0];
+
+    blob.px = f.x0 + (h.x * CELL + CELL / 2 - f.x0) * ease;
+    blob.py = f.y0 + (h.y * CELL + CELL / 2 - f.y0) * ease;
+    if (k < 1) return;
+
+    takeInk(blob.ink);
+    grow++;
+    spawnBlob();
+    if (!blob) full();         // whole tray printed, which is a win
   }
 
   function agePick() {
@@ -850,6 +906,7 @@ export function startPaperTrail(options) {
     pick = null;
     power = null;
     powerLeft = 0;
+    grow = 0;
     gapLeft = nextGap();
     tellPower();
     spawnBlob();
@@ -884,19 +941,20 @@ export function startPaperTrail(options) {
     // Furniture is as solid as the edge of the tray, unless she is not.
     if (!ghost && walls.has(head.x + ',' + head.y)) return jam();
 
-    // The tail cell is about to be vacated, so running into it is fine
-    // unless you are also growing into it this step.
-    const ate = blob && head.x === blob.x && head.y === blob.y;
-    const body = ate ? snake : snake.slice(0, -1);
+    /* The tail cell is about to be vacated, so running into it is fine
+       unless you are also growing into it this step -- either by driving
+       over the ink or by owing a sheet for ink the magnet brought in. */
+    const ate = blob && !blob.fly && head.x === blob.x && head.y === blob.y;
+    const body = (ate || grow > 0) ? snake : snake.slice(0, -1);
     if (!ghost && body.some(s => s.x === head.x && s.y === head.y)) return jam();
 
     snake.unshift(head);
     if (ate) {
-      ink = blob.ink;          // reload: sheets from here on come out this color
-      sheets++;
+      takeInk(blob.ink);
       spawnBlob();
-      if (options.onScore) options.onScore(sheets);
       if (!blob) return full(); // whole tray printed, which is a win
+    } else if (grow > 0) {
+      grow--;
     } else {
       snake.pop();
     }
@@ -911,7 +969,7 @@ export function startPaperTrail(options) {
     }
 
     agePower();
-    if (power === 'magnet') pullBlob();
+    if (power === 'magnet') maybeFly();
     agePick();
   }
 
@@ -994,6 +1052,9 @@ export function startPaperTrail(options) {
       acc -= ms;
       step();
     }
+
+    // After the stepping, so it aims at where she actually ended up.
+    if (running) flyInk(now);
     draw(now);
   }
 
