@@ -4084,11 +4084,12 @@ function cueNow() {
   const list = campList();
   const here = list[Math.min(campAt, list.length - 1)];
   if (!here) return 'classics';
-  /* Hers is the title music, corrupted. It is the piece anybody has heard
-     most by the time they reach her -- it plays on the screen the game
-     opens on -- so hearing it come apart means something, which the
-     first chapter's track would not. */
-  if (here.finale) return 'title';
+  /* She used to wear the title music put through a ring modulator, on the
+     grounds that hearing the piece you know best come apart means
+     something. It did, but it never sounded like a boss, and corrupting
+     it far enough to feel wrong buried her own lines. She has a track of
+     her own now. */
+  if (here.finale) return 'boss';
   const ch = CHAPTERS[here.chapter];
   return CUE[ch ? ch.room : here.art.room] || 'classics';
 }
@@ -4110,7 +4111,10 @@ function setMusic(name, how) {
   if (!music || !music.setCue) return;
   /* Faint means her intro: the stage's own music, corrupt, a long way
      down. Otherwise the corruption belongs to the level itself. */
-  if (music.corrupt) music.corrupt(!!name && (how === 'faint' || (atFinale() && started)));
+  /* The boss cue is already the thing it is meant to be, so it is the one
+     cue that is never run through the ring modulator. */
+  const ownTrack = name === 'boss';
+  if (music.corrupt) music.corrupt(!ownTrack && !!name && (how === 'faint' || (atFinale() && started)));
   if (music.under) music.under(how === 'faint');
   music.setCue(name);
 }
