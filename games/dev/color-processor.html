@@ -3518,7 +3518,11 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 /* Above the scrim rather than under it. The card outranks the panel at
    z-index 6, so its scrim washed over the two buttons as well and left
    the way out of the screen looking switched off. */
-.endface .bot { position: relative; z-index: 7; }
+/* No position of its own: .bossface .bot already pins this to the foot
+   of the panel, and re-declaring it relative dropped the two buttons
+   back into normal flow -- where .mid and .unlock are both absolute, so
+   flow starts at the top and the nav printed over the won sheet. */
+.endface .bot { z-index: 7; }
 
 /* The light behind it. Rays rather than a glow, so it reads as a lamp
    coming on rather than a box lighting up. */
@@ -3883,13 +3887,16 @@ body.jamface .deck #again:focus-visible {
    white, a gold rule under the name, and the collections set as three
    cards in a row the way a label wall reads. */
 .creditsface .ccard {
-  /* Fills the well rather than floating in the middle of it. The copy
-     centers inside the card; the card itself goes edge to edge. */
-  flex: 1 1 auto;
+  /* As tall as what is printed on it, standing at the head of the well.
+     Stretching it to fill the well was fine on a phone, where the copy
+     very nearly fills the casing anyway, but a desktop board is twice
+     the height of the credits: centring the copy in a sheet that tall
+     left 227px of blank cream above the title and 229px below the
+     button, against the 22 and 24 of the card's own padding. */
+  flex: 0 0 auto;
   margin: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   padding: 22px 20px 24px;
   background: #F2EFE6;
   border: 1px solid #2E333F;
@@ -9062,8 +9069,15 @@ function discoSeen() { try { localStorage.setItem(DISCO_SEEN, '1'); } catch (e) 
    the ending -- both places that announce it were gated on having
    actually won, so the one link for looking at the ending was the one
    way to not see half of it. The peek records nothing either way:
-   discoSeen is still only set by the menu button. */
-const unlockUp = () => discoNew() || END_PEEK;
+   discoSeen is still only set by the menu button.
+
+   It announces on every finish, not just the first. The panel is a beat
+   in the ending -- the thing the last three seconds have been building
+   to -- and a second run through the series that ends on a quiet screen
+   reads as the ending having been cut short. What stays once-only is
+   the gold on the menu tile, which means "you have not played this
+   yet" and so is still asked of discoNew. */
+const unlockUp = () => discoWon() || END_PEEK;
 
 /* Practice kept its slot in the end. Level select took away its old job
    -- any level, any time, posting nothing -- but it has a better one
