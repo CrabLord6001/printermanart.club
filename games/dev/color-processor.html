@@ -181,10 +181,10 @@ html.embed .title { display: none; }
    casing starts. Both numbers come from the board once it has sized
    itself; until then it simply takes the page. */
 .head {
-  width: var(--rigw, var(--boardw, 100%));
+  width: var(--roww, var(--boardw, 100%));
   max-width: 100%;
   align-self: flex-start;
-  margin-left: var(--rigx, var(--boardx, 0));
+  margin-left: var(--boardx, 0);
   display: flex;
   align-items: stretch;
   gap: 10px;
@@ -6534,16 +6534,17 @@ function sizeBoard() {
     st.setProperty('--boardx', Math.round(r.left - left) + 'px');
     /* The readout row carries the options bank now, which stands over the
        rail, so the row is as wide as the board and the rail together. */
-    const rg = document.querySelector('.rig');
+    /* The readout row runs from the board's left edge to the rail's right
+       one, because the bank at the end of it stands over the rail. Not the
+       rig's width: the rig carries an empty twin on the left to keep the
+       board centered, and measuring from there hung the score box out past
+       the side of the casing. */
     const sd = document.querySelector('.side');
-    if (rg) {
-      const rr = rg.getBoundingClientRect();
-      st.setProperty('--rigw', Math.round(rr.width) + 'px');
-      /* Aligned to the rig rather than to the board: the row reaches over
-         the rail now, and --boardx starts it half a rail too far right. */
-      st.setProperty('--rigx', Math.round(rr.left - left) + 'px');
+    if (sd) {
+      const sr = sd.getBoundingClientRect();
+      st.setProperty('--roww', Math.round(sr.right - r.left) + 'px');
+      st.setProperty('--railw', Math.round(sr.width) + 'px');
     }
-    if (sd) st.setProperty('--railw', Math.round(sd.getBoundingClientRect().width) + 'px');
   }
 
   // the intro is measured off the well, so it is redrawn when the well moves
