@@ -7082,10 +7082,19 @@ function paintTubes() {
          a hundred, because three digits do not fit in ten pixels and
          because "done" is worth more than the number it finished on. */
       const pc = inkPer ? Math.round((done / inkPer) * 100) : 0;
-      /* Before anything is printed the number is four zeros, which says
-         nothing twice. The letters are the useful thing on a screen
-         where no plate has started. */
-      tag.textContent = rest ? (TAGS[pl] || '') : (full ? '\u2713' : String(pc));
+      /* A plate at nothing says which plate it is, not how empty it is.
+         Three of the four inks name themselves by being that color and
+         the fourth is the one at the end of a row that always runs
+         C M Y K -- but an empty cartridge has no color in it to read,
+         so at zero the only thing identifying it is the letter, and a
+         "0" sitting there takes the place of the one useful mark. That
+         is worst late in a print, with the other three done and the
+         one still owing the one you cannot name.
+
+         The same at rest, where nothing has been printed and four
+         zeros would say nothing four times. */
+      tag.textContent = (rest || pc === 0) ? (TAGS[pl] || '')
+                      : (full ? '\u2713' : String(pc));
     }
   }
 }
