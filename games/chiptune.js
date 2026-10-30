@@ -118,7 +118,9 @@ function playStep(n, when) {
   if (powerKind && n % (powerWarn ? 2 : 4) === 0) {
     const m = POWER_MOTIF[powerKind];
     const pair = m.notes[(n >> 2) % m.notes.length];
-    tone(musicBus, when, pair, dur * m.hold, m.wave, m.peak, m.bend ? pair + m.bend : 0);
+    // never behind the clock, or the note is scheduled in the past and lost
+    const at = m.early ? Math.max(ctx.currentTime, when - dur * m.early) : when;
+    tone(musicBus, at, pair, dur * m.hold, m.wave, m.peak, m.bend ? pair + m.bend : 0);
   }
 }
 
@@ -131,7 +133,11 @@ const POWER_MOTIF = {
   magnet: { notes: [45, 52, 45, 50], wave: 'triangle', peak: 0.42, hold: 1.3, bend: -5 },
   phase:  { notes: [84, 88, 91, 88], wave: 'sine',     peak: 0.26, hold: 1.1, bend: 4 },
   // Long notes that sag downward, which is the sound of a thing running slow.
-  warp:   { notes: [57, 55, 53, 55], wave: 'sawtooth', peak: 0.3,  hold: 2.2, bend: -3 }
+  warp:   { notes: [57, 55, 53, 55], wave: 'sawtooth', peak: 0.3,  hold: 2.2, bend: -3 },
+  /* A small bell that lands before the beat rather than on it. The pickup
+     shows you something before it happens, so its note happens before it
+     should -- which is a thing you hear without being told. */
+  future: { notes: [88, 93, 88, 96], wave: 'triangle', peak: 0.22, hold: 0.7, bend: 0, early: 0.32 }
 };
 
 function pump() {
@@ -233,6 +239,11 @@ export function take(kind) {
   if (kind === 'magnet') {
     [57, 64, 69].forEach((n, i) => tone(sfxBus, t + i * 0.045, n, 0.1, 'triangle', 0.5, n - 7));
     hiss(t + 0.09, 0.06, 0.07);
+  } else if (kind === 'future') {
+    // The answer before the question: the high note first, the low one after.
+    tone(sfxBus, t, 96, 0.1, 'triangle', 0.3);
+    tone(sfxBus, t + 0.05, 88, 0.16, 'triangle', 0.34, 95);
+    tone(sfxBus, t + 0.16, 79, 0.2, 'sine', 0.24, 86);
   } else if (kind === 'warp') {
     // Downward, and widening as it goes: the opposite shape to the other two.
     [81, 74, 69, 62].forEach((n, i) => tone(sfxBus, t + i * 0.07, n, 0.22, 'sawtooth', 0.34, n - 5));

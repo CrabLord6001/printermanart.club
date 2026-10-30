@@ -424,7 +424,7 @@ canvas#play {
    rather than picked out of three different places on each line. */
 .picks li {
   display: grid;
-  grid-template-columns: 14px 5.6em minmax(0, 1fr);
+  grid-template-columns: 14px 6.9em minmax(0, 1fr);
   align-items: start;
   gap: 0 10px;
   padding: 0 0 6px 0;
