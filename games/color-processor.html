@@ -13142,7 +13142,23 @@ document.getElementById('again').addEventListener('click', () => {
   /* The end of the series goes through her before it goes to the title
      screen: what happened to her, then who printed it, then YOU WIN. */
   if (phase === 'done' && campOn && wonLast && isFinale(artwork)) { showFace('end'); return; }
+
+  /* Try again means try again. It used to deal the print and stop on its
+     card, so the one button on the loss screen led to a second button
+     that had to be pressed to do the thing the first one said -- and the
+     card it stopped on was showing a best time and a par that had just
+     been on screen a moment earlier.
+
+     Only on a loss in the series. Practice and the party say New print
+     rather than Try again, and they mean it: that is a different
+     painting, or a different set of dials, and the card is where those
+     are chosen. Nothing that belongs on the way in is skipped here --
+     the rules, a drop nobody has met and her screen before the last
+     level all stand between the card and the first print, and every one
+     of them has already been through by the time anybody can lose. */
+  const retry = phase === 'done' && campOn && !wonLast;
   newPrint();
+  if (retry) begin();
 });
 
 document.getElementById('partyMenu').addEventListener('click', (e) => {
