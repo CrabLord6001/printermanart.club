@@ -2136,9 +2136,10 @@ body .peek .cell { position: absolute; }
   flex-direction: column;
 }
 
-/* And the hub, for the same reason: the control panel ends at the foot
-   of the board rather than halfway down it with black underneath. The
-   rule above is what does it; the home face only had to be let into it. */
+/* And the hub and its folder, for the same reason: the control panel ends
+   at the foot of the board rather than halfway down it with black
+   underneath. The rule above is what does it; these only had to be let in. */
+.over.optface .over-in,
 .over.home .over-in {
   margin: 0;
   flex: 1 1 auto;
@@ -3905,13 +3906,74 @@ nav.menu {
 .t-en  { background: linear-gradient(160deg, #9B7BE8, #6A49C4); }
 .t-cr  { background: linear-gradient(160deg, #6FA86A, #3F7A4A); }
 .t-ho  { background: linear-gradient(160deg, #7C8698, #4A5162); }
+.t-op  { background: linear-gradient(160deg, #E0735C, #B2412C); }
+.t-bk  { background: linear-gradient(160deg, #5C6478, #363C4A); }
+
+/* Inside the folder the four controls are the apps. They arrived from the
+   rail wearing its chrome -- a dark cartridge with a ring round it -- and
+   on a lit panel they have to be tiles like everything else beside them. */
+.optionsface { width: 100%; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.optpanel { margin-top: 0; }
+
+.optpanel .sndwrap,
+.optpanel .snd,
+.optpanel .rankbtn {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 10px 6px;
+  border: 0;
+  border-radius: 0;
+  background: #F7F5EE;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.optpanel .sndwrap { padding: 0; position: relative; }
+.optpanel .snd:hover, .optpanel .rankbtn:hover,
+.optpanel .snd:focus-visible, .optpanel .rankbtn:focus-visible { background: #fff; outline: none; }
+
+/* The icon each one carries becomes the tile it sits on. */
+.optpanel .snd svg, .optpanel .rankdial svg { width: 23px; height: 23px; }
+.optpanel .snd > svg {
+  width: 44px; height: 44px;
+  padding: 10px;
+  border-radius: 10px;
+  background: linear-gradient(160deg, #7C8698, #4A5162);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.optpanel #gridBtn > svg { background: linear-gradient(160deg, #2FC4EE, #1794BC); }
+.optpanel #cbBtn > svg   { background: linear-gradient(160deg, #EFD055, #C9A422); }
+.optpanel .rankdial {
+  width: 44px; height: 44px;
+  border: 0; border-radius: 10px;
+  background: linear-gradient(160deg, #F05CAC, #C62D7E);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.optpanel .rankbtn .lbl, .optpanel .optlbl {
+  margin: 0;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #30333B;
+}
+/* On, in a folder, is the lit cell the rail bank used. */
+.optpanel .snd[aria-pressed="true"] { background: #FFFBEE; }
+.optpanel .volpop { top: auto; bottom: calc(100% + 6px); left: 50%; right: auto; transform: translateX(-50%); }
 
 /* Four apps make a square and the manual stays in the small print. Five
    would leave a hole in the corner, so at five the manual comes up out
    of the footer and fills it -- six apps, no hole, and the footer goes
    down to the lamp it started as. */
-#miHow { display: none; }
-.panel.tight #miHow { display: flex; }
+#miCred { display: none; }
+.panel.tight #miCred { display: flex; }
 .panel.tight .pnl-link { display: none; }
 .panel.tight .pnl-foot { padding: 5px 10px; }
 
@@ -4458,6 +4520,66 @@ nav.menu {
 
             <!-- The record of what printed the thing. Scrolls on its own
                  the way a reel does, and can be taken by hand. -->
+            <!-- The folder. A printer keeps a few things on the face of the
+                 panel and the rest one level in; these are the rest. The
+                 controls themselves moved here from the rail, so they are
+                 the same buttons with the same handlers, in a new place. -->
+            <div class="rules optionsface" id="overOptions" hidden>
+              <div class="panel optpanel">
+                <div class="pnl-apps">
+      <div class="sndwrap" id="sndWrap">
+      <button class="snd" id="snd" type="button" aria-pressed="true" aria-expanded="false" aria-label="Sound and volume">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M11 5 6 9H2v6h4l5 4z"/>
+          <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+          <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
+        </svg>
+        <span class="optlbl">Sound</span>
+      </button>
+      <!-- Opening this holds the clock, the way the settings panel does.
+           Nobody should lose seconds off a run because the music was too
+           loud to think over. -->
+      <div class="volpop" id="volPop" hidden>
+        <button class="volmute" id="volMute" type="button" aria-pressed="false">Mute</button>
+        <span class="volcage"><input class="volrange" id="volRange" type="range"
+              min="0" max="100" step="1" value="100" aria-label="Volume"></span>
+      </div>
+      </div>
+      <button class="snd" id="gridBtn" type="button" aria-pressed="false" aria-label="Turn the grid on">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
+        </svg>
+        <span class="optlbl">Grid</span>
+      </button>
+      <button class="snd" id="cbBtn" type="button" aria-pressed="false" aria-label="Turn colorblind marks on">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M5.2 13.8 13.8 5.2M8.4 17.6 17.6 8.4"/>
+        </svg>
+        <span class="optlbl">Colorblind</span>
+      </button>
+      <button class="rankbtn" id="rankBtn" type="button" aria-label="Rankings">
+        <span class="rankdial">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 20v-4.5M12 20V6M18 20v-8.5"/>
+          </svg>
+        </span>
+        <span class="lbl">Rankings</span>
+      </button>
+                  <button class="mi app" type="button" data-go="intro">
+                    <span class="tile t-ho" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 014.7 1.1c0 1.7-2.3 2.1-2.3 3.6"/><path d="M12 17.2v.01"/></svg></span>
+                    <b>How to play</b>
+                  </button>
+                  <button class="mi app" type="button" data-go="back">
+                    <span class="tile t-bk" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"/></svg></span>
+                    <b>Back</b>
+                  </button>
+                </div>
+                <div class="pnl-foot"><span class="pnl-lamp" aria-hidden="true"></span></div>
+              </div>
+            </div>
+
             <div class="rules creditsface" id="overCredits" hidden>
               <div class="roll" id="creditRoll">
                 <div class="reel" id="creditReel"></div>
@@ -4483,7 +4605,7 @@ nav.menu {
                 <div class="pnl-apps">
                   <button class="mi app" type="button" data-go="gallery">
                     <span class="tile t-gal" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 15l5-4 4 3 3-3 6 5"/><circle cx="8.3" cy="9" r="1.3"/></svg></span>
-                    <b>Gallery</b><span class="sub" id="miWhere"></span>
+                    <b>Play</b><span class="sub" id="miWhere"></span>
                   </button>
                   <button class="mi app" type="button" data-go="levels">
                     <span class="tile t-lv" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 5v3a3 3 0 003 3h6a3 3 0 013 3v3"/><circle cx="6" cy="5" r="1.7"/><circle cx="12" cy="11" r="1.7"/><circle cx="18" cy="17" r="1.7"/><circle cx="6" cy="19" r="1.7"/></svg></span>
@@ -4497,19 +4619,19 @@ nav.menu {
                     <span class="tile t-en" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9.6 12c0 1.8-1.2 3.2-2.8 3.2S4 13.8 4 12s1.2-3.2 2.8-3.2c2.6 0 4 6.4 6.6 6.4 1.6 0 2.8-1.4 2.8-3.2s-1.2-3.2-2.8-3.2C10.8 8.8 9.6 10.2 9.6 12z"/></svg></span>
                     <b>Endless</b>
                   </button>
-                  <button class="mi app" type="button" data-go="credits">
+                  <button class="mi app" type="button" data-go="credits" id="miCred">
                     <span class="tile t-cr" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1.6"/><path d="M6.5 10h5M6.5 13h3"/><circle cx="16.5" cy="12" r="2.2"/></svg></span>
                     <b>Credits</b>
                   </button>
-                  <button class="mi app" type="button" data-go="intro" id="miHow">
-                    <span class="tile t-ho" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 014.7 1.1c0 1.7-2.3 2.1-2.3 3.6"/><path d="M12 17.2v.01"/></svg></span>
-                    <b>How to play</b>
+                  <button class="mi app" type="button" data-go="options">
+                    <span class="tile t-op" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14"/><circle cx="9" cy="7" r="2.1"/><circle cx="15" cy="12" r="2.1"/><circle cx="8" cy="17" r="2.1"/></svg></span>
+                    <b>Options</b>
                   </button>
                 </div>
 
                 <div class="pnl-foot">
                   <span class="pnl-lamp" aria-hidden="true"></span>
-                  <button class="mi pnl-link" type="button" data-go="intro">How to play</button>
+                  <button class="mi pnl-link" type="button" data-go="credits">Credits</button>
                 </div>
               </div>
               </div>
@@ -4579,50 +4701,6 @@ nav.menu {
       <!-- The board, reachable from the rail as well as from the last page
            of the instructions. Somebody who has just finished a run wants to
            see where it put them, not to walk back through the rules. -->
-      <!-- Sound, grid, colorblind and the board: four things you set or go
-           to, in one bank with four divisions, built like the times strip on
-           a level card. They were a card and two loose buttons at the top of
-           the rail and a dial at the bottom, which is four separate objects
-           for one idea -- and the rail is wanted for the plates. -->
-      <div class="railopts">
-      <div class="sndwrap" id="sndWrap">
-      <button class="snd" id="snd" type="button" aria-pressed="true" aria-expanded="false" aria-label="Sound and volume">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M11 5 6 9H2v6h4l5 4z"/>
-          <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
-          <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
-        </svg>
-      </button>
-      <!-- Opening this holds the clock, the way the settings panel does.
-           Nobody should lose seconds off a run because the music was too
-           loud to think over. -->
-      <div class="volpop" id="volPop" hidden>
-        <button class="volmute" id="volMute" type="button" aria-pressed="false">Mute</button>
-        <span class="volcage"><input class="volrange" id="volRange" type="range"
-              min="0" max="100" step="1" value="100" aria-label="Volume"></span>
-      </div>
-      </div>
-      <button class="snd" id="gridBtn" type="button" aria-pressed="false" aria-label="Turn the grid on">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
-        </svg>
-      </button>
-      <button class="snd" id="cbBtn" type="button" aria-pressed="false" aria-label="Turn colorblind marks on">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M5.2 13.8 13.8 5.2M8.4 17.6 17.6 8.4"/>
-        </svg>
-      </button>
-      <button class="rankbtn" id="rankBtn" type="button" aria-label="Rankings">
-        <span class="rankdial">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 20v-4.5M12 20V6M18 20v-8.5"/>
-          </svg>
-        </span>
-        <span class="lbl">Rankings</span>
-      </button>
-      </div>
       <p class="chainnow" id="chainnow">&nbsp;</p>
     </div>
   </div>
@@ -8933,6 +9011,8 @@ function homeGo(go) {
   if (go === 'practice') { trying = 0; campOn = false; discoOn = false; hideFace(); newPrint('setup'); return; }
   if (go === 'endless')  { trying = 0; campOn = false; discoOn = true; discoSeen(); hideFace(); newPrint(null); return; }
   if (go === 'levels')   { showFace('levels'); return; }
+  if (go === 'options')  { showFace('options'); return; }
+  if (go === 'back')     { showFace('home'); return; }
   if (go === 'credits')  { credWon = false; showFace('credits'); return; }
 
   rulesFrom = null;
@@ -9058,12 +9138,14 @@ function faceOff() {
      and unreadable for anything laid over it. closeRules puts it back. */
   elOver.classList.remove('intro', 'menu', 'won', 'boardface', 'lvface');
   elOver.classList.remove('home', 'boss', 'victor', 'endface2', 'credface', 'party');
+  elOver.classList.remove('optface');
   clearGalleryArt();                            // the sheet belongs to one face only
   asilStop();                                   // she stops talking to an empty room
   victorStop();
   endStop();
   elRules().hidden = true;
   elSetup().hidden = true;
+  document.getElementById('overOptions').hidden = true;
   elGallery().hidden = true;
   elHome().hidden = true;
   elBoss().hidden = true;
@@ -9264,6 +9346,11 @@ function showFace(which) {
     elOver.classList.add('intro');
     elRules().hidden = false;
     document.getElementById('overTitle').hidden = true;
+  } else if (which === 'options') {
+    elOver.classList.add('optface');
+    document.getElementById('overOptions').hidden = false;
+    document.getElementById('overTitle').hidden = false;
+    document.getElementById('overTitle').textContent = 'Options';
   } else if (which === 'levels') {
     elOver.classList.add('menu', 'lvface');
     elLevels().hidden = false;
@@ -12842,6 +12929,14 @@ document.getElementById('rulesBtn').addEventListener('click', () => {
 /* The title screen's four options. */
 document.getElementById('titleMenu').addEventListener('click', (e) => {
   const item = e.target.closest('.mi');
+  if (item) homeGo(item.dataset.go);
+});
+
+/* The folder's own apps. The four controls inside it are not .mi -- they
+   are the same buttons that were on the rail, with their own handlers --
+   so only the two that go somewhere are routed here. */
+document.getElementById('overOptions').addEventListener('click', (e) => {
+  const item = e.target.closest('.mi[data-go]');
   if (item) homeGo(item.dataset.go);
 });
 
