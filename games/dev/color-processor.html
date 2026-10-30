@@ -3837,8 +3837,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   padding-top: 18px;
 }
 
-.over.jam h2,
-.over.jam #overText { text-shadow: 0 2px 14px rgba(0,0,0,0.95); }
+.over.jam h2 { text-shadow: 0 2px 14px rgba(0,0,0,0.95); }
 
 .over.jam h2 {
   font-family: 'Share Tech Mono', 'Poppins', ui-monospace, monospace;
@@ -3863,13 +3862,6 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   93% { transform: translateX(-3px) skewX(-1.5deg); }
   95% { transform: translateX(3px); }
   97% { transform: translateX(-1px) skewX(1deg); }
-}
-
-/* What the run was worth, small, under her. */
-.over.jam #overText {
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  color: var(--dim);
 }
 
 /* The way on is the only lit thing on the screen, and it is red: the one
@@ -12364,13 +12356,13 @@ function finish(won) {
     jamTitle.hidden = false;
     jamTitle.textContent = 'GAME OVER';
     credit.hidden = true;
-    /* What the run was worth. The artist's line comes off: she has the
-       painting, and crediting it under her is the wrong caption. */
-    document.getElementById('overText').innerHTML = discoOn
-      ? points + '&nbsp;pts &middot; chain&nbsp;&times;' + bestChain
-        + ' &middot; speed&nbsp;' + discoSays()
-      : down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
-        + ' &middot; chain&nbsp;&times;' + bestChain;
+    /* Nothing under the headline. The artist's line comes off because
+       she has the painting and crediting it under her is the wrong
+       caption -- and the run's numbers come off because every one of
+       them is already on the screen and has been all run: the plates in
+       the cartridges down the rail, the points and the chain in the
+       boxes over the board. */
+    document.getElementById('overText').innerHTML = '';
     elOver.classList.add('jam');
     document.body.classList.add('jamface');
     elOver.hidden = false;
