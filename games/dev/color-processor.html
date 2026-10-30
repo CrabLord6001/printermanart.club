@@ -8349,12 +8349,18 @@ const PP_SKIN = ['paper', 'belts', 'traces', 'drum', 'heat', 'ink'];
    Laid down at a low opacity, because it is the wall behind the sheet
    and not the thing being read. */
 const PP_IMG = {
-  paper: { src: '/games/img/path/tray.png',    opacity: 0.30 },
-  belts: { src: '/games/img/path/rollers.png', opacity: 0.22 },
+  /* one: a single object, laid in the middle of its band at whatever size
+     fits whole. A tray is one thing, and half a tray at the top with
+     another half at the bottom reads as a mistake rather than as a
+     machine.
+     tile: a pattern that was drawn to repeat, which may run off both
+     ends because that is what a pattern is for. */
+  paper: { src: '/games/img/path/tray.png',    opacity: 0.34, mode: 'one' },
+  belts: { src: '/games/img/path/rollers.png', opacity: 0.22, mode: 'tile' },
   /* Lying across, the way it lies in a printer. Turned on its end it
      made one giant drum that would not tile; across, it stacks into a
      bank of them and fills the band. */
-  drum:  { src: '/games/img/path/drum.png',    opacity: 0.26, flat: true }
+  drum:  { src: '/games/img/path/drum.png',    opacity: 0.26, mode: 'tile', flat: true }
 };
 
 function ppBand(kind, y0, y1, W, rnd) {
@@ -8526,6 +8532,19 @@ function drawDeco(path, svg) {
     const kind = k === 'last' ? 'glitch' : (PP_SKIN[k] || 'paper');
     const top = Math.max(0, b.lo - 44), bot = b.hi + 44;
     const art = PP_IMG[kind];
+
+    if (art && art.mode === 'one') {
+      /* Centered, and whole. Sized to the smaller of the two fits so it
+         can never be cropped by its own band, however tall the chapter
+         grows. */
+      const bh = bot - top;
+      const side = Math.min(W * 0.92, bh * 0.92);
+      out += '<image href="' + art.src + '" x="' + ((W - side) / 2).toFixed(1) +
+             '" y="' + (top + (bh - side) / 2).toFixed(1) + '" width="' + side.toFixed(1) +
+             '" height="' + side.toFixed(1) + '" opacity="' + art.opacity +
+             '" preserveAspectRatio="xMidYMid meet"/>';
+      continue;
+    }
 
     if (art) {
       /* One square tile the width of the panel, repeating down the band. */
