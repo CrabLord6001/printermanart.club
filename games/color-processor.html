@@ -4688,6 +4688,11 @@ const isGlitch = (v) => v === GLITCH;
 /* How often the machine misbehaves. The magnet is the reward and stays put;
    the virus is the punishment and gets worse as the printer gets harder. */
 const MAG_RATE = 0.12;
+/* Not in the first print. Everything else in the series arrives with a
+   card that says what it is, and the magnet was the one thing falling
+   before anybody had been told it existed. Level one is the plain game:
+   ink, clumps, plates, and nothing with a property on it. */
+let magRate = MAG_RATE;
 /* A few in the first rooms so somebody meets one while it is cheap, a
    real cost by the middle, and something the last print has to be played
    around. Per drop rather than per level, so a long level carries more
@@ -6507,7 +6512,7 @@ function roll() {
   // never magnetic as well: one thing for a cell to be saying at a time
   if (Math.random() < virusRate) { window.__vMade = (window.__vMade || 0) + 1;
     return rand() + FUSE + FUSE_DROPS; }
-  return rand() + (Math.random() < MAG_RATE ? '*' : '');
+  return rand() + (Math.random() < magRate ? '*' : '');
 }
 
 function newPair() {
@@ -8699,6 +8704,8 @@ document.addEventListener('click', (e) => {
   if (lv === 1) { vicSeen = false; vicSpoken = false; }
   if (lv === campList().length) { bossSeen = false; bossSpoken = false; }
   hideFace();
+  // same order coming in from the map as from the menu
+  if (lv === 1 && !vicSeen) { vicSeen = true; showFace('victor'); return; }
   newPrint('gallery');
 });
 
@@ -8717,6 +8724,11 @@ function homeGo(go) {
     if (discoWon() && !onSecondRun()) { campAt = 0; spotSet(0); }
     else campAt = campStart();
     if (campAt === 0) { vicSeen = false; vicSpoken = false; }
+    /* He is the one who sends them to the painting, so he cannot come
+       after they have already chosen it. He used to sit behind the level
+       card, which meant pressing Play on a print before anybody had said
+       why it needed looking at. */
+    if (campAt === 0 && !vicSeen) { vicSeen = true; hideFace(); showFace('victor'); return; }
     hideFace(); newPrint('gallery'); return;
   }
   if (go === 'practice') { trying = 0; campOn = false; discoOn = false; hideFace(); newPrint('setup'); return; }
@@ -10572,6 +10584,7 @@ function levelSetup(i, n) {
        without making the late game milder than it was. */
     virusRate: vT < 0 ? 0 : VIRUS_FROM + (VIRUS_TO - VIRUS_FROM) * vT,
     lowRate: since(HAZARD_CH.lowink) < 0 ? 0 : LOW_RATE,
+    magRate: i === 0 ? 0 : MAG_RATE,
     glitch: since(HAZARD_CH.glitch) < 0 ? 0
           : Math.round(GLITCH_FROM + (GLITCH_TO - GLITCH_FROM) * since(HAZARD_CH.glitch)),
     glitchLift: since(HAZARD_CH.glitch) < 0 ? 0
@@ -11842,6 +11855,10 @@ function newPrint(face) {
      a drop that leaves is the wrong thing to be learning against. */
   lowRate = (discoOn || !campOn) ? 0
           : levelSetup(Math.min(campAt, campList().length - 1), campList().length).lowRate;
+  /* Practice and the party keep them: those are not the series, and the
+     one print held back is the series' first. */
+  magRate = (discoOn || !campOn) ? MAG_RATE
+          : levelSetup(Math.min(campAt, campList().length - 1), campList().length).magRate;
 
   inkPer = Math.max(3, Number(document.getElementById('setTarget').value) || 10);
   discoDrops = 0;
@@ -12309,7 +12326,7 @@ const MECHANICS = [
     title: 'Magnet Drops',
     say: 'Pulls a matching color out of a diagonal and into line above it. '
        + 'Place them where a clump is one short.',
-    live: () => true,
+    live: (d) => d.magRate > 0,
     demo: ['c mag', '>', 'c', 'c', 'c']
   },
   {
@@ -12413,13 +12430,10 @@ document.getElementById('again').addEventListener('click', () => {
       showFace('boss');
       return;
     }
-    /* He is the other end of the same idea: somebody waiting on the far
-       side of the card, once, before the first print of the series. */
-    if (!vicSeen && campOn && campAt === 0) {
-      vicSeen = true;
-      showFace('victor');
-      return;
-    }
+    /* The rules sit between the card and the first print: this is the
+       last moment anybody is looking at a screen rather than at falling
+       blocks. He is upstream of the card now, not downstream of it. */
+    if (!taught()) { showFace('rules'); rulesFrom = { teach: true }; buttons(); return; }
     /* And the same bargain for a drop nobody has met: one card, then the
        print. Marked as met when it is dismissed rather than when it
        opens, so backing out to the menu gets it again. */
@@ -12474,11 +12488,10 @@ document.getElementById('vicMenu').addEventListener('click', (e) => {
   const b = e.target.closest('[data-vic]');
   if (!b) return;
   if (b.dataset.vic === 'begin' && !meeting) {
-    /* He has just told them why they are here. What he has not told
-       them is how any of it works, and this is the last moment anybody
-       is looking at a screen rather than at falling blocks. */
-    if (!taught()) { showFace('rules'); rulesFrom = { teach: true }; buttons(); return; }
-    begin();
+    /* He has told them why they are here; the card says which print, and
+       the rules behind it say how. */
+    hideFace();
+    newPrint('gallery');
     return;
   }
   leaveMeeting();
