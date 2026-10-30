@@ -127,10 +127,11 @@
 
 /* ---- the directory ---- */
 
-.dir-bar { margin-bottom: 14px; }
+.dir-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 
 .dir-find {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   background: var(--ground);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -185,6 +186,14 @@
 .dir-chip.is-admin { color: var(--blurple-text); border-color: rgba(153, 162, 247, 0.45); }
 .dir-chip.is-tester { color: var(--accent); border-color: rgba(212, 162, 76, 0.45); }
 .dir-chip.has-note { color: var(--text-muted); }
+
+/* What they have done. Artist is green for the same reason an approved piece
+   is: it is the approval that makes them one. (None) stays dim on purpose --
+   a blank row should look deliberate, not like something failed to load. */
+.dir-chip.is-artist  { color: #6FCF97; border-color: rgba(111, 207, 151, 0.4); }
+.dir-chip.is-pending { color: var(--accent); border-color: rgba(212, 162, 76, 0.4); }
+.dir-chip.is-gamer   { color: #58B9D6; border-color: rgba(88, 185, 214, 0.4); }
+.dir-chip.is-none    { color: var(--text-dim); border-color: var(--border); }
 .dir-chip.status-approved { color: #6FCF97; border-color: rgba(111, 207, 151, 0.4); }
 .dir-chip.status-pending { color: var(--accent); border-color: rgba(212, 162, 76, 0.4); }
 .dir-chip.status-rejected { color: #E5737A; border-color: rgba(229, 115, 122, 0.4); }

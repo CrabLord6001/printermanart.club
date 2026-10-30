@@ -56,6 +56,7 @@
   <div class="panel wide" id="main" hidden>
     <div class="dir-bar">
       <input type="search" class="dir-find" id="find" placeholder="Find a member&hellip;" autocomplete="off" spellcheck="false">
+      <button class="btn ghost small" id="showAll" type="button" aria-pressed="false">Show sign-ins</button>
     </div>
     <div id="list"></div>
     <p class="note" id="say" hidden></p>
@@ -83,6 +84,7 @@ const say = document.getElementById('say');
 
 let rows = [];
 let openFor = null;        // the member whose drawer is open
+let showAll = false;       // sign-ins with nothing to their name stay hidden
 
 function view(which) {
   boot.hidden = which !== 'boot';
@@ -115,19 +117,44 @@ async function load() {
   draw();
 }
 
+/* What somebody has actually done, worked out from the counts rather than
+   kept on the row, so it is right the moment they do it. Signing in is not
+   one of them: an account with no artwork and no finished run comes back
+   empty, which is the reason this page stopped calling every sign-in a
+   member. */
+function kinds(r) {
+  const out = [];
+  if (r.approved_works > 0) out.push(['Artist', 'is-artist']);
+  else if (r.artworks > 0) out.push(['Pending Artist', 'is-pending']);
+  if (r.scores > 0) out.push(['Gamer', 'is-gamer']);
+  return out;
+}
+
+function active(r) { return kinds(r).length > 0; }
+
 function draw() {
   const q = find.value.trim().toLowerCase();
-  const shown = rows.filter((r) =>
+  const named = rows.filter((r) =>
     !q || (r.display_name || '').toLowerCase().includes(q)
        || (r.discord_username || '').toLowerCase().includes(q));
 
-  count.textContent = rows.length + (rows.length === 1 ? ' member' : ' members');
+  /* A search is somebody asking for a particular person, so it reaches the
+     whole table whatever the toggle says. Hiding the account they just typed
+     the name of would only look broken. */
+  const shown = (showAll || q) ? named : named.filter(active);
+
+  const members = rows.filter(active).length;
+  const idle = rows.length - members;
+  count.textContent = members + (members === 1 ? ' member' : ' members')
+    + (idle ? ' \u00b7 ' + idle + (idle === 1 ? ' sign-in' : ' sign-ins') : '');
   list.textContent = '';
 
   if (!shown.length) {
     const p = document.createElement('p');
     p.className = 'note';
-    p.textContent = q ? 'Nobody by that name.' : 'No members yet.';
+    p.textContent = q ? 'Nobody by that name.'
+                  : (idle && !showAll) ? 'No members yet \u2014 only sign-ins.'
+                  : 'No members yet.';
     list.appendChild(p);
     return;
   }
@@ -169,6 +196,11 @@ function rowEl(r) {
 
   if (r.is_admin) head.appendChild(chip('Admin', 'is-admin'));
   if (r.is_tester) head.appendChild(chip('Tester', 'is-tester'));
+
+  const marks = kinds(r);
+  if (marks.length) marks.forEach((k) => head.appendChild(chip(k[0], k[1])));
+  else head.appendChild(chip('(None)', 'is-none'));
+
   if (r.admin_notes) head.appendChild(chip('Note', 'has-note'));
 
   const facts = document.createElement('span');
@@ -373,6 +405,13 @@ document.getElementById('signIn').addEventListener('click', () => signIn());
 document.getElementById('signOut').addEventListener('click', () => signOut());
 document.getElementById('signOut2').addEventListener('click', () => signOut());
 find.addEventListener('input', draw);
+
+document.getElementById('showAll').addEventListener('click', (e) => {
+  showAll = !showAll;
+  e.currentTarget.setAttribute('aria-pressed', showAll ? 'true' : 'false');
+  e.currentTarget.textContent = showAll ? 'Hide sign-ins' : 'Show sign-ins';
+  draw();
+});
 
 onMember(async (member) => {
   if (!member) { view('gate'); return; }
