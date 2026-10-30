@@ -8171,6 +8171,15 @@ function ready(face) {
 function begin() {
   rulesFrom = null;
   faceOff();
+  /* The level card's own backdrop. It is a canvas behind the board at
+     a little over half opacity, carrying the painting and whatever she
+     is doing to it, and it comes down when the card closes -- which it
+     always did, because the card was the only way in. Try again goes
+     straight to the board now, so nothing was closing, and her face sat
+     under the whole level at 55%. Taking it down belongs here rather
+     than on the retry: every way into a print should leave the card's
+     furniture behind it, not just the one that found this. */
+  clearGalleryArt();
   if (!piece) spawn();                          // dealt at the door, not before
   started = true; paused = false; phase = 'playing';
   elOver.hidden = true;
@@ -12099,6 +12108,13 @@ function paintGalleryArt(here, level, total) {
   if (W < 40 || H < 40) return;                  // the panel has no size yet
 
   const show = () => {
+    /* Only ever behind the card. The sheet is fetched before the card
+       opens and arrives whenever it arrives, so on a Try again -- which
+       goes straight to the board -- this used to land after play had
+       begun and hang the painting, and her, behind the level at 55%.
+       Hiding it when the board starts was not enough on its own: this
+       is what puts it back. */
+    if (started || phase === 'playing') { clearGalleryArt(); return; }
     cv.hidden = false;
     if (vl) vl.hidden = false;
     elOver.classList.add('hasart');
