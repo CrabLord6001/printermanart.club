@@ -8085,17 +8085,26 @@ const PP_ART = {
     '</g>' +
     '<rect x="4" y="8" width="26" height="10" rx="2" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>',
 
-  /* Pickup rollers: two of them, turning against each other, the sheet
-     being drawn through the nip. */
-  1:'<g class="pp-spin" style="transform-origin:center">' +
-      '<circle cx="22" cy="18" r="12" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>' +
-      '<path d="M22 6v24M10 18h24M13 9l18 18M31 9L13 27" stroke="#4A5162" stroke-width="2"/>' +
+  /* Pickup rollers. A roller is a cylinder, not a wheel: dark rubber
+     barrel, a flat along one side, a pale end cap and a gear cluster on
+     the shaft. Drawn side on, which is how you meet them when the
+     cassette is out. The gear turns; the barrels cannot be shown
+     turning side on, so the sheet moving under them is what says they
+     are. */
+  1:'<rect x="4" y="30" width="58" height="6" rx="3" fill="#1A1C24"/>' +
+    '<rect x="8" y="8" width="42" height="13" rx="6.5" fill="#33363E"/>' +
+    '<rect x="8" y="8" width="42" height="5" rx="2.5" fill="#44474F"/>' +
+    '<path d="M16 8v13M24 8v13M32 8v13M40 8v13" stroke="#24262D" stroke-width="1.5"/>' +
+    '<rect x="8" y="22" width="42" height="13" rx="6.5" fill="#2B2E35"/>' +
+    '<rect x="8" y="22" width="42" height="5" rx="2.5" fill="#3B3E46"/>' +
+    '<path d="M16 22v13M24 22v13M32 22v13M40 22v13" stroke="#1E2027" stroke-width="1.5"/>' +
+    '<rect x="2" y="7" width="9" height="15" rx="3" fill="#6E93C9"/>' +
+    '<rect x="2" y="21" width="9" height="15" rx="3" fill="#5C7EB0"/>' +
+    '<g class="pp-spin" style="transform-origin:center">' +
+      '<circle cx="56" cy="21" r="9" fill="#E8E8EC" stroke="#B9BAC2" stroke-width="1.5"/>' +
+      '<path d="M56 12v18M47 21h18M50 15l12 12M62 15L50 27" stroke="#B9BAC2" stroke-width="2"/>' +
     '</g>' +
-    '<g class="pp-spin rev" style="transform-origin:center">' +
-      '<circle cx="50" cy="18" r="12" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>' +
-      '<path d="M50 6v24M38 18h24M41 9l18 18M59 9L41 27" stroke="#4A5162" stroke-width="2"/>' +
-    '</g>' +
-    '<path class="pp-feed" d="M2 40h68" stroke="#F2EFE6" stroke-width="4" stroke-linecap="round" opacity=".85"/>',
+    '<path class="pp-feed" d="M2 43h68" stroke="#F2EFE6" stroke-width="4" stroke-linecap="round" opacity=".85"/>',
 
   /* Registration: the sheet squared up against the stops before it is
      allowed through. */
@@ -8158,9 +8167,18 @@ const PP_NAME = ['Paper tray', 'Pickup rollers', 'Registration',
    sits in is already a riveted housing, so there is no second frame here
    -- the sheet just runs down it, and a chapter is a housing bolted
    across the channel with a slot either side. */
+/* When the list last appeared. A tap that opens this screen can land a
+   second time on whatever is now under the finger, and after the list
+   scrolls itself to the print you are about to play, what is under the
+   finger is a print. That is somebody pressing Level Select and being
+   dropped straight into level four. A node is only a node once the
+   screen has been there long enough for the press to be meant. */
+let lvShownAt = 0;
+
 function buildLevels() {
   const wrap = document.getElementById('lvRooms');
   if (!wrap) return;
+  lvShownAt = Date.now();
   const list = campList();
   const reach = campFind();                       // the furthest level open to them
   wrap.innerHTML = '';
@@ -8330,23 +8348,49 @@ function ppBand(kind, y0, y1, W, rnd) {
   const at = (x, y) => x.toFixed(1) + ' ' + y.toFixed(1);
 
   if (kind === 'paper') {
-    // sheets stacked and feeding, on the diagonal
-    for (let i = 0; i < 7; i++) {
-      const y = y0 + (i + 0.5) * (h / 7), w = 46 + rnd() * 54, x = rnd() * (W - w);
-      g += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) +
-           '" height="9" rx="2" fill="#F2EFE6" opacity=".05"' +
-           ' transform="rotate(' + (-6 + rnd() * 12).toFixed(1) + ' ' + at(x + w / 2, y + 4) + ')"/>';
+    /* A cassette, squared up: the tray walls, the two side guides that
+       slide in to meet the stack, the rear stop, and the stack itself
+       sitting between them. Rotated rectangles scattered about was
+       clipart, and it is what Jonathan called out. */
+    const pad = 16, tw = W - pad * 2;
+    for (let i = 0; i < 2; i++) {
+      const ty = y0 + (i + 0.25) * (h / 2.2), th = Math.min(86, h / 2.6);
+      g += '<rect x="' + pad + '" y="' + ty.toFixed(1) + '" width="' + tw.toFixed(1) +
+           '" height="' + th.toFixed(1) + '" rx="4" fill="none" stroke="#262B36" stroke-width="2.5"/>';
+      // the stack, square to the tray
+      for (let k = 0; k < 4; k++) {
+        g += '<rect x="' + (pad + 20) + '" y="' + (ty + 14 + k * 7).toFixed(1) +
+             '" width="' + (tw - 40).toFixed(1) + '" height="5" rx="1.5" fill="#F2EFE6" opacity=".055"/>';
+      }
+      // side guides, and the rear stop they square the stack against
+      g += '<rect x="' + (pad + 11) + '" y="' + (ty + 9).toFixed(1) + '" width="6" height="' +
+           (th - 18).toFixed(1) + '" rx="2" fill="#2E3542" opacity=".75"/>' +
+           '<rect x="' + (pad + tw - 17) + '" y="' + (ty + 9).toFixed(1) + '" width="6" height="' +
+           (th - 18).toFixed(1) + '" rx="2" fill="#2E3542" opacity=".75"/>' +
+           '<rect x="' + (pad + 20) + '" y="' + (ty + th - 13).toFixed(1) + '" width="' +
+           (tw - 40).toFixed(1) + '" height="6" rx="2" fill="#2E3542" opacity=".75"/>' +
+           '<text x="' + (pad + 7) + '" y="' + (ty + th - 4).toFixed(1) +
+           '" class="pp-mark" transform="rotate(-90 ' + (pad + 7) + ' ' +
+           (ty + th - 4).toFixed(1) + ')">A4 / LTR</text>';
     }
   } else if (kind === 'belts') {
-    // a belt line with rollers along it
-    for (let i = 0; i < 4; i++) {
-      const y = y0 + (i + 0.5) * (h / 4);
-      g += '<path d="M0 ' + y.toFixed(1) + 'h' + W.toFixed(1) + '" stroke="#1E2230" stroke-width="5"/>';
-      for (let k = 0; k < 4; k++) {
-        const x = (k + 0.5) * (W / 4) + (rnd() - 0.5) * 20;
-        g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
-             '" r="7" fill="#232838" stroke="#30364a" stroke-width="1.5"/>';
+    /* Rollers, drawn as the cylinders they are: a rubber barrel with a
+       lighter crown along the top, ribs across it, and a pale end cap on
+       the shaft. Circles threaded on a line read as beads, which is what
+       was wrong with the first attempt. */
+    for (let i = 0; i < 5; i++) {
+      const y = y0 + (i + 0.5) * (h / 5);
+      const w = 60 + rnd() * 70, x = rnd() * (W - w - 14);
+      g += '<rect x="' + x.toFixed(1) + '" y="' + (y - 7).toFixed(1) + '" width="' + w.toFixed(1) +
+           '" height="14" rx="7" fill="#2A2E38" opacity=".55"/>' +
+           '<rect x="' + x.toFixed(1) + '" y="' + (y - 7).toFixed(1) + '" width="' + w.toFixed(1) +
+           '" height="5" rx="2.5" fill="#3A3F4C" opacity=".5"/>';
+      for (let r = 1; r < 5; r++) {
+        const rx = x + (w * r) / 5;
+        g += '<path d="M' + rx.toFixed(1) + ' ' + (y - 7).toFixed(1) + 'v14" stroke="#20242C" stroke-width="1.5" opacity=".5"/>';
       }
+      g += '<rect x="' + (x + w).toFixed(1) + '" y="' + (y - 9).toFixed(1) +
+           '" width="11" height="18" rx="3.5" fill="#47506A" opacity=".5"/>';
     }
   } else if (kind === 'traces' || kind === 'glitch') {
     /* A board is not lines. It is runs that turn at 45 degrees as readily
@@ -8474,6 +8518,7 @@ function drawDeco(path, svg) {
 document.addEventListener('click', (e) => {
   const chip = e.target.closest ? e.target.closest('.lv[data-level]') : null;
   if (!chip || elLevels().hidden) return;
+  if (Date.now() - lvShownAt < 400) return;      // the tap that opened the screen
   const lv = parseInt(chip.dataset.level, 10);
   if (!lv) return;
   trying = 0; campOn = true; campAt = lv - 1;
