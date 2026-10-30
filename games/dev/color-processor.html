@@ -6806,10 +6806,11 @@ function finishPrint() {
    Then it flickers. A new seed every few hundred milliseconds moves the
    tearing without redrawing the picture under it, and now and then her
    face surfaces through it the way it does over a glitch zone. */
-let jamJob = 0, jamSeed = 11;
+let jamJob = 0, jamSeed = 11, jamBurst = 0;
 
 function jamStop() {
-  if (jamJob) { clearInterval(jamJob); jamJob = 0; }
+  if (jamJob) { clearTimeout(jamJob); jamJob = 0; }
+  jamBurst = 0;
 }
 
 function jamClean() {
@@ -6861,23 +6862,50 @@ function jamPrint() {
        eyes come with her rather than burning a hole in the painting
        between visits. */
     const her = jamHerFrame();
-    if (her && Math.random() < 0.34) {
+    /* A fifth, not a third. A burst holds her for two or three frames
+       on top of the roll that started it, so the roll cannot be set to
+       the share you want her on screen for -- measured at a third it put
+       her up two frames in three, which is the wallpaper this was
+       supposed to avoid. */
+    if (her && (jamBurst > 0 || Math.random() < 0.2)) {
       ctx.save();
-      ctx.globalAlpha = 0.22 + Math.random() * 0.26;
+      /* Hard. She was coming through at 22 to 48 percent over a dark
+         painting, which is a smudge -- and this is her screen. A hit in
+         a burst is harder still, because that is the point of one. */
+      ctx.globalAlpha = jamBurst > 0 ? (0.72 + Math.random() * 0.26)
+                                     : (0.40 + Math.random() * 0.45);
       ctx.globalCompositeOperation = 'screen';
       try { ctx.drawImage(her, 0, 0, PW, PH); } catch (e) {}
       ctx.restore();
-    }
+      /* One appearance in four stutters: two or three of her in quick
+         succession and then nothing for a while. On a fixed tick she
+         could only ever land on the beat, which reads as a strobe --
+         something switching on and off on purpose. A fault does not
+         keep time. */
+      if (jamBurst > 0) jamBurst--;
+      else if (Math.random() < 0.25) jamBurst = 1 + ((Math.random() * 2) | 0);
+    } else if (jamBurst > 0) jamBurst--;
   };
   draw();
   page.style.opacity = '1';
   page.style.filter = 'none';
   jamStop();
-  jamJob = setInterval(() => {
+  /* Reschedules itself rather than running on an interval, so the gap
+     between frames is a different length every time: a long hold, then
+     two fast ones, then a long hold. Inside a burst it goes to the
+     stutter rate, which is what makes a burst read as one event rather
+     than as three frames that happened to land together. */
+  const tick = () => {
     if (elOver.hidden || !elOver.classList.contains('jam')) { jamStop(); return; }
     jamSeed = (jamSeed * 7 + 13) % 997;
     draw();
-  }, 420);
+    /* Irregular, but not rarer than it was. Stronger and less
+       predictable was the brief; turning her down to once every three
+       seconds would have been a third change nobody asked for. */
+    const wait = jamBurst > 0 ? 70 + Math.random() * 90 : 190 + Math.random() * 420;
+    jamJob = setTimeout(tick, wait);
+  };
+  jamJob = setTimeout(tick, 300 + Math.random() * 300);
 }
 
 /* ============================================================
