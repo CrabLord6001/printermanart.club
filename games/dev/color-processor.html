@@ -3788,7 +3788,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* ---- the credits ----
    The panel scrolls by default, which here would have scrolled the
-   whole screen and carried the way out off the bottom of it. The reel
+   whole screen and carried the way out off the bottom of it. The well
    is the only thing that moves; min-height lets it shrink under its own
    content, which is the whole trick to a scrolling box inside a column. */
 .over.credface { padding: 0; background: #07090D; overflow: hidden; }
@@ -3821,33 +3821,24 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   flex-direction: column;
 }
 
-.creditsface .roll {
+/* The well the card stands in. It is what scrolls, so on a short phone
+   the card can be taller than the panel and still be read by thumb
+   rather than being cut off at the bottom. */
+.creditsface .cwell {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* A column, so the reel inside it can be centered by auto margins:
-     they take the slack when the reel is shorter than the well and
-     collapse to nothing when it is longer, which is the one way to
-     center a thing vertically without taking its scrolling away. On a
-     phone the reel fills the well and nothing changes; on a desktop
-     board it used to sit in the top third with the rest of the casing
-     empty under it. */
   display: flex;
   flex-direction: column;
 }
 
-/* Auto margins top and bottom: they take the slack when the reel is
-   shorter than the well and collapse to nothing when it is longer. That
-   is the one way to center a thing vertically without taking its
-   scrolling away -- on a desktop panel the names sit in the middle of
-   the casing, on a phone the box fills and scrolls by thumb. */
 /* ---- the credits card ----
-   A sheet the press put out, not a reel climbing the screen: paper white,
-   a gold rule under the name, and the collections set as three cards in a
-   row the way a label wall reads. */
-.creditsface .reel {
+   A sheet the press put out, not a scroll climbing the screen: paper
+   white, a gold rule under the name, and the collections set as three
+   cards in a row the way a label wall reads. */
+.creditsface .ccard {
   /* Fills the well rather than floating in the middle of it. The copy
      centers inside the card; the card itself goes edge to edge. */
   flex: 1 1 auto;
@@ -3864,8 +3855,8 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 }
 /* .rules p sets its own left align for the instructions, and it wins on
    specificity over the card. */
-.creditsface .reel p,
-.creditsface .reel h2 { text-align: center; }
+.creditsface .ccard p,
+.creditsface .ccard h2 { text-align: center; }
 
 .creditsface .ctitle {
   margin: 0 0 14px;
@@ -3997,7 +3988,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* And the type grows with the room. The sizes above are set for a phone,
    where the casing is 250px across; on a desktop board nearly twice that
-   they were a reel printed small in the middle of a large dark panel.
+   they were a card printed small in the middle of a large dark panel.
    This block has to come after them -- same specificity, and it used to
    sit above, where the phone sizes overruled it on every screen. */
 @media (min-width: 620px) {
@@ -4009,7 +4000,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 }
 
 /* And a step again for a tall window, where the casing is half as deep
-   again as the names need and the reel was a small block of type adrift
+   again as the names need and the card was a small block of type adrift
    in the middle of it. Keyed to the height as well as the width, because
    it is the depth of the panel that leaves the room. */
 @media (min-width: 620px) and (min-height: 1000px) {
@@ -4020,7 +4011,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   .creditsface .cmark { font-size: 1.6rem; margin-top: 34px !important; }
 }
 
-/* The sign off, printed rather than set: the last thing on the reel is
+/* The sign off, printed rather than set: the last thing on the card is
    the shop's own name off the shop's own press. */
 .creditsface .cmark {
   margin: 26px 0 0 !important;
@@ -4819,9 +4810,9 @@ nav.menu {
                   <p class="said" id="endSaid">The malicious AI, Asil Anom, fried her neural cores and experienced a cascade failure.</p>
                   <p class="said" id="endSaid2">She purged her backup array, compressed all of her memory, and faded into the dark web&hellip; for now.</p>
                 </div>
-                <!-- The unlock, on the screen where it is earned. The reel
-                     says it too, at the bottom, for anyone who sits
-                     through the credits -- but the reel is a second room
+                <!-- The unlock, on the screen where it is earned. The card
+                     says it too, at the bottom, for anyone who reads
+                     through the credits -- but the card is a second room
                      and this is the moment. Held back until the report
                      has finished reading itself, so the news does not
                      talk over the last thing she is owed. -->
@@ -4862,11 +4853,11 @@ nav.menu {
               </div>
             </div>
 
-            <!-- The record of what printed the thing. Scrolls on its own
-                 the way a reel does, and can be taken by hand. -->
+            <!-- The record of what printed the thing: a card in a well
+                 that scrolls on its own, so the panel behind it does not. -->
             <div class="rules creditsface" id="overCredits" hidden>
-              <div class="roll" id="creditRoll">
-                <div class="reel" id="creditReel"></div>
+              <div class="cwell" id="creditWell">
+                <div class="ccard" id="creditCard"></div>
               </div>
               <nav class="bossmenu" id="credMenu">
                 <button class="mi hot" type="button" data-cred="menu">Menu</button>
@@ -5155,7 +5146,7 @@ let trying = 0;                                 // the level being tried, or 0
 /* ?end=1 opens the ending -- her going out, the report, the credits --
    without printing twenty-one levels to earn it. The same bargain as
    ?meet: it is a viewing, so nothing is recorded, nothing is marked off
-   and the button at the bottom of the reel goes to the menu rather than
+   and the button at the bottom of the credits goes to the menu rather than
    into a run. Beating her is the only way to actually finish the series.
 
    Not gated yet, though it could be: club_members carries is_admin and
@@ -11121,14 +11112,14 @@ const HOUSE_ART = {
 };
 
 function buildCredits() {
-  const reel = document.getElementById('creditReel');
-  if (!reel) return;
+  const card = document.getElementById('creditCard');
+  if (!card) return;
   const C = CREDITS;
   const house = (h) =>
     '<li class="chouse"><svg viewBox="0 0 44 36" aria-hidden="true">' + HOUSE_ART[h.art] + '</svg>' +
     '<b>' + h.name + '</b><i>' + h.note + '</i></li>';
 
-  reel.innerHTML =
+  card.innerHTML =
     '<h2 class="ctitle">' + C.title + '</h2>' +
     '<p class="ckick">' + C.by.kicker + '</p>' +
     '<p class="cname">' + C.by.name + '</p>' +
@@ -13057,7 +13048,7 @@ const MECHANICS = [
     kicker: 'New in this chapter',
     title: 'Fate Columns',
     say: 'A glass pane sometimes covers a column for a few seconds. Any '
-       + 'falling block entering it cycles through random colors. You can '
+       + 'falling block entering it cycles through the colors. You can '
        + 'try to reroll to colors you need or avoid them altogether.',
     live: (d) => d.fateGap > 0,
     /* One cell, under the glass, running. The first pass was three
@@ -13180,7 +13171,7 @@ document.getElementById('partyMenu').addEventListener('click', (e) => {
   showFace('home');
 });
 
-/* Which door the reel was opened by. Menu at the bottom of it used to
+/* Which door the credits were opened by. Menu at the bottom of it used to
    be showWin() unconditionally, which was right while the only way in
    was finishing the series: Menu meant "back to the title screen, in
    the state you just earned". Credits is on the home menu now, so that

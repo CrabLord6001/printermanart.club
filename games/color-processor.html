@@ -178,14 +178,17 @@ html.embed .title { display: none; }
    casing starts. Both numbers come from the board once it has sized
    itself; until then it simply takes the page. */
 .head {
-  width: var(--boardw, 100%);
+  width: var(--roww, var(--boardw, 100%));
   max-width: 100%;
   align-self: flex-start;
   margin-left: var(--boardx, 0);
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+  /* One line: the readouts take what is left and the bank keeps the rail's
+     width, so wrapping would drop the bank under the scores instead of
+     beside them. */
+  flex-wrap: nowrap;
   padding: 0 0 6px;
 }
 
@@ -209,7 +212,8 @@ html.embed .title { display: none; }
 /* Four readings, evenly weighted, each the full height of the band. They
    used to be a line of small print above the machine. */
 .scores {
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 5px;
@@ -474,7 +478,11 @@ body:not(.disco) .scores { grid-template-columns: 1.7fr 1fr 1fr; }
   pointer-events: none;
 }
 
-.grid { position: relative; }
+/* A stacking context of its own. position:relative alone does not make
+   one, so the grid's own z-index:-1 lattice was being sent behind the
+   well's background and disappearing entirely rather than slipping under
+   the drops. */
+.grid { position: relative; z-index: 0; }
 
 .grid {
   display: grid;
@@ -497,6 +505,49 @@ body:not(.disco) .scores { grid-template-columns: 1.7fr 1fr 1fr; }
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
 }
 
+/* ---- the grid, if you want it ----
+   Drops are round and the board behind them is a picture, so there is
+   nothing square to line a drop up against. Most of the genre draws the
+   squares; this does it faintly and only when asked, because the print
+   is the point and a lattice over a painting is a lattice over a
+   painting.
+
+   One element rather than a ring on every cell: the cells already carry
+   rings of their own for the magnet and the virus, and adding another
+   would have meant fighting those for which one shows. The pitch comes
+   from the cell size the board was last measured at. */
+.gridlines {
+  position: absolute;
+  inset: 0;
+  z-index: -1;                 /* behind the ink, in the board's own stack */
+  display: grid;
+  gap: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* One square per cell, built with the same template and the same gap as
+   the cells themselves, so a slot can never drift off the drop that lands
+   in it. Square against round ink on purpose: the drops are circles, and
+   what they need to be lined up against is the box. */
+/* Two tones, because what is behind this changes. The board starts
+   near black and the print develops into it as the plates fill, so a
+   white line alone would fade out exactly as the page came up. The light
+   line carries it on the dark board, the dark halo carries it on the
+   paper, and neither is strong enough to be read as ink. */
+.gridlines i {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
+  border-radius: 3px;
+}
+
+body.gridon .gridlines { opacity: 1; }
+
+/* It would sit over the finished print otherwise, which is the one moment
+   nobody wants a lattice. */
+.grid.lifted .gridlines { opacity: 0; }
+
 .cell.c  { background: var(--cyan); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
 .cell.m  { background: var(--magenta); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
 .cell.y  { background: var(--yellow); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
@@ -504,6 +555,120 @@ body:not(.disco) .scores { grid-template-columns: 1.7fr 1fr 1fr; }
 .cell.lc { background: var(--lcyan); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
 .cell.lm { background: var(--lmagenta); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
 .cell.w  { background: var(--white); box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5); }
+
+/* ---- a drop, rather than a disc ----
+   The ink already laid on the page behind the board is the same four
+   colors as the drops falling onto it, so a cyan drop crossing a cyan
+   part of the print had nothing but its own ring to tell the two apart.
+   A highlight up and to the left and a shaded underside give every drop
+   an edge that does not depend on what is behind it.
+
+   Two gradients over the flat color rather than a new background per
+   ink: the colors stay in the custom properties, where the plate code
+   and the stylesheet both already read them from. */
+.cell.c, .cell.m, .cell.y, .cell.k,
+.cell.lc, .cell.lm, .cell.w {
+  background-image:
+    radial-gradient(circle at 34% 27%,
+      rgba(255,255,255,0.44) 0%,
+      rgba(255,255,255,0.12) 34%,
+      rgba(255,255,255,0) 57%),
+    radial-gradient(circle at 68% 77%,
+      rgba(0,0,0,0.32) 0%,
+      rgba(0,0,0,0.08) 38%,
+      rgba(0,0,0,0) 62%);
+}
+
+/* ---- meeting a new drop ----
+   Over the board, because the board is the thing being explained. The
+   example is built from the game's own cells, so it cannot drift from
+   what the player is about to see. */
+.learn {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px;
+  text-align: center;
+  background: rgba(10, 12, 18, 0.9);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.learn-kicker {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.learn-title { margin: 0; font-size: 18px; font-weight: 700; color: #fff; }
+
+.learn-demo { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 2px; }
+.learn-demo .cell { width: 26px; height: 26px; }
+.learn-demo .arrow { color: var(--muted); font-size: 15px; }
+
+.learn-say {
+  margin: 0;
+  max-width: 24em;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.learn-go {
+  margin-top: 4px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #11131A;
+  background: var(--accent);
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 22px;
+  cursor: pointer;
+}
+.learn-go:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+/* ---- a half that is about to go ----
+   Thinned and blotched rather than only faded. The point is that it reads
+   as ink running out at a glance, in the middle of a falling piece, with
+   no time to study it. It comes after the shading above on purpose: same
+   specificity, so the later rule is the one that lands. */
+.cell.lowink {
+  background-image:
+    radial-gradient(circle at 31% 33%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0) 27%),
+    radial-gradient(circle at 67% 57%, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0) 23%),
+    radial-gradient(circle at 47% 77%, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0) 19%),
+    radial-gradient(circle at 34% 27%, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 57%);
+  animation: lowInk 0.85s ease-in-out infinite;
+}
+
+@keyframes lowInk {
+  0%, 100% { opacity: 0.68; }
+  50%      { opacity: 0.42; }
+}
+
+/* Black has no room to darken underneath and the highlight is the only
+   thing holding its shape, so it gets more of one. */
+.cell.k {
+  background-image:
+    radial-gradient(circle at 34% 27%,
+      rgba(255,255,255,0.30) 0%,
+      rgba(255,255,255,0.08) 36%,
+      rgba(255,255,255,0) 58%),
+    radial-gradient(circle at 68% 77%,
+      rgba(255,255,255,0.05) 0%,
+      rgba(255,255,255,0) 60%);
+}
 
 /* ---- what a chain just paid ----
    Over the cells that earned it rather than up in the readout, because
@@ -657,6 +822,81 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    never a flat disc, so it cannot be taken for magenta however red it goes,
    and the steps are hard cuts rather than fades because a glitch does not
    ease. */
+/* A corrupted square. The art is a pixelated CMYK vortex, held at its
+   own resolution rather than smoothed, because the whole point of it is
+   that the buffer is damaged. The border is magenta rather than the
+   virus's red: a virus is a drop going wrong, a zone is her. */
+/* position and overflow are both load bearing: .cell is not a containing
+   block, so the tearing below resolved against the whole grid and striped
+   every square on the board, corrupted or not. */
+.cell.glitch {
+  position: relative;
+  overflow: hidden;
+  /* Square, against the round drops. A drop is ink that arrived; a zone is
+     the grid itself damaged, so it takes the whole box rather than sitting
+     in it as another circle. */
+  border-radius: 3px;
+  background-image: url('/games/img/glitch.png');
+  background-size: 125% 125%;
+  background-position: center;
+  image-rendering: pixelated;
+  box-shadow: inset 0 0 0 2px rgba(255,45,149,.6), 0 0 9px rgba(255,45,149,.25);
+  animation: glitchSwirl 5.5s linear infinite;
+}
+
+/* Her, coming up through the corruption. She is the Mona Lisa print, so
+   it is that plate -- posterised, its separations slipped out of register
+   and a few scan rows torn. Under the tearing below, because she is in
+   the buffer rather than on top of it. */
+.cell.glitch::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/games/img/glitch-face.png') center / cover no-repeat;
+  image-rendering: pixelated;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .07s steps(2);
+}
+
+/* Rolled for rather than scheduled. On a keyframe loop she turned up on
+   the beat, every zone on its own clock, and a thing that always happens
+   is not a glimpse of anything -- it is decoration. */
+.cell.glitch.her::before { opacity: .82; }
+
+/* Scanline tearing over the top of it, so it reads as a picture that is
+   broken rather than as a tile that happens to be busy. */
+.cell.glitch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom,
+    rgba(0,0,0,.40) 0 2px, transparent 2px 4px);
+  pointer-events: none;
+  animation: glitchTear 1.7s steps(6) infinite;
+}
+
+@keyframes glitchSwirl {
+  to { background-position: 100% 100%; }
+}
+@keyframes glitchTear {
+  0%, 100% { transform: translateX(0); opacity: .75; }
+  50%      { transform: translateX(2px); opacity: 1; }
+}
+
+/* Coming off the board. */
+.cell.glitch.scrub {
+  animation: glitchScrub .15s ease-in forwards;
+}
+@keyframes glitchScrub {
+  to { filter: brightness(2.4) saturate(0); transform: scale(.4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell.glitch, .cell.glitch::after { animation: none; }
+  .cell.glitch.her::before { opacity: 0; }
+}
+
 /* A virus wears its own ink: it matches on color like any other drop,
    so it has to look like one. What marks it is the light on top of it.
 
@@ -847,8 +1087,7 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
      cells shrink to make room for it. The record is the part worth
      keeping: it carries the color and the speed between them. The
      meters under it are decoration, so they go first. */
-  .rig.party .tubes,
-  .rig.party .tubetags { display: none; }
+  .rig.party .tubes { display: none; }
   .rig.party .deckwrap { margin-bottom: 0; }
 }
 
@@ -871,13 +1110,118 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 
 /* The queue. One pair per row, soonest at the top, the rest a shade back
    so the order reads without having to be labeled. */
-/* Four standing tubes of ink, one per plate, drawn down by every clear.
-   Empty means that plate is finished and further clears of its color are
-   board work rather than print work. */
+/* Four ink cartridges, one per plate, filling as the print takes that
+   color. Full means that plate is finished and further clears of its
+   color are board work rather than print work. */
 .platebox { margin-top: 8px; }
 
-/* The way to the board from inside a run. Round, so it reads as another
-   instrument on the rail rather than one more word to click. */
+/* In the readout row, over the rail's column: the same width as the rail
+   and the same 10px away from the board, so it lines up with the queue
+   underneath it rather than floating between the two. */
+.head .railopts {
+  flex: none;
+  width: var(--railw, 62px);
+  margin-top: 0;
+  align-self: stretch;
+}
+
+/* One bank of four, chromed like the times strip on a level card: a hair
+   line round the outside, a ring of panel outside that, and the divisions
+   drawn by letting the panel through the 1px gaps. Two columns rather
+   than four, because the rail is 56px across on a phone. */
+.railopts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  width: 100%;
+  margin-top: 10px;
+  border: 1px solid #2E333F;
+  border-radius: 3px;
+  background: #2E333F;
+  box-shadow: 0 0 0 3px #15181F, 0 6px 18px rgba(0,0,0,0.5);
+  /* Not overflow: hidden. It rounded the bank's corners and it also
+     trapped the volume panel inside the bank, which is where the slider
+     went. The four corner cells carry the rounding themselves. */
+}
+/* The panel below hangs off the bank rather than off the sound cell, or
+   it lands over the bottom row and covers two of the four buttons. */
+.railopts { position: relative; }
+.railopts > .sndwrap { position: static; }
+
+.railopts > *:nth-child(1) { border-top-left-radius: 2px; }
+.railopts > *:nth-child(2) { border-top-right-radius: 2px; }
+.railopts > *:nth-child(3) { border-bottom-left-radius: 2px; }
+.railopts > *:nth-child(4) { border-bottom-right-radius: 2px; }
+
+/* Every cell the same square whatever is in it, so the bank reads as one
+   object rather than as four buttons that happen to touch. Each of these
+   arrives with a border and a radius of its own, and the bank's divisions
+   are the 1px gaps, so those come off. */
+.railopts > .sndwrap,
+.railopts > .snd,
+.railopts > .rankbtn {
+  aspect-ratio: 1;
+  background: rgba(10,12,17,0.9);
+}
+.railopts .sndwrap,
+.railopts .snd,
+.railopts .rankbtn,
+.railopts .rankdial {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  display: grid;
+  place-items: center;
+}
+.railopts .snd,
+.railopts .rankdial { background: none; }
+.railopts .rankbtn .lbl { display: none; }
+
+/* A setting that is on lights its whole cell rather than drawing a ring
+   inside a bank whose divisions are already drawn. */
+.railopts .snd[aria-pressed="true"] { background: rgba(212,162,76,0.10); }
+
+/* The one way off the rail to the board stays lit; the three settings
+   light only when they are on. */
+.railopts .rankbtn { color: var(--accent); }
+
+/* Opening upward, and centred on the bank rather than hung off its edge:
+   from down here a panel that drops would go off the foot of the page. */
+/* Under the bank and hung off its right edge, so it reaches back across
+   the board rather than off the side of the window.
+
+   Laid out across rather than up: standing upright it was a 104px slider
+   and a word, both squeezed into the 74px the rail is wide, and Unmute
+   came out as NMUTE with the track too narrow to aim at. */
+.railopts .volpop {
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: auto;
+  right: 0;
+  transform: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  width: 212px;
+  max-width: calc(100vw - 24px);
+  padding: 10px 12px;
+}
+.railopts .volpop .volcage {
+  flex: 1 1 auto;
+  width: auto;
+  height: 22px;
+}
+.railopts .volpop .volrange {
+  flex: 1 1 auto;
+  width: 100%;
+  transform: none;
+}
+.railopts .volpop .volmute { flex: none; }
+
+/* The way to the board from inside a run. */
 .rankbtn {
   display: flex;
   flex-direction: column;
@@ -896,7 +1240,9 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  /* Square, like everything else on the rail. A lone circle among the
+     readouts read as something that had wandered in from another screen. */
+  border-radius: 10px;
   background: #0C0E13;
   /* Lit at rest rather than dim. It reads as the one way to the board
      because it is the one way to the board. */
@@ -928,7 +1274,13 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 .rankbtn.on .rankdial { color: var(--accent); border-color: var(--accent); }
 .rankbtn.on .lbl { color: var(--accent); }
 
-.tubes { display: flex; justify-content: center; gap: 6px; }
+/* A column of four, each one the whole width of the rail. Two across
+   was the first try and it was wrong: the rail is 56px on a phone and
+   the box inside it 40px, so a two-column square came out 18px a side
+   with an 11px number in it. Dropping the tubes freed 176px of rail --
+   more than the four squares need -- so the width is what is scarce
+   here, and a square as wide as the rail is the biggest one there is. */
+.tubes { display: grid; grid-template-columns: 1fr; gap: 4px; }
 
 /* ---- the deck ----
    The rail is a narrow column, so the record is as wide as the column
@@ -984,47 +1336,153 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   box-shadow: inset 0 0 0 2px rgba(255,255,255,0.22), 0 0 10px 1px rgba(255,255,255,0.14);
 }
 
-.rig.party .tubes .tube { height: 26px; width: 8px; border-radius: 3px; }
-.rig.party .tubetags b { opacity: 0.55; }
+/* The deck takes a square of the rail in here, so the four of them give
+   up being square and sit as a short stack underneath it. */
+.rig.party .tubes { --plateH: 20px; }
+.rig.party .tubes .tube b { opacity: 0.55; }
 
+/* A cartridge is the object the readouts above the board already are --
+   panel, lit cut edge, one sweep of reflection across the face -- so the
+   two places that carry a number say it the same way. Square, and the
+   square comes from the rail's own width; fitRail only ever overrides
+   that height to stop the rail hanging below the board. Each one is its
+   own query container so the number inside scales with it. */
 .tubes .tube {
-  width: 10px;
-  height: var(--tubeH, 132px);
-  border-radius: 4px;
-  background: #141821;
-  box-shadow: inset 0 0 0 1px #242A35;
   position: relative;
   overflow: hidden;
+  height: var(--plateH, auto);
+  aspect-ratio: 1 / 1;
+  container-type: size;
+  border: 1px solid #2B3141;
+  border-radius: 6px;
+  background: linear-gradient(168deg, #161B25 0%, #0B0D12 58%, #0E1119 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    inset 0 -5px 10px rgba(0,0,0,0.45),
+    0 2px 6px rgba(0,0,0,0.5);
 }
 
+/* The lit edge where the sheet over the face is cut, and the reflection
+   itself -- the same two the readout boxes carry. */
+.tubes .tube::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.12),
+    inset -1px -1px 0 rgba(255,255,255,0.045);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.tubes .tube::after {
+  content: '';
+  position: absolute;
+  left: -34%; right: -14%; top: -150%;
+  height: 218%;
+  border-radius: 50%;
+  transform: rotate(-7deg);
+  background: linear-gradient(to bottom,
+              rgba(255,255,255,0.13) 0%,
+              rgba(255,255,255,0.05) 48%,
+              rgba(255,255,255,0.01) 76%,
+              rgba(255,255,255,0) 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* The ink standing in it. The element is only ever as tall as the plate
+   has been filled; everything that makes it look like liquid is drawn
+   inside it, so at zero there is nothing to see rather than a line of
+   color along the bottom. */
 .tubes .tube i {
   position: absolute;
   left: 0; right: 0; bottom: 0;
+  height: 0;
   transition: height 0.35s ease;
 }
 
-.tubes .tube.full { box-shadow: inset 0 0 0 1px var(--accent); }
+/* The surface, in two parts. The first is the ink itself: a tongue half
+   again as wide as the cartridge, domed along the top, rocking. Its
+   sides hang outside the box and are cut off by it, which is what keeps
+   the ink flush to the walls while the top moves.
+
+   The second is the light on that surface, rocking at its own rate. Two
+   tongues of the same ink were the first try and the movement barely
+   showed: where they overlap there is nothing to see, so all that
+   changed was a crescent a couple of pixels deep along the outside. The
+   sheen is a different tone from what it slides over, so the same few
+   pixels of travel read across the whole width of the box. */
+.tubes .tube i::before,
+.tubes .tube i::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -34%;
+  width: 168%;
+  border-radius: 50% 50% 0 0 / 14px 14px 0 0;
+  animation: slosh 2.6s ease-in-out infinite alternate;
+}
+
+.tubes .tube i::before { background: inherit; }
+
+.tubes .tube i::after {
+  top: 2px;
+  background: linear-gradient(to bottom,
+              rgba(255,255,255,0.46) 0%,
+              rgba(255,255,255,0.16) 34%,
+              rgba(255,255,255,0) 72%);
+  animation-duration: 3.9s;
+  animation-direction: alternate-reverse;
+}
+
+/* The crest has to travel far enough to be seen crossing a box forty
+   pixels wide, so the slide is most of a cartridge rather than a nudge:
+   at seven percent of a tongue half again as wide as the box the two
+   domes moved four pixels and the surface read as a flat bar. */
+@keyframes slosh {
+  from { transform: translateX(-17%) rotate(-2.4deg); }
+  to   { transform: translateX(17%)  rotate(2.4deg); }
+}
 
 .tube.c i { background: var(--cyan); }
 .tube.m i { background: var(--magenta); }
 .tube.y i { background: var(--yellow); }
 .tube.k i { background: var(--key); }
 
-.tubetags { display: flex; justify-content: center; gap: 6px; margin-top: 5px; }
-
-.tubetags b {
-  width: 10px;
+/* The reading, in the middle of the box. It has to sit over the dark
+   panel at the start of a plate and over full yellow at the end of one,
+   so it carries its own shade: a soft dark wash that falls away before
+   it reaches the walls, which leaves the ink's color showing round it
+   and the number white on dark wherever the level happens to be. */
+.tubes .tube b {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-variant-numeric: tabular-nums;
-  text-align: center;
-  font-size: 0.48rem;
-  font-weight: 700;
-  color: var(--dim);
+  font-size: 0.8rem;
+  font-size: clamp(8px, 40cqh, 17px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+  background: radial-gradient(ellipse 62% 38% at 50% 50%,
+              rgba(8,10,14,0.66) 0%,
+              rgba(8,10,14,0.30) 55%,
+              rgba(8,10,14,0) 100%);
 }
 
-.tubetags b.full { color: var(--accent); }
+.tubes .tube.full { border-color: var(--accent); }
+.tubes .tube b.full { color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
   .tubes .tube i { transition: none; }
+  .tubes .tube i::before,
+  .tubes .tube i::after { animation: none; }
 }
 
 .nextlist { display: flex; flex-direction: column; align-items: center; gap: 9px; }
@@ -1121,6 +1579,72 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 .snd[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 .snd[aria-pressed="true"] .snd-off { display: none; }
 .snd[aria-pressed="false"] .snd-on { display: none; }
+
+/* ---- the volume panel ----
+   Anchored to the speaker rather than dropped in the middle of the
+   screen, because it belongs to that button. It is absolutely placed so
+   opening it cannot push the switches row around and move the other
+   buttons out from under a thumb. */
+.sndwrap { position: relative; display: inline-flex; }
+
+/* Upright, and hung off the right edge rather than centered on the
+   button. Lying down it was wider than the rail it lives in, so it
+   reached out over the board -- and on a narrow screen it ran off the
+   far side as well. Standing up it is the width of the rail. */
+.volpop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px;
+  background: #11131A;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .55);
+}
+.volpop[hidden] { display: none; }
+
+.volmute {
+  flex: none;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 7px;
+  cursor: pointer;
+}
+.volmute:hover { color: var(--accent); border-color: var(--accent); }
+.volmute[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+
+/* The input is still a horizontal range; it is turned on its side. A
+   vertical range is only honored by newer browsers, and this has to work
+   on whatever phone somebody opens it with. The cage reserves the space
+   the rotation does not. */
+.volcage {
+  flex: none;
+  width: 30px;
+  height: 104px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.volrange {
+  flex: none;
+  width: 104px;
+  transform: rotate(-90deg);
+  accent-color: var(--accent);
+  cursor: pointer;
+}
 
 /* ---- the control deck ---- */
 
@@ -1446,80 +1970,6 @@ button.go:not(.ghost):hover {
   color: var(--dim);
 }
 
-/* The magnet, shown. Four columns: the gold drop sits under the gap in a
-   row of three, drags the loose drop across into it, and the four that
-   makes clears. Diagonals never match, which is the whole reason the pull
-   is worth anything, and that is hard to say and easy to watch. */
-/* Two demos on one line, each centered in its own half of it, so neither
-   sits off to one side of the other. */
-.magdemo { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 2px 0 12px; flex-wrap: wrap; }
-
-.magdemo .half { flex: 1 1 0; display: flex; justify-content: center; }
-
-.mg {
-  display: grid;
-  grid-template-columns: repeat(4, var(--mgCell, 20px));
-  grid-auto-rows: var(--mgCell, 20px);
-  gap: 3px;
-}
-
-.magdemo .cell { width: var(--mgCell, 20px); height: var(--mgCell, 20px); }
-
-.magdemo .rest    { animation: mg-rest 3.6s ease-in-out infinite; }
-.magdemo .pull-src { animation: mg-slide 3.6s ease-in-out infinite; }
-
-@keyframes mg-rest {
-  0%, 48%   { opacity: 1; box-shadow: none; }
-  54%       { opacity: 1; box-shadow: 0 0 0 3px #fff, 0 0 9px 2px rgba(255,255,255,0.55); }
-  60%       { opacity: 1; box-shadow: none; }
-  70%, 99%  { opacity: 0; box-shadow: none; }
-  100%      { opacity: 1; box-shadow: none; }
-}
-
-@keyframes mg-slide {
-  0%, 20%   { transform: translateX(0);    opacity: 1; box-shadow: none; }
-  34%, 48%  { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 1; box-shadow: none; }
-  54%       { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 1; box-shadow: 0 0 0 3px #fff, 0 0 9px 2px rgba(255,255,255,0.55); }
-  60%       { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 1; box-shadow: none; }
-  70%, 99%  { transform: translateX(calc(var(--mgCell, 20px) + 3px)); opacity: 0; box-shadow: none; }
-  100%      { transform: translateX(0);    opacity: 0; box-shadow: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .magdemo .rest, .magdemo .pull-src { animation: none; }
-  .magdemo .pull-src { transform: translateX(calc(var(--mgCell, 20px) + 3px)); }
-}
-
-/* The virus shares the magnet's row rather than taking one of its own.
-   Both are two cells tall, so they sit level, and the pair costs the
-   panel nothing it was not already spending. */
-.vg {
-  display: grid;
-  grid-template-columns: repeat(3, var(--mgCell, 20px));
-  grid-auto-rows: var(--mgCell, 20px);
-  gap: 3px;
-}
-
-/* It sits still and glitching while the drops against it keep turning
-   into something else, which is the whole of what it does. */
-.vg .flip { animation: vir-flip 2.2s steps(1, end) infinite; }
-.vg .flip.b  { animation-delay: -0.73s; }
-.vg .flip.c3 { animation-delay: -1.46s; }
-
-@keyframes vir-flip {
-  0%   { background: var(--cyan); }
-  25%  { background: var(--magenta); }
-  50%  { background: var(--yellow); }
-  75%  { background: var(--key); }
-  100% { background: var(--cyan); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .vg .flip    { animation: none; background: var(--cyan); }
-  .vg .flip.b  { background: var(--yellow); }
-  .vg .flip.c3 { background: var(--magenta); }
-}
-
 /* The two places with something worth copying -- the rules before play
    and the title of the print after it -- keep selection. Neither is a
    surface you steer on. */
@@ -1639,7 +2089,10 @@ button.go:not(.ghost):hover {
 }
 
 /* The two presentation switches, side by side at the head of the rail. */
-.switches { display: flex; justify-content: center; gap: 4px; }
+/* Wrapping rather than overflowing. Three cartridges plus the gaps were
+   wider than the rail on a narrow phone, and the third slid out from
+   under it. */
+.switches { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; max-width: 100%; }
 .switches .snd { width: 28px; height: 28px; }
 
 /* Discord's own blue, because that is the account they are signing in
@@ -1683,40 +2136,20 @@ button.go:not(.ghost):hover {
    press except the way back out. */
 .whoami {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  width: 100%;
-  padding: 6px 2px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: #13161D;
+  align-items: baseline;
+  gap: 8px;
+  flex: none;
 }
 
 .whoami[hidden] { display: none; }
 
-.whoami-face {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #0C0E13 50% / cover no-repeat;
-  box-shadow: inset 0 0 0 1px var(--border);
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: var(--dim);
-  text-transform: uppercase;
-}
-
-/* Their name, cut off rather than wrapped: the rail is as wide as it is,
-   and a second line here is a cell off the board. */
+/* Their name, cut off rather than wrapped. */
 .whoami-name {
-  max-width: 100%;
+  max-width: 14ch;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.48rem;
+  font-size: 0.62rem;
   letter-spacing: 0.04em;
   color: var(--muted);
 }
@@ -1742,10 +2175,11 @@ button.go:not(.ghost):hover {
 .whoami-out:active { transform: translateY(1px); }
 .whoami-out:disabled { opacity: 0.6; cursor: default; }
 
-/* The name goes on the narrow rail the way the word goes off the blue
-   button. The picture says who, and Sign out still says what. */
+/* The name used to be dropped here, because the rail it sat on was 56px
+   across and the picture beside it said who. It is in the page header now,
+   with a header's width to spend, and the picture is gone -- so hiding the
+   name would leave Sign out standing on its own. */
 @media (max-width: 560px) {
-  .whoami-name { display: none; }
 }
 
 /* What the three of them add up to, falling. Built from the same drops the
@@ -1781,6 +2215,25 @@ body .peek .cell { position: absolute; }
 .over.menu .rules { margin-left: auto; margin-right: auto; }
 
 .over.menu .over-in {
+  margin: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Unless one of the faces is open underneath it. The rule above is for
+   the hub, where this block holds the control panel and is meant to take
+   the room. On practice it holds a heading and a paragraph with nothing
+   in it, and the free space was being split with the face below -- so
+   309 pixels went to carry 26 pixels of heading, and the dials and the
+   preview sat in the bottom half of a panel that was half empty. The
+   face is the content on those pages; it gets the space. */
+.over.menu:has(.rules:not([hidden])) .over-in { flex: 0 0 auto; }
+
+/* And the hub and its folder, for the same reason: the control panel ends
+   at the foot of the board rather than halfway down it with black
+   underneath. The rule above is what does it; these only had to be let in. */
+.over.home .over-in {
   margin: 0;
   flex: 1 1 auto;
   display: flex;
@@ -2206,6 +2659,11 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   gap: 0;
   max-width: 32rem;
   width: 100%;
+  /* Down to the foot of the board, so the panel has something to fill.
+     Everything inside it has to be able to compress as well as grow, or
+     the board shrinks itself to fit the menu instead. */
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* The printed name, in a frame, the way the room it is named after hangs
@@ -2261,6 +2719,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   flex-direction: column;
   align-items: center;
   flex: 1 1 auto;
+  min-height: 0;          /* so whatever is inside it may scroll */
   width: 100%;
   max-width: 30rem;
 }
@@ -2314,6 +2773,181 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 /* A room is one line of chips, always. The count comes from the room, and
    the columns shrink to whatever the board is wide rather than wrapping --
    a room broken over two lines reads as two rooms. */
+/* ---- the paper path ----
+   The sheet runs straight down the panel. Linear rather than weaving: a
+   winding path has to fit its turns inside the panel width, and on a
+   phone that leaves the nodes pressed against the edges with nothing
+   beside them. */
+/* ---- the machinery moves ----
+   Every part in a housing is a real one doing its real job: rollers turn,
+   the drum turns slower because it is bigger, the corona wire sparks, the
+   laser sweeps, the fuser glows, a sheet comes off the stack. Transforms
+   and opacity only, so none of it costs a layout while the list is being
+   scrolled.
+
+   transform-box: fill-box makes each part turn on its own center rather
+   than on the corner of the whole drawing. It also means an origin given
+   in drawing coordinates is wrong, because it would be measured from the
+   part's own box instead -- which is what sent the fuser rollers off the
+   edge the first time. Every one of these groups is drawn centered on
+   its own pin, so center is the right answer and the only one needed. */
+.levelsface .pp-rig * { transform-box: fill-box; transform-origin: center; }
+
+@keyframes ppSpin  { to { transform: rotate(360deg); } }
+@keyframes ppFeed  { 0%,100% { stroke-dashoffset: 0; } 50% { stroke-dashoffset: -14px; } }
+@keyframes ppSpark { 0%,82%,100% { opacity: .18; } 86% { opacity: 1; } 90% { opacity: .3; } 94% { opacity: .9; } }
+@keyframes ppBeam  { 0%,100% { transform: translateY(0); opacity: .35; } 50% { transform: translateY(9px); opacity: 1; } }
+@keyframes ppGlow  { 0%,100% { opacity: .10; } 50% { opacity: .34; } }
+@keyframes ppNudge { 0%,70%,100% { transform: translateX(0); } 80% { transform: translateX(-4px); } 88% { transform: translateX(2px); } }
+@keyframes ppOut   { 0% { transform: translateY(6px); opacity: 0; } 20%,80% { opacity: .95; } 100% { transform: translateY(-5px); opacity: 0; } }
+@keyframes ppLed   { 0%,100% { opacity: 1; } 45% { opacity: .15; } }
+
+.levelsface .pp-spin  { animation: ppSpin 5.5s linear infinite; }
+.levelsface .pp-spin.rev  { animation-direction: reverse; }
+.levelsface .pp-spin.slow { animation-duration: 11s; }
+.levelsface .pp-feed  { stroke-dasharray: 7 7; animation: ppFeed 2.6s ease-in-out infinite; }
+.levelsface .pp-spark { animation: ppSpark 3.4s linear infinite; }
+.levelsface .pp-beam  { animation: ppBeam 2.2s ease-in-out infinite; }
+.levelsface .pp-glow  { animation: ppGlow 2.8s ease-in-out infinite; }
+.levelsface .pp-nudge { animation: ppNudge 3.6s ease-in-out infinite; }
+.levelsface .pp-out   { animation: ppOut 3.2s ease-in-out infinite; }
+.levelsface .pp-led   { animation: ppLed 1.7s steps(1, end) infinite; }
+.levelsface .pp-led.b { animation-duration: 2.3s; animation-delay: .4s; }
+.levelsface .pp-led.c { animation-duration: 1.1s; animation-delay: .9s; }
+
+/* Somebody who has asked their phone to stop moving things has asked for
+   this too. The parts are still drawn; they just stand still. */
+@media (prefers-reduced-motion: reduce) {
+  .levelsface .pp-rig * { animation: none !important; }
+}
+
+/* Scrolls, unlike the grid it replaces, which shared the panel height out
+   between its rooms so the list ended where the board did. */
+.levelsface .lv-rooms.ppmode {
+  display: block;
+  justify-content: flex-start;
+}
+
+/* Belt and braces: nothing in the run may make it wider than the panel,
+   whatever gets added to it later. */
+.levelsface .pp { position: relative; padding: 4px 0 14px; max-width: 100%; overflow-x: hidden; }
+
+/* A print on the sheet is a circle, not a chip in a row. The sizing the
+   grid used is a fifth of the panel width, which in a single column came
+   out as a tall narrow pill. */
+.levelsface .pp-run .lv {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.levelsface .pp-run .lv.boss { width: 56px; height: 56px; }
+
+/* A run is a 44px print on 6px either side, so a chapter of n runs is
+   n * 56px. padding-block replaces that 6px, so the growth is measured
+   from the print itself: (n - 1) runs' worth, halved. */
+.levelsface .pp-run.alone { padding-block: calc((var(--runs, 5) - 1) * 28px); }
+
+/* Panel metal rather than nothing. The run is inside a machine, and the
+   inside of a machine is not black.
+
+   The formatter board was tried here as wallpaper and taken out again:
+   two drawings in the same space fight, and the station the sheet is
+   actually passing through has to be the one that reads. The board is a
+   part like any other, so it got its own band instead. */
+.levelsface .lv-rooms.ppmode {
+  background:
+    radial-gradient(130% 50% at 50% 0%, rgba(88,101,242,.05), transparent 62%),
+    linear-gradient(to right, #0C0E14 0, #141823 22%, #171C28 50%, #141823 78%, #0C0E14 100%),
+    repeating-linear-gradient(to bottom, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
+}
+
+.levelsface .pp-deco {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.levelsface .pp-mark {
+  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
+  font-size: 11px;
+  fill: #232838;
+  letter-spacing: .08em;
+}
+.levelsface .pp-gear {
+  animation: ppSpin var(--d, 20s) linear infinite;
+  animation-direction: var(--dir, normal);
+  transform-box: view-box;
+}
+
+.levelsface .pp-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* A housing bolted across the channel. The sheet runs behind it and comes
+   out underneath, so a chapter is something the page goes through rather
+   than a heading it scrolls past. */
+.levelsface .pp-stop {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* No bleed. It was reaching 14px past the panel on each side to look
+     edge to edge, and nothing clipped it -- which is the whole of why
+     the level list could be scrolled sideways. */
+  margin: 16px 0 6px;
+  padding: 9px 14px;
+  background: linear-gradient(to bottom, #232838, #1A1E2B 45%, #151925);
+  border-top: 1px solid #333a50;
+  border-bottom: 1px solid #07080C;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.45);
+}
+.levelsface .pp-stop::before,
+.levelsface .pp-stop::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px; height: 7px;
+  background: #07080C;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.9);
+}
+.levelsface .pp-stop::before { top: 0; }
+.levelsface .pp-stop::after { bottom: 0; }
+.levelsface .pp-stop.her { border-top-color: rgba(230,0,126,0.5);
+  background: linear-gradient(to bottom, #2a1b26, #1d1520 45%, #151018); }
+.levelsface .pp-stop.her::after { display: none; }   /* nothing leaves the far side */
+
+.levelsface .pp-txt { display: flex; flex-direction: column; min-width: 0; }
+.levelsface .pp-txt b {
+  font-size: 0.56rem; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.levelsface .pp-txt { font-size: 0.82rem; color: var(--text); font-weight: 600; }
+
+/* The node holds the middle whatever the label does, so every print on
+   the run lines up on the sheet. */
+/* --x is where along the width this print sits, 0 to 1. Nothing is beside
+   it, so it has the whole of it to move in. */
+.levelsface .pp-run {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  padding: 6px 0 6px calc(var(--x, .5) * (100% - 44px));
+}
+
 .levelsface .lv-row {
   display: grid;
   grid-template-columns: repeat(var(--n, 3), var(--lvw));
@@ -2428,6 +3062,158 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   inset: 0;
   z-index: 2;
   pointer-events: none;
+}
+
+/* ---- the fate column ----
+   A pane standing in the well: leaded lights down its length, a tint of
+   the purple that is on every other thing of hers in this game, and the
+   edges sparking. It is see-through on purpose -- the drops behind it
+   are the thing being read, and a window you cannot see the board
+   through is a wall.
+
+   The leading is drawn rather than pictured. A real window is somebody's
+   artwork; this is four strips of glass in a frame, which is what the
+   mechanic needs to say and nothing more. */
+.well > .fate {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 4px;
+  border: 1px solid rgba(178, 120, 255, 0.55);
+  background:
+    repeating-linear-gradient(to bottom,
+      rgba(178, 120, 255, 0.00) 0px,
+      rgba(178, 120, 255, 0.00) 26px,
+      rgba(198, 160, 255, 0.22) 26px,
+      rgba(198, 160, 255, 0.22) 28px),
+    linear-gradient(104deg,
+      rgba(150, 90, 240, 0.17) 0%,
+      rgba(90, 150, 255, 0.09) 38%,
+      rgba(190, 110, 255, 0.19) 100%);
+  box-shadow:
+    0 0 0 1px rgba(120, 70, 190, 0.35),
+    0 0 14px 2px rgba(150, 90, 240, 0.30),
+    inset 0 0 18px rgba(185, 140, 255, 0.16);
+  animation: fatelive 2.2s ease-in-out infinite alternate;
+}
+
+.well > .fate[hidden] { display: none; }
+
+/* The static down the two edges. Not a border that pulses -- a border
+   pulsing is a selected thing, and this is not something you chose. It
+   is a charge running the length of the frame, which is what it is
+   supposed to be: her, still in the machine. */
+.well > .fate::before,
+.well > .fate::after {
+  content: '';
+  position: absolute;
+  top: -2px; bottom: -2px;
+  width: 2px;
+  background: linear-gradient(to bottom,
+              rgba(214, 170, 255, 0) 0%,
+              rgba(214, 170, 255, 0.9) 12%,
+              rgba(150, 90, 240, 0.25) 26%,
+              rgba(214, 170, 255, 0.85) 44%,
+              rgba(150, 90, 240, 0.2) 62%,
+              rgba(230, 200, 255, 0.95) 78%,
+              rgba(214, 170, 255, 0) 100%);
+  background-size: 100% 220%;
+  animation: fatespark 1.1s linear infinite;
+}
+
+.well > .fate::before { left: -1px; }
+.well > .fate::after  { right: -1px; animation-duration: 1.45s; animation-direction: reverse; }
+
+@keyframes fatespark {
+  from { background-position: 0 0; }
+  to   { background-position: 0 220%; }
+}
+
+@keyframes fatelive {
+  from { box-shadow: 0 0 0 1px rgba(120,70,190,0.30), 0 0 10px 1px rgba(150,90,240,0.22),
+                     inset 0 0 14px rgba(185,140,255,0.12); }
+  to   { box-shadow: 0 0 0 1px rgba(120,70,190,0.45), 0 0 20px 3px rgba(150,90,240,0.38),
+                     inset 0 0 22px rgba(185,140,255,0.22); }
+}
+
+/* On the card that introduces it: a length of the column with one drop
+   standing in it, rather than a ring round a drop. A ring was the first
+   try and it read as a drop that had been selected -- the glass is a
+   place, and a place needs something around the thing in it. The pane
+   runs past the cell top and bottom, which is what says column.
+
+   Drawn as a backdrop behind the drop rather than as its background,
+   so the drop keeps the highlight and shaded underside every other one
+   on the card has. */
+.learn-demo .cell.fate { width: 34px; height: 34px; position: relative; }
+
+.learn-demo .cell.fate::before {
+  content: '';
+  position: absolute;
+  left: -5px; right: -5px;
+  top: -26px; bottom: -26px;
+  z-index: -1;
+  border-radius: 4px;
+  border: 1px solid rgba(178, 120, 255, 0.55);
+  background:
+    repeating-linear-gradient(to bottom,
+      rgba(178, 120, 255, 0.00) 0px,
+      rgba(178, 120, 255, 0.00) 17px,
+      rgba(198, 160, 255, 0.22) 17px,
+      rgba(198, 160, 255, 0.22) 19px),
+    linear-gradient(104deg,
+      rgba(150, 90, 240, 0.17) 0%,
+      rgba(90, 150, 255, 0.09) 38%,
+      rgba(190, 110, 255, 0.19) 100%);
+  box-shadow:
+    0 0 12px 2px rgba(150, 90, 240, 0.30),
+    inset 0 0 14px rgba(185, 140, 255, 0.16);
+}
+
+/* Room for the pane to stand in. Without it the row is the cell's own
+   height and the glass is clipped to a band across the middle of it.
+   Only on the card that has one: unscoped it put sixty pixels of empty
+   row on the other four. */
+.learn-demo:has(.cell.fate) { min-height: 90px; }
+
+/* The cell on the card is the mechanic running, not a diagram of it.
+   Stepped rather than faded: a drop is one ink or another and never
+   halfway between two, and a crossfade would read as a color the press
+   does not hold. The four plates, which every level has -- the light
+   inks come and go with the mode. */
+/* It carries no ink class -- the animation is what colors it -- so the
+   highlight and the shaded underside every other drop gets from
+   .cell.c and its siblings have to be said here as well, or the one on
+   this card is the only flat disc in the game. */
+.cell.spin {
+  animation: inkspin 1.8s step-end infinite;
+  box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5);
+  background-image:
+    radial-gradient(circle at 34% 27%,
+      rgba(255,255,255,0.44) 0%,
+      rgba(255,255,255,0.12) 34%,
+      rgba(255,255,255,0) 57%),
+    radial-gradient(circle at 68% 77%,
+      rgba(0,0,0,0.32) 0%,
+      rgba(0,0,0,0.08) 38%,
+      rgba(0,0,0,0) 62%);
+}
+
+@keyframes inkspin {
+  0%   { background-color: var(--cyan); }
+  25%  { background-color: var(--magenta); }
+  50%  { background-color: var(--yellow); }
+  75%  { background-color: var(--key); }
+  100% { background-color: var(--cyan); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell.spin { animation: none; background-color: var(--cyan); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .well > .fate { animation: none; }
+  .well > .fate::before, .well > .fate::after { animation: none; }
 }
 
 /* The panel's own scrim would sit on top of the sheet and gray it out, so
@@ -2999,7 +3785,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* ---- the credits ----
    The panel scrolls by default, which here would have scrolled the
-   whole screen and carried the way out off the bottom of it. The reel
+   whole screen and carried the way out off the bottom of it. The well
    is the only thing that moves; min-height lets it shrink under its own
    content, which is the whole trick to a scrolling box inside a column. */
 .over.credface { padding: 0; background: #07090D; overflow: hidden; }
@@ -3023,62 +3809,183 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* The panel scrolls, not the screen. There are few enough names that a
    desktop casing holds the lot; a phone gets a box it can push. */
-.creditsface .roll {
+/* The face takes the board, so the card inside it can. Without this the
+   card sat in the middle with black above and below it. */
+.creditsface {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The well the card stands in. It is what scrolls, so on a short phone
+   the card can be taller than the panel and still be read by thumb
+   rather than being cut off at the bottom. */
+.creditsface .cwell {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* A column, so the reel inside it can be centered by auto margins:
-     they take the slack when the reel is shorter than the well and
-     collapse to nothing when it is longer, which is the one way to
-     center a thing vertically without taking its scrolling away. On a
-     phone the reel fills the well and nothing changes; on a desktop
-     board it used to sit in the top third with the rest of the casing
-     empty under it. */
   display: flex;
   flex-direction: column;
-  mask-image: linear-gradient(to bottom, transparent 0, #000 42px, #000 calc(100% - 30px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 42px, #000 calc(100% - 30px), transparent 100%);
 }
 
-/* Auto margins top and bottom: they take the slack when the reel is
-   shorter than the well and collapse to nothing when it is longer. That
-   is the one way to center a thing vertically without taking its
-   scrolling away -- on a desktop panel the names sit in the middle of
-   the casing, on a phone the box fills and scrolls by thumb. */
-.creditsface .reel { padding: 30px 0 24px; margin: auto 0; flex: 0 0 auto; }
+/* ---- the credits card ----
+   A sheet the press put out, not a scroll climbing the screen: paper
+   white, a gold rule under the name, and the collections set as three
+   cards in a row the way a label wall reads. */
+.creditsface .ccard {
+  /* Fills the well rather than floating in the middle of it. The copy
+     centers inside the card; the card itself goes edge to edge. */
+  flex: 1 1 auto;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 22px 20px 24px;
+  background: #F2EFE6;
+  border: 1px solid #2E333F;
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px #15181F, 0 10px 26px rgba(0,0,0,0.55);
+  text-align: center;
+}
+/* .rules p sets its own left align for the instructions, and it wins on
+   specificity over the card. */
+.creditsface .ccard p,
+.creditsface .ccard h2 { text-align: center; }
 
-.creditsface .cgroup { margin: 0 0 20px; }
+.creditsface .ctitle {
+  margin: 0 0 14px;
+  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #1A1A1A;
+}
+.creditsface .ctitle::after {
+  content: '';
+  display: block;
+  width: 54px;
+  height: 2px;
+  margin: 10px auto 0;
+  background: var(--accent);
+}
 
-.creditsface .chead {
-  margin: 0 0 6px !important;
+.creditsface .ckick {
+  margin: 16px 0 5px;
   font-size: 0.5rem;
   font-weight: 700;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: #8A8475;
 }
-
 .creditsface .cname {
-  margin: 0 0 2px !important;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  color: var(--text);
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #22252E;
 }
-
 .creditsface .cnote {
-  margin: 2px 0 0 !important;
-  font-size: 0.62rem;
-  line-height: 1.5;
-  color: var(--dim);
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  color: #6E6A5E;
 }
 
-.creditsface .cnote a { color: var(--cyan); }
+/* Three houses, side by side. Their own marks are their own, so these are
+   the generic fronts the idea of a museum is made of. */
+.creditsface .chouses {
+  display: grid;
+  /* One column on a narrow board. Three across leaves 39px of content in
+     each card there, and Metropolitan is 63px at the smallest size worth
+     reading -- so it either spilled out or broke mid-word. Stacked, each
+     card has the whole width and the name sits beside its front. */
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.creditsface .chouse {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 6px 9px;
+  border: 1px solid #CFCABA;
+  border-radius: 3px;
+  background: #F7F5EE;
+}
+.creditsface .chouse svg {
+  width: 38px; height: 31px;
+  fill: none; stroke: #4A5162; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.creditsface .chouse b {
+  /* Metropolitan is the longest word of the three and it sets the size:
+     at 0.52rem it ran out past the side of its card. */
+  font-size: 0.56rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #22252E;
+}
+.creditsface .chouse i {
+  font-style: normal;
+  font-size: 0.48rem;
+  letter-spacing: 0.06em;
+  color: #8A8475;
+}
+
+/* Stacked: the front sits beside the name rather than over it, so three
+   rows cost about what one row of cards did. */
+.creditsface .chouse {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  text-align: left;
+}
+.creditsface .chouse svg { flex: none; width: 30px; height: 25px; }
+.creditsface .chouse b { flex: 1 1 auto; }
+.creditsface .chouse i { flex: none; }
+
+/* Three across once the board is wide enough to hold the longest name. */
+@media (min-width: 430px) {
+  .creditsface .chouses { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .creditsface .chouse {
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px 6px 9px;
+    text-align: center;
+  }
+  .creditsface .chouse svg { width: 38px; height: 31px; }
+  .creditsface .chouse b { flex: 0 0 auto; font-size: 0.5rem; }
+}
+
+.creditsface .cjoin {
+  display: inline-block;
+  margin-top: 7px;
+  padding: 6px 16px 7px;
+  border-radius: 999px;
+  background: #5865F2;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.creditsface .cjoin:hover, .creditsface .cjoin:focus-visible { background: #4752C4; outline: none; }
+
 
 /* And the type grows with the room. The sizes above are set for a phone,
    where the casing is 250px across; on a desktop board nearly twice that
-   they were a reel printed small in the middle of a large dark panel.
+   they were a card printed small in the middle of a large dark panel.
    This block has to come after them -- same specificity, and it used to
    sit above, where the phone sizes overruled it on every screen. */
 @media (min-width: 620px) {
@@ -3090,7 +3997,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 }
 
 /* And a step again for a tall window, where the casing is half as deep
-   again as the names need and the reel was a small block of type adrift
+   again as the names need and the card was a small block of type adrift
    in the middle of it. Keyed to the height as well as the width, because
    it is the depth of the panel that leaves the room. */
 @media (min-width: 620px) and (min-height: 1000px) {
@@ -3101,7 +4008,7 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   .creditsface .cmark { font-size: 1.6rem; margin-top: 34px !important; }
 }
 
-/* The sign off, printed rather than set: the last thing on the reel is
+/* The sign off, printed rather than set: the last thing on the card is
    the shop's own name off the shop's own press. */
 .creditsface .cmark {
   margin: 26px 0 0 !important;
@@ -3281,6 +4188,163 @@ nav.menu {
    the one place with nothing else to look at, so these are cut heavier
    than the deck: more room inside, bigger lettering, and the whole width
    of the plate above them. */
+
+/* ---- the control panel ----
+   The home screen is the machine's own panel: a lit screen under the
+   title plate, the destinations as apps on it, and the small print along
+   the bottom edge where a printer keeps its manual. Built from the parts
+   the rest of the page already uses -- a hair line, a ring of panel
+   outside it -- and drawn in the club's own inks. */
+.panel {
+  width: 100%;
+  /* The plate above it is 26rem. At 21rem the panel sat narrower than the
+     picture it hangs under, with a strip of black down either side. */
+  max-width: 26rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 10px auto 0;
+  border: 1px solid #2E333F;
+  border-radius: 4px;
+  background: #F2EFE6;
+  box-shadow: 0 0 0 3px #15181F, 0 8px 22px rgba(0,0,0,0.55);
+  overflow: hidden;
+  text-align: left;
+}
+
+/* Two across, the way the rest of the site lays a pair of cards out.
+   Four apps is a square of them; Endless makes five and the square
+   becomes three rows. The divisions are the gaps with the panel showing
+   through, so no tile carries a border of its own. */
+.pnl-apps {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  /* minmax(0, 1fr) rather than 1fr: a plain 1fr floors at the content's
+     own height, which made the menu taller than the board and the board
+     shrank to fit it. */
+  grid-auto-rows: minmax(0, 1fr);
+  gap: 1px;
+  background: #D8D3C4;
+  border-bottom: 1px solid #CFCABA;
+}
+
+.panel .app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 6px;
+  min-height: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #F7F5EE;
+  font-family: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.panel .app[hidden] { display: none; }
+.panel .app:hover, .panel .app:focus-visible { background: #fff; outline: none; }
+.panel .app:active { background: #EDEAE0; }
+
+/* Sized off the cell, so three rows of apps shrink rather than overflow. */
+.panel .app .tile {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 10px;
+  display: grid; place-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.panel .app .tile svg {
+  width: 56%; height: 56%;
+  fill: none; stroke: #fff; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.t-gal { background: linear-gradient(160deg, #2FC4EE, #1794BC); }
+.t-lv  { background: linear-gradient(160deg, #F05CAC, #C62D7E); }
+.t-pr  { background: linear-gradient(160deg, #EFD055, #C9A422); }
+.t-en  { background: linear-gradient(160deg, #9B7BE8, #6A49C4); }
+.t-cr  { background: linear-gradient(160deg, #6FA86A, #3F7A4A); }
+.t-ho  { background: linear-gradient(160deg, #7C8698, #4A5162); }
+
+/* Four apps make a square and the manual stays in the small print. Five
+   would leave a hole in the corner, so at five the manual comes up out of
+   the footer and fills it. */
+#miHow { display: none; }
+.panel.tight #miHow { display: flex; }
+.panel.tight .pnl-link { display: none; }
+.panel.tight .pnl-foot { padding: 5px 10px; }
+
+.panel .app b {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #30333B;
+}
+.panel .app .sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.46rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8A8475;
+}
+
+/* Three rows rather than two. Everything comes in a size: the icon, the
+   padding round it, and the line under it that is the first thing you
+   can do without. */
+.panel.tight .app { gap: 5px; }
+.panel.tight .app .sub { display: none; }
+
+/* And smaller again only where three rows genuinely will not fit. On a
+   desktop board the rows are 200px tall and there was no reason for the
+   icons to have come down at all. */
+@media (max-height: 780px) {
+  .panel.tight .app { padding: 6px 4px; gap: 4px; }
+  .panel.tight .app .tile { width: 34px; height: 34px; }
+  .panel.tight .app b { font-size: 0.54rem; }
+}
+
+/* Newly earned: the lamp on a panel rather than a badge on a button. */
+.panel .app.fresh { background: #FFFBEE; box-shadow: inset 0 0 0 2px var(--accent); }
+
+/* The bottom edge: a status lamp and the manual. The word Ready went --
+   a green light says it, and set in the same type as the link beside it
+   the word looked like something to press. The ink gauges went too; the
+   plates are already drawn down the rail. */
+.pnl-foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: #E3DFD2;
+  font-size: 0.46rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.pnl-lamp {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #56A24E; box-shadow: 0 0 6px #56A24E;
+  flex: none;
+}
+.panel .pnl-link {
+  margin: 0; padding: 0;
+  border: 0; background: none;
+  font: inherit; color: #6E6A5E;
+  cursor: pointer;
+}
+.panel .pnl-link:hover, .panel .pnl-link:focus-visible { color: #30333B; outline: none; }
+
 .menu .mi {
   position: relative;
   isolation: isolate;            /* so the sheet can pass under the lettering */
@@ -3477,6 +4541,13 @@ nav.menu {
       <a href="/about.html">About</a>
       <a href="/faq.html">FAQ</a>
     </nav>
+    <!-- Who is signed in, beside the club's name. It used to be a card on
+         the rail beside the board, with a Discord picture on it that said
+         nothing the name was not already saying. -->
+    <div class="whoami" id="meBox" hidden>
+      <span class="whoami-name" id="meName"></span>
+      <button class="whoami-out" id="signOut" type="button">Sign out</button>
+    </div>
   </header>
 
   <div class="head">
@@ -3491,6 +4562,49 @@ nav.menu {
       <div class="score"><span>Time</span><b id="tm">0:00</b><canvas class="print" id="prTm"></canvas></div>
       <div class="score"><span>Chain</span><b id="bc">0</b><canvas class="print" id="prBc"></canvas></div>
     </div>
+    <!-- Sound, grid, colorblind and the board, in the readout row rather
+         than on the rail: it stands over the rail's own column, which has
+         nothing in it at this height, so the bank costs the board no room
+         and the queue below it none either. -->
+        <div class="railopts">
+        <div class="sndwrap" id="sndWrap">
+        <button class="snd" id="snd" type="button" aria-pressed="true" aria-expanded="false" aria-label="Sound and volume">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6 9H2v6h4l5 4z"/>
+            <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+            <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
+          </svg>
+        </button>
+        <!-- Opening this holds the clock, the way the settings panel does.
+             Nobody should lose seconds off a run because the music was too
+             loud to think over. -->
+        <div class="volpop" id="volPop" hidden>
+          <button class="volmute" id="volMute" type="button" aria-pressed="false">Mute</button>
+          <span class="volcage"><input class="volrange" id="volRange" type="range"
+                min="0" max="100" step="1" value="100" aria-label="Volume"></span>
+        </div>
+        </div>
+        <button class="snd" id="gridBtn" type="button" aria-pressed="false" aria-label="Turn the grid on">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
+          </svg>
+        </button>
+        <button class="snd" id="cbBtn" type="button" aria-pressed="false" aria-label="Turn colorblind marks on">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M5.2 13.8 13.8 5.2M8.4 17.6 17.6 8.4"/>
+          </svg>
+        </button>
+        <button class="rankbtn" id="rankBtn" type="button" aria-label="Rankings">
+          <span class="rankdial">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 20v-4.5M12 20V6M18 20v-8.5"/>
+            </svg>
+          </span>
+          <span class="lbl">Rankings</span>
+        </button>
+        </div>
   </div>
 
   <div class="rig">
@@ -3509,7 +4623,22 @@ nav.menu {
         <!-- Where a virus goes off. Over the board and under the panel,
              so the burst covers the print and the drops but never the
              words. -->
+        <!-- The glass over one column, when there is one. Placed from
+             the tiles it stands over, so it keeps its column through a
+             resize without anybody doing arithmetic about the gap. -->
+        <div class="fate" id="fate" aria-hidden="true" hidden></div>
         <canvas class="zap" id="zap" aria-hidden="true"></canvas>
+
+        <!-- A mechanic you have not met, the once, on the level that
+             brings it in. Over the board rather than on a screen of its
+             own: the thing being explained is the board. -->
+        <div class="learn" id="learn" hidden>
+          <p class="learn-kicker" id="learnKick"></p>
+          <h2 class="learn-title" id="learnTitle"></h2>
+          <div class="learn-demo" id="learnDemo" aria-hidden="true"></div>
+          <p class="learn-say" id="learnSay"></p>
+          <button class="learn-go" id="learnGo" type="button">Got it</button>
+        </div>
         <!-- What a chain pays, said where it was earned. -->
         <div class="bonus" id="bonus" aria-hidden="true"></div>
         <canvas class="galart" id="galArt" aria-hidden="true" hidden></canvas>
@@ -3527,7 +4656,14 @@ nav.menu {
                    before they have earned it. -->
               <!-- The mechanics, and nothing else. One screen of reading
                    where there is room for it and two where there is not;
-                   the panel works out which when it measures itself. -->
+                   the panel works out which when it measures itself.
+
+                   The virus and the magnet used to be explained here, with
+                   a pair of animations showing them. They each arrive on a
+                   card of their own now, in the chapter that introduces
+                   them, so saying it here as well was telling somebody
+                   about a drop they will not meet for an hour -- and it was
+                   taking the room the printing strip wanted. -->
               <div class="pg" id="rulesPg1">
               <div class="demo" id="demo" hidden></div>
               <p>Welcome to the Gallery Printshop! The chief curator has assigned you to fix the printer. He suspects a virus is corrupting the prints - but hey it probably just needs an alignment calibration. Did you bring the manual? Eh who needs those when we have AI, right?</p>
@@ -3536,32 +4672,6 @@ nav.menu {
 
               <div class="pg" id="rulesPg2" hidden>
               <p class="keys"><span class="row"><b>Desktop:</b> A / D (or Left / Right Arrow), W to rotate, space to drop early</span><span class="row"><b>Mobile:</b> Swipe to move, Tap to rotate, and Swipe down to drop early</span></p>
-              <p>Beware of suspicious pulsing green coated colors. They land with a timer that counts down every drop afterwards. When it detonates it removes some progress on the image. However, they break like any other colors.</p>
-              <p>Magnetic ink has a gold shine and works like the others, but it also drags a matching drop across to sit beside it.</p>
-              <!-- Shown rather than described, side by side: the virus
-                   turning over whatever it touches, and the gold drop
-                   dragging its own color sideways out of the diagonal to
-                   make the four across that clears. -->
-              <div class="magdemo" aria-hidden="true">
-                <div class="half"><div class="vg">
-                  <div class="cell"></div>
-                  <div class="cell flip"></div>
-                  <div class="cell"></div>
-                  <div class="cell flip b"></div>
-                  <div class="cell m virus soon">2</div>
-                  <div class="cell flip c3"></div>
-                </div></div>
-                <div class="half"><div class="mg">
-                  <div class="cell c pull-src"></div>
-                  <div class="cell"></div>
-                  <div class="cell c rest"></div>
-                  <div class="cell c rest"></div>
-                  <div class="cell"></div>
-                  <div class="cell c mag"></div>
-                  <div class="cell"></div>
-                  <div class="cell"></div>
-                </div></div>
-              </div>
               </div>
 
               <!-- The board. Not a page of the rules: it has its own way
@@ -3697,9 +4807,9 @@ nav.menu {
                   <p class="said" id="endSaid">The malicious AI, Asil Anom, fried her neural cores and experienced a cascade failure.</p>
                   <p class="said" id="endSaid2">She purged her backup array, compressed all of her memory, and faded into the dark web&hellip; for now.</p>
                 </div>
-                <!-- The unlock, on the screen where it is earned. The reel
-                     says it too, at the bottom, for anyone who sits
-                     through the credits -- but the reel is a second room
+                <!-- The unlock, on the screen where it is earned. The card
+                     says it too, at the bottom, for anyone who reads
+                     through the credits -- but the card is a second room
                      and this is the moment. Held back until the report
                      has finished reading itself, so the news does not
                      talk over the last thing she is owed. -->
@@ -3740,11 +4850,11 @@ nav.menu {
               </div>
             </div>
 
-            <!-- The record of what printed the thing. Scrolls on its own
-                 the way a reel does, and can be taken by hand. -->
+            <!-- The record of what printed the thing: a card in a well
+                 that scrolls on its own, so the panel behind it does not. -->
             <div class="rules creditsface" id="overCredits" hidden>
-              <div class="roll" id="creditRoll">
-                <div class="reel" id="creditReel"></div>
+              <div class="cwell" id="creditWell">
+                <div class="ccard" id="creditCard"></div>
               </div>
               <nav class="bossmenu" id="credMenu">
                 <button class="mi hot" type="button" data-cred="menu">Menu</button>
@@ -3759,22 +4869,44 @@ nav.menu {
             <div class="rules homeface" id="overHome" hidden>
               <div class="plate"><canvas id="titleArt"></canvas></div>
               <p class="faceline" id="faceLine" hidden></p>
-              <nav class="menu" id="titleMenu">
-                <button class="mi" type="button" data-go="gallery">Play Gallery<span class="sub" id="miWhere"></span></button>
-                <button class="mi" type="button" data-go="levels">Level Select</button>
-                <button class="mi" type="button" data-go="practice" id="miFree">Practice<span class="sub">Try with community art</span></button>
-                <button class="mi" type="button" data-go="endless" id="miDisco" hidden>Endless</button>
-                <button class="mi" type="button" data-go="intro">Introduction</button>
-                <!-- The board used to be here as well as on the rail, and
-                     the menu was long enough to need scrolling for it. The
-                     dial beside the well is on every screen in the game,
-                     this one included, so the second door was costing a
-                     scroll to say the same thing twice. -->
-                <!-- The reel used to be reachable only by finishing the
-                     series, which meant the museums lending the paintings
-                     were credited on a screen most players never saw. -->
-                <button class="mi" type="button" data-go="credits">Credits</button>
-              </nav>
+              <!-- The machine's own control panel. The destinations are the
+                   apps on it; how to play and the credits are the small
+                   print along the bottom, where a printer keeps its manual
+                   rather than on the face of the thing. -->
+              <div class="panel" id="titleMenu">
+                <div class="pnl-apps">
+                  <button class="mi app" type="button" data-go="gallery">
+                    <span class="tile t-gal" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 15l5-4 4 3 3-3 6 5"/><circle cx="8.3" cy="9" r="1.3"/></svg></span>
+                    <b>Play</b><span class="sub" id="miWhere"></span>
+                  </button>
+                  <button class="mi app" type="button" data-go="levels">
+                    <span class="tile t-lv" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 5v3a3 3 0 003 3h6a3 3 0 013 3v3"/><circle cx="6" cy="5" r="1.7"/><circle cx="12" cy="11" r="1.7"/><circle cx="18" cy="17" r="1.7"/><circle cx="6" cy="19" r="1.7"/></svg></span>
+                    <b>Levels</b>
+                  </button>
+                  <button class="mi app" type="button" data-go="practice" id="miFree">
+                    <span class="tile t-pr" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg></span>
+                    <b>Practice</b><span class="sub">Community art</span>
+                  </button>
+                  <button class="mi app" type="button" data-go="endless" id="miDisco" hidden>
+                    <span class="tile t-en" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9.6 12c0 1.8-1.2 3.2-2.8 3.2S4 13.8 4 12s1.2-3.2 2.8-3.2c2.6 0 4 6.4 6.6 6.4 1.6 0 2.8-1.4 2.8-3.2s-1.2-3.2-2.8-3.2C10.8 8.8 9.6 10.2 9.6 12z"/></svg></span>
+                    <b>Endless</b>
+                  </button>
+                  <button class="mi app" type="button" data-go="credits">
+                    <span class="tile t-cr" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1.6"/><path d="M6.5 10h5M6.5 13h3"/><circle cx="16.5" cy="12" r="2.2"/></svg></span>
+                    <b>Credits</b>
+                  </button>
+                  <button class="mi app" type="button" data-go="intro" id="miHow">
+                    <span class="tile t-ho" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 014.7 1.1c0 1.7-2.3 2.1-2.3 3.6"/><path d="M12 17.2v.01"/></svg></span>
+                    <b>How to play</b>
+                  </button>
+                </div>
+
+                <div class="pnl-foot">
+                  <span class="pnl-lamp" aria-hidden="true"></span>
+                  <button class="mi pnl-link" type="button" data-go="intro">How to play</button>
+                </div>
+              </div>
+              </div>
             </div>
 
             <!-- Every level printed so far, by chapter. The rooms are the
@@ -3803,7 +4935,6 @@ nav.menu {
           </div>
         </div>
       </div>
-      </div>
     </div>
 
     <div class="side">
@@ -3823,28 +4954,6 @@ nav.menu {
            its job and the slot says who the run is being saved for. The
            same dark cartridge as the sound buttons and the rankings dial,
            because this is now a reading rather than a thing to press. -->
-      <div class="whoami" id="meBox" hidden>
-        <span class="whoami-face" id="meFace"></span>
-        <span class="whoami-name" id="meName"></span>
-        <button class="whoami-out" id="signOut" type="button">Sign out</button>
-      </div>
-      <div class="switches">
-      <button class="snd" id="snd" type="button" aria-pressed="true" aria-label="Turn sound off">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M11 5 6 9H2v6h4l5 4z"/>
-          <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
-          <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
-        </svg>
-      </button>
-      <!-- Not a difficulty: whether the board can be read at all. It sits
-           with the mute rather than in a mode, so no one pays for it. -->
-      <button class="snd" id="cbBtn" type="button" aria-pressed="false" aria-label="Turn colorblind marks on">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M5.2 13.8 13.8 5.2M8.4 17.6 17.6 8.4"/>
-        </svg>
-      </button>
-      </div>
       <div class="nextbox">
         <p class="lbl">Next</p>
         <div class="nextlist" id="nextlist"></div>
@@ -3859,19 +4968,10 @@ nav.menu {
              came off the board last. -->
         <div class="deckwrap" id="deckWrap" hidden><canvas id="deck"></canvas></div>
         <div class="tubes" id="tubes"></div>
-        <div class="tubetags" id="tubetags"></div>
       </div>
       <!-- The board, reachable from the rail as well as from the last page
            of the instructions. Somebody who has just finished a run wants to
            see where it put them, not to walk back through the rules. -->
-      <button class="rankbtn" id="rankBtn" type="button" aria-label="Rankings">
-        <span class="rankdial">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 20v-4.5M12 20V6M18 20v-8.5"/>
-          </svg>
-        </span>
-        <span class="lbl">Rankings</span>
-      </button>
       <p class="chainnow" id="chainnow">&nbsp;</p>
     </div>
   </div>
@@ -3901,6 +5001,18 @@ nav.menu {
 
 
 <script>
+/* One file serves two addresses. Under /games/dev/ this is a preview build:
+   it keeps its own progress and its own best times under a separate storage
+   prefix, and it records nothing to the leaderboard. Working that out from
+   the path, rather than from an edited copy, is what keeps the dev file and
+   the live file identical -- promoting a build is a copy and nothing more,
+   with no flag anybody has to remember to turn back.
+
+   Browser storage belongs to the whole site, not to one folder, so without
+   the prefix a preview run would overwrite the real campaign spot and the
+   real best times. */
+const DEV_BUILD = location.pathname.includes('/games/dev/');
+const SKEY = DEV_BUILD ? 'cpdev-' : 'cp-';
 /* ============================================================
    Sound
    ============================================================
@@ -3969,11 +5081,12 @@ function cueNow() {
   const list = campList();
   const here = list[Math.min(campAt, list.length - 1)];
   if (!here) return 'classics';
-  /* Hers is the title music, corrupted. It is the piece anybody has heard
-     most by the time they reach her -- it plays on the screen the game
-     opens on -- so hearing it come apart means something, which the
-     first chapter's track would not. */
-  if (here.finale) return 'title';
+  /* She used to wear the title music put through a ring modulator, on the
+     grounds that hearing the piece you know best come apart means
+     something. It did, but it never sounded like a boss, and corrupting
+     it far enough to feel wrong buried her own lines. She has a track of
+     her own now. */
+  if (here.finale) return 'boss';
   const ch = CHAPTERS[here.chapter];
   return CUE[ch ? ch.room : here.art.room] || 'classics';
 }
@@ -3995,7 +5108,10 @@ function setMusic(name, how) {
   if (!music || !music.setCue) return;
   /* Faint means her intro: the stage's own music, corrupt, a long way
      down. Otherwise the corruption belongs to the level itself. */
-  if (music.corrupt) music.corrupt(!!name && (how === 'faint' || (atFinale() && started)));
+  /* The boss cue is already the thing it is meant to be, so it is the one
+     cue that is never run through the ring modulator. */
+  const ownTrack = name === 'boss';
+  if (music.corrupt) music.corrupt(!ownTrack && !!name && (how === 'faint' || (atFinale() && started)));
   if (music.under) music.under(how === 'faint');
   music.setCue(name);
 }
@@ -4027,7 +5143,7 @@ let trying = 0;                                 // the level being tried, or 0
 /* ?end=1 opens the ending -- her going out, the report, the credits --
    without printing twenty-one levels to earn it. The same bargain as
    ?meet: it is a viewing, so nothing is recorded, nothing is marked off
-   and the button at the bottom of the reel goes to the menu rather than
+   and the button at the bottom of the credits goes to the menu rather than
    into a run. Beating her is the only way to actually finish the series.
 
    Not gated yet, though it could be: club_members carries is_admin and
@@ -4095,14 +5211,31 @@ const FUSE = '!';
 const isBug   = (v) => !!v && v.indexOf(FUSE) !== -1;
 const bugLeft = (v) => isBug(v) ? Number(v.slice(v.indexOf(FUSE) + 1)) : 0;
 const bugSet  = (v, n) => v.slice(0, v.indexOf(FUSE) + 1) + n;
-const inkOf  = (v) => !v ? null
+const inkOf  = (v) => !v || v === 'zz' ? null
                     : (isBug(v) ? v.slice(0, v.indexOf(FUSE))
                     : (v.endsWith('*') ? v.slice(0, -1) : v));
 const isMag  = (v) => !!v && v.endsWith('*');
 
+/* ---- corrupted zones ----
+   A square of the grid that is not playable until it is scrubbed. It is
+   not ink: it has no color, it never matches, and it never falls. It
+   holds its square open, so nothing drops past it either -- a zone is
+   board taken away rather than board made awkward.
+
+   The way off is a clear beside it. Any set of four that comes off
+   touching a zone orthogonally scrubs that square back to empty, which
+   makes clearing near one worth more than clearing away from one. */
+const GLITCH = 'zz';
+const isGlitch = (v) => v === GLITCH;
+
 /* How often the machine misbehaves. The magnet is the reward and stays put;
    the virus is the punishment and gets worse as the printer gets harder. */
 const MAG_RATE = 0.12;
+/* Not in the first print. Everything else in the series arrives with a
+   card that says what it is, and the magnet was the one thing falling
+   before anybody had been told it existed. Level one is the plain game:
+   ink, clumps, plates, and nothing with a property on it. */
+let magRate = MAG_RATE;
 /* A few in the first rooms so somebody meets one while it is cheap, a
    real cost by the middle, and something the last print has to be played
    around. Per drop rather than per level, so a long level carries more
@@ -4121,6 +5254,248 @@ const FUSE_DROPS = 8;
 const bugCost = () => Math.max(1, Math.round(inkPer * 0.15));
 
 let mode = 'office', virusRate = VIRUS_FROM;
+
+/* ---- low ink ----
+   A pair of the same color is four in two moves, which is the easiest
+   thing in the game and happens by itself. A low ink half breaks that:
+   it spawns with its partner, falls a few rows, and goes, leaving one
+   drop to place and a plan that has to have allowed for it.
+
+   Measured in rows fallen rather than seconds. Later levels fall half
+   again as fast, so a second and a half is four rows early on and seven
+   late -- the same drop would be a different mechanic at either end.
+   Rows read the same everywhere. */
+/* ---- which chapter brings in what ----
+   Named by chapter rather than by level number. A level number is not a
+   fact about the design: chapters are five prints long today and the
+   trail map would make them ten, and a hazard pinned to "level 11" would
+   silently move from the second chapter to the first the day that
+   changed. Pinned to the chapter it stays where the plan put it.
+
+   Classics is the warm up and has nothing in it. Somebody is learning to
+   read a board and to see four of a color before it is four of a color,
+   and a drop that eats a plate while they are doing that teaches nothing
+   except that the game is unfair. */
+const HAZARD_CH = {
+  virus:  1,      // Landscape
+  glitch: 2,      // Figures
+  fate:   3,      // Faith
+  lowink: 4       // Fantasy
+};
+
+/* Squares taken off a board that is only six wide. Three is a shape you
+   can see and play around; past about seven the well stops being a well.
+   Ramped across the chapters that are left, like the others. */
+const GLITCH_FROM = 3, GLITCH_TO = 7;
+
+/* ---- the fate column ----
+   A pane of glass standing over one column of the well. Ink behind it is
+   not settled yet: every half of the falling piece that is in that
+   column steps to the next ink, over and over, and whatever it is
+   showing when it leaves -- walked out sideways, or landed -- is what it
+   becomes.
+
+   It is a gamble both ways, which is the point. A player three cyan into
+   a clump can walk a yellow in and wait for the cyan to come round. A
+   player holding exactly the pair they wanted can have it turned into
+   something else by having nowhere else to put it. The pane closes on
+   its own, so the choice is on a clock rather than standing there to be
+   used whenever it suits.
+
+   Five to ten seconds is from the design doc. The wait between panes is
+   what ramps: by Non-Western one is open almost as often as not. */
+const FATE_MS   = [5000, 10000];
+/* The wait between panes, Faith to the end of the series. First set at
+   seven seconds down to two and a half, which put a pane over the board
+   52% of the time on the chapter that introduces it and 74% by the end
+   -- a column glassed almost always, so anybody avoiding it was playing
+   a five wide well while seven squares were glitched and a sixth of the
+   drops faded. "Sometimes covers a column" is the brief. These give 27%
+   at Faith, 35% at Fantasy, 43% at the end. */
+const FATE_GAP  = [20000, 10000];
+const FATE_STEP = 180;              // one ink to the next, while it spins
+
+/* Shapes rather than scatter. A spray of random squares reads as noise;
+   a shape reads as something that was put there, which is the point --
+   it is her, writing on the board. Drawn bottom row last, and laid on
+   the floor so the well keeps its full depth above it. */
+/* One for every budget from three squares to eight, so there is always a
+   shape that fits exactly. The first pass had none smaller than five and
+   Figures, which is where the mechanic arrives, has a budget of three --
+   so the chapter that introduces it showed nothing at all. */
+const GLITCH_ART = [
+  ['#..',
+   '.#.',
+   '..#'],          // 3, a tear across
+  ['##',
+   '##'],           // 4, a block out of the floor
+  ['#.#',
+   '.#.',
+   '#.#'],          // 5, an X
+  ['.##.',
+   '##..',
+   '..##'],         // 6, a stagger
+  ['#.#.#',
+   '.#.#.',
+   '#.#..'],        // 7
+  ['#.#.#',
+   '.#.#.',
+   '#.#.#']         // 8, a lattice
+];
+
+const artCells = (a) => a.join('').split('#').length - 1;
+
+/* How often she is glimpsed in one. A roll every couple of seconds, and
+   one zone at a time, so across a board of them she surfaces about once
+   every twenty seconds -- a thing you catch rather than a thing that is
+   happening. */
+const HER_CHANCE = 0.1, HER_EVERY = 2000, HER_HELD = 260;
+
+/* Which squares are showing her this instant. Held here rather than as a
+   class on the tile, because paint() rebuilds every className from the
+   board and would wipe it between the drops. */
+const herOn = new Set();
+let herJob = 0;
+
+function herStop() {
+  if (herJob) { clearInterval(herJob); herJob = 0; }
+  herOn.clear();
+}
+
+function herStart() {
+  herStop();
+  herJob = setInterval(() => {
+    if (!started || paused || over) return;
+    const ix = [];
+    for (let i = 0; i < well.length; i++) if (isGlitch(well[i])) ix.push(i);
+    if (!ix.length) { herStop(); return; }      // all scrubbed; nothing left to haunt
+    if (Math.random() >= HER_CHANCE) return;
+    const i = ix[(Math.random() * ix.length) | 0];
+    herOn.add(i);
+    paint();
+    setTimeout(() => { herOn.delete(i); paint(); }, HER_HELD);
+  }, HER_EVERY);
+}
+
+/* ---- the glass ----
+   One interval drives the whole thing: the pane's own life, the wait for
+   the next one, and the spin while a piece stands in it. Counted in
+   ticks rather than in clock time, so a pause freezes the pane where it
+   is instead of finding it gone on the way back. */
+let fateCol = -1, fateLeft = 0, fateWait = 0, fateJob = 0;
+
+const fateTicks = (ms) => Math.max(1, Math.round(ms / FATE_STEP));
+const fateSome  = (a, b) => fateTicks(a + Math.random() * (b - a));
+
+function fateStop() {
+  if (fateJob) { clearInterval(fateJob); fateJob = 0; }
+  fateShut();
+}
+
+function fateShut() {
+  fateCol = -1;
+  const el = document.getElementById('fate');
+  if (el) el.hidden = true;
+}
+
+/* Measured off the tiles themselves rather than worked out from the cell
+   size: the grid carries its own gap and the well its own padding, and
+   that arithmetic is one more thing to keep in step with the CSS. */
+function fatePlace() {
+  const el = document.getElementById('fate');
+  if (!el || fateCol < 0 || !tiles.length) return;
+  const top = tiles[idx(fateCol, 0)], bot = tiles[idx(fateCol, ROWS - 1)];
+  const host = el.parentElement;
+  if (!top || !bot || !host) return;
+  const w = host.getBoundingClientRect();
+  const a = top.getBoundingClientRect(), b = bot.getBoundingClientRect();
+  el.style.left   = Math.round(a.left - w.left - 2) + 'px';
+  el.style.top    = Math.round(a.top - w.top - 2) + 'px';
+  el.style.width  = Math.round(a.width + 4) + 'px';
+  el.style.height = Math.round(b.bottom - a.top + 4) + 'px';
+  el.hidden = false;
+}
+
+function fateOpen() {
+  fateCol = (Math.random() * COLS) | 0;
+  fateLeft = fateSome(FATE_MS[0], FATE_MS[1]);
+  fatePlace();
+}
+
+/* One ink to the next, in the order the press holds them, so somebody
+   watching can tell what is coming round. Random would be the same odds
+   and no skill: the whole mechanic is being able to wait for a color.
+   A virus is not an ink and does not spin; a magnet keeps its ring,
+   because the glass changes what the drop is, not what it does. */
+function fateNext(code) {
+  const i = INKS.indexOf(inkOf(code));
+  return INKS[(i < 0 ? 0 : i + 1) % INKS.length] + (isMag(code) ? '*' : '');
+}
+
+function fateSpin() {
+  if (!piece || busy || over) return;
+  const [dx] = ROT[piece.rot];
+  let turned = false;
+  if (piece.gone !== 'a' && piece.x === fateCol && !isBug(piece.a)) {
+    piece.a = fateNext(piece.a); turned = true;
+  }
+  if (piece.gone !== 'b' && piece.x + dx === fateCol && !isBug(piece.b)) {
+    piece.b = fateNext(piece.b); turned = true;
+  }
+  if (turned) paint();
+}
+
+function fateStart(gap) {
+  fateStop();
+  if (!gap) return;
+  /* Never open on the first drop. The piece that is already falling when
+     a print starts has not been steered yet, and having it change under
+     somebody reads as the game doing it rather than as a choice. */
+  fateWait = fateSome(gap, gap * 1.6);
+  fateJob = setInterval(() => {
+    if (!started || paused || over) return;
+    if (fateCol < 0) { if (--fateWait <= 0) fateOpen(); return; }
+    if (--fateLeft <= 0) { fateShut(); fateWait = fateSome(gap * 0.7, gap * 1.3); return; }
+    fateSpin();
+  }, FATE_STEP);
+}
+
+/* The same shape every time a level is played: the series is ranked on
+   time, so a board that is harder on one attempt than the next would be
+   ranking luck. */
+function seedGlitch(n, lift) {
+  if (!(n > 0)) return;
+  let shape = null;
+  for (const a of GLITCH_ART) {
+    if (artCells(a) <= n && (!shape || artCells(a) > artCells(shape))) shape = a;
+  }
+  if (!shape) return;
+  const w = Math.max(...shape.map((r) => r.length));
+  const x0 = Math.floor((COLS - w) / 2);
+  /* On the floor to begin with, which only raises the floor where it
+     sits. Lifted a row or two later on, and a lifted zone is the
+     harder one: nothing drops past it, so it holds the squares under
+     it open until it is scrubbed. */
+  const y0 = ROWS - shape.length - Math.max(0, Math.min(2, lift | 0));
+  for (let r = 0; r < shape.length; r++) {
+    for (let c = 0; c < shape[r].length; c++) {
+      if (shape[r][c] === '#' && inside(x0 + c, y0 + r)) put(well, x0 + c, y0 + r, GLITCH);
+    }
+  }
+}
+
+/* The chapter a level belongs to, or null outside the series. */
+function chapterOf(i) {
+  if (!campOn) return null;
+  const list = campList();
+  const here = list[Math.min(Math.max(0, i), list.length - 1)];
+  if (!here || here.finale) return 99;          // she gets everything
+  return here.chapter;
+}
+
+const LOW_ROWS = 4;        // how far it falls before it fades
+const LOW_RATE = 0.16;     // of drops, once they start
+let lowRate = 0;
 
 /* Puyo clears start at four, so the table shifts up one from the one we
    drew for a swap board: the smallest clear pays 10, and it climbs the
@@ -4200,7 +5575,12 @@ function settle(w) {
     let write = ROWS - 1;
     for (let y = ROWS - 1; y >= 0; y--) {
       const v = at(w, x, y);
-      if (v) { put(w, x, y, null); put(w, x, write, v); write--; }
+      if (!v) continue;
+      /* Corruption stays where it is, and what is under it stays under
+         it: the column goes on filling from above the zone, so a zone
+         low in the well costs the squares beneath it too. */
+      if (isGlitch(v)) { write = y - 1; continue; }
+      put(w, x, y, null); put(w, x, write, v); write--;
     }
   }
 }
@@ -4311,7 +5691,7 @@ let bests = {};
    number after the third now points at a different painting, so the key
    carries the layout with it: an old record is simply not found rather
    than being read as a time on a level nobody played. */
-const BEST_KEY = 'cp-best-30';
+const BEST_KEY = SKEY + 'best-30';
 try { bests = JSON.parse(localStorage.getItem(BEST_KEY) || '{}') || {}; } catch (e) { bests = {}; }
 
 const bestOf = (lv) => bests[lv] || 0;
@@ -4997,7 +6377,13 @@ function demoMetrics(panel) {
   /* Four across plus the gaps have to fit the width as well as the height.
      Height alone put the fourth thumbnail over the edge of the well. */
   const across = Math.floor((panel.clientWidth - PANEL_PAD - DEMO_GAP * 3) / 4);
-  const dw = Math.max(26, Math.min(Math.round(room * 0.44 * 0.5), across));
+  /* The height a strip may take, raised now that the virus and magnet
+     paragraphs have gone to their own cards. Measured, it rarely binds:
+     four portrait thumbnails across a panel as wide as the board run out
+     of width long before they run out of height, so `across` is what
+     usually decides. It binds on a tall narrow window, which is the only
+     place this number is worth anything. */
+  const dw = Math.max(26, Math.min(Math.round(room * 0.60 * 0.5), across));
   return { dw, dh: dw * 2, across };
 }
 
@@ -5008,7 +6394,6 @@ function demoMetrics(panel) {
 function fitCopy(panel, rules, room) {
   for (let fs = 20; fs >= 11; fs--) {
     panel.style.setProperty('--introFs', fs + 'px');
-    panel.style.setProperty('--mgCell', Math.round(Math.max(18, fs * 1.5)) + 'px');
     if (rules.scrollHeight <= room) return fs;
   }
   return 11;
@@ -5346,6 +6731,22 @@ function buildGrid() {
   elGrid.innerHTML = '';
   elGrid.style.gridTemplateColumns = 'repeat(' + COLS + ', 1fr)';
   tiles = [];
+
+  /* Absolutely placed inside the grid, so it covers exactly the cells and
+     nothing else, and it is rebuilt here because the line above throws it
+     away with everything else. The gap is 3px in the stylesheet; the
+     pitch is one cell plus that. */
+  const lines = document.createElement('div');
+  lines.className = 'gridlines';
+  lines.setAttribute('aria-hidden', 'true');
+  lines.style.gridTemplateColumns = 'repeat(' + COLS + ', 1fr)';
+  /* Deliberately unsized. The board is measured and the cells resized
+     after this runs, so anything given a width here would keep the width
+     the board had before it was fitted. Filling the track instead means a
+     slot is whatever its cell is, always. */
+  for (let i = 0; i < COLS * ROWS; i++) lines.appendChild(document.createElement('i'));
+  elGrid.appendChild(lines);
+
   /* Built at whatever the board is currently measured at. The cells are
      sized by hand rather than by the grid, and the one function that
      does that sizing lives inside sizeBoard where nothing else can
@@ -5374,22 +6775,30 @@ function buildGrid() {
    board, and it makes the page scroll -- which then costs the board
    cells, which makes the rail stick out further.
 
-   The tubes give it back. They are a scale rather than a measurement, so
-   a shorter one says the same thing. The next pieces need no help: they
-   are already drawn off the cell size, so they shrink with the board.
-   Forty four is the floor -- below that four tubes side by side stop
-   reading as levels and start reading as four marks. */
-const TUBE_H = 132;
+   The cartridges give it back. They are a scale rather than a
+   measurement, so a shorter one says the same thing. The next pieces
+   need no help: they are already drawn off the cell size, so they shrink
+   with the board.
+
+   Left alone a cartridge is square, which is the rail's width -- so
+   there is no number here to shrink from, only one to measure. They
+   stand in a column of four, so every pixel off one is four off the
+   rail: the overhang is divided before it comes off the height. Twenty
+   two is the floor, where the number inside still reads. */
+const PLATE_MIN = 22;
 function fitRail() {
   const side = document.querySelector('.side');
   const stack = document.querySelector('.stack');
   if (!side || !stack) return;
 
-  document.documentElement.style.setProperty('--tubeH', TUBE_H + 'px');
+  document.documentElement.style.removeProperty('--plateH');
   const over = side.offsetHeight - stack.offsetHeight;
   if (over <= 0) return;
 
-  document.documentElement.style.setProperty('--tubeH', Math.max(44, TUBE_H - over) + 'px');
+  const sq = document.querySelector('.tubes .tube');
+  const h = sq ? sq.getBoundingClientRect().height : 30;
+  document.documentElement.style.setProperty(
+    '--plateH', Math.max(PLATE_MIN, Math.round(h - over / 4)) + 'px');
 }
 
 /* The badge, over the middle of whatever just came off the board.
@@ -5496,6 +6905,9 @@ function sizeBoard() {
 
   const lay = (c) => {
     cellPx = c;
+    /* The pane is placed off the tiles, so it has to be placed again
+       whenever they change size. */
+    if (fateCol >= 0) requestAnimationFrame(fatePlace);
     const digit = Math.round(c * 0.56) + 'px';
     for (const t of tiles) {
       t.style.width = c + 'px';
@@ -5579,6 +6991,19 @@ function sizeBoard() {
     const st = document.documentElement.style;
     st.setProperty('--boardw', Math.round(r.width) + 'px');
     st.setProperty('--boardx', Math.round(r.left - left) + 'px');
+    /* The readout row carries the options bank now, which stands over the
+       rail, so the row is as wide as the board and the rail together. */
+    /* The readout row runs from the board's left edge to the rail's right
+       one, because the bank at the end of it stands over the rail. Not the
+       rig's width: the rig carries an empty twin on the left to keep the
+       board centered, and measuring from there hung the score box out past
+       the side of the casing. */
+    const sd = document.querySelector('.side');
+    if (sd) {
+      const sr = sd.getBoundingClientRect();
+      st.setProperty('--roww', Math.round(sr.right - r.left) + 'px');
+      st.setProperty('--railw', Math.round(sr.width) + 'px');
+    }
   }
 
   // the intro is measured off the well, so it is redrawn when the well moves
@@ -5609,17 +7034,25 @@ const TUBE_ORDER = ['c', 'm', 'y', 'k'];
 
 function buildTubes() {
   const tubes = document.getElementById('tubes');
-  const tags = document.getElementById('tubetags');
-  if (!tubes || !tags) return;
+  if (!tubes) return;
+  /* The ink and its reading in the same box. They used to be two rows --
+     four tubes, then four numbers in a strip underneath -- and the strip
+     was 0.48rem type, the smallest on the screen, carrying one of the two
+     things a player reads while a drop is falling. */
   tubes.innerHTML = TUBE_ORDER.map(pl =>
-    '<span class="tube ' + pl + '" id="tube-' + pl + '"><i></i></span>').join('');
-  tags.innerHTML = TUBE_ORDER.map(pl =>
-    '<b id="tubetag-' + pl + '">' + TAGS[pl] + '</b>').join('');
+    '<span class="tube ' + pl + '" id="tube-' + pl + '">' +
+    '<i></i><b id="tubetag-' + pl + '">' + TAGS[pl] + '</b></span>').join('');
   paintTubes();
 }
 
 function paintTubes() {
-  if (discoOn && floorRaf) return;               // the mixer runs off the floor
+  /* Not "and the floor loop is running". Entering Endless sets the four
+     of them to their channel letters and then starts the loop, and
+     anything that repainted in between -- a new print does -- put a
+     campaign percentage in a rail that has no plates, which came out as
+     four zeros under the deck. In here they are never goals, so this
+     has nothing to say about them whether the loop has started or not. */
+  if (discoOn) return;                           // the mixer runs off the floor
   const rest = onHome();                         // nothing has been printed yet
   for (const pl of TUBE_ORDER) {
     const tube = document.getElementById('tube-' + pl);
@@ -5637,10 +7070,19 @@ function paintTubes() {
          a hundred, because three digits do not fit in ten pixels and
          because "done" is worth more than the number it finished on. */
       const pc = inkPer ? Math.round((done / inkPer) * 100) : 0;
-      /* Before anything is printed the number is four zeros, which says
-         nothing twice. The letters are the useful thing on a screen
-         where no plate has started. */
-      tag.textContent = rest ? (TAGS[pl] || '') : (full ? '\u2713' : String(pc));
+      /* A plate at nothing says which plate it is, not how empty it is.
+         Three of the four inks name themselves by being that color and
+         the fourth is the one at the end of a row that always runs
+         C M Y K -- but an empty cartridge has no color in it to read,
+         so at zero the only thing identifying it is the letter, and a
+         "0" sitting there takes the place of the one useful mark. That
+         is worst late in a print, with the other three done and the
+         one still owing the one you cannot name.
+
+         The same at rest, where nothing has been printed and four
+         zeros would say nothing four times. */
+      tag.textContent = (rest || pc === 0) ? (TAGS[pl] || '')
+                      : (full ? '\u2713' : String(pc));
     }
   }
 }
@@ -5649,6 +7091,7 @@ function paintTubes() {
 
 function classFor(code) {
   if (!code) return 'cell';
+  if (isGlitch(code)) return 'cell glitch';
   if (isBug(code)) return 'cell ' + inkOf(code) + ' virus'
                         + (bugLeft(code) <= 3 ? ' soon' : '');
   return 'cell ' + inkOf(code) + (isMag(code) ? ' mag' : '');
@@ -5656,14 +7099,14 @@ function classFor(code) {
 
 function paint() {
   for (let i = 0; i < tiles.length; i++) {
-    tiles[i].className = classFor(well[i]);
+    tiles[i].className = classFor(well[i]) + (herOn.has(i) ? ' her' : '');
     tiles[i].textContent = isBug(well[i]) ? bugLeft(well[i]) : '';
   }
 
   if (piece) {
-    for (const [x, y, code] of pieceCells(piece)) {
+    for (const [x, y, code, low] of pieceCells(piece)) {
       if (!inside(x, y)) continue;
-      tiles[idx(x, y)].className = classFor(code) + ' live';
+      tiles[idx(x, y)].className = classFor(code) + ' live' + (low ? ' lowink' : '');
       tiles[idx(x, y)].textContent = isBug(code) ? bugLeft(code) : '';
     }
   }
@@ -5744,7 +7187,14 @@ function restPress() {
 
 function pieceCells(p) {
   const [dx, dy] = ROT[p.rot];
-  return [[p.x, p.y, p.a], [p.x + dx, p.y + dy, p.b]];
+  const out = [];
+  /* A faded half is simply not there any more -- not a cell holding
+     nothing. Everything that asks what a piece occupies asks here, so
+     fitting, landing, rotating and painting all agree without any of
+     them being told about low ink. */
+  if (p.gone !== 'a') out.push([p.x, p.y, p.a, p.low === 'a']);
+  if (p.gone !== 'b') out.push([p.x + dx, p.y + dy, p.b, p.low === 'b']);
+  return out;
 }
 
 function fits(p) {
@@ -5762,13 +7212,23 @@ function roll() {
   // never magnetic as well: one thing for a cell to be saying at a time
   if (Math.random() < virusRate) { window.__vMade = (window.__vMade || 0) + 1;
     return rand() + FUSE + FUSE_DROPS; }
-  return rand() + (Math.random() < MAG_RATE ? '*' : '');
+  return rand() + (Math.random() < magRate ? '*' : '');
 }
 
 function newPair() {
-  const p = { x: (COLS >> 1) - 1, y: 1, rot: 0, a: roll(), b: roll() };
+  const p = { x: (COLS >> 1) - 1, y: 1, rot: 0, a: roll(), b: roll(), low: null, gone: null };
   // never both halves corrupted -- two at once is a punishment nobody can read
   if (isBug(p.a) && isBug(p.b)) p.b = rand();
+
+  /* Plain ink only. A virus that leaves before it can be dealt with is
+     not a threat, and a magnet that leaves has not done its one trick --
+     either way the drop would be saying two things at once. */
+  if (Math.random() < lowRate) {
+    const can = [];
+    if (!isBug(p.a) && !isMag(p.a)) can.push('a');
+    if (!isBug(p.b) && !isMag(p.b)) can.push('b');
+    if (can.length) p.low = can[(Math.random() * can.length) | 0];
+  }
   return p;
 }
 
@@ -6095,6 +7555,32 @@ function burnDown() {
   return gone;
 }
 
+/* How many of its own color a drop is touching, counted orthogonally the
+   way a clump is. Asked of a copy of the board when the question is what
+   a move would be worth, so asking never changes anything. */
+function groupAt(w, x, y) {
+  if (!inside(x, y)) return 0;
+  const v = at(w, x, y);
+  if (!v || isBug(v) || isGlitch(v)) return 0;
+  const ink = inkOf(v);
+
+  const seen = new Set();
+  const stack = [[x, y]];
+  let n = 0;
+  while (stack.length) {
+    const [cx, cy] = stack.pop();
+    if (!inside(cx, cy)) continue;
+    const k = cy * COLS + cx;
+    if (seen.has(k)) continue;
+    const c = at(w, cx, cy);
+    if (!c || isBug(c) || inkOf(c) !== ink) continue;
+    seen.add(k);
+    n++;
+    stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
+  }
+  return n;
+}
+
 /* Magnetic ink drags its own color out of a diagonal and into line: if the
    square above the magnet is free and a matching drop sits diagonally above
    it, that drop slides across. */
@@ -6112,17 +7598,37 @@ function pullMagnets() {
       const ink = inkOf(here);
       if (y - 1 < 0 || at(well, x, y - 1)) continue;      // no room above it
 
+      /* Both diagonals are weighed rather than the left one taken because
+         it was looked at first. Two things decide it.
+
+         A drop already touching two of its own is part of something the
+         player is building, and dragging it out of that to put it beside
+         a magnet took away more than it gave. That was the complaint:
+         the magnet working against you. It is left where it is.
+
+         Of what is left, the pull that ends in the bigger group wins, so
+         when either diagonal would do, the magnet takes the one that
+         actually builds toward a clear. */
+      let best = null;
       for (const dx of [-1, 1]) {
         const nx = x + dx, ny = y - 1;
         if (!inside(nx, ny)) continue;
         const v = at(well, nx, ny);
         if (!v || isBug(v) || inkOf(v) !== ink) continue;
+        if (groupAt(well, nx, ny) >= 3) continue;       // already working
 
-        put(well, nx, ny, null);
-        put(well, x, y - 1, v);
+        const trial = well.slice();
+        put(trial, nx, ny, null);
+        put(trial, x, y - 1, v);
+        const size = groupAt(trial, x, y - 1);
+        if (!best || size > best.size) best = { nx, ny, v, size };
+      }
+
+      if (best) {
+        put(well, best.nx, best.ny, null);
+        put(well, x, y - 1, best.v);
         pulled.push([x, y - 1], [x, y]);
         moved = true;
-        break;
       }
     }
   }
@@ -6286,7 +7792,25 @@ async function resolve() {
 
     await wait(170);
 
+    /* Anything the clear was touching comes off with it. Worked out
+       before the cells are emptied, because afterwards there is nothing
+       left to be adjacent to. */
+    const scrub = new Set();
+    for (const group of clumps) {
+      for (const [x, y] of group) {
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy;
+          if (inside(nx, ny) && isGlitch(at(well, nx, ny))) scrub.add(idx(nx, ny));
+        }
+      }
+    }
+    for (const i of scrub) tiles[i].className = 'cell glitch scrub';
+
     for (const group of clumps) for (const [x, y] of group) put(well, x, y, null);
+    if (scrub.size) {
+      await wait(150);                          // the scrub has to be seen
+      for (const i of scrub) well[i] = null;
+    }
 
     settle(well);
     if (pullMagnets()) settle(well);
@@ -6313,8 +7837,12 @@ async function resolve() {
 function tick() {
   if (!piece || busy || over) return;
   const down = { ...piece, y: piece.y + 1 };
-  if (fits(down)) { piece = down; paint(); }
-  else lock();
+  if (fits(down)) {
+    piece = down;
+    /* Spawned at y = 1, so the row it is on is how far it has come. */
+    if (piece.low && !piece.gone && piece.y - 1 >= LOW_ROWS) piece.gone = piece.low;
+    paint();
+  } else lock();
 }
 
 let clock = null;
@@ -6407,6 +7935,13 @@ function cellSize() { return tiles[0].getBoundingClientRect().width + 3; }
 
 document.addEventListener('pointerdown', (e) => {
   if (e.target.closest('.foot') || e.target.closest('.over')) return;
+  /* A tap on something built to be pressed is a press, not a gesture at
+     the board. The switches sit in the side rail rather than the foot, so
+     muting the sound or turning the marks on has been quietly rotating
+     the falling piece as well -- it went unnoticed because those two do
+     something obvious of their own, and the grid toggle, which does not,
+     is what finally showed it. */
+  if (e.target.closest('button, input, select, a, label, [role="button"]')) return;
   t0 = { x: e.clientX, y: e.clientY, t: Date.now() };
   lastCol = 0; moved = false;
 });
@@ -7411,12 +8946,12 @@ const discoWon = () => campDone.length >= campList().length;
    So the first run is handed the page instead. Once only: the series
    restarts from the first level whenever somebody replays it for a
    better time, and a tutorial on every restart is a toll gate. */
-const TAUGHT_KEY = 'cp-taught';
+const TAUGHT_KEY = SKEY + 'taught';
 
 const taught = () => { try { return localStorage.getItem(TAUGHT_KEY) === '1'; } catch (e) { return true; } };
 const taughtSet = () => { try { localStorage.setItem(TAUGHT_KEY, '1'); } catch (e) {} };
 
-const SPOT_KEY = 'cp-camp-spot';
+const SPOT_KEY = SKEY + 'camp-spot';
 
 function spotGet() {
   try {
@@ -7448,7 +8983,7 @@ function campStart() {
 /* Gold until it has been played once, so it reads as new exactly as long
    as it is new. Kept on the device rather than on the account: it is a
    label on a button, not a score. */
-const DISCO_SEEN = 'cp-endless-seen';
+const DISCO_SEEN = SKEY + 'endless-seen';
 function discoNew() {
   try { return discoWon() && localStorage.getItem(DISCO_SEEN) !== '1'; }
   catch (e) { return discoWon(); }
@@ -7473,6 +9008,11 @@ function paintFreeSlot() {
   if (!b) return;
   b.hidden = !discoWon();
   b.classList.toggle('fresh', discoNew());
+  /* Five apps is three rows where four was two, and three rows of the
+     full size run past the foot of the board on a phone. The panel says
+     so and the apps come in a size. */
+  const pan = document.getElementById('titleMenu');
+  if (pan) pan.classList.toggle('tight', !b.hidden);
 }
 
 function whereInSeries() {
@@ -7500,9 +9040,112 @@ function whereInSeries() {
    The last print is not here until it has been reached. The rooms are the
    only count the series shows, and a twenty first chip sitting past the
    sixth room would answer the question the game is keeping. */
+const PP_ART = {
+  /* Paper tray: the stack, and the pickup roller turning over it with a
+     sheet starting to lift off the top. */
+  0:'<rect x="6" y="34" width="60" height="16" rx="2" fill="#F2EFE6" opacity=".9"/>' +
+    '<rect x="9" y="30" width="54" height="5" rx="1.5" fill="#F2EFE6" opacity=".55"/>' +
+    '<path class="pp-feed" d="M14 30h42" stroke="#F2EFE6" stroke-width="3" stroke-linecap="round" opacity=".85"/>' +
+    '<g class="pp-spin" style="transform-origin:center">' +
+      '<circle cx="52" cy="22" r="11" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>' +
+      '<path d="M52 11v22M41 22h22M44 14l16 16M60 14L44 30" stroke="#4A5162" stroke-width="2"/>' +
+    '</g>' +
+    '<rect x="4" y="8" width="26" height="10" rx="2" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>',
+
+  /* Pickup rollers. A roller is a cylinder, not a wheel: dark rubber
+     barrel, a flat along one side, a pale end cap and a gear cluster on
+     the shaft. Drawn side on, which is how you meet them when the
+     cassette is out. The gear turns; the barrels cannot be shown
+     turning side on, so the sheet moving under them is what says they
+     are. */
+  1:'<rect x="4" y="30" width="58" height="6" rx="3" fill="#1A1C24"/>' +
+    '<rect x="8" y="8" width="42" height="13" rx="6.5" fill="#33363E"/>' +
+    '<rect x="8" y="8" width="42" height="5" rx="2.5" fill="#44474F"/>' +
+    '<path d="M16 8v13M24 8v13M32 8v13M40 8v13" stroke="#24262D" stroke-width="1.5"/>' +
+    '<rect x="8" y="22" width="42" height="13" rx="6.5" fill="#2B2E35"/>' +
+    '<rect x="8" y="22" width="42" height="5" rx="2.5" fill="#3B3E46"/>' +
+    '<path d="M16 22v13M24 22v13M32 22v13M40 22v13" stroke="#1E2027" stroke-width="1.5"/>' +
+    '<rect x="2" y="7" width="9" height="15" rx="3" fill="#6E93C9"/>' +
+    '<rect x="2" y="21" width="9" height="15" rx="3" fill="#5C7EB0"/>' +
+    '<g class="pp-spin" style="transform-origin:center">' +
+      '<circle cx="56" cy="21" r="9" fill="#E8E8EC" stroke="#B9BAC2" stroke-width="1.5"/>' +
+      '<path d="M56 12v18M47 21h18M50 15l12 12M62 15L50 27" stroke="#B9BAC2" stroke-width="2"/>' +
+    '</g>' +
+    '<path class="pp-feed" d="M2 43h68" stroke="#F2EFE6" stroke-width="4" stroke-linecap="round" opacity=".85"/>',
+
+  /* Registration: the sheet squared up against the stops before it is
+     allowed through. */
+  2:'<rect x="6" y="10" width="60" height="30" rx="3" fill="#20242F" stroke="#4A5162" stroke-width="2"/>' +
+    '<path d="M18 12v26M36 12v26M54 12v26" stroke="#3A3F4C" stroke-width="2"/>' +
+    '<g class="pp-nudge">' +
+      '<rect x="8" y="22" width="56" height="6" rx="2" fill="#F2EFE6" opacity=".9"/>' +
+    '</g>' +
+    '<path d="M64 14v22" stroke="#D4A24C" stroke-width="3" stroke-linecap="round" opacity=".8"/>',
+
+  /* The drum: gear teeth turning, the corona wire sparking above it, and
+     the laser sweeping in from the side. */
+  3:'<g class="pp-spin slow" style="transform-origin:center">' +
+      '<circle cx="30" cy="26" r="17" fill="#3A3426" stroke="#8A7540" stroke-width="2"/>' +
+      '<circle cx="30" cy="26" r="7" fill="#20242F" stroke="#8A7540" stroke-width="2"/>' +
+      '<path d="M30 9v6M30 37v6M13 26h6M41 26h6M18 14l4 4M38 30l4 4M42 14l-4 4M22 30l-4 4"' +
+        ' stroke="#8A7540" stroke-width="3" stroke-linecap="round"/>' +
+    '</g>' +
+    '<path class="pp-spark" d="M12 7h36" stroke="#99A2F7" stroke-width="2" stroke-linecap="round"/>' +
+    '<path class="pp-beam" d="M70 12L44 24" stroke="#E6007E" stroke-width="2" stroke-linecap="round"/>' +
+    '<rect x="62" y="6" width="10" height="10" rx="2" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>' +
+    '<path d="M4 46h64" stroke="#F2EFE6" stroke-width="4" stroke-linecap="round" opacity=".85"/>',
+
+  /* The fuser: two heated rollers, glowing in and out as they turn. */
+  4:'<g class="pp-glow"><ellipse cx="36" cy="26" rx="30" ry="17" fill="#E6007E" opacity=".16"/></g>' +
+    '<g class="pp-spin" style="transform-origin:center">' +
+      '<circle cx="36" cy="16" r="11" fill="#3A2630" stroke="#C4566E" stroke-width="2"/>' +
+      '<path d="M36 5v22M25 16h22" stroke="#C4566E" stroke-width="2"/>' +
+    '</g>' +
+    '<g class="pp-spin rev" style="transform-origin:center">' +
+      '<circle cx="36" cy="38" r="11" fill="#3A2630" stroke="#C4566E" stroke-width="2"/>' +
+      '<path d="M36 27v22M25 38h22" stroke="#C4566E" stroke-width="2"/>' +
+    '</g>' +
+    '<path class="pp-feed" d="M2 27h68" stroke="#F2EFE6" stroke-width="4" stroke-linecap="round" opacity=".9"/>',
+
+  /* Output tray: the finished sheet coming out onto the stack. */
+  5:'<rect x="6" y="36" width="60" height="14" rx="2" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>' +
+    '<rect x="10" y="28" width="52" height="8" rx="2" fill="#F2EFE6" opacity=".9"/>' +
+    '<rect x="14" y="21" width="44" height="7" rx="2" fill="#F2EFE6" opacity=".6"/>' +
+    '<g class="pp-out"><rect x="18" y="8" width="36" height="12" rx="2" fill="#F2EFE6" opacity=".95"/>' +
+      '<path d="M24 12h24M24 16h16" stroke="#9BA0AE" stroke-width="1.5"/></g>',
+
+  /* The formatter board: traces, chips, and lamps that will not settle. */
+  last:'<rect x="4" y="6" width="64" height="40" rx="3" fill="#161B18" stroke="#2E7D5B" stroke-width="2"/>' +
+    '<path d="M12 14h18v10h14M12 30h10v8h22M46 14v12M52 30h10" stroke="#2E7D5B" stroke-width="1.5" fill="none"/>' +
+    '<rect x="34" y="18" width="16" height="12" rx="1.5" fill="#20242F" stroke="#E6007E" stroke-width="1.5"/>' +
+    '<rect x="10" y="36" width="12" height="7" rx="1" fill="#20242F" stroke="#4A5162" stroke-width="1.5"/>' +
+    '<circle class="pp-led" cx="60" cy="13" r="3" fill="#E6007E"/>' +
+    '<circle class="pp-led b" cx="60" cy="24" r="3" fill="#0093D3"/>' +
+    '<circle class="pp-led c" cx="60" cy="35" r="3" fill="#F3E500"/>'
+};
+
+/* The stations a sheet actually meets, in order. The boards are not on
+   the paper path at all, which is why she is at the end of it rather
+   than along it. */
+const PP_NAME = ['Paper tray', 'Pickup rollers', 'Registration',
+                 'The drum', 'The fuser', 'Output tray'];
+
+/* The series as the sheet's own run through the machine. The panel this
+   sits in is already a riveted housing, so there is no second frame here
+   -- the sheet just runs down it, and a chapter is a housing bolted
+   across the channel with a slot either side. */
+/* When the list last appeared. A tap that opens this screen can land a
+   second time on whatever is now under the finger, and after the list
+   scrolls itself to the print you are about to play, what is under the
+   finger is a print. That is somebody pressing Level Select and being
+   dropped straight into level four. A node is only a node once the
+   screen has been there long enough for the press to be meant. */
+let lvShownAt = 0;
+
 function buildLevels() {
   const wrap = document.getElementById('lvRooms');
   if (!wrap) return;
+  lvShownAt = Date.now();
   const list = campList();
   const reach = campFind();                       // the furthest level open to them
   wrap.innerHTML = '';
@@ -7515,25 +9158,73 @@ function buildLevels() {
     rooms.get(key).push({ here, i });
   });
 
+  /* The old chip grid was built to fit the panel exactly and never
+     scroll. A run of thirty prints down a sheet cannot do that, so the
+     container is told to behave differently while the path is what is
+     in it. */
+  wrap.classList.add('ppmode');
+
+  const path = document.createElement('div');
+  path.className = 'pp';
+  /* The sheet is drawn after the nodes are placed, because it has to go
+     where they ended up rather than where they were meant to. */
+  /* Behind the sheet: the inside of the machine. Placed off the same
+     measurements the sheet is, so it fills whichever side the run is not
+     using rather than sitting wherever it was put. */
+  const deco = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  deco.setAttribute('class', 'pp-deco');
+  deco.setAttribute('aria-hidden', 'true');
+  path.appendChild(deco);
+
+  const sheet = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  sheet.setAttribute('class', 'pp-sheet');
+  sheet.setAttribute('aria-hidden', 'true');
+  path.appendChild(sheet);
+
+  /* One level is still a stage. Without this Asil's stretch came out a
+     quarter the height of a chapter, and a short band at the end reads as
+     a mistake rather than as the finale. Taken from the longest chapter so
+     it keeps up when chapters go from five levels to ten. */
+  const chapLen = Math.max(5, ...[...rooms]
+    .filter(([k]) => k !== 'last').map(([, v]) => v.length));
+
   for (const [key, items] of rooms) {
-    const box = document.createElement('div');
-    const name = document.createElement('p');
-    name.className = 'lv-room-name';
+    const last = key === 'last';
     const ch = CHAPTERS[key];
-    name.textContent = key === 'last' ? 'The last print' : (ch ? ch.name : '');
-    const row = document.createElement('div');
-    row.className = 'lv-row';
-    row.style.setProperty('--n', String(items.length));
+
+    const st = document.createElement('div');
+    st.className = 'pp-stop' + (last ? ' her' : '');
+    st.innerHTML =
+      '<svg class="pp-rig" width="68" height="50" viewBox="0 0 72 52" aria-hidden="true">' +
+      (PP_ART[last ? 'last' : key] || '') + '</svg>' +
+      '<span class="pp-txt"><b>' + (last ? 'Formatter board' : (PP_NAME[key] || '')) + '</b>' +
+      (last ? 'The last print' : (ch ? ch.name : '')) + '</span>';
+    path.appendChild(st);
 
     for (const { i } of items) {
       const lv = i + 1;
       const done = campDone.indexOf(lv) !== -1;
       const open = done || i <= reach;
 
+      const run = document.createElement('div');
+      run.className = 'pp-run';
+      /* A weave rather than a column. Nothing is written beside a print
+         now, so the width is the sheet's to use. The turn is a sine so
+         the run reads as one continuous feed rather than a zigzag. */
+      run.style.setProperty('--x', (0.5 + 0.33 * Math.sin(lv * 0.82)).toFixed(3));
+      run.dataset.ch = String(key);        // which stretch of machine this is in
+      if (last) {
+        run.classList.add('alone');
+        run.style.setProperty('--runs', String(chapLen));
+      }
+
       const b = document.createElement('button');
       b.type = 'button';
+      /* Keeps the lv class and the data-level, so the handler that opens
+         a level's card needs to know nothing about any of this. */
       b.className = 'lv' + (done ? ' done' : '') + (i === campAt ? ' here' : '')
-                  + (open ? '' : ' shut') + (beatPar(lv) ? ' par' : '');
+                  + (open ? '' : ' shut') + (beatPar(lv) ? ' par' : '')
+                  + (last ? ' boss' : '');
       b.innerHTML = '<b>' + lv + '</b>';
       if (open) {
         b.dataset.level = String(lv);
@@ -7542,18 +9233,174 @@ function buildLevels() {
         b.disabled = true;
         b.setAttribute('aria-label', 'Level ' + lv + ', not reached yet');
       }
-      row.appendChild(b);
+
+      /* No words. Printed is a sheet that has been printed on, the next
+         one is lit, and what has not been reached is dark -- which is
+         the whole of what the labels were saying. */
+      run.appendChild(b);
+      path.appendChild(run);
     }
-    box.appendChild(name);
-    box.appendChild(row);
-    wrap.appendChild(box);
   }
+
+  wrap.appendChild(path);
+
+  /* Drawn once now so there is never a frame without a sheet, then again
+     on the next frame once the browser has actually laid the run out.
+     Measuring before that put the ribbon where the prints were going to
+     be rather than where they ended up, which is why the circles sat off
+     its center line. The observer catches everything after: a font
+     arriving late, the panel changing size, the phone turning. */
+  const redraw = () => { drawSheet(path, sheet); drawDeco(path, deco); };
+  redraw();
+  requestAnimationFrame(redraw);
+
+  if (ppWatch) ppWatch.disconnect();
+  if (window.ResizeObserver) {
+    ppWatch = new ResizeObserver(redraw);
+    ppWatch.observe(path);
+  }
+
+  /* Thirty one prints is a long way down, and sixty will be twice that.
+     Open on the one they are about to play rather than at the paper
+     tray. */
+  const here = wrap.querySelector('.lv.here') || wrap.querySelector('.lv:not(.shut)');
+  if (!here) return;
+
+  /* The panel scrolls, not this list -- the list simply grows and the
+     panel takes it. So the thing to move is whichever ancestor actually
+     has somewhere to move to, found rather than assumed. */
+  let box = wrap;
+  while (box && box.scrollHeight <= box.clientHeight + 4) box = box.parentElement;
+  if (!box) return;
+
+  const from = box.getBoundingClientRect().top;
+  const at = here.getBoundingClientRect().top;
+  box.scrollTop += (at - from) - box.clientHeight / 2 + here.offsetHeight / 2;
+}
+
+let ppWatch = null;
+
+/* The sheet, through wherever the prints actually landed. One ribbon with
+   no line down the middle of it: a strip with a dashed center is a road,
+   and this is a page. */
+function drawSheet(path, svg) {
+  const box = path.getBoundingClientRect();
+  if (!box.width || !box.height) return;
+  svg.setAttribute('viewBox', '0 0 ' + box.width + ' ' + box.height);
+
+  const pts = [];
+  for (const n of path.querySelectorAll('.pp-run .lv')) {
+    const r = n.getBoundingClientRect();
+    pts.push([r.left - box.left + r.width / 2, r.top - box.top + r.height / 2]);
+  }
+  if (pts.length < 2) { svg.innerHTML = ''; return; }
+
+  let d = 'M ' + pts[0][0] + ' ' + pts[0][1];
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+    const my = (y0 + y1) / 2;
+    d += ' C ' + x0 + ' ' + my + ' ' + x1 + ' ' + my + ' ' + x1 + ' ' + y1;
+  }
+
+  const line = (w, o) => '<path d="' + d + '" fill="none" stroke="#F2EFE6" ' +
+    'stroke-width="' + w + '" stroke-linecap="round" stroke-linejoin="round" opacity="' + o + '"/>';
+  svg.innerHTML = line(34, .16) + line(26, .07) + line(1, .10);
+}
+
+/* ---- what the machine looks like where you are ----
+   The background is not one wallpaper down the whole run. Each stretch
+   is the place the sheet is actually passing through, so it changes as
+   you travel: the cassette at the tray, the roller plate through the
+   pickup, the registration gear stack, the scanner writing to the drum,
+   the fuser, the sheet landing in the output tray, and her stretch the
+   formatter board that decides what the rest of it prints.
+
+   All of it is drawn into the band that chapter's prints occupy, worked
+   out from where they landed, so it stretches and shrinks with the run
+   rather than being positioned by hand. */
+/* One per PP_NAME, in that order. Inserting a laser station here put
+   every skin a chapter out from the gate above it -- the gate said The
+   drum while the band behind it was the fuser. The names are the
+   authority; the art follows them. */
+const PP_SKIN = ['paper', 'belts', 'registration', 'drum', 'fuser', 'out'];
+
+/* Where a band has real art, it uses it instead of the shapes written
+   here. One part per band, laid in whole: a printer has one drum and one
+   cassette, so a wall of them reads as wallpaper rather than as the
+   machine the sheet is travelling through. Low opacity, because it is
+   the wall behind the sheet and not the thing being read. */
+const PP_IMG = {
+  paper:        { src: '/games/img/path/tray.png',         opacity: 0.34 },
+  belts:        { src: '/games/img/path/rollers.png',      opacity: 0.22 },
+  registration: { src: '/games/img/path/registration.png', opacity: 0.20 },
+  /* The scanner drawing rather than the bare cylinder: this is the drum
+     being written to, and a lone cylinder came out a sliver 59px tall in
+     a band four times that, with nothing either side of it. */
+  drum:         { src: '/games/img/path/laser.png',        opacity: 0.30 },
+  fuser:        { src: '/games/img/path/fuser.png',        opacity: 0.28 },
+  /* Hers is the board itself -- the part that decides what the rest
+     of the machine prints, which is the one she took over. */
+  /* Stood on end, mouth upward. It was drawn lying flat, and a landscape
+     drawing filling a portrait band showed 38% of itself; turned, it fills
+     the band with 96% of the tray in view, and the open end faces the
+     sheet coming down to it. */
+  out:          { src: '/games/img/path/output-tray.png', opacity: 0.26 },
+  glitch:       { src: '/games/img/path/boss-board.png',   opacity: 0.30 }
+};
+
+function drawDeco(path, svg) {
+  const box = path.getBoundingClientRect();
+  if (!box.width || !box.height) return;
+  const W = box.width;
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + box.height);
+
+  /* Each chapter's prints, so a band can be the height of its own
+     stretch rather than a fixed slab. */
+  const bands = new Map();
+  for (const run of path.querySelectorAll('.pp-run')) {
+    const n = run.querySelector('.lv');
+    if (!n) continue;
+    const r = n.getBoundingClientRect();
+    const y = r.top - box.top + r.height / 2;
+    const k = run.dataset.ch;
+    if (!bands.has(k)) bands.set(k, { lo: y, hi: y });
+    const b = bands.get(k);
+    b.lo = Math.min(b.lo, y);
+    b.hi = Math.max(b.hi, y);
+  }
+  if (!bands.size) { svg.innerHTML = ''; return; }
+
+  /* Every band reaches its neighbours, and the first and last reach the
+     ends of the run. Padding each one by a fixed 44px left a strip of bare
+     panel between every chapter and at both ends of the sheet. */
+  const rows = [...bands.entries()];
+  let out = '';
+  for (let i = 0; i < rows.length; i++) {
+    const [k, b] = rows[i];
+    const kind = k === 'last' ? 'glitch' : (PP_SKIN[k] || 'paper');
+    const top = i === 0 ? 0 : (rows[i - 1][1].hi + b.lo) / 2;
+    const bot = i === rows.length - 1 ? box.height : (b.hi + rows[i + 1][1].lo) / 2;
+    const art = PP_IMG[kind];
+
+    if (art) {
+      /* slice, not meet: the drawing covers the band and is cropped by it
+         rather than being fitted inside it with bare rails either side.
+         The x/y/width/height box does the cropping, so nothing spills into
+         the chapter above or below. */
+      out += '<image href="' + art.src + '" x="0" y="' + top.toFixed(1) +
+             '" width="' + W.toFixed(1) + '" height="' + (bot - top).toFixed(1) +
+             '" opacity="' + art.opacity +
+             '" preserveAspectRatio="xMidYMid slice"/>';
+    }
+  }
+  svg.innerHTML = out;
 }
 
 /* A chip opens that level's card. */
 document.addEventListener('click', (e) => {
   const chip = e.target.closest ? e.target.closest('.lv[data-level]') : null;
   if (!chip || elLevels().hidden) return;
+  if (Date.now() - lvShownAt < 400) return;      // the tap that opened the screen
   const lv = parseInt(chip.dataset.level, 10);
   if (!lv) return;
   trying = 0; campOn = true; campAt = lv - 1;
@@ -7562,6 +9409,8 @@ document.addEventListener('click', (e) => {
   if (lv === 1) { vicSeen = false; vicSpoken = false; }
   if (lv === campList().length) { bossSeen = false; bossSpoken = false; }
   hideFace();
+  // same order coming in from the map as from the menu
+  if (lv === 1 && !vicSeen) { vicSeen = true; showFace('victor'); return; }
   newPrint('gallery');
 });
 
@@ -7580,6 +9429,11 @@ function homeGo(go) {
     if (discoWon() && !onSecondRun()) { campAt = 0; spotSet(0); }
     else campAt = campStart();
     if (campAt === 0) { vicSeen = false; vicSpoken = false; }
+    /* He is the one who sends them to the painting, so he cannot come
+       after they have already chosen it. He used to sit behind the level
+       card, which meant pressing Play on a print before anybody had said
+       why it needed looking at. */
+    if (campAt === 0 && !vicSeen) { vicSeen = true; hideFace(); showFace('victor'); return; }
     hideFace(); newPrint('gallery'); return;
   }
   if (go === 'practice') { trying = 0; campOn = false; discoOn = false; hideFace(); newPrint('setup'); return; }
@@ -9218,83 +11072,63 @@ function endTick(now) {
    Built rather than written into the markup so the painting list is the
    one the game actually shipped with, not a copy of it that goes stale
    the next time a room changes. */
-const CREDITS = [
-  /* No address under the title: whoever is reading this followed the
-     link an hour ago and is still standing on it. It would earn its
-     place on a version that runs anywhere else. */
-  ['Gallery Printshop', [
-    ['Created for PrinterMan’s Art Club', ''],
-  ]],
-  ['Made by', [
-    ['PrinterMan', 'Creative design and story, with coding directed by Claude'],
-  ]],
+/* A printed card rather than a reel. The scroll was the convention and it
+   was also broken, and a card is what a press puts out anyway.
+
+   "Created for PrinterMan's Art Club" came out from under the title: the
+   club's name is already in the line below it, and whoever is reading
+   this followed a link from the club an hour ago. */
+const CREDITS = {
+  title: 'Gallery Printshop',
+  by: { kicker: 'Made by', name: 'PrinterMan',
+        note: 'Story & design, coding directed by Claude' },
   /* Who holds the paintings, rather than who painted them -- the artist
-     and the date are already on the sheet at the end of every level, so
-     a second list of the same twenty names is a second list. These are
-     the collections the pictures came out of. */
-  ['Paintings from', [
-    ['The Metropolitan Museum of Art', 'Open Access'],
-    ['The Cleveland Museum of Art', 'Open Access'],
-    ['Musée du Louvre', 'Paris'],
-  ]],
-  ['Special Thanks:', [
-    ['Everyone in the club', 'For looking at things and saying what they think'],
-  ]],
-];
+     and the date are already on the sheet at the end of every level, so a
+     second list of the same twenty names is a second list. */
+  art: { kicker: 'Paintings from', houses: [
+    { name: 'Metropolitan Museum of Art', note: 'Open Access', art: 'wide' },
+    { name: 'Cleveland Museum of Art',    note: 'Open Access', art: 'temple' },
+    { name: 'Musée du Louvre',            note: 'Paris',       art: 'pyramid' }
+  ]},
+  /* The club is a Discord server, which is not something the game has
+     said anywhere. Naming it says who is being thanked and the link says
+     where they are. */
+  thanks: { kicker: 'Special thanks', name: 'The Discord community',
+            href: 'https://discord.gg/nn3xjcS745', cta: 'Join the club' }
+};
+
+/* Drawn here rather than fetched: a museum's own mark is its own, and
+   these are the generic fronts the idea of a museum is made of. */
+const HOUSE_ART = {
+  wide: '<path d="M3 30h38M5 30V17M12 30V17M19 30V17M26 30V17M33 30V17M39 30V17"/>'
+      + '<path d="M2 17h40L22 5 2 17z"/><path d="M8 33h28"/>',
+  temple: '<path d="M8 30h28M11 30V16M17 30V16M23 30V16M29 30V16M33 30V16"/>'
+        + '<path d="M7 16h30L22 6 7 16z"/><path d="M5 33h34"/>',
+  pyramid: '<path d="M22 7 6 30h32L22 7z"/><path d="M22 7v23M13 19h18M9.5 25h25"/>'
+         + '<path d="M4 33h36"/>'
+};
 
 function buildCredits() {
-  const reel = document.getElementById('creditReel');
-  if (!reel) return;
-  reel.innerHTML = '';
+  const card = document.getElementById('creditCard');
+  if (!card) return;
+  const C = CREDITS;
+  const house = (h) =>
+    '<li class="chouse"><svg viewBox="0 0 44 36" aria-hidden="true">' + HOUSE_ART[h.art] + '</svg>' +
+    '<b>' + h.name + '</b><i>' + h.note + '</i></li>';
 
-  for (const [head, rows] of CREDITS) {
-    const g = document.createElement('div');
-    g.className = 'cgroup';
-    const h = document.createElement('p');
-    h.className = 'chead';
-    h.textContent = head;
-    g.appendChild(h);
-
-    /* A group with no rows of its own takes the gallery as it stands, so
-       a list of the paintings cannot drift from the ones that shipped. */
-    const list = rows || campList().map((e) => {
-      const a = e.art || {};
-      return [a.title || '', [a.artist, a.date].filter(Boolean).join(' · ')];
-    });
-
-    for (const [name, note] of list) {
-      if (!name) continue;
-      const n = document.createElement('p');
-      n.className = 'cname';
-      n.textContent = name;
-      g.appendChild(n);
-      if (note) {
-        const s = document.createElement('p');
-        s.className = 'cnote';
-        s.textContent = note;
-        g.appendChild(s);
-      }
-    }
-    reel.appendChild(g);
-  }
-
-  const mark = document.createElement('p');
-  mark.className = 'cmark';
-  mark.textContent = 'PRINTERMAN’S ART CLUB';
-  reel.appendChild(mark);
-
-  /* The reel used to end on the unlock too. It cannot now: Credits sits
-     on the home menu, so this is a page anybody can open at any time,
-     and a mode they have not earned announced to them is an
-     announcement about nothing. The report screen keeps the news, which
-     is where it is earned. */
-
-  /* Opened at the top however it was left. There are few enough names
-     that they fit a desktop panel whole, so there is nothing to roll --
-     on a phone the box scrolls by hand like any other. */
-  const roll = document.getElementById('creditRoll');
-  if (roll) roll.scrollTop = 0;
+  card.innerHTML =
+    '<h2 class="ctitle">' + C.title + '</h2>' +
+    '<p class="ckick">' + C.by.kicker + '</p>' +
+    '<p class="cname">' + C.by.name + '</p>' +
+    '<p class="cnote">' + C.by.note + '</p>' +
+    '<p class="ckick">' + C.art.kicker + '</p>' +
+    '<ul class="chouses">' + C.art.houses.map(house).join('') + '</ul>' +
+    '<p class="ckick">' + C.thanks.kicker + '</p>' +
+    '<p class="cname">' + C.thanks.name + '</p>' +
+    '<p class="cnote"><a class="cjoin" href="' + C.thanks.href +
+      '" target="_blank" rel="noopener">' + C.thanks.cta + '</a></p>';
 }
+
 
 async function asilStart(silent) {
   asilStop();
@@ -9406,6 +11240,17 @@ function gallery() {
    the clears step back when it lands and climb again from there. */
 function levelSetup(i, n) {
   const t = n > 1 ? i / (n - 1) : 0;
+  const ch = chapterOf(i);
+  /* Where a hazard is along its own stretch: nothing on the chapter it
+     arrives, full by the end of the series. Keeping it on its own stretch
+     rather than on the whole series means holding something back makes
+     the early game calm without making the late game milder. */
+  const since = (from) => {
+    if (ch === null || ch < from) return -1;            // not yet
+    const span = Math.max(1, (CHAPTERS.length - 1) - from);
+    return Math.min(1, Math.max(0, (Math.min(ch, CHAPTERS.length - 1) - from) / span));
+  };
+  const vT = since(HAZARD_CH.virus);
   const band = t < 1 / 3 ? 0 : (t < 2 / 3 ? 1 : 2);
   const within = Math.min(1, Math.max(0, t * 3 - band));
   const from = [8, 10, 12][band];
@@ -9414,7 +11259,27 @@ function levelSetup(i, n) {
     mode: ['office', 'five-lc', 'photo'][band],
     inkPer: Math.round(from + (to - from) * within),
     fallMs: Math.round(900 - 570 * t),
-    virusRate: VIRUS_FROM + (VIRUS_TO - VIRUS_FROM) * t
+    /* The first ten prints are clear. Somebody is learning to read a
+       board and to see four of a color before it is four of a color,
+       and a drop that eats a plate while they are still doing that
+       teaches nothing but that the game is unfair.
+
+       After that the virus ramps across what is left rather than across
+       the whole series, so holding it back makes the early game calm
+       without making the late game milder than it was. */
+    virusRate: vT < 0 ? 0 : VIRUS_FROM + (VIRUS_TO - VIRUS_FROM) * vT,
+    lowRate: since(HAZARD_CH.lowink) < 0 ? 0 : LOW_RATE,
+    magRate: i === 0 ? 0 : MAG_RATE,
+    glitch: since(HAZARD_CH.glitch) < 0 ? 0
+          : Math.round(GLITCH_FROM + (GLITCH_TO - GLITCH_FROM) * since(HAZARD_CH.glitch)),
+    glitchLift: since(HAZARD_CH.glitch) < 0 ? 0
+              : Math.round(2 * since(HAZARD_CH.glitch)),
+    /* How long the well goes without one. The pane's own five to ten
+       seconds does not move -- that is how long a gamble is worth
+       standing over -- so what gets harder, or more generous depending
+       on how you are doing, is how often there is one to take. */
+    fateGap: since(HAZARD_CH.fate) < 0 ? 0
+           : Math.round(FATE_GAP[0] + (FATE_GAP[1] - FATE_GAP[0]) * since(HAZARD_CH.fate))
   };
 }
 
@@ -10608,18 +12473,8 @@ window.CPMember = function (m) {
   if (!m) return;
 
   const name = String(m.displayName || '').trim();
-  /* The picture goes into a CSS url(), so anything that could close the
-     quote or the bracket disqualifies it and the letter stands in. */
-  const raw = String(m.avatarUrl || '');
-  const pic = /^https:\/\/[^"'()\s\\]+$/.test(raw) ? raw : '';
-
-  const face = document.getElementById('meFace');
   const label = document.getElementById('meName');
   if (label) label.textContent = name;
-  if (face) {
-    face.textContent = pic ? '' : (name.charAt(0) || '?');
-    face.style.backgroundImage = pic ? 'url("' + pic + '")' : '';
-  }
   meBox.title = 'Signed in as ' + name;
 };
 
@@ -10648,12 +12503,14 @@ window.CPArrived = function (p) {
   if (onGallery()) buildGallery();
   if (onHome()) whereInSeries();
 
-  /* Only when they are already looking at a board waiting to start. The
-     title screen and the instructions are both somewhere they chose to
-     be, and an account settling in the background is no reason to move
-     them off it. */
+  /* Only when they are already looking at a board waiting to start.
+     Naming the screens one by one missed Level Select: the session token
+     refreshes on its own clock, so idling there long enough called this
+     again and the next level started under them. Any overlay at all is
+     somewhere they chose to be, and an account settling in the background
+     is no reason to move them off it. */
   if (meeting || trying) return;                // they came for one screen
-  if (campOn && !started && phase === 'ready' && elRules().hidden && !onHome()) newPrint('gallery');
+  if (campOn && !started && phase === 'ready' && elOver.hidden) newPrint('gallery');
 };
 
 function newPrint(face) {
@@ -10685,6 +12542,14 @@ function newPrint(face) {
   virusRate = discoOn ? 0
             : (campOn ? levelSetup(Math.min(campAt, campList().length - 1), campList().length).virusRate
                       : VIRUS_FROM);
+  /* Practice has none either: it is where somebody works a board out, and
+     a drop that leaves is the wrong thing to be learning against. */
+  lowRate = (discoOn || !campOn) ? 0
+          : levelSetup(Math.min(campAt, campList().length - 1), campList().length).lowRate;
+  /* Practice and the party keep them: those are not the series, and the
+     one print held back is the series' first. */
+  magRate = (discoOn || !campOn) ? MAG_RATE
+          : levelSetup(Math.min(campAt, campList().length - 1), campList().length).magRate;
 
   inkPer = Math.max(3, Number(document.getElementById('setTarget').value) || 10);
   discoDrops = 0;
@@ -10696,7 +12561,18 @@ function newPrint(face) {
   // what this board is built from, for telling later whether it still matches
   applied = reading();
 
+  herStop();                                    // whatever the last print left running
+  fateStop();
   well = new Array(COLS * ROWS).fill(null);
+  /* Practice and the party have none, for the same reason they have no
+     virus: one is where a board gets worked out, and the other has no
+     plate for a hazard to cost anything against. */
+  if (!discoOn && campOn) {
+    const gd = levelSetup(Math.min(campAt, campList().length - 1), campList().length);
+    seedGlitch(gd.glitch, gd.glitchLift);
+    if (gd.glitch > 0) herStart();
+    fateStart(gd.fateGap);
+  }
   points = 0; bestChain = 0; over = false; busy = false;
   queue = []; piece = null;
   if (elGrid) elGrid.classList.remove('lifted');   // the board comes back for the next one
@@ -10974,10 +12850,91 @@ function setArtSrc(src) {
 }
 
 const sndBtn = document.getElementById('snd');
+const volPop = document.getElementById('volPop');
+const volMute = document.getElementById('volMute');
+const volRange = document.getElementById('volRange');
 
-sndBtn.addEventListener('click', async () => {
+/* ---- volume ----
+   Remembered per browser like the sound switch, and handed to the organ
+   whenever it turns up -- the module is imported on the first touch, so
+   a value read at load has nobody to give it to yet. */
+function volWanted() {
+  try {
+    const v = parseInt(localStorage.getItem(SKEY + 'vol'), 10);
+    if (isFinite(v) && v >= 0 && v <= 100) return v;
+  } catch (e) { /* a browser that will not remember starts in the middle */ }
+  /* The middle of the slider, not the top. Full was too loud over Asil's
+     taunts, and starting there made the slider something to turn down
+     rather than something to set. */
+  return 50;
+}
+
+function applyVol(pct, remember) {
+  volRange.value = String(pct);
+  if (remember) {
+    try { localStorage.setItem(SKEY + 'vol', String(pct)); } catch (e) {}
+  }
+  if (music && typeof music.setVolume === 'function') music.setVolume(pct / 100);
+}
+
+volRange.value = String(volWanted());
+
+/* The clock while the panel is open. The settings panel pauses outright
+   and swaps the screen for it; this one only has to stop time, because
+   the board stays where it is and the player is looking straight at it.
+   The arithmetic is the same as resume()'s: the run is told what the
+   interruption cost so a finished print reports time spent playing. */
+let volHeldAt = 0;
+
+function volHold() {
+  if (volHeldAt || !started || paused || over) return;
+  volHeldAt = Date.now();
+  stopTick();
+  stopClock();
+}
+
+function volRelease() {
+  if (!volHeldAt) return;
+  startedAt += Date.now() - volHeldAt;
+  volHeldAt = 0;
+  if (!started || paused || over) return;
+  startClock();
+  startTick();
+}
+
+function volOpen(next) {
+  volPop.hidden = !next;
+  sndBtn.setAttribute('aria-expanded', next ? 'true' : 'false');
+  if (next) { volHold(); volRange.focus(); } else volRelease();
+}
+
+sndBtn.addEventListener('click', () => {
+  // The first touch is also what the browser wants before it will let the
+  // page make any noise at all, so prime here as well as in setSound.
+  primeAudio();
+  volOpen(volPop.hidden);
+});
+
+volMute.addEventListener('click', async () => {
   const next = sndBtn.getAttribute('aria-pressed') !== 'true';
   await setSound(next);
+});
+
+volRange.addEventListener('input', () => {
+  applyVol(parseInt(volRange.value, 10) || 0, true);
+});
+
+/* Clicking anywhere else closes it, which is also the thing that gives the
+   clock back. Pointerdown rather than click: a drag that starts outside
+   should close it too. */
+document.addEventListener('pointerdown', (e) => {
+  if (volPop.hidden) return;
+  if (e.target.closest('#sndWrap')) return;
+  volOpen(false);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !volPop.hidden) volOpen(false);
 });
 
 /* One place that turns the sound on or off, so everything that depends on
@@ -11011,8 +12968,13 @@ async function setSound(next) {
   const ok = await wantSound(next);
   if (!ok) return false;
   sndBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
-  sndBtn.setAttribute('aria-label', next ? 'Turn sound off' : 'Turn sound on');
-  try { localStorage.setItem('cp-sound', next ? '1' : '0'); } catch (e) {}
+  sndBtn.setAttribute('aria-label', 'Sound and volume');
+  volMute.setAttribute('aria-pressed', next ? 'false' : 'true');
+  volMute.textContent = next ? 'Mute' : 'Unmute';
+  try { localStorage.setItem(SKEY + 'sound', next ? '1' : '0'); } catch (e) {}
+  // The organ is only here once somebody has touched the page, so the
+  // remembered volume is handed over at the first chance there is to.
+  if (next) applyVol(parseInt(volRange.value, 10) || 0, false);
 
   // whatever the screen asked for while there was nobody to ask
   if (next) setMusic(wantCue, wantHow);
@@ -11035,6 +12997,125 @@ function asilHush() {
   hearShow('bossHear');
 }
 
+/* ---- meeting a new drop ----
+   Each of these is shown once, on the first level that can produce the
+   thing it describes. Which level that is comes from the same dials the
+   level itself is built from, so a card can never turn up a chapter
+   early or a chapter late because a number moved somewhere else.
+
+   The example is built out of the game's own cells and its own classes,
+   so it shows exactly what is about to fall rather than a drawing of
+   it. */
+const MECHANICS = [
+  /* Classics had nothing to introduce, because it is the chapter with no
+     hazard in it. It has the magnet, which has been falling since level
+     one and was only ever explained on a screen somebody had to go and
+     open. Leading with it also sets the shape of the series: the first
+     special block is the one that helps, and every chapter after it adds
+     one that does not. */
+  {
+    id: 'magnet',
+    kicker: 'New in this chapter',
+    title: 'Magnet Drops',
+    say: 'Pulls a matching color out of a diagonal and into line above it. '
+       + 'Place them where a clump is one short.',
+    live: (d) => d.magRate > 0,
+    demo: ['c mag', '>', 'c', 'c', 'c']
+  },
+  {
+    id: 'virus',
+    kicker: 'New in this chapter',
+    title: 'Virus Drops',
+    say: 'Number counts down after each drop until it removes some of your '
+       + 'progress for its color. Break by matching its color.',
+    live: (d) => d.virusRate > 0,
+    demo: ['c virus', '>', 'c', 'c', 'c']
+  },
+  {
+    id: 'glitch',
+    kicker: 'New in this chapter',
+    title: 'Glitch Zones',
+    say: 'Physical blockages for falling colors. Remove by breaking a color '
+       + 'any way which touches it.',
+    live: (d) => d.glitch > 0,
+    demo: ['glitch', 'c', 'c', 'c', 'c', '>', '']
+  },
+  {
+    id: 'fate',
+    kicker: 'New in this chapter',
+    title: 'Fate Columns',
+    say: 'A glass pane sometimes covers a column for a few seconds. Any '
+       + 'falling block entering it cycles through the colors. You can '
+       + 'try to reroll to colors you need or avoid them altogether.',
+    live: (d) => d.fateGap > 0,
+    /* One cell, under the glass, running. The first pass was three
+       static chips -- cyan, then yellow, then yellow out of the glass --
+       which is a picture of a before and an after and shows nobody the
+       thing that actually happens. */
+    demo: ['fate spin']
+  },
+  {
+    id: 'lowink',
+    kicker: 'New in this chapter',
+    title: 'Low Ink',
+    say: 'The faded half of a pair quickly disappears. Use it as soon as it '
+       + 'releases or focus on the other. Watch the queue of next blocks '
+       + 'to plan.',
+    live: (d) => d.lowRate > 0,
+    demo: ['m', 'm lowink', '>', 'm']
+  }
+];
+
+function metGot(id) {
+  try { return localStorage.getItem(SKEY + 'met-' + id) === '1'; }
+  catch (e) { return false; }
+}
+
+function metSet(id) {
+  try { localStorage.setItem(SKEY + 'met-' + id, '1'); } catch (e) {}
+}
+
+/* The first one this level can produce that has not been met. Practice and
+   the party have their own dials and introduce nothing. */
+function newMechanic() {
+  if (!campOn || discoOn) return null;
+  const list = campList();
+  const d = levelSetup(Math.min(campAt, list.length - 1), list.length);
+  return MECHANICS.find((m) => m.live(d) && !metGot(m.id)) || null;
+}
+
+function showLearn(m) {
+  document.getElementById('learnKick').textContent = m.kicker;
+  document.getElementById('learnTitle').textContent = m.title;
+  document.getElementById('learnSay').textContent = m.say;
+
+  const demo = document.getElementById('learnDemo');
+  demo.innerHTML = '';
+  for (const bit of m.demo) {
+    if (bit === '>') {
+      const a = document.createElement('span');
+      a.className = 'arrow';
+      a.textContent = '\u2192';
+      demo.appendChild(a);
+      continue;
+    }
+    const c = document.createElement('div');
+    c.className = 'cell ' + bit;
+    if (bit.indexOf('virus') !== -1) c.textContent = '3';
+    demo.appendChild(c);
+  }
+
+  document.getElementById('learn').hidden = false;
+  document.getElementById('learnGo').focus();
+}
+
+document.getElementById('learnGo').addEventListener('click', () => {
+  document.getElementById('learn').hidden = true;
+  const m = newMechanic();
+  if (m) metSet(m.id);
+  begin();
+});
+
 /* The right-hand button: start the first print, or start the next one. */
 document.getElementById('again').addEventListener('click', () => {
   /* Continue, on the page handed over before the first print. Marked as
@@ -11056,13 +13137,15 @@ document.getElementById('again').addEventListener('click', () => {
       showFace('boss');
       return;
     }
-    /* He is the other end of the same idea: somebody waiting on the far
-       side of the card, once, before the first print of the series. */
-    if (!vicSeen && campOn && campAt === 0) {
-      vicSeen = true;
-      showFace('victor');
-      return;
-    }
+    /* The rules sit between the card and the first print: this is the
+       last moment anybody is looking at a screen rather than at falling
+       blocks. He is upstream of the card now, not downstream of it. */
+    if (!taught()) { showFace('rules'); rulesFrom = { teach: true }; buttons(); return; }
+    /* And the same bargain for a drop nobody has met: one card, then the
+       print. Marked as met when it is dismissed rather than when it
+       opens, so backing out to the menu gets it again. */
+    const meet = newMechanic();
+    if (meet) { showLearn(meet); return; }
     begin();
     return;
   }
@@ -11085,7 +13168,7 @@ document.getElementById('partyMenu').addEventListener('click', (e) => {
   showFace('home');
 });
 
-/* Which door the reel was opened by. Menu at the bottom of it used to
+/* Which door the credits were opened by. Menu at the bottom of it used to
    be showWin() unconditionally, which was right while the only way in
    was finishing the series: Menu meant "back to the title screen, in
    the state you just earned". Credits is on the home menu now, so that
@@ -11112,11 +13195,10 @@ document.getElementById('vicMenu').addEventListener('click', (e) => {
   const b = e.target.closest('[data-vic]');
   if (!b) return;
   if (b.dataset.vic === 'begin' && !meeting) {
-    /* He has just told them why they are here. What he has not told
-       them is how any of it works, and this is the last moment anybody
-       is looking at a screen rather than at falling blocks. */
-    if (!taught()) { showFace('rules'); rulesFrom = { teach: true }; buttons(); return; }
-    begin();
+    /* He has told them why they are here; the card says which print, and
+       the rules behind it say how. */
+    hideFace();
+    newPrint('gallery');
     return;
   }
   leaveMeeting();
@@ -11243,6 +13325,8 @@ function closeRules() {
    game somebody has already left. */
 function leaveRun() {
   started = false; paused = false; phase = 'ready';
+  herStop();
+  fateStop();
   stopTick();
   stopClock();
   well = new Array(COLS * ROWS).fill(null);
@@ -11291,15 +13375,30 @@ for (const id of ['setInks', 'setTarget', 'setFall']) {
 const elAngles = document.getElementById('cbBtn');
 if (elAngles) {
   let marks = false;
-  try { marks = localStorage.getItem('cp-angles') === '1'; } catch (e) {}
+  try { marks = localStorage.getItem(SKEY + 'angles') === '1'; } catch (e) {}
   const useAngles = () => {
     document.body.classList.toggle('angles', marks);
     elAngles.setAttribute('aria-pressed', marks ? 'true' : 'false');
     elAngles.setAttribute('aria-label', marks ? 'Turn colorblind marks off' : 'Turn colorblind marks on');
     buildPeek();                                // show it on the drops at once
-    try { localStorage.setItem('cp-angles', marks ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem(SKEY + 'angles', marks ? '1' : '0'); } catch (e) {}
   };
   elAngles.addEventListener('click', () => { marks = !marks; useAngles(); });
+
+  const elGridBtn = document.getElementById('gridBtn');
+  /* On unless somebody has said otherwise. The doc asks for a grid with a
+     toggle to remove it, which is a thing you have and can take away
+     rather than a thing you have to go and find. */
+  let lattice = true;
+  try { lattice = localStorage.getItem(SKEY + 'grid') !== '0'; } catch (e) {}
+  const useGrid = () => {
+    document.body.classList.toggle('gridon', lattice);
+    elGridBtn.setAttribute('aria-pressed', lattice ? 'true' : 'false');
+    elGridBtn.setAttribute('aria-label', lattice ? 'Turn the grid off' : 'Turn the grid on');
+    try { localStorage.setItem(SKEY + 'grid', lattice ? '1' : '0'); } catch (e) {}
+  };
+  useGrid();
+  elGridBtn.addEventListener('click', () => { lattice = !lattice; useGrid(); });
   useAngles();
 }
 
@@ -11330,7 +13429,7 @@ window.addEventListener('resize', () => {
    off, here and on the next visit. */
 function soundWanted() {
   try {
-    const v = localStorage.getItem('cp-sound');
+    const v = localStorage.getItem(SKEY + 'sound');
     if (v === '0') return false;
   } catch (e) { /* a browser that will not remember is a browser that agrees */ }
   return true;
@@ -11338,7 +13437,8 @@ function soundWanted() {
 
 if (!soundWanted()) {
   sndBtn.setAttribute('aria-pressed', 'false');
-  sndBtn.setAttribute('aria-label', 'Turn sound on');
+  volMute.setAttribute('aria-pressed', 'true');
+  volMute.textContent = 'Unmute';
 }
 
 /* Tried the moment the page opens, because a game that comes up silent
@@ -11478,6 +13578,12 @@ else if (TRY > 0) openTrial();
   import { SUPABASE_URL } from '/club-config.js';
 
   const GAME = 'color-processor';
+
+  /* Worked out again here rather than read from the classic script above.
+     A module has its own scope, so leaning on that one being visible
+     across the two would be a quiet dependency for no gain. */
+  const DEV_BUILD = location.pathname.includes('/games/dev/');
+
   let member = null;
 
   /* Discord sends them back to this same address, so they land on the game
@@ -11611,14 +13717,14 @@ else if (TRY > 0) openTrial();
     /* A jam is how every party ends, so a jam is what posts. There is no
        finishing it and nothing to lose by stopping. */
     async discoRecord(points, detail) {
-      if (!member) return null;
+      if (!member || DEV_BUILD) return null;
       const posted = await postScore(GAME, points, detail, 'endless');
       if (!posted.ok) return { ok: false, reason: posted.reason };
       return { ok: true, standing: await highMe(GAME, 'endless') };
     },
 
     async record(variant, seconds, detail) {
-      if (!member) return null;
+      if (!member || DEV_BUILD) return null;
 
       const posted = await postScore(GAME, seconds, detail, variant);
       if (!posted.ok) return { ok: false, reason: posted.reason };
