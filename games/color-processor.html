@@ -2778,49 +2778,6 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
    winding path has to fit its turns inside the panel width, and on a
    phone that leaves the nodes pressed against the edges with nothing
    beside them. */
-/* ---- the machinery moves ----
-   Every part in a housing is a real one doing its real job: rollers turn,
-   the drum turns slower because it is bigger, the corona wire sparks, the
-   laser sweeps, the fuser glows, a sheet comes off the stack. Transforms
-   and opacity only, so none of it costs a layout while the list is being
-   scrolled.
-
-   transform-box: fill-box makes each part turn on its own center rather
-   than on the corner of the whole drawing. It also means an origin given
-   in drawing coordinates is wrong, because it would be measured from the
-   part's own box instead -- which is what sent the fuser rollers off the
-   edge the first time. Every one of these groups is drawn centered on
-   its own pin, so center is the right answer and the only one needed. */
-.levelsface .pp-rig * { transform-box: fill-box; transform-origin: center; }
-
-@keyframes ppSpin  { to { transform: rotate(360deg); } }
-@keyframes ppFeed  { 0%,100% { stroke-dashoffset: 0; } 50% { stroke-dashoffset: -14px; } }
-@keyframes ppSpark { 0%,82%,100% { opacity: .18; } 86% { opacity: 1; } 90% { opacity: .3; } 94% { opacity: .9; } }
-@keyframes ppBeam  { 0%,100% { transform: translateY(0); opacity: .35; } 50% { transform: translateY(9px); opacity: 1; } }
-@keyframes ppGlow  { 0%,100% { opacity: .10; } 50% { opacity: .34; } }
-@keyframes ppNudge { 0%,70%,100% { transform: translateX(0); } 80% { transform: translateX(-4px); } 88% { transform: translateX(2px); } }
-@keyframes ppOut   { 0% { transform: translateY(6px); opacity: 0; } 20%,80% { opacity: .95; } 100% { transform: translateY(-5px); opacity: 0; } }
-@keyframes ppLed   { 0%,100% { opacity: 1; } 45% { opacity: .15; } }
-
-.levelsface .pp-spin  { animation: ppSpin 5.5s linear infinite; }
-.levelsface .pp-spin.rev  { animation-direction: reverse; }
-.levelsface .pp-spin.slow { animation-duration: 11s; }
-.levelsface .pp-feed  { stroke-dasharray: 7 7; animation: ppFeed 2.6s ease-in-out infinite; }
-.levelsface .pp-spark { animation: ppSpark 3.4s linear infinite; }
-.levelsface .pp-beam  { animation: ppBeam 2.2s ease-in-out infinite; }
-.levelsface .pp-glow  { animation: ppGlow 2.8s ease-in-out infinite; }
-.levelsface .pp-nudge { animation: ppNudge 3.6s ease-in-out infinite; }
-.levelsface .pp-out   { animation: ppOut 3.2s ease-in-out infinite; }
-.levelsface .pp-led   { animation: ppLed 1.7s steps(1, end) infinite; }
-.levelsface .pp-led.b { animation-duration: 2.3s; animation-delay: .4s; }
-.levelsface .pp-led.c { animation-duration: 1.1s; animation-delay: .9s; }
-
-/* Somebody who has asked their phone to stop moving things has asked for
-   this too. The parts are still drawn; they just stand still. */
-@media (prefers-reduced-motion: reduce) {
-  .levelsface .pp-rig * { animation: none !important; }
-}
-
 /* Scrolls, unlike the grid it replaces, which shared the panel height out
    between its rooms so the list ended where the board did. */
 .levelsface .lv-rooms.ppmode {
@@ -2874,18 +2831,6 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   pointer-events: none;
   z-index: 0;
 }
-.levelsface .pp-mark {
-  font-family: 'Saira Stencil One', 'Poppins', system-ui, sans-serif;
-  font-size: 11px;
-  fill: #232838;
-  letter-spacing: .08em;
-}
-.levelsface .pp-gear {
-  animation: ppSpin var(--d, 20s) linear infinite;
-  animation-direction: var(--dir, normal);
-  transform-box: view-box;
-}
-
 .levelsface .pp-sheet {
   position: absolute;
   inset: 0;
@@ -9134,96 +9079,7 @@ function whereInSeries() {
       + (lv ? ' \u00b7 ' + (lv.finale ? 'The last print' : lv.art.roomName) : '');
 }
 
-/* Every level, by room, as numbered chips. Tapping one opens that level's
-   card rather than dropping straight into it -- the card is where the par
-   and the painting are, and going back to a level is still arriving at it.
 
-   The last print is not here until it has been reached. The rooms are the
-   only count the series shows, and a twenty first chip sitting past the
-   sixth room would answer the question the game is keeping. */
-const PP_ART = {
-  /* Paper tray: the stack, and the pickup roller turning over it with a
-     sheet starting to lift off the top. */
-  0:'<rect x="6" y="34" width="60" height="16" rx="2" fill="#F2EFE6" opacity=".9"/>' +
-    '<rect x="9" y="30" width="54" height="5" rx="1.5" fill="#F2EFE6" opacity=".55"/>' +
-    '<path class="pp-feed" d="M14 30h42" stroke="#F2EFE6" stroke-width="3" stroke-linecap="round" opacity=".85"/>' +
-    '<g class="pp-spin" style="transform-origin:center">' +
-      '<circle cx="52" cy="22" r="11" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>' +
-      '<path d="M52 11v22M41 22h22M44 14l16 16M60 14L44 30" stroke="#4A5162" stroke-width="2"/>' +
-    '</g>' +
-    '<rect x="4" y="8" width="26" height="10" rx="2" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>',
-
-  /* Pickup rollers. A roller is a cylinder, not a wheel: dark rubber
-     barrel, a flat along one side, a pale end cap and a gear cluster on
-     the shaft. Drawn side on, which is how you meet them when the
-     cassette is out. The gear turns; the barrels cannot be shown
-     turning side on, so the sheet moving under them is what says they
-     are. */
-  1:'<rect x="4" y="30" width="58" height="6" rx="3" fill="#1A1C24"/>' +
-    '<rect x="8" y="8" width="42" height="13" rx="6.5" fill="#33363E"/>' +
-    '<rect x="8" y="8" width="42" height="5" rx="2.5" fill="#44474F"/>' +
-    '<path d="M16 8v13M24 8v13M32 8v13M40 8v13" stroke="#24262D" stroke-width="1.5"/>' +
-    '<rect x="8" y="22" width="42" height="13" rx="6.5" fill="#2B2E35"/>' +
-    '<rect x="8" y="22" width="42" height="5" rx="2.5" fill="#3B3E46"/>' +
-    '<path d="M16 22v13M24 22v13M32 22v13M40 22v13" stroke="#1E2027" stroke-width="1.5"/>' +
-    '<rect x="2" y="7" width="9" height="15" rx="3" fill="#6E93C9"/>' +
-    '<rect x="2" y="21" width="9" height="15" rx="3" fill="#5C7EB0"/>' +
-    '<g class="pp-spin" style="transform-origin:center">' +
-      '<circle cx="56" cy="21" r="9" fill="#E8E8EC" stroke="#B9BAC2" stroke-width="1.5"/>' +
-      '<path d="M56 12v18M47 21h18M50 15l12 12M62 15L50 27" stroke="#B9BAC2" stroke-width="2"/>' +
-    '</g>' +
-    '<path class="pp-feed" d="M2 43h68" stroke="#F2EFE6" stroke-width="4" stroke-linecap="round" opacity=".85"/>',
-
-  /* Registration: the sheet squared up against the stops before it is
-     allowed through. */
-  2:'<rect x="6" y="10" width="60" height="30" rx="3" fill="#20242F" stroke="#4A5162" stroke-width="2"/>' +
-    '<path d="M18 12v26M36 12v26M54 12v26" stroke="#3A3F4C" stroke-width="2"/>' +
-    '<g class="pp-nudge">' +
-      '<rect x="8" y="22" width="56" height="6" rx="2" fill="#F2EFE6" opacity=".9"/>' +
-    '</g>' +
-    '<path d="M64 14v22" stroke="#D4A24C" stroke-width="3" stroke-linecap="round" opacity=".8"/>',
-
-  /* The drum: gear teeth turning, the corona wire sparking above it, and
-     the laser sweeping in from the side. */
-  3:'<g class="pp-spin slow" style="transform-origin:center">' +
-      '<circle cx="30" cy="26" r="17" fill="#3A3426" stroke="#8A7540" stroke-width="2"/>' +
-      '<circle cx="30" cy="26" r="7" fill="#20242F" stroke="#8A7540" stroke-width="2"/>' +
-      '<path d="M30 9v6M30 37v6M13 26h6M41 26h6M18 14l4 4M38 30l4 4M42 14l-4 4M22 30l-4 4"' +
-        ' stroke="#8A7540" stroke-width="3" stroke-linecap="round"/>' +
-    '</g>' +
-    '<path class="pp-spark" d="M12 7h36" stroke="#99A2F7" stroke-width="2" stroke-linecap="round"/>' +
-    '<path class="pp-beam" d="M70 12L44 24" stroke="#E6007E" stroke-width="2" stroke-linecap="round"/>' +
-    '<rect x="62" y="6" width="10" height="10" rx="2" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>' +
-    '<path d="M4 46h64" stroke="#F2EFE6" stroke-width="4" stroke-linecap="round" opacity=".85"/>',
-
-  /* The fuser: two heated rollers, glowing in and out as they turn. */
-  4:'<g class="pp-glow"><ellipse cx="36" cy="26" rx="30" ry="17" fill="#E6007E" opacity=".16"/></g>' +
-    '<g class="pp-spin" style="transform-origin:center">' +
-      '<circle cx="36" cy="16" r="11" fill="#3A2630" stroke="#C4566E" stroke-width="2"/>' +
-      '<path d="M36 5v22M25 16h22" stroke="#C4566E" stroke-width="2"/>' +
-    '</g>' +
-    '<g class="pp-spin rev" style="transform-origin:center">' +
-      '<circle cx="36" cy="38" r="11" fill="#3A2630" stroke="#C4566E" stroke-width="2"/>' +
-      '<path d="M36 27v22M25 38h22" stroke="#C4566E" stroke-width="2"/>' +
-    '</g>' +
-    '<path class="pp-feed" d="M2 27h68" stroke="#F2EFE6" stroke-width="4" stroke-linecap="round" opacity=".9"/>',
-
-  /* Output tray: the finished sheet coming out onto the stack. */
-  5:'<rect x="6" y="36" width="60" height="14" rx="2" fill="#2A2D36" stroke="#4A5162" stroke-width="2"/>' +
-    '<rect x="10" y="28" width="52" height="8" rx="2" fill="#F2EFE6" opacity=".9"/>' +
-    '<rect x="14" y="21" width="44" height="7" rx="2" fill="#F2EFE6" opacity=".6"/>' +
-    '<g class="pp-out"><rect x="18" y="8" width="36" height="12" rx="2" fill="#F2EFE6" opacity=".95"/>' +
-      '<path d="M24 12h24M24 16h16" stroke="#9BA0AE" stroke-width="1.5"/></g>',
-
-  /* The formatter board: traces, chips, and lamps that will not settle. */
-  last:'<rect x="4" y="6" width="64" height="40" rx="3" fill="#161B18" stroke="#2E7D5B" stroke-width="2"/>' +
-    '<path d="M12 14h18v10h14M12 30h10v8h22M46 14v12M52 30h10" stroke="#2E7D5B" stroke-width="1.5" fill="none"/>' +
-    '<rect x="34" y="18" width="16" height="12" rx="1.5" fill="#20242F" stroke="#E6007E" stroke-width="1.5"/>' +
-    '<rect x="10" y="36" width="12" height="7" rx="1" fill="#20242F" stroke="#4A5162" stroke-width="1.5"/>' +
-    '<circle class="pp-led" cx="60" cy="13" r="3" fill="#E6007E"/>' +
-    '<circle class="pp-led b" cx="60" cy="24" r="3" fill="#0093D3"/>' +
-    '<circle class="pp-led c" cx="60" cy="35" r="3" fill="#F3E500"/>'
-};
 
 /* The stations a sheet actually meets, in order. The boards are not on
    the paper path at all, which is why she is at the end of it rather
