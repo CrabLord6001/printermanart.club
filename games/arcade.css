@@ -574,13 +574,29 @@ canvas#play {
 /* The empty room is marked, since it is the one to learn on. */
 .room-card.plain span { color: var(--accent, #D4A24C); }
 
+/* One row, always. Play sits in the middle with the two it is between, so
+   the thing you came back to do is the thing under your thumb. The order
+   here is only how they are drawn -- in the markup Play still comes first,
+   which is the order a keyboard and a screen reader get them in. */
 .after {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-top: 22px;
+  width: 100%;
+}
+
+.after #pBack { order: 1; }
+.after #pBtn  { order: 2; }
+.after #pHelp { order: 3; }
+
+/* Three of them have to share a phone, so they give up the padding they
+   were wearing when there were two. */
+@media (max-width: 480px) {
+  .after { gap: 7px; }
+  .after .btn { padding: 10px 12px; letter-spacing: 0.04em; }
 }
 
 .after[hidden] { display: none; }

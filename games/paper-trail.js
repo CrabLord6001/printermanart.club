@@ -95,9 +95,21 @@ const GAP_MAX     = 280;
 const MAGNET_REACH = 3;      // cells, measured as a square around her
 const MAGNET_FLY   = 190;    // ms the ink takes to reach her once it lets go
 
+/* How much the press drags under Time Warp. A flat multiplier rather than
+   a return to the starting pace: pegging it to the start would do almost
+   nothing in the first half of a run, which is the one real complaint
+   against phasing, and there is no reason to build a second one. */
+export const WARP_SLOW = 1.7;
+
+/* Violet is the club's own color and the one thing on the board that is
+   not an ink -- the other two already borrow from the four plates. */
 const POWERS = {
   magnet: { name: 'Magnetic Ink', glow: '#E8394F' },
-  phase:  { name: 'Phasing',      glow: '#7FDAF5' }
+  phase:  { name: 'Phasing',      glow: '#7FDAF5' },
+  warp:   { name: 'Time Warp',    glow: '#99A2F7' },
+  // Paper white: the other three borrow from the inks and the club, and
+  // what this one shows you is the page rather than anything on it.
+  future: { name: 'Future Sight', glow: '#F2EFE6' }
 };
 
 const POWER_KEYS = Object.keys(POWERS);
@@ -639,7 +651,108 @@ function drawFlask(ctx) {
   ctx.fill();
 }
 
-const PICK_ART = { magnet: drawMagnet, phase: drawFlask };
+function drawClock(ctx) {
+  ctx.fillStyle = '#C7CBD6';
+  ctx.fillRect(-1.7, -10.6, 3.4, 2.4);              // the winder on top
+
+  ctx.fillStyle = '#F2EFE6';
+  ctx.beginPath();
+  ctx.arc(0, 1, 8.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#2B2F3A';
+  ctx.beginPath();
+  ctx.arc(0, 1, 6.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = '#F2EFE6';
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 1.7;
+  ctx.beginPath();
+  ctx.moveTo(0, 1);
+  ctx.lineTo(0, -3.3);
+  ctx.stroke();
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, 1);
+  ctx.lineTo(3.5, 1);
+  ctx.stroke();
+}
+
+function drawEye(ctx) {
+  ctx.fillStyle = '#F2EFE6';
+  ctx.beginPath();
+  ctx.moveTo(-9.5, 0);
+  ctx.quadraticCurveTo(0, -8.5, 9.5, 0);
+  ctx.quadraticCurveTo(0, 8.5, -9.5, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#22B8E6';
+  ctx.beginPath();
+  ctx.arc(0, 0, 4.1, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#241B22';
+  ctx.beginPath();
+  ctx.arc(0, 0, 2.1, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#F2EFE6';
+  ctx.beginPath();
+  ctx.arc(1.5, -1.5, 0.95, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+const PICK_ART = { magnet: drawMagnet, phase: drawFlask, warp: drawClock, future: drawEye };
+
+/* The ink that has not landed yet, drawn as a dot screen inside the shape
+   the splat will have. A proof is what a page looks like before it is
+   printed, so it is the obvious way to say not yet -- and it is quieter
+   than solid ink, which is right, because it matters less than the splat
+   actually on the board.
+
+   Not a blink. Blinking already means "this is about to go away" in two
+   other places here, and a third meaning would blunt all of them. */
+function paintAhead(ctx, blob, now) {
+  ctx.save();
+  ctx.translate(blob.x * CELL + CELL / 2, blob.y * CELL + CELL / 2);
+  ctx.scale(U, U);
+
+  const n = blob.radii.length;
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    pts.push([Math.cos(a) * blob.radii[i], Math.sin(a) * blob.radii[i]]);
+  }
+
+  ctx.beginPath();
+  ctx.moveTo((pts[n - 1][0] + pts[0][0]) / 2, (pts[n - 1][1] + pts[0][1]) / 2);
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    ctx.quadraticCurveTo(pts[i][0], pts[i][1], (pts[i][0] + pts[j][0]) / 2, (pts[i][1] + pts[j][1]) / 2);
+  }
+  ctx.closePath();
+  ctx.clip();
+
+  /* The lighter tone of the ink rather than the ink itself. Black ink is
+     #2B2F3A against a #15171F tray, so a screen of it is all but invisible
+     -- which is the trap the faded version would have fallen into for the
+     same reason. Every ink carries a lift for exactly this.
+
+     The screen breathes rather than blinks, the same slow swell the real
+     splat has, so it reads as the same family of thing. */
+  const swell = 1 + Math.sin((now - blob.born) / 420) * 0.12;
+  ctx.fillStyle = blob.ink.lift;
+  for (let y = -12; y <= 12; y += 2.7) {
+    for (let x = -12; x <= 12; x += 2.7) {
+      ctx.beginPath();
+      ctx.arc(x, y, 0.85 * swell, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
 
 /* On the board waiting to be taken. The halo is what separates a pickup
    from the furniture: everything else on here is either gray scenery or
@@ -754,9 +867,20 @@ export function startPaperTrail(options) {
   // steps it has left. gapLeft: the wait before another turns up.
   let pick = null, power = null, powerLeft = 0, gapLeft = 0;
 
+  /* Testing a pickup by waiting for it to turn up is a poor way to spend an
+     evening. The preview build can ask for one kind and for them to arrive
+     quickly; the live build never passes either, so there is nothing here
+     for a player to find. */
+  const ONLY = (options.only && POWERS[options.only]) ? options.only : null;
+  const FAST = !!options.fast;
+
   // Sheets owed. Eating off the grid finishes between steps, so the growing
   // has to wait for the next one rather than happening mid-frame.
   let grow = 0;
+
+  // The ink after this one, rolled early so it can be shown early. Null
+  // unless Future Sight is running.
+  let ahead = null;
 
   function freeCell(...avoid) {
     // Few enough cells that collecting the empty ones is cheaper to reason
@@ -774,22 +898,51 @@ export function startPaperTrail(options) {
     return open[(Math.random() * open.length) | 0];
   }
 
+  const cellFree = (x, y) =>
+    !walls.has(x + ',' + y) && !snake.some(s => s.x === x && s.y === y);
+
+  /* Where the ink after this one will land, decided now so it can be shown
+     now. The board moves under it: if she has grown onto that square by the
+     time it is due, it is rolled again and what was on screen was wrong.
+     Rare, and the alternative is keeping squares free for a prophecy, which
+     would be a stranger game. */
+  function rollAhead() {
+    if (power !== 'future') { ahead = null; return; }
+    const cell = freeCell(pick, blob);
+    ahead = cell
+      ? makeBlob(cell.x, cell.y, INKS[(Math.random() * INKS.length) | 0], snake.length + 7)
+      : null;
+  }
+
   function spawnBlob() {
+    // The one that was promised, if the board still has room for it.
+    if (ahead && cellFree(ahead.x, ahead.y)) {
+      blob = ahead;
+      blob.born = performance.now();
+      ahead = null;
+      rollAhead();
+      return;
+    }
+    ahead = null;
+
     // Not under the pickup, which would make one of them unreadable. If that
     // is the only square left the ink wins: the ink is what the game is.
     const cell = freeCell(pick) || freeCell();
     if (!cell) { blob = null; return; }
     blob = makeBlob(cell.x, cell.y, INKS[(Math.random() * INKS.length) | 0], snake.length);
+    rollAhead();
   }
 
-  const nextGap = () => GAP_MIN + ((Math.random() * (GAP_MAX - GAP_MIN)) | 0);
+  const nextGap = () => FAST
+    ? 6 + ((Math.random() * 8) | 0)
+    : GAP_MIN + ((Math.random() * (GAP_MAX - GAP_MIN)) | 0);
 
   function spawnPick() {
     const cell = freeCell(blob);
     if (!cell) return;
     pick = {
       x: cell.x, y: cell.y,
-      kind: POWER_KEYS[(Math.random() * POWER_KEYS.length) | 0],
+      kind: ONLY || POWER_KEYS[(Math.random() * POWER_KEYS.length) | 0],
       left: POWER_LIFE,
       born: performance.now()
     };
@@ -815,6 +968,7 @@ export function startPaperTrail(options) {
     if (power === 'phase' && stuck()) return;
     power = null;
     powerLeft = 0;
+    ahead = null;              // the sight goes with it
     gapLeft = nextGap();
     tellPower();
   }
@@ -907,13 +1061,15 @@ export function startPaperTrail(options) {
     power = null;
     powerLeft = 0;
     grow = 0;
+    ahead = null;
     gapLeft = nextGap();
     tellPower();
     spawnBlob();
   }
 
   function stepMs() {
-    return Math.max(FLOOR_MS, START_MS - sheets * RAMP);
+    const ms = Math.max(FLOOR_MS, START_MS - sheets * RAMP);
+    return power === 'warp' ? ms * WARP_SLOW : ms;
   }
 
   function turn(next) {
@@ -964,6 +1120,7 @@ export function startPaperTrail(options) {
       power = pick.kind;
       powerLeft = POWER_STEPS;
       pick = null;
+      if (power === 'future') rollAhead();
       if (options.onTake) options.onTake(power);
       tellPower();
     }
@@ -1029,6 +1186,7 @@ export function startPaperTrail(options) {
     drawTray();
     drawRoom();
     for (let i = snake.length - 1; i >= 1; i--) drawSheet(snake[i], i);
+    if (ahead) paintAhead(ctx, ahead, now);   // under the real ink, always
     drawBlob(now);
     if (pick) paintPickup(ctx, pick, now);
     drawHead(now);
@@ -1156,6 +1314,7 @@ export function startPaperTrail(options) {
       walls: Array.from(walls),
       blob: blob ? { x: blob.x, y: blob.y } : null,
       pick: pick ? { x: pick.x, y: pick.y, kind: pick.kind, left: pick.left } : null,
+      ahead: ahead ? { x: ahead.x, y: ahead.y } : null,
       power, powerLeft, sheets
     }),
     destroy() {

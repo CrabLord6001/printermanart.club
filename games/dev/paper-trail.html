@@ -175,7 +175,7 @@ body {
             <div class="rooms" id="pRooms"></div>
 
             <div class="after" id="pAfter" hidden>
-              <button class="btn" id="pBtn" type="button">Print again</button>
+              <button class="btn" id="pBtn" type="button">Play</button>
               <button class="btn ghost" id="pBack" type="button">Change room</button>
               <button class="btn ghost" id="pHelp" type="button" aria-expanded="false" aria-controls="pHowto">Help</button>
             </div>
@@ -432,9 +432,9 @@ function makeGame() {
 
       const word = result.sheets === 1 ? 'sheet' : 'sheets';
       if (result.reason === 'full') {
-        veil('Tray Full', 'You printed the whole room. That is the end of the paper.', 'Print again');
+        veil('Tray Full', 'You printed the whole room. That is the end of the paper.', 'Play');
       } else {
-        veil('Paper Jam', 'You printed ' + result.sheets + ' ' + word + '.', 'Print again', true);
+        veil('Paper Jam', 'You printed ' + result.sheets + ' ' + word + '.', 'Play', true);
       }
 
       elWhere.textContent = mods.rooms[room].name;
