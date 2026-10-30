@@ -840,6 +840,38 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   animation: glitchSwirl 5.5s linear infinite;
 }
 
+/* Her, coming up through the corruption. She is the Mona Lisa print, so
+   it is that plate -- posterised, its separations slipped out of register
+   and a few scan rows torn. Under the tearing below, because she is in
+   the buffer rather than on top of it. */
+.cell.glitch::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/games/img/glitch-face.png') center / cover no-repeat;
+  image-rendering: pixelated;
+  opacity: 0;
+  pointer-events: none;
+  animation: glitchHer 7s steps(1) infinite;
+}
+
+/* Twice, briefly, then gone for seven seconds. Long enough apart that
+   catching one feels like catching it rather than like watching a loop. */
+@keyframes glitchHer {
+  0%, 94%   { opacity: 0; }
+  95%       { opacity: .85; }
+  96%       { opacity: 0; }
+  97%       { opacity: .65; }
+  98%, 100% { opacity: 0; }
+}
+
+/* Not all at once. Counted across every square of the board rather than
+   across the zones, so which zone is on which beat is as good as random. */
+.cell.glitch:nth-child(4n+1)::before { animation-delay: 0s; }
+.cell.glitch:nth-child(4n+2)::before { animation-delay: 1.9s; }
+.cell.glitch:nth-child(4n+3)::before { animation-delay: 3.4s; }
+.cell.glitch:nth-child(4n)::before   { animation-delay: 5.2s; }
+
 /* Scanline tearing over the top of it, so it reads as a picture that is
    broken rather than as a tile that happens to be busy. */
 .cell.glitch::after {
@@ -870,6 +902,7 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 
 @media (prefers-reduced-motion: reduce) {
   .cell.glitch, .cell.glitch::after { animation: none; }
+  .cell.glitch::before { animation: none; opacity: 0; }
 }
 
 /* A virus wears its own ink: it matches on color like any other drop,
@@ -4704,7 +4737,7 @@ const artCells = (a) => a.join('').split('#').length - 1;
 /* The same shape every time a level is played: the series is ranked on
    time, so a board that is harder on one attempt than the next would be
    ranking luck. */
-function seedGlitch(n) {
+function seedGlitch(n, lift) {
   if (!(n > 0)) return;
   let shape = null;
   for (const a of GLITCH_ART) {
@@ -4713,7 +4746,11 @@ function seedGlitch(n) {
   if (!shape) return;
   const w = Math.max(...shape.map((r) => r.length));
   const x0 = Math.floor((COLS - w) / 2);
-  const y0 = ROWS - shape.length;
+  /* On the floor to begin with, which only raises the floor where it
+     sits. Lifted a row or two later on, and a lifted zone is the
+     harder one: nothing drops past it, so it holds the squares under
+     it open until it is scrubbed. */
+  const y0 = ROWS - shape.length - Math.max(0, Math.min(2, lift | 0));
   for (let r = 0; r < shape.length; r++) {
     for (let c = 0; c < shape[r].length; c++) {
       if (shape[r][c] === '#' && inside(x0 + c, y0 + r)) put(well, x0 + c, y0 + r, GLITCH);
@@ -10469,7 +10506,9 @@ function levelSetup(i, n) {
     virusRate: vT < 0 ? 0 : VIRUS_FROM + (VIRUS_TO - VIRUS_FROM) * vT,
     lowRate: since(HAZARD_CH.lowink) < 0 ? 0 : LOW_RATE,
     glitch: since(HAZARD_CH.glitch) < 0 ? 0
-          : Math.round(GLITCH_FROM + (GLITCH_TO - GLITCH_FROM) * since(HAZARD_CH.glitch))
+          : Math.round(GLITCH_FROM + (GLITCH_TO - GLITCH_FROM) * since(HAZARD_CH.glitch)),
+    glitchLift: since(HAZARD_CH.glitch) < 0 ? 0
+              : Math.round(2 * since(HAZARD_CH.glitch))
   };
 }
 
@@ -11762,7 +11801,8 @@ function newPrint(face) {
      virus: one is where a board gets worked out, and the other has no
      plate for a hazard to cost anything against. */
   if (!discoOn && campOn) {
-    seedGlitch(levelSetup(Math.min(campAt, campList().length - 1), campList().length).glitch);
+    const gd = levelSetup(Math.min(campAt, campList().length - 1), campList().length);
+    seedGlitch(gd.glitch, gd.glitchLift);
   }
   points = 0; bestChain = 0; over = false; busy = false;
   queue = []; piece = null;
