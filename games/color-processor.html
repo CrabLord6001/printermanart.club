@@ -1290,16 +1290,20 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    buttons out from under a thumb. */
 .sndwrap { position: relative; display: inline-flex; }
 
+/* Upright, and hung off the right edge rather than centered on the
+   button. Lying down it was wider than the rail it lives in, so it
+   reached out over the board -- and on a narrow screen it ran off the
+   far side as well. Standing up it is the width of the rail. */
 .volpop {
   position: absolute;
   top: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
+  right: 0;
   z-index: 60;
   display: flex;
+  flex-direction: column-reverse;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 10px 8px;
   background: #11131A;
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -1324,9 +1328,23 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 .volmute:hover { color: var(--accent); border-color: var(--accent); }
 .volmute[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 
+/* The input is still a horizontal range; it is turned on its side. A
+   vertical range is only honored by newer browsers, and this has to work
+   on whatever phone somebody opens it with. The cage reserves the space
+   the rotation does not. */
+.volcage {
+  flex: none;
+  width: 30px;
+  height: 104px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .volrange {
   flex: none;
-  width: 110px;
+  width: 104px;
+  transform: rotate(-90deg);
   accent-color: var(--accent);
   cursor: pointer;
 }
@@ -1848,7 +1866,10 @@ button.go:not(.ghost):hover {
 }
 
 /* The two presentation switches, side by side at the head of the rail. */
-.switches { display: flex; justify-content: center; gap: 4px; }
+/* Wrapping rather than overflowing. Three cartridges plus the gaps were
+   wider than the rail on a narrow phone, and the third slid out from
+   under it. */
+.switches { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; max-width: 100%; }
 .switches .snd { width: 28px; height: 28px; }
 
 /* Discord's own blue, because that is the account they are signing in
@@ -2536,7 +2557,9 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   justify-content: flex-start;
 }
 
-.levelsface .pp { position: relative; padding: 4px 0 14px; }
+/* Belt and braces: nothing in the run may make it wider than the panel,
+   whatever gets added to it later. */
+.levelsface .pp { position: relative; padding: 4px 0 14px; max-width: 100%; overflow-x: hidden; }
 
 /* A print on the sheet is a circle, not a chip in a row. The sizing the
    grid used is a fifth of the panel width, which in a single column came
@@ -2555,17 +2578,10 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 .levelsface .pp-sheet {
   position: absolute;
-  top: 0; bottom: 0; left: 50%;
-  width: 34px;
-  transform: translateX(-50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  background: linear-gradient(to right,
-    rgba(242,239,230,0) 0,
-    rgba(242,239,230,0.17) 12%,
-    rgba(242,239,230,0.26) 50%,
-    rgba(242,239,230,0.17) 88%,
-    rgba(242,239,230,0) 100%);
-  box-shadow: 0 0 18px rgba(242,239,230,0.07);
 }
 
 /* A housing bolted across the channel. The sheet runs behind it and comes
@@ -2577,7 +2593,10 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 16px -14px 6px;
+  /* No bleed. It was reaching 14px past the panel on each side to look
+     edge to edge, and nothing clipped it -- which is the whole of why
+     the level list could be scrolled sideways. */
+  margin: 16px 0 6px;
   padding: 9px 14px;
   background: linear-gradient(to bottom, #232838, #1A1E2B 45%, #151925);
   border-top: 1px solid #333a50;
@@ -2609,24 +2628,14 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 
 /* The node holds the middle whatever the label does, so every print on
    the run lines up on the sheet. */
+/* --x is where along the width this print sits, 0 to 1. Nothing is beside
+   it, so it has the whole of it to move in. */
 .levelsface .pp-run {
   position: relative;
   z-index: 2;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 0;
+  display: flex;
+  padding: 6px 0 6px calc(var(--x, .5) * (100% - 44px));
 }
-.levelsface .pp-run .lv { grid-column: 2; }
-.levelsface .pp-tag {
-  grid-column: 3;
-  font-size: 0.6rem;
-  line-height: 1.35;
-  color: var(--dim, #7A8094);
-}
-.levelsface .pp-tag b { display: block; font-weight: 600; color: var(--muted); }
-.levelsface .pp-tag i { font-style: normal; color: var(--accent); }
 
 .levelsface .lv-row {
   display: grid;
@@ -4167,8 +4176,8 @@ nav.menu {
            loud to think over. -->
       <div class="volpop" id="volPop" hidden>
         <button class="volmute" id="volMute" type="button" aria-pressed="false">Mute</button>
-        <input class="volrange" id="volRange" type="range" min="0" max="100" step="1" value="100"
-               aria-label="Volume">
+        <span class="volcage"><input class="volrange" id="volRange" type="range"
+              min="0" max="100" step="1" value="100" aria-label="Volume"></span>
       </div>
       </div>
       <!-- Not a difficulty: whether the board can be read at all. It sits
@@ -8031,7 +8040,12 @@ function buildLevels() {
 
   const path = document.createElement('div');
   path.className = 'pp';
-  path.appendChild(Object.assign(document.createElement('div'), { className: 'pp-sheet' }));
+  /* The sheet is drawn after the nodes are placed, because it has to go
+     where they ended up rather than where they were meant to. */
+  const sheet = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  sheet.setAttribute('class', 'pp-sheet');
+  sheet.setAttribute('aria-hidden', 'true');
+  path.appendChild(sheet);
 
   for (const [key, items] of rooms) {
     const last = key === 'last';
@@ -8053,6 +8067,10 @@ function buildLevels() {
 
       const run = document.createElement('div');
       run.className = 'pp-run';
+      /* A weave rather than a column. Nothing is written beside a print
+         now, so the width is the sheet's to use. The turn is a sine so
+         the run reads as one continuous feed rather than a zigzag. */
+      run.style.setProperty('--x', (0.5 + 0.33 * Math.sin(lv * 0.82)).toFixed(3));
 
       const b = document.createElement('button');
       b.type = 'button';
@@ -8070,19 +8088,16 @@ function buildLevels() {
         b.setAttribute('aria-label', 'Level ' + lv + ', not reached yet');
       }
 
-      const tag = document.createElement('span');
-      tag.className = 'pp-tag';
-      tag.innerHTML = '<b>' + (done ? 'Printed' : i === campAt ? 'Next print'
-                              : open ? 'Not printed' : 'Not reached') + '</b>' +
-                      (beatPar(lv) ? '<i>under par</i>' : '');
-
+      /* No words. Printed is a sheet that has been printed on, the next
+         one is lit, and what has not been reached is dark -- which is
+         the whole of what the labels were saying. */
       run.appendChild(b);
-      run.appendChild(tag);
       path.appendChild(run);
     }
   }
 
   wrap.appendChild(path);
+  drawSheet(path, sheet);
 
   /* Thirty one prints is a long way down, and sixty will be twice that.
      Open on the one they are about to play rather than at the paper
@@ -8100,6 +8115,33 @@ function buildLevels() {
   const from = box.getBoundingClientRect().top;
   const at = here.getBoundingClientRect().top;
   box.scrollTop += (at - from) - box.clientHeight / 2 + here.offsetHeight / 2;
+}
+
+/* The sheet, through wherever the prints actually landed. One ribbon with
+   no line down the middle of it: a strip with a dashed center is a road,
+   and this is a page. */
+function drawSheet(path, svg) {
+  const box = path.getBoundingClientRect();
+  if (!box.width || !box.height) return;
+  svg.setAttribute('viewBox', '0 0 ' + box.width + ' ' + box.height);
+
+  const pts = [];
+  for (const n of path.querySelectorAll('.pp-run .lv')) {
+    const r = n.getBoundingClientRect();
+    pts.push([r.left - box.left + r.width / 2, r.top - box.top + r.height / 2]);
+  }
+  if (pts.length < 2) { svg.innerHTML = ''; return; }
+
+  let d = 'M ' + pts[0][0] + ' ' + pts[0][1];
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+    const my = (y0 + y1) / 2;
+    d += ' C ' + x0 + ' ' + my + ' ' + x1 + ' ' + my + ' ' + x1 + ' ' + y1;
+  }
+
+  const line = (w, o) => '<path d="' + d + '" fill="none" stroke="#F2EFE6" ' +
+    'stroke-width="' + w + '" stroke-linecap="round" stroke-linejoin="round" opacity="' + o + '"/>';
+  svg.innerHTML = line(34, .16) + line(26, .07) + line(1, .10);
 }
 
 /* A chip opens that level's card. */
