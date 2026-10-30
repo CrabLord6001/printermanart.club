@@ -7,12 +7,19 @@
    card deck lives here.
    ============================================================ */
 
+/* Two by two, centered. Fixed rather than auto-fitting: auto-fit put
+   three across on a wide screen and left the fourth sitting alone
+   underneath. */
 .deck {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
-  max-width: 760px;
+  max-width: 560px;
   margin: 0 auto;
+}
+
+@media (max-width: 520px) {
+  .deck { grid-template-columns: minmax(0, 1fr); max-width: 320px; }
 }
 
 /* A whole card is the link. Nothing inside it is separately
