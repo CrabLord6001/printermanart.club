@@ -2903,12 +2903,12 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
   /* No bleed. It was reaching 14px past the panel on each side to look
      edge to edge, and nothing clipped it -- which is the whole of why
      the level list could be scrolled sideways. */
   margin: 16px 0 6px;
-  padding: 9px 14px;
+  padding: 10px 14px 11px;
   background: linear-gradient(to bottom, #232838, #1A1E2B 45%, #151925);
   border-top: 1px solid #333a50;
   border-bottom: 1px solid #07080C;
@@ -2930,12 +2930,39 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
   background: linear-gradient(to bottom, #2a1b26, #1d1520 45%, #151018); }
 .levelsface .pp-stop.her::after { display: none; }   /* nothing leaves the far side */
 
-.levelsface .pp-txt { display: flex; flex-direction: column; min-width: 0; }
-.levelsface .pp-txt b {
-  font-size: 0.56rem; font-weight: 700; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--muted);
+/* The part's name over the room's, centered on the sign, and set like
+   the readouts above the board: the small tracked cap for what the thing
+   is, the reading itself underneath at size. They were a 0.56rem kicker
+   and a 0.82rem name pushed left of a drawing, which read as a caption
+   rather than as a sign on a machine. */
+.levelsface .pp-txt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  text-align: center;
 }
-.levelsface .pp-txt { font-size: 0.82rem; color: var(--text); font-weight: 600; }
+
+.levelsface .pp-txt b {
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.levelsface .pp-txt {
+  font-size: 1.12rem;
+  line-height: 1.1;
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 430px) {
+  .levelsface .pp-txt { font-size: 1rem; }
+}
 
 /* The node holds the middle whatever the label does, so every print on
    the run lines up on the sheet. */
@@ -3782,6 +3809,78 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 .partyface.held .pin { padding: 20px 14px; }
 .partyface.held .pnote[hidden],
 .partyface.held .bossmenu[hidden] { display: none; }
+
+/* ---- her screen ----
+   A loss used to go to the title screen: cheerful music over a picture
+   of a wrecked room, and the player pressing Play again from a menu. It
+   is her victory now, so it says so on the file she kept.
+
+   Share Tech Mono is already loaded for the readouts, and it is the one
+   face on the page that reads as something a machine printed rather than
+   something a designer set. Pulled apart into a red and a cyan the way a
+   press out of register tears -- the two colors the shop does not own,
+   which is what the virus has used for its own all game. */
+/* The panel is a 90% lid by default, which is right for a page of
+   instructions and wrong here: the painting is the message. Dark enough
+   at the top to carry the headline and the numbers, then out of the way
+   -- the same bargain the finished print makes, upside down, because
+   that one puts its words at the bottom and this one at the top. */
+.over.jam {
+  background: linear-gradient(to bottom,
+              rgba(10,12,17,0.94) 0%, rgba(10,12,17,0.86) 13%,
+              rgba(10,12,17,0.34) 25%, rgba(10,12,17,0.06) 38%,
+              rgba(10,12,17,0.06) 70%, rgba(10,12,17,0.58) 100%);
+  justify-content: flex-start;
+  padding-top: 18px;
+}
+
+.over.jam h2 { text-shadow: 0 2px 14px rgba(0,0,0,0.95); }
+
+.over.jam h2 {
+  font-family: 'Share Tech Mono', 'Poppins', ui-monospace, monospace;
+  font-size: clamp(1.9rem, 9vw, 3rem);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  color: #F2EFE6;
+  margin-bottom: 10px;
+  text-shadow:
+    -2px 0 0 rgba(255, 0, 60, 0.85),
+     2px 0 0 rgba(0, 240, 255, 0.75),
+     0 0 24px rgba(255, 0, 60, 0.35);
+  animation: jamSlip 3.1s steps(1, end) infinite;
+}
+
+/* It does not shiver constantly -- a headline that never stops moving is
+   a gif. It slips, the way the board does when a virus goes off, and
+   then holds. */
+@keyframes jamSlip {
+  0%, 92%, 100% { transform: translateX(0); }
+  93% { transform: translateX(-3px) skewX(-1.5deg); }
+  95% { transform: translateX(3px); }
+  97% { transform: translateX(-1px) skewX(1deg); }
+}
+
+/* The way on is the only lit thing on the screen, and it is red: the one
+   color the press does not print with, which is why it has belonged to
+   the virus all game. */
+body.jamface .deck #again {
+  background: linear-gradient(to bottom, #E8244F, #B5153A);
+  border-color: #FF4D6D;
+  color: #FFF1F3;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.35);
+  box-shadow: 0 0 0 1px rgba(255,77,109,0.35), 0 6px 18px rgba(200,20,55,0.35);
+}
+
+body.jamface .deck #again:hover,
+body.jamface .deck #again:focus-visible {
+  background: linear-gradient(to bottom, #FF3860, #C8173F);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .over.jam h2 { animation: none; }
+}
 
 /* ---- the credits ----
    The panel scrolls by default, which here would have scrolled the
@@ -6694,6 +6793,118 @@ function finishPrint() {
   page.style.filter = 'none';
 }
 
+/* ---- what she leaves behind ----
+   The win draws the print clean. This draws the same print and then runs
+   it through corrupt() at full, which is the state the finale's painting
+   arrives in -- so a loss shows the file she kept rather than a picture
+   of a wrecked room. It is the painting you just failed, not an asset:
+   the plates are the ones this level separated.
+
+   Then it flickers. A new seed every few hundred milliseconds moves the
+   tearing without redrawing the picture under it, and now and then her
+   face surfaces through it the way it does over a glitch zone. */
+let jamJob = 0, jamSeed = 11, jamBurst = 0;
+
+function jamStop() {
+  if (jamJob) { clearTimeout(jamJob); jamJob = 0; }
+  jamBurst = 0;
+}
+
+function jamClean() {
+  const tmp = document.createElement('canvas');
+  tmp.width = PW; tmp.height = PH;
+  const t = tmp.getContext('2d');
+  t.fillStyle = '#F2EFE6';
+  t.fillRect(0, 0, PW, PH);
+  t.globalCompositeOperation = 'multiply';
+  for (const pl of PLATES) screenPlate(t, separated[pl], PW, PH, FINE, ANGLE[pl], DOT[pl]);
+  t.globalCompositeOperation = 'source-over';
+  return tmp;
+}
+
+/* Her, ready to be caught sight of: her own portrait under the whole
+   treatment, plating and lit eyes included. Those belong on her face and
+   nowhere else, which is the whole reason the painting underneath is
+   corrupted bare -- she brings her own. Built once. */
+let jamHer = null;
+
+function jamHerFrame() {
+  if (jamHer || !asilFaceImg) return jamHer;
+  const cv = document.createElement('canvas');
+  cv.width = PW; cv.height = PH;
+  try { corrupt(cv.getContext('2d'), asilFaceImg, PW, PH, 1, 7); }
+  catch (e) { return null; }
+  jamHer = cv;
+  return jamHer;
+}
+
+function jamPrint() {
+  if (!separated) return;
+  /* Her portrait is fetched only when a level is deep enough to show
+     her, so on an early loss it is not here yet -- and the screen was
+     flickering a painting with nobody in it. Ask for it now; the flash
+     starts the moment it lands. */
+  asilFace().catch(() => {});
+  const page = pageEl();
+  const base = jamClean();
+  const draw = () => {
+    const ctx = page.getContext('2d');
+    ctx.globalCompositeOperation = 'source-over';
+    /* bare: the tearing and the grade, none of the furniture measured
+       against her face. All of it is seeded, so all of it moves. */
+    try { corrupt(ctx, base, PW, PH, 1, jamSeed, true); }
+    catch (e) { jamStop(); return; }
+    /* And her, surfacing. Not every frame -- a face that is always there
+       is a wallpaper, and the point is that you keep catching it. The
+       eyes come with her rather than burning a hole in the painting
+       between visits. */
+    const her = jamHerFrame();
+    /* A fifth, not a third. A burst holds her for two or three frames
+       on top of the roll that started it, so the roll cannot be set to
+       the share you want her on screen for -- measured at a third it put
+       her up two frames in three, which is the wallpaper this was
+       supposed to avoid. */
+    if (her && (jamBurst > 0 || Math.random() < 0.2)) {
+      ctx.save();
+      /* Hard. She was coming through at 22 to 48 percent over a dark
+         painting, which is a smudge -- and this is her screen. A hit in
+         a burst is harder still, because that is the point of one. */
+      ctx.globalAlpha = jamBurst > 0 ? (0.72 + Math.random() * 0.26)
+                                     : (0.40 + Math.random() * 0.45);
+      ctx.globalCompositeOperation = 'screen';
+      try { ctx.drawImage(her, 0, 0, PW, PH); } catch (e) {}
+      ctx.restore();
+      /* One appearance in four stutters: two or three of her in quick
+         succession and then nothing for a while. On a fixed tick she
+         could only ever land on the beat, which reads as a strobe --
+         something switching on and off on purpose. A fault does not
+         keep time. */
+      if (jamBurst > 0) jamBurst--;
+      else if (Math.random() < 0.25) jamBurst = 1 + ((Math.random() * 2) | 0);
+    } else if (jamBurst > 0) jamBurst--;
+  };
+  draw();
+  page.style.opacity = '1';
+  page.style.filter = 'none';
+  jamStop();
+  /* Reschedules itself rather than running on an interval, so the gap
+     between frames is a different length every time: a long hold, then
+     two fast ones, then a long hold. Inside a burst it goes to the
+     stutter rate, which is what makes a burst read as one event rather
+     than as three frames that happened to land together. */
+  const tick = () => {
+    if (elOver.hidden || !elOver.classList.contains('jam')) { jamStop(); return; }
+    jamSeed = (jamSeed * 7 + 13) % 997;
+    draw();
+    /* Irregular, but not rarer than it was. Stronger and less
+       predictable was the brief; turning her down to once every three
+       seconds would have been a third change nobody asked for. */
+    const wait = jamBurst > 0 ? 70 + Math.random() * 90 : 190 + Math.random() * 420;
+    jamJob = setTimeout(tick, wait);
+  };
+  jamJob = setTimeout(tick, 300 + Math.random() * 300);
+}
+
 /* ============================================================
    The board on the page
    ============================================================ */
@@ -7997,7 +8208,9 @@ function ready(face) {
   started = false; paused = false; phase = 'ready';
   stopTick();
   stopClock();
-  elOver.classList.remove('won');
+  elOver.classList.remove('won', 'jam');
+  document.body.classList.remove('jamface');
+  jamStop();
 
   /* The rules come up once a visit and live behind their own button after
      that. Reprinting them over every new print made the quickest way back
@@ -8150,138 +8363,12 @@ function shopDraw(o, X, Y, W, H, pl) {
   }
 }
 
-/* The same room after a jam has gone all the way wrong: the cowling
-   alight, the sheet chewed up and coming out of the top, one of them with
-   his hands in the air and the other already down at it with a toolbox.
-
-   The flames are cut out of the cowling rather than laid over it. Yellow
-   printed on top of cyan is green, and a green fire is a worse mistake
-   than no fire at all -- so the plate carries holes where it burns and
-   the fire prints on bare paper through them, which is also how it would
-   actually be separated. */
-function wreckDraw(o, X, Y, W, H, pl) {
-  const u = (t) => X + t * W;
-  const v = (t) => Y + t * H;
-
-  o.fillStyle = '#000';
-  o.strokeStyle = '#000';
-  o.lineCap = 'round';
-  o.lineJoin = 'round';
-
-  const box = (a, b, c, d, r) => {
-    const x = u(a), y = v(b), bw = (c - a) * W, bh = (d - b) * H;
-    o.beginPath();
-    if (o.roundRect) o.roundRect(x, y, bw, bh, (r || 0) * H);
-    else o.rect(x, y, bw, bh);
-    o.fill();
-  };
-  const disc = (a, b, r) => {
-    o.beginPath(); o.arc(u(a), v(b), r * H, 0, Math.PI * 2); o.fill();
-  };
-  const run = (pts, wid, shut) => {
-    o.beginPath();
-    pts.forEach((q, i) => (i ? o.lineTo(u(q[0]), v(q[1])) : o.moveTo(u(q[0]), v(q[1]))));
-    if (shut) o.closePath();
-    if (wid) { o.lineWidth = wid * H; o.stroke(); } else o.fill();
-  };
-
-  /* Laid as subpaths so the same shapes can fill the fire on one plate
-     and bite holes in the cowling on another. */
-  const flame = (cx, base, fw, fh) => {
-    o.moveTo(u(cx - fw), v(base));
-    o.quadraticCurveTo(u(cx - fw), v(base - fh * 0.55), u(cx - fw * 0.25), v(base - fh * 0.72));
-    o.quadraticCurveTo(u(cx), v(base - fh), u(cx + fw * 0.35), v(base - fh * 0.62));
-    o.quadraticCurveTo(u(cx + fw), v(base - fh * 0.42), u(cx + fw), v(base));
-    o.closePath();
-  };
-  const LICK = [[0.345, 0.90, 0.058, 0.33], [0.452, 0.90, 0.066, 0.40], [0.565, 0.90, 0.052, 0.28]];
-  const HOT  = [[0.345, 0.90, 0.042, 0.21], [0.452, 0.90, 0.048, 0.26], [0.565, 0.90, 0.038, 0.18]];
-  const chew = () => {
-    o.moveTo(u(0.500), v(0.325));
-    o.lineTo(u(0.542), v(0.145));
-    o.lineTo(u(0.586), v(0.232));
-    o.lineTo(u(0.634), v(0.118));
-    o.lineTo(u(0.668), v(0.268));
-    o.lineTo(u(0.612), v(0.338));
-    o.closePath();
-  };
-
-  /* The cowling, holed where it burns and where the sheet was chewed.
-     Called from two plates, so the press is not the same flat blue as
-     the men standing next to it. */
-  const cowl = () => {
-    o.beginPath();
-    if (o.roundRect) {
-      o.roundRect(u(0.27), v(0.30), 0.36 * W, 0.60 * H, 0.045 * H);
-      o.roundRect(u(0.298), v(0.375), 0.125 * W, 0.165 * H, 0.022 * H);  // the console, dead
-      chew();
-      LICK.forEach((f) => flame(f[0], f[1], f[2], f[3]));
-      o.fill('evenodd');
-    } else {
-      o.rect(u(0.27), v(0.30), 0.36 * W, 0.60 * H);
-      o.fill();
-    }
-  };
-
-  if (pl === 'c') {
-    cowl();
-    box(0.078, 0.585, 0.158, 0.868, 0.018);    // the one who gave up, below the belt
-    box(0.748, 0.568, 0.868, 0.792, 0.045);    // the one still at it, hunched
-    run([[0.754, 0.632], [0.680, 0.676]], 0.052);  // his arm, into the machine
-    box(0.758, 0.788, 0.886, 0.868, 0.032);    // and down on the knee
-  }
-
-  if (pl === 'm') {
-    o.beginPath();
-    HOT.forEach((f) => flame(f[0], f[1], f[2], f[3]));
-    o.fill();                                   // the hot of the fire, red under yellow
-    box(0.062, 0.335, 0.175, 0.602, 0.042);    // hands in the air, above the belt
-    run([[0.073, 0.362], [0.028, 0.242]], 0.048);
-    run([[0.164, 0.362], [0.209, 0.242]], 0.048);
-  }
-
-  if (pl === 'y') {
-    o.beginPath();
-    LICK.forEach((f) => flame(f[0], f[1], f[2], f[3]));
-    o.fill();
-    run([[0.900, 0.082], [0.962, 0.292], [0.838, 0.292]], 0, true);  // the warning
-  }
-
-  if (pl === 'k') {
-    o.globalAlpha = 0.45; cowl(); o.globalAlpha = 1;   // the press, in slate
-    /* Smoke is the one gray thing on the sheet, so it goes down light
-       rather than at the weight everything else on this plate takes. */
-    o.globalAlpha = 0.40;
-    disc(0.350, 0.258, 0.092);
-    disc(0.296, 0.182, 0.080);
-    disc(0.364, 0.138, 0.074);
-    disc(0.302, 0.072, 0.064);
-    disc(0.372, 0.036, 0.050);
-    disc(0.252, 0.118, 0.046);
-    o.globalAlpha = 1;
-
-    o.lineWidth = 0.026 * H;                    // the sheet, chewed and climbing out
-    o.beginPath(); chew(); o.stroke();
-
-    run([[0.900, 0.082], [0.962, 0.292], [0.838, 0.292]], 0.024, true);
-    box(0.891, 0.158, 0.909, 0.228, 0.008);     // the bang inside it
-    box(0.891, 0.245, 0.909, 0.265, 0.008);
-
-    disc(0.118, 0.262, 0.076);                  // his head
-    box(0.062, 0.862, 0.175, 0.906, 0.016);     // his feet
-    disc(0.793, 0.505, 0.070);                  // and the other's
-    box(0.862, 0.846, 0.912, 0.890, 0.014);     // his boot
-    box(0.906, 0.762, 0.978, 0.864, 0.016);     // the toolbox
-    run([[0.924, 0.762], [0.960, 0.762]], 0.028);
-    run([[0.0, 0.906], [1.0, 0.906]], 0.022);   // the floor
-  }
-}
 
 /* One plate's worth of the shop, read back the same way the letters are. */
-function shopPlate(w, h, X, Y, SW, SH, pl, wreck) {
+function shopPlate(w, h, X, Y, SW, SH, pl) {
   const off = document.createElement('canvas');
   off.width = w; off.height = h;
-  (wreck ? wreckDraw : shopDraw)(off.getContext('2d'), X, Y, SW, SH, pl);
+  shopDraw(off.getContext('2d'), X, Y, SW, SH, pl);
   const d = off.getContext('2d').getImageData(0, 0, w, h).data;
   const arr = new Float32Array(w * h);
   const dens = SHOP_INK[pl];
@@ -8320,7 +8407,7 @@ function titlePlate(w, h, lines, fs, lead, dx, dy, dens, band, weight) {
    and the end says YOU WIN -- all off the press the player spends the
    whole series feeding. Each sheet remembers what it last printed so a
    repaint costs nothing. */
-function paintPlate(cv, lines, force, shop) {   // shop: '' | 'shop' | 'wreck'
+function paintPlate(cv, lines, force, shop) {   // shop: '' | 'shop'
   if (!cv || !cv.parentElement) return;
 
   /* The content box of the paper, not the padded box: measured the easy
@@ -8382,7 +8469,7 @@ function paintPlate(cv, lines, force, shop) {   // shop: '' | 'shop' | 'wreck'
                            pad + o.x * cell,
                            bandH * dpr + o.y * cell,
                            cv.width - pad * 2,
-                           shopH * dpr - cv.width * 0.02, pl, shop === 'wreck');
+                           shopH * dpr - cv.width * 0.02, pl);
       for (let i = 0; i < mask.length; i++) mask[i] = Math.min(1, mask[i] + sm[i]);
     }
     screenPlate(ctx, mask, cv.width, cv.height, cell, ANGLE[pl], DOT[pl]);
@@ -8550,13 +8637,13 @@ let titleWords = ['GALLERY', 'PRINTSHOP'];
 const TITLE_WORDS  = ['GALLERY', 'PRINTSHOP'];
 const WIN_WORDS    = ['YOU', 'WIN'];
 const WON_WORDS    = ['YOU WON!'];
-const OVER_WORDS   = ['GAME OVER :(', 'TRY AGAIN?'];
 const FINALE_WORDS = ['THE LAST', 'PRINT'];
 
-let shopWreck = false;          // is the room on fire on this sheet?
-
-const paintTitle = (force) => paintPlate(document.getElementById('titleArt'), titleWords, force,
-                                         shopWreck ? 'wreck' : 'shop');
+/* The sheet is the shop. It used to be the shop on fire whenever a run
+   had just ended badly, under the words GAME OVER -- which was the whole
+   of a loss screen living on the title screen. A loss has its own screen
+   now, so this one is only ever the title again. */
+const paintTitle = (force) => paintPlate(document.getElementById('titleArt'), titleWords, force, 'shop');
 
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(() => {
@@ -9208,9 +9295,12 @@ function buildLevels() {
 
     const st = document.createElement('div');
     st.className = 'pp-stop' + (last ? ' her' : '');
+    /* The sign is the name and nothing else. It used to carry a small
+       animated drawing of the part on the left, over a band that is a
+       blueprint of the same part -- the same machinery twice, in two
+       drawing styles, at two sizes. One of them had to go, and it was
+       not the band. */
     st.innerHTML =
-      '<svg class="pp-rig" width="68" height="50" viewBox="0 0 72 52" aria-hidden="true">' +
-      (PP_ART[last ? 'last' : key] || '') + '</svg>' +
       '<span class="pp-txt"><b>' + (last ? 'Formatter board' : (PP_NAME[key] || '')) + '</b>' +
       (last ? 'The last print' : (ch ? ch.name : '')) + '</span>';
     path.appendChild(st);
@@ -9576,7 +9666,9 @@ function faceOff() {
   /* won goes too. It trades the scrim for a gradient that is clear at the
      top so the finished print shows through, which is right for the print
      and unreadable for anything laid over it. closeRules puts it back. */
-  elOver.classList.remove('intro', 'menu', 'won', 'boardface', 'lvface');
+  elOver.classList.remove('intro', 'menu', 'won', 'jam', 'boardface', 'lvface');
+  document.body.classList.remove('jamface');
+  jamStop();
   elOver.classList.remove('home', 'boss', 'victor', 'endface2', 'credface', 'party');
   clearGalleryArt();                            // the sheet belongs to one face only
   asilStop();                                   // she stops talking to an empty room
@@ -9648,7 +9740,6 @@ let bossSpoken = false;
 
 /* Set by a jam on its way to the title screen, so Game Over shows once
    and is gone the next time anybody opens the menu. */
-let fromJam = false;
 
 /* Set on the way to the title screen after the last print, so the plate
    says YOU WIN once and goes back to saying the name of the game. */
@@ -9676,12 +9767,10 @@ function showFace(which) {
     /* The hub. Everything a run can end in comes back here, so it carries
        the whole interface and the row under the board stands down. */
     elOver.classList.add('home');
-    if (!fromJam && !fromWin) {
+    if (!fromWin) {
       document.getElementById('faceLine').hidden = true;
       titleWords = TITLE_WORDS;
-      shopWreck = false;
     }
-    fromJam = false;
     fromWin = false;
     /* The party is over at the title screen, whatever ended it. Left on,
        the floor goes on painting a canvas behind the menu and the two
@@ -10140,7 +10229,16 @@ const ASIL_W = 400, ASIL_H = 800;               // the size the geometry was mea
 
    The grade and the split channels go with the average: they are the
    wrongness of the whole picture rather than any one plate's doing. */
-function corrupt(ctx, img, w, h, amount, seed) {
+/* `bare` leaves out everything in here that was measured against the
+   Mona Lisa -- the plating clipped to her head, and the lights in her
+   eyes. Those are placed off FACE.cx and a table of panel coordinates,
+   which is exactly right on her and meaningless on anybody else: over
+   another painting they land as a metal slab in open space, and because
+   their geometry is fixed while only the tearing is seeded, the slab is
+   the one thing on the screen that does not move. What is left is all
+   seeded -- the tears, the channels, the grade, the traces -- so it
+   flickers the whole way through. */
+function corrupt(ctx, img, w, h, amount, seed, bare) {
   let s = seed || 7;
   const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
   const clamp = (v) => Math.max(0, Math.min(1, v));
@@ -10170,6 +10268,7 @@ function corrupt(ctx, img, w, h, amount, seed) {
      Clipped to her head, not laid over the frame. A panel that runs off
      the jaw into the background is a sticker; one that stops at the bone
      is a mask. */
+  if (!bare) {
   const headPath = () => {
     ctx.beginPath();
     ctx.ellipse(X(FACE.cx), Y(0.242), X(0.175), Y(0.128), 0, 0, 6.3);
@@ -10231,6 +10330,7 @@ function corrupt(ctx, img, w, h, amount, seed) {
   ctx.stroke();
   ctx.shadowBlur = 0;
   ctx.restore();
+  }
 
   /* ---- blocks torn out of her ------------------------------------- */
   const tears = Math.round(9 * Ak);
@@ -10330,7 +10430,7 @@ function corrupt(ctx, img, w, h, amount, seed) {
   /* ---- the eyes ---------------------------------------------------
      Lit from inside. The one under the plating becomes a lens, which is
      the point: the same look out of a different instrument. */
-  for (const { x: ex, y: ey, lens } of EYES) {
+  for (const { x: ex, y: ey, lens } of (bare ? [] : EYES)) {
     const cx = X(ex), cy = Y(ey), r = X(0.050) * (0.62 + 0.38 * Ay);
     if (lens && Ak > 0.02) {
       ctx.fillStyle = 'rgba(16,20,28,' + (0.92 * Ak) + ')';
@@ -11655,8 +11755,11 @@ function buttonsNow() {
        label it always had. */
     /* After the last print there is no next one, so the button carries
        them off the painting rather than pretending the series goes on. */
+    /* Reprint was the shop's own verb and the wrong word anyway: on a
+       Game Over button what a player expects beats what the machine
+       would say. */
     main.textContent = !campOn ? 'New print'
-      : (wonLast ? (isFinale(artwork) ? 'Finish' : 'Next print') : 'Try again');
+      : (wonLast ? (isFinale(artwork) ? 'Finish' : 'Next print') : 'Try again?');
     /* A jam and a mid print restart do the same thing. They are named
        differently because the moment is different: one is an offer after
        a loss, the other is abandoning a deal that is going badly. */
@@ -12257,21 +12360,39 @@ function finish(won) {
        bad news goes on in its place, over a picture of what they did to
        the room. A heading above a plate that still read Gallery Printshop
        was two titles arguing about what had just happened. */
-    fromJam = true;
-    titleWords = OVER_WORDS;
-    shopWreck = true;
-    const jam = document.getElementById('faceLine');
-    /* A jam ends the party rather than spoiling a print, so the line
-       says what the party was worth and not how much of a picture was
-       missing -- there was no picture. */
-    jam.innerHTML = discoOn
-      ? points + '&nbsp;pts &middot; chain&nbsp;&times;' + bestChain
-        + ' &middot; speed&nbsp;' + discoSays()
-      : down + '&nbsp;of&nbsp;4 plates down &middot; ' + points + '&nbsp;pts'
-        + ' &middot; chain&nbsp;&times;' + bestChain;
-    jam.hidden = false;
     if (discoOn) recordDisco(ran);
-    showFace('home');
+
+    /* Her screen rather than the player's. The whole game is getting her
+       out of a painting, so losing is her keeping it -- and the honest
+       way to say that is to show the file in the state she left it,
+       rather than the title screen wearing GAME OVER over a picture of a
+       burning room. That plate said the same thing this screen says, one
+       press later and with cheerful music under it.
+
+       The party has no print for her to keep, so it gets the headline
+       and the numbers over an empty well. Still one screen: a second one
+       for the lane with nothing to show would be the same redundancy
+       again in the other direction. */
+    if (artwork && separated) {
+      jamPrint();
+      if (elGrid) elGrid.classList.add('lifted');
+    }
+    const jamTitle = document.getElementById('overTitle');
+    jamTitle.hidden = false;
+    jamTitle.textContent = 'GAME OVER';
+    credit.hidden = true;
+    /* Nothing under the headline. The artist's line comes off because
+       she has the painting and crediting it under her is the wrong
+       caption -- and the run's numbers come off because every one of
+       them is already on the screen and has been all run: the plates in
+       the cartridges down the rail, the points and the chain in the
+       boxes over the board. */
+    document.getElementById('overText').innerHTML = '';
+    elOver.classList.add('jam');
+    document.body.classList.add('jamface');
+    elOver.hidden = false;
+    setMusic('gameover');
+    buttons();
     return;
   }
 
@@ -12323,7 +12444,6 @@ function showWin() {
   const line = document.getElementById('faceLine');
 
   titleWords = WIN_WORDS;
-  shopWreck = false;
   fromWin = true;
 
   line.innerHTML = trying
