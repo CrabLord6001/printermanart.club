@@ -214,6 +214,7 @@ body {
               <ul class="picks">
                 <li><svg class="pick-ic" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 14a8 8 0 0 1 16 0v2h-4.6v-2a3.4 3.4 0 0 0-6.8 0v2H4z" fill="#E8394F"/><rect x="4" y="16" width="4.6" height="3.2" fill="#C7CBD6"/><rect x="15.4" y="16" width="4.6" height="3.2" fill="#C7CBD6"/></svg><b>Magnet</b> drags nearby ink toward you</li>
                 <li><svg class="pick-ic" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="9.2" y="2.4" width="5.6" height="2.4" fill="#C7CBD6"/><path d="M10.2 5.4h3.6v4.2l4 7a2 2 0 0 1-1.7 3H7.9a2 2 0 0 1-1.7-3l4-7z" fill="#7FDAF5" opacity=".55"/><path d="M8.1 14.4h7.8l1.9 3.2a2 2 0 0 1-1.7 3H7.9a2 2 0 0 1-1.7-3z" fill="#22B8E6"/></svg><b>Phasing</b> run through your own printouts and the furniture</li>
+                <li><svg class="pick-ic" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="10.3" y="1.6" width="3.4" height="2.4" fill="#C7CBD6"/><circle cx="12" cy="13" r="8.4" fill="#F2EFE6"/><circle cx="12" cy="13" r="6.5" fill="#2B2F3A"/><path d="M12 13V8.7M12 13h3.5" stroke="#F2EFE6" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg><b>Time Warp</b> the press slows right down</li>
               </ul>
             </div>
           </div>
@@ -341,6 +342,7 @@ async function ensureModules() {
     startPaperTrail: pt.startPaperTrail,
     drawPreview: pt.drawPreview,
     rooms: pt.ROOMS, order: pt.ROOM_ORDER,
+    warpSlow: pt.WARP_SLOW,
     auth, sound
   };
   mods.auth.onMember(whenMemberChanges);
@@ -375,7 +377,12 @@ function makeGame() {
 
     onPull() { mods.sound.pull(); },
 
-    onPower(kind, left) { mods.sound.setPower(kind, left > 0 && left <= 22); },
+    onPower(kind, left) {
+      mods.sound.setPower(kind, left > 0 && left <= 22);
+      // The loop drags along with the press, off the engine's own number so
+      // the two can never disagree about how slow slow is.
+      mods.sound.setDrag(kind === 'warp' ? mods.warpSlow : 1);
+    },
 
     onPause() {
       mode = 'paused';

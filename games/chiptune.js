@@ -29,7 +29,7 @@ const TICK = 25;          // ms between visits to the scheduler
 
 let ctx = null;
 let master = null, musicBus = null, sfxBus = null;
-let timer = null, step = 0, nextAt = 0, rate = 1;
+let timer = null, step = 0, nextAt = 0, rate = 1, base = 1, drag = 1;
 let powerKind = null, powerWarn = false;
 let on = false;
 let playing = false;
@@ -129,7 +129,9 @@ function playStep(n, when) {
    steps has to be something you stop noticing. */
 const POWER_MOTIF = {
   magnet: { notes: [45, 52, 45, 50], wave: 'triangle', peak: 0.42, hold: 1.3, bend: -5 },
-  phase:  { notes: [84, 88, 91, 88], wave: 'sine',     peak: 0.26, hold: 1.1, bend: 4 }
+  phase:  { notes: [84, 88, 91, 88], wave: 'sine',     peak: 0.26, hold: 1.1, bend: 4 },
+  // Long notes that sag downward, which is the sound of a thing running slow.
+  warp:   { notes: [57, 55, 53, 55], wave: 'sawtooth', peak: 0.3,  hold: 2.2, bend: -3 }
 };
 
 function pump() {
@@ -181,13 +183,25 @@ export function startMusic() {
 export function stopMusic() {
   playing = false;
   powerKind = null;          // nothing of the run carries on past the run
+  drag = 1;
+  rate = base;
   if (timer) { clearInterval(timer); timer = null; }
 }
 
 /* The loop speeds up with the printer, so the game getting faster is
    something you hear as well as see. Capped, or it turns into a wasp. */
 export function setRate(next) {
-  rate = Math.max(1, Math.min(1.45, next || 1));
+  base = Math.max(1, Math.min(1.45, next || 1));
+  rate = base / drag;
+}
+
+/* Time Warp drags the loop along with the press. The music already speeds
+   up as she prints, so letting it slow with her is that same idea run
+   backwards, and it is the clearest way to say the board has changed speed
+   without putting a word on the screen. */
+export function setDrag(next) {
+  drag = Math.max(1, next || 1);
+  rate = base / drag;
 }
 
 /* ---- effects --------------------------------------------- */
@@ -219,6 +233,9 @@ export function take(kind) {
   if (kind === 'magnet') {
     [57, 64, 69].forEach((n, i) => tone(sfxBus, t + i * 0.045, n, 0.1, 'triangle', 0.5, n - 7));
     hiss(t + 0.09, 0.06, 0.07);
+  } else if (kind === 'warp') {
+    // Downward, and widening as it goes: the opposite shape to the other two.
+    [81, 74, 69, 62].forEach((n, i) => tone(sfxBus, t + i * 0.07, n, 0.22, 'sawtooth', 0.34, n - 5));
   } else {
     [76, 83, 88, 93].forEach((n, i) => tone(sfxBus, t + i * 0.04, n, 0.12, 'sine', 0.38, n + 5));
   }

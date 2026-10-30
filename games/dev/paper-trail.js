@@ -95,9 +95,18 @@ const GAP_MAX     = 280;
 const MAGNET_REACH = 3;      // cells, measured as a square around her
 const MAGNET_FLY   = 190;    // ms the ink takes to reach her once it lets go
 
+/* How much the press drags under Time Warp. A flat multiplier rather than
+   a return to the starting pace: pegging it to the start would do almost
+   nothing in the first half of a run, which is the one real complaint
+   against phasing, and there is no reason to build a second one. */
+export const WARP_SLOW = 1.7;
+
+/* Violet is the club's own color and the one thing on the board that is
+   not an ink -- the other two already borrow from the four plates. */
 const POWERS = {
   magnet: { name: 'Magnetic Ink', glow: '#E8394F' },
-  phase:  { name: 'Phasing',      glow: '#7FDAF5' }
+  phase:  { name: 'Phasing',      glow: '#7FDAF5' },
+  warp:   { name: 'Time Warp',    glow: '#99A2F7' }
 };
 
 const POWER_KEYS = Object.keys(POWERS);
@@ -639,7 +648,35 @@ function drawFlask(ctx) {
   ctx.fill();
 }
 
-const PICK_ART = { magnet: drawMagnet, phase: drawFlask };
+function drawClock(ctx) {
+  ctx.fillStyle = '#C7CBD6';
+  ctx.fillRect(-1.7, -10.6, 3.4, 2.4);              // the winder on top
+
+  ctx.fillStyle = '#F2EFE6';
+  ctx.beginPath();
+  ctx.arc(0, 1, 8.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#2B2F3A';
+  ctx.beginPath();
+  ctx.arc(0, 1, 6.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = '#F2EFE6';
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 1.7;
+  ctx.beginPath();
+  ctx.moveTo(0, 1);
+  ctx.lineTo(0, -3.3);
+  ctx.stroke();
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, 1);
+  ctx.lineTo(3.5, 1);
+  ctx.stroke();
+}
+
+const PICK_ART = { magnet: drawMagnet, phase: drawFlask, warp: drawClock };
 
 /* On the board waiting to be taken. The halo is what separates a pickup
    from the furniture: everything else on here is either gray scenery or
@@ -913,7 +950,8 @@ export function startPaperTrail(options) {
   }
 
   function stepMs() {
-    return Math.max(FLOOR_MS, START_MS - sheets * RAMP);
+    const ms = Math.max(FLOOR_MS, START_MS - sheets * RAMP);
+    return power === 'warp' ? ms * WARP_SLOW : ms;
   }
 
   function turn(next) {
