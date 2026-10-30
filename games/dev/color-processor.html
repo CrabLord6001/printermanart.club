@@ -8342,6 +8342,17 @@ function drawSheet(path, svg) {
    rather than being positioned by hand. */
 const PP_SKIN = ['paper', 'belts', 'traces', 'laser', 'heat', 'ink'];
 
+/* Where a band has real art, it uses it instead of the shapes written
+   here. Tiled rather than stretched: a band is as tall as its chapter's
+   prints, and a chapter will be twice as long once there are sixty
+   levels, so anything stretched to fit would distort as the run grew.
+   Laid down at a low opacity, because it is the wall behind the sheet
+   and not the thing being read. */
+const PP_IMG = {
+  paper: { src: '/games/img/path/tray.png',    opacity: 0.30 },
+  belts: { src: '/games/img/path/rollers.png', opacity: 0.22 }
+};
+
 function ppBand(kind, y0, y1, W, rnd) {
   const h = y1 - y0;
   let g = '';
@@ -8506,12 +8517,31 @@ function drawDeco(path, svg) {
   let seed = 11;
   const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
 
-  let out = '';
+  let defs = '', out = '';
   for (const [k, b] of bands) {
     const kind = k === 'last' ? 'glitch' : (PP_SKIN[k] || 'paper');
-    out += ppBand(kind, Math.max(0, b.lo - 44), b.hi + 44, W, rnd);
+    const top = Math.max(0, b.lo - 44), bot = b.hi + 44;
+    const art = PP_IMG[kind];
+
+    if (art) {
+      /* One square tile the width of the panel, repeating down the band. */
+      const id = 'ppimg-' + kind;
+      if (defs.indexOf(id) === -1) {
+        defs += '<pattern id="' + id + '" patternUnits="userSpaceOnUse" width="' +
+                W.toFixed(1) + '" height="' + W.toFixed(1) + '">' +
+                '<image href="' + art.src + '" x="0" y="0" width="' + W.toFixed(1) +
+                '" height="' + W.toFixed(1) + '" preserveAspectRatio="xMidYMid slice"/>' +
+                '</pattern>';
+      }
+      out += '<rect x="0" y="' + top.toFixed(1) + '" width="' + W.toFixed(1) +
+             '" height="' + (bot - top).toFixed(1) + '" fill="url(#' + id + ')" opacity="' +
+             art.opacity + '"/>';
+      continue;
+    }
+
+    out += ppBand(kind, top, bot, W, rnd);
   }
-  svg.innerHTML = out;
+  svg.innerHTML = (defs ? '<defs>' + defs + '</defs>' : '') + out;
 }
 
 /* A chip opens that level's card. */
