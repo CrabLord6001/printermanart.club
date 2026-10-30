@@ -3130,16 +3130,79 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
                      inset 0 0 22px rgba(185,140,255,0.22); }
 }
 
-/* On the card that introduces it, where it is a drop seen through the
-   glass rather than a pane over a column. */
-.cell.fate {
-  box-shadow: inset 0 0 0 2px rgba(178, 120, 255, 0.8),
-              0 0 10px 1px rgba(150, 90, 240, 0.4);
-  background-image: repeating-linear-gradient(to bottom,
-    rgba(198, 160, 255, 0.00) 0px,
-    rgba(198, 160, 255, 0.00) 9px,
-    rgba(198, 160, 255, 0.30) 9px,
-    rgba(198, 160, 255, 0.30) 10px);
+/* On the card that introduces it: a length of the column with one drop
+   standing in it, rather than a ring round a drop. A ring was the first
+   try and it read as a drop that had been selected -- the glass is a
+   place, and a place needs something around the thing in it. The pane
+   runs past the cell top and bottom, which is what says column.
+
+   Drawn as a backdrop behind the drop rather than as its background,
+   so the drop keeps the highlight and shaded underside every other one
+   on the card has. */
+.learn-demo .cell.fate { width: 34px; height: 34px; position: relative; }
+
+.learn-demo .cell.fate::before {
+  content: '';
+  position: absolute;
+  left: -5px; right: -5px;
+  top: -26px; bottom: -26px;
+  z-index: -1;
+  border-radius: 4px;
+  border: 1px solid rgba(178, 120, 255, 0.55);
+  background:
+    repeating-linear-gradient(to bottom,
+      rgba(178, 120, 255, 0.00) 0px,
+      rgba(178, 120, 255, 0.00) 17px,
+      rgba(198, 160, 255, 0.22) 17px,
+      rgba(198, 160, 255, 0.22) 19px),
+    linear-gradient(104deg,
+      rgba(150, 90, 240, 0.17) 0%,
+      rgba(90, 150, 255, 0.09) 38%,
+      rgba(190, 110, 255, 0.19) 100%);
+  box-shadow:
+    0 0 12px 2px rgba(150, 90, 240, 0.30),
+    inset 0 0 14px rgba(185, 140, 255, 0.16);
+}
+
+/* Room for the pane to stand in. Without it the row is the cell's own
+   height and the glass is clipped to a band across the middle of it.
+   Only on the card that has one: unscoped it put sixty pixels of empty
+   row on the other four. */
+.learn-demo:has(.cell.fate) { min-height: 90px; }
+
+/* The cell on the card is the mechanic running, not a diagram of it.
+   Stepped rather than faded: a drop is one ink or another and never
+   halfway between two, and a crossfade would read as a color the press
+   does not hold. The four plates, which every level has -- the light
+   inks come and go with the mode. */
+/* It carries no ink class -- the animation is what colors it -- so the
+   highlight and the shaded underside every other drop gets from
+   .cell.c and its siblings have to be said here as well, or the one on
+   this card is the only flat disc in the game. */
+.cell.spin {
+  animation: inkspin 1.8s step-end infinite;
+  box-shadow: inset 0 0 0 2px rgba(8,10,14,0.5);
+  background-image:
+    radial-gradient(circle at 34% 27%,
+      rgba(255,255,255,0.44) 0%,
+      rgba(255,255,255,0.12) 34%,
+      rgba(255,255,255,0) 57%),
+    radial-gradient(circle at 68% 77%,
+      rgba(0,0,0,0.32) 0%,
+      rgba(0,0,0,0.08) 38%,
+      rgba(0,0,0,0) 62%);
+}
+
+@keyframes inkspin {
+  0%   { background-color: var(--cyan); }
+  25%  { background-color: var(--magenta); }
+  50%  { background-color: var(--yellow); }
+  75%  { background-color: var(--key); }
+  100% { background-color: var(--cyan); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell.spin { animation: none; background-color: var(--cyan); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -12968,11 +13031,15 @@ const MECHANICS = [
     id: 'fate',
     kicker: 'New in this chapter',
     title: 'Fate Columns',
-    say: 'A pane of glass stands over one column for a few seconds. '
-       + 'Any half of your drop inside it keeps changing color until it '
-       + 'leaves. Step out, or land, on the color you want.',
+    say: 'Glass pane sometimes cover a column for a few seconds. Any '
+       + 'falling blocks entering it cycles through random colors. You can '
+       + 'try to reroll to colors you need or avoid them altogether.',
     live: (d) => d.fateGap > 0,
-    demo: ['c fate', '>', 'y fate', '>', 'y']
+    /* One cell, under the glass, running. The first pass was three
+       static chips -- cyan, then yellow, then yellow out of the glass --
+       which is a picture of a before and an after and shows nobody the
+       thing that actually happens. */
+    demo: ['fate spin']
   },
   {
     id: 'lowink',
