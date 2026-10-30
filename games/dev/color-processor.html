@@ -821,6 +821,60 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    never a flat disc, so it cannot be taken for magenta however red it goes,
    and the steps are hard cuts rather than fades because a glitch does not
    ease. */
+/* A corrupted square. The art is a pixelated CMYK vortex, held at its
+   own resolution rather than smoothed, because the whole point of it is
+   that the buffer is damaged. The border is magenta rather than the
+   virus's red: a virus is a drop going wrong, a zone is her. */
+/* position and overflow are both load bearing: .cell is not a containing
+   block, so the tearing below resolved against the whole grid and striped
+   every square on the board, corrupted or not. */
+.cell.glitch {
+  position: relative;
+  overflow: hidden;
+  /* Square, against the round drops. A drop is ink that arrived; a zone is
+     the grid itself damaged, so it takes the whole box rather than sitting
+     in it as another circle. */
+  border-radius: 3px;
+  background-image: url('/games/img/glitch.png');
+  background-size: 125% 125%;
+  background-position: center;
+  image-rendering: pixelated;
+  box-shadow: inset 0 0 0 2px rgba(255,45,149,.6), 0 0 9px rgba(255,45,149,.25);
+  animation: glitchSwirl 5.5s linear infinite;
+}
+
+/* Scanline tearing over the top of it, so it reads as a picture that is
+   broken rather than as a tile that happens to be busy. */
+.cell.glitch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom,
+    rgba(0,0,0,.40) 0 2px, transparent 2px 4px);
+  pointer-events: none;
+  animation: glitchTear 1.7s steps(6) infinite;
+}
+
+@keyframes glitchSwirl {
+  to { background-position: 100% 100%; }
+}
+@keyframes glitchTear {
+  0%, 100% { transform: translateX(0); opacity: .75; }
+  50%      { transform: translateX(2px); opacity: 1; }
+}
+
+/* Coming off the board. */
+.cell.glitch.scrub {
+  animation: glitchScrub .15s ease-in forwards;
+}
+@keyframes glitchScrub {
+  to { filter: brightness(2.4) saturate(0); transform: scale(.4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell.glitch, .cell.glitch::after { animation: none; }
+}
+
 /* A virus wears its own ink: it matches on color like any other drop,
    so it has to look like one. What marks it is the light on top of it.
 
@@ -4549,10 +4603,22 @@ const FUSE = '!';
 const isBug   = (v) => !!v && v.indexOf(FUSE) !== -1;
 const bugLeft = (v) => isBug(v) ? Number(v.slice(v.indexOf(FUSE) + 1)) : 0;
 const bugSet  = (v, n) => v.slice(0, v.indexOf(FUSE) + 1) + n;
-const inkOf  = (v) => !v ? null
+const inkOf  = (v) => !v || v === 'zz' ? null
                     : (isBug(v) ? v.slice(0, v.indexOf(FUSE))
                     : (v.endsWith('*') ? v.slice(0, -1) : v));
 const isMag  = (v) => !!v && v.endsWith('*');
+
+/* ---- corrupted zones ----
+   A square of the grid that is not playable until it is scrubbed. It is
+   not ink: it has no color, it never matches, and it never falls. It
+   holds its square open, so nothing drops past it either -- a zone is
+   board taken away rather than board made awkward.
+
+   The way off is a clear beside it. Any set of four that comes off
+   touching a zone orthogonally scrubs that square back to empty, which
+   makes clearing near one worth more than clearing away from one. */
+const GLITCH = 'zz';
+const isGlitch = (v) => v === GLITCH;
 
 /* How often the machine misbehaves. The magnet is the reward and stays put;
    the virus is the punishment and gets worse as the printer gets harder. */
@@ -4599,8 +4665,64 @@ let mode = 'office', virusRate = VIRUS_FROM;
    except that the game is unfair. */
 const HAZARD_CH = {
   virus:  1,      // Landscape
+  glitch: 2,      // Figures
   lowink: 4       // Fantasy
 };
+
+/* Squares taken off a board that is only six wide. Three is a shape you
+   can see and play around; past about seven the well stops being a well.
+   Ramped across the chapters that are left, like the others. */
+const GLITCH_FROM = 3, GLITCH_TO = 7;
+
+/* Shapes rather than scatter. A spray of random squares reads as noise;
+   a shape reads as something that was put there, which is the point --
+   it is her, writing on the board. Drawn bottom row last, and laid on
+   the floor so the well keeps its full depth above it. */
+/* One for every budget from three squares to eight, so there is always a
+   shape that fits exactly. The first pass had none smaller than five and
+   Figures, which is where the mechanic arrives, has a budget of three --
+   so the chapter that introduces it showed nothing at all. */
+const GLITCH_ART = [
+  ['#..',
+   '.#.',
+   '..#'],          // 3, a tear across
+  ['##',
+   '##'],           // 4, a block out of the floor
+  ['#.#',
+   '.#.',
+   '#.#'],          // 5, an X
+  ['.##.',
+   '##..',
+   '..##'],         // 6, a stagger
+  ['#.#.#',
+   '.#.#.',
+   '#.#..'],        // 7
+  ['#.#.#',
+   '.#.#.',
+   '#.#.#']         // 8, a lattice
+];
+
+const artCells = (a) => a.join('').split('#').length - 1;
+
+/* The same shape every time a level is played: the series is ranked on
+   time, so a board that is harder on one attempt than the next would be
+   ranking luck. */
+function seedGlitch(n) {
+  if (!(n > 0)) return;
+  let shape = null;
+  for (const a of GLITCH_ART) {
+    if (artCells(a) <= n && (!shape || artCells(a) > artCells(shape))) shape = a;
+  }
+  if (!shape) return;
+  const w = Math.max(...shape.map((r) => r.length));
+  const x0 = Math.floor((COLS - w) / 2);
+  const y0 = ROWS - shape.length;
+  for (let r = 0; r < shape.length; r++) {
+    for (let c = 0; c < shape[r].length; c++) {
+      if (shape[r][c] === '#' && inside(x0 + c, y0 + r)) put(well, x0 + c, y0 + r, GLITCH);
+    }
+  }
+}
 
 /* The chapter a level belongs to, or null outside the series. */
 function chapterOf(i) {
@@ -4693,7 +4815,12 @@ function settle(w) {
     let write = ROWS - 1;
     for (let y = ROWS - 1; y >= 0; y--) {
       const v = at(w, x, y);
-      if (v) { put(w, x, y, null); put(w, x, write, v); write--; }
+      if (!v) continue;
+      /* Corruption stays where it is, and what is under it stays under
+         it: the column goes on filling from above the zone, so a zone
+         low in the well costs the squares beneath it too. */
+      if (isGlitch(v)) { write = y - 1; continue; }
+      put(w, x, y, null); put(w, x, write, v); write--;
     }
   }
 }
@@ -6158,6 +6285,7 @@ function paintTubes() {
 
 function classFor(code) {
   if (!code) return 'cell';
+  if (isGlitch(code)) return 'cell glitch';
   if (isBug(code)) return 'cell ' + inkOf(code) + ' virus'
                         + (bugLeft(code) <= 3 ? ' soon' : '');
   return 'cell ' + inkOf(code) + (isMag(code) ? ' mag' : '');
@@ -6627,7 +6755,7 @@ function burnDown() {
 function groupAt(w, x, y) {
   if (!inside(x, y)) return 0;
   const v = at(w, x, y);
-  if (!v || isBug(v)) return 0;
+  if (!v || isBug(v) || isGlitch(v)) return 0;
   const ink = inkOf(v);
 
   const seen = new Set();
@@ -6858,7 +6986,25 @@ async function resolve() {
 
     await wait(170);
 
+    /* Anything the clear was touching comes off with it. Worked out
+       before the cells are emptied, because afterwards there is nothing
+       left to be adjacent to. */
+    const scrub = new Set();
+    for (const group of clumps) {
+      for (const [x, y] of group) {
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy;
+          if (inside(nx, ny) && isGlitch(at(well, nx, ny))) scrub.add(idx(nx, ny));
+        }
+      }
+    }
+    for (const i of scrub) tiles[i].className = 'cell glitch scrub';
+
     for (const group of clumps) for (const [x, y] of group) put(well, x, y, null);
+    if (scrub.size) {
+      await wait(150);                          // the scrub has to be seen
+      for (const i of scrub) well[i] = null;
+    }
 
     settle(well);
     if (pullMagnets()) settle(well);
@@ -10324,7 +10470,9 @@ function levelSetup(i, n) {
        the whole series, so holding it back makes the early game calm
        without making the late game milder than it was. */
     virusRate: vT < 0 ? 0 : VIRUS_FROM + (VIRUS_TO - VIRUS_FROM) * vT,
-    lowRate: since(HAZARD_CH.lowink) < 0 ? 0 : LOW_RATE
+    lowRate: since(HAZARD_CH.lowink) < 0 ? 0 : LOW_RATE,
+    glitch: since(HAZARD_CH.glitch) < 0 ? 0
+          : Math.round(GLITCH_FROM + (GLITCH_TO - GLITCH_FROM) * since(HAZARD_CH.glitch))
   };
 }
 
@@ -11613,6 +11761,12 @@ function newPrint(face) {
   applied = reading();
 
   well = new Array(COLS * ROWS).fill(null);
+  /* Practice and the party have none, for the same reason they have no
+     virus: one is where a board gets worked out, and the other has no
+     plate for a hazard to cost anything against. */
+  if (!discoOn && campOn) {
+    seedGlitch(levelSetup(Math.min(campAt, campList().length - 1), campList().length).glitch);
+  }
   points = 0; bestChain = 0; over = false; busy = false;
   queue = []; piece = null;
   if (elGrid) elGrid.classList.remove('lifted');   // the board comes back for the next one
@@ -12051,11 +12205,25 @@ const MECHANICS = [
     id: 'virus',
     kicker: 'New in this chapter',
     title: 'Corrupted supply',
-    say: 'It never matches and it never clears on its own. The number is how '
-       + 'long you have. Clear a clump touching it, or it rewrites what it is '
-       + 'sitting against.',
+    /* This card used to describe the virus as it was two rewrites ago --
+       a colorless cell that scrambled its neighbours. It carries ink and
+       matches like anything else now, so the card was teaching a rule
+       the game does not have. */
+    say: 'It carries ink and matches like any other drop. The number is how '
+       + 'many drops before it goes off and takes ink back off its plate. '
+       + 'Clear it before it gets there.',
     live: (d) => d.virusRate > 0,
     demo: ['c virus', '>', 'c', 'c', 'c']
+  },
+  {
+    id: 'glitch',
+    kicker: 'New in this chapter',
+    title: 'Corrupted zones',
+    say: 'Squares she has taken off the board. They never fall and never '
+       + 'match, and nothing drops past them. Clear any four touching one '
+       + 'and it is scrubbed back to open board.',
+    live: (d) => d.glitch > 0,
+    demo: ['glitch', 'c', 'c', 'c', 'c', '>', '']
   },
   {
     id: 'lowink',
