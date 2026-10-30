@@ -239,6 +239,11 @@ const GAME = 'paper-trail';
    Browser storage belongs to the whole site rather than to one folder, so
    without the prefix a preview run would overwrite the real best times. */
 const DEV_BUILD = location.pathname.includes('/games/dev/');
+
+/* ?power=magnet | phase | warp -- every pickup in the run is that one, and
+   they arrive every few seconds instead of every few minutes. Preview build
+   only: on the live page the parameter is not read at all. */
+const ONLY_POWER = DEV_BUILD ? new URLSearchParams(location.search).get('power') : null;
 const LOCAL_BEST = DEV_BUILD ? 'ptdev-best' : 'pt-best';
 
 const box     = document.getElementById('playbox');
@@ -366,6 +371,8 @@ function makeGame() {
     // gesture that lands a little wide still steers.
     surface: elTray,
     shape: SHAPE,
+    only: ONLY_POWER,
+    fast: !!ONLY_POWER,
 
     onScore(sheets) {
       elScore.textContent = sheets;

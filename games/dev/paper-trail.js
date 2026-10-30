@@ -791,6 +791,13 @@ export function startPaperTrail(options) {
   // steps it has left. gapLeft: the wait before another turns up.
   let pick = null, power = null, powerLeft = 0, gapLeft = 0;
 
+  /* Testing a pickup by waiting for it to turn up is a poor way to spend an
+     evening. The preview build can ask for one kind and for them to arrive
+     quickly; the live build never passes either, so there is nothing here
+     for a player to find. */
+  const ONLY = (options.only && POWERS[options.only]) ? options.only : null;
+  const FAST = !!options.fast;
+
   // Sheets owed. Eating off the grid finishes between steps, so the growing
   // has to wait for the next one rather than happening mid-frame.
   let grow = 0;
@@ -819,14 +826,16 @@ export function startPaperTrail(options) {
     blob = makeBlob(cell.x, cell.y, INKS[(Math.random() * INKS.length) | 0], snake.length);
   }
 
-  const nextGap = () => GAP_MIN + ((Math.random() * (GAP_MAX - GAP_MIN)) | 0);
+  const nextGap = () => FAST
+    ? 6 + ((Math.random() * 8) | 0)
+    : GAP_MIN + ((Math.random() * (GAP_MAX - GAP_MIN)) | 0);
 
   function spawnPick() {
     const cell = freeCell(blob);
     if (!cell) return;
     pick = {
       x: cell.x, y: cell.y,
-      kind: POWER_KEYS[(Math.random() * POWER_KEYS.length) | 0],
+      kind: ONLY || POWER_KEYS[(Math.random() * POWER_KEYS.length) | 0],
       left: POWER_LIFE,
       born: performance.now()
     };
