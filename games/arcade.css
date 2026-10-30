@@ -418,11 +418,16 @@ canvas#play {
 
 .picks { margin: 0; padding: 0; list-style: none; text-align: left; }
 
+/* A list under its header, the same way the rules are one: the icon is the
+   bullet and sits where the rules' colored square sits, and what the pickup
+   does is a column of its own so the three line up and can be read down
+   rather than picked out of three different places on each line. */
 .picks li {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding-bottom: 6px;
+  display: grid;
+  grid-template-columns: 14px 5.6em minmax(0, 1fr);
+  align-items: start;
+  gap: 0 10px;
+  padding: 0 0 6px 0;
   font-size: 0.78rem;
   font-weight: 300;
   line-height: 1.45;
@@ -433,9 +438,18 @@ canvas#play {
 
 .picks b { color: var(--text, #fff); font-weight: 600; }
 
-.pick-ic { flex: none; margin-top: 0.16em; }
+.pick-ic { margin-top: 0.16em; }
 
-@media (max-width: 560px) { .picks li { font-size: 0.74rem; } }
+/* Narrow enough and the two columns would each be a word a line, so what it
+   does drops under the name and keeps the indent instead. */
+@media (max-width: 560px) {
+  .picks li { font-size: 0.74rem; }
+}
+
+@media (max-width: 360px) {
+  .picks li { grid-template-columns: 14px minmax(0, 1fr); }
+  .picks li span { grid-column: 2; }
+}
 
 /* ---- buttons ---- */
 
