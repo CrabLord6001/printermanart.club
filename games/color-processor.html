@@ -5305,14 +5305,16 @@ const GLITCH_FROM = 3, GLITCH_TO = 7;
    Five to ten seconds is from the design doc. The wait between panes is
    what ramps: by Non-Western one is open almost as often as not. */
 const FATE_MS   = [5000, 10000];
-/* The wait between panes, Faith to the end of the series. First set at
-   seven seconds down to two and a half, which put a pane over the board
-   52% of the time on the chapter that introduces it and 74% by the end
-   -- a column glassed almost always, so anybody avoiding it was playing
-   a five wide well while seven squares were glitched and a sixth of the
-   drops faded. "Sometimes covers a column" is the brief. These give 27%
-   at Faith, 35% at Fantasy, 43% at the end. */
-const FATE_GAP  = [20000, 10000];
+/* The wait between panes, Faith to the end of the series.
+
+   Set at seven seconds down to two and a half to begin with, which put a
+   pane over the board 52% of the time on the chapter that introduces it
+   and 74% by the end -- a column glassed almost always. Twenty down to
+   ten was the first correction, and playing it said still too often.
+   These are that again less a third: one arrives every forty seconds at
+   Faith and every twenty five by the end, which is open 19% of the time
+   and 30%. "Sometimes covers a column" is the brief. */
+const FATE_GAP  = [32000, 17500];
 const FATE_STEP = 180;              // one ink to the next, while it spins
 
 /* Shapes rather than scatter. A spray of random squares reads as noise;
@@ -5416,8 +5418,20 @@ function fatePlace() {
   el.hidden = false;
 }
 
+/* Where a piece arrives: the column it spawns in, and the one beside it
+   that it covers when it arrives lying down. */
+const SPAWN_X = () => (COLS >> 1) - 1;
+
 function fateOpen() {
-  fateCol = (Math.random() * COLS) | 0;
+  /* Never over the spawn. A pane there is not a gamble, it is a toll:
+     every piece falls through it before it can be steered anywhere, so
+     the queue stops telling the truth and the choice the mechanic is
+     supposed to offer -- take the reroll or walk around it -- is not
+     offered at all. It has to be somewhere a player decides to go. */
+  const can = [];
+  for (let x = 0; x < COLS; x++) if (x !== SPAWN_X() && x !== SPAWN_X() + 1) can.push(x);
+  if (!can.length) return;                       // a board too narrow to have an elsewhere
+  fateCol = can[(Math.random() * can.length) | 0];
   fateLeft = fateSome(FATE_MS[0], FATE_MS[1]);
   fatePlace();
 }
