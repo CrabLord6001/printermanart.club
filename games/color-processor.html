@@ -3998,12 +3998,6 @@ body.jamface .deck #again:focus-visible {
   text-transform: uppercase;
   color: #22252E;
 }
-.creditsface .chouse i {
-  font-style: normal;
-  font-size: 0.48rem;
-  letter-spacing: 0.06em;
-  color: #8A8475;
-}
 
 /* Stacked: the front sits beside the name rather than over it, so three
    rows cost about what one row of cards did. */
@@ -4016,7 +4010,6 @@ body.jamface .deck #again:focus-visible {
 }
 .creditsface .chouse svg { flex: none; width: 26px; height: 22px; }
 .creditsface .chouse b { flex: 1 1 auto; }
-.creditsface .chouse i { flex: none; }
 
 /* Three across once the board is wide enough to hold the longest name. */
 @media (min-width: 430px) {
@@ -4079,8 +4072,8 @@ body.jamface .deck #again:focus-visible {
    desktop board. And the well is not one size to aim at: it runs from
    496px deep on a short laptop to 844 on a tall desktop, so a single set
    of sizes either left the sheet short or overran it. Sized against the
-   well, the copy fills whatever board the window gives it -- 1 to 63px of
-   cream left over across 620 to 1920 wide, against 35 to 463 before.
+   well, the copy fills whatever board the window gives it -- 12 to 54px
+   of cream left over across 390 to 1920 wide, against 35 to 463 before.
 
    The lower bound of each clamp is the phone value, so nothing here can
    make the copy smaller than the block above already set it. Keyed at
@@ -4094,7 +4087,7 @@ body.jamface .deck #again:focus-visible {
     padding: clamp(16px, 3cqh, 40px) 22px clamp(18px, 3cqh, 40px);
   }
   .creditsface .ctitle {
-    font-size: clamp(1.5rem, 6.4cqh, 3.5rem);
+    font-size: clamp(1.5rem, 6.5cqh, 3.5rem);
     margin: 0 0 clamp(10px, 1.6cqh, 30px);
   }
   .creditsface .ctitle::after {
@@ -4103,24 +4096,23 @@ body.jamface .deck #again:focus-visible {
   }
   .creditsface .ckick {
     font-size: clamp(0.5rem, 1.6cqh, 1.05rem);
-    margin: clamp(11px, 3.4cqh, 64px) 0 clamp(4px, 0.9cqh, 16px);
+    margin: clamp(11px, 3.85cqh, 74px) 0 clamp(4px, 1cqh, 16px);
   }
-  .creditsface .cname { font-size: clamp(1.05rem, 4cqh, 2.4rem); line-height: 1.4; }
+  .creditsface .cname { font-size: clamp(1.05rem, 4.1cqh, 2.4rem); line-height: 1.4; }
   .creditsface .cnote {
-    font-size: clamp(0.72rem, 2.4cqh, 1.35rem);
+    font-size: clamp(0.72rem, 2.48cqh, 1.35rem);
     margin-top: clamp(2px, 0.5cqh, 8px);
   }
   .creditsface .chouses { gap: clamp(6px, 1.4cqh, 22px); }
-  .creditsface .chouse { padding: clamp(5px, 1.5cqh, 26px) clamp(10px, 2cqh, 20px); }
+  .creditsface .chouse { padding: clamp(5px, 1.85cqh, 38px) clamp(10px, 2cqh, 20px); }
   .creditsface .chouse svg {
     width: clamp(30px, 5.4cqh, 76px);
     height: clamp(25px, 4.5cqh, 63px);
   }
   .creditsface .chouse b { font-size: clamp(0.5rem, 1.55cqh, 1.1rem); }
-  .creditsface .chouse i { font-size: clamp(0.48rem, 1.35cqh, 0.95rem); }
   .creditsface .cjoin {
     font-size: clamp(0.6rem, 1.7cqh, 1.15rem);
-    padding: clamp(8px, 1.6cqh, 22px) clamp(16px, 3cqh, 32px);
+    padding: clamp(8px, 1.8cqh, 26px) clamp(16px, 3cqh, 32px);
   }
 }
 
@@ -11150,10 +11142,16 @@ const CREDITS = {
   /* Who holds the paintings, rather than who painted them -- the artist
      and the date are already on the sheet at the end of every level, so a
      second list of the same twenty names is a second list. */
+  /* Just the three names. "Open Access" was the Met's and Cleveland's own
+     term for their public domain programs, which means nothing to anyone
+     who has not been on those sites -- and the works are CC0, so no
+     attribution is owed at all; naming the houses is already more than
+     the licence asks. "Paris" was there to give the third card a second
+     line rather than to tell anybody where the Louvre is. */
   art: { kicker: 'Paintings from', houses: [
-    { name: 'Metropolitan Museum of Art', note: 'Open Access', art: 'wide' },
-    { name: 'Cleveland Museum of Art',    note: 'Open Access', art: 'temple' },
-    { name: 'Musée du Louvre',            note: 'Paris',       art: 'pyramid' }
+    { name: 'Metropolitan Museum of Art', art: 'wide' },
+    { name: 'Cleveland Museum of Art',    art: 'temple' },
+    { name: 'Musée du Louvre',            art: 'pyramid' }
   ]},
   /* The club is a Discord server, which is not something the game has
      said anywhere. Naming it says who is being thanked and the link says
@@ -11197,7 +11195,7 @@ function buildCredits() {
   const C = CREDITS;
   const house = (h) =>
     '<li class="chouse"><svg viewBox="0 0 44 36" aria-hidden="true">' + HOUSE_ART[h.art] + '</svg>' +
-    '<b>' + bind(h.name) + '</b><i>' + h.note + '</i></li>';
+    '<b>' + bind(h.name) + '</b></li>';
 
   card.innerHTML =
     '<h2 class="ctitle">' + C.title + '</h2>' +
