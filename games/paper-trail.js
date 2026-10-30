@@ -73,6 +73,36 @@ const INKS = [
 ];
 
 /* ============================================================
+   Pickups
+   ============================================================
+   Counted in steps rather than seconds, because the board speeds
+   up as she prints: twelve seconds is about ninety steps at the
+   start and nearly two hundred by the end, which would quietly
+   make the same pickup worth twice as much to somebody already
+   winning. Ninety steps is ninety steps.
+
+   One on the board at a time, and one running at a time. Taking
+   a second while the first is still going would mean two sets of
+   rules at once, which is a lot to hold in your head at the speed
+   this moves.
+   ============================================================ */
+
+const POWER_STEPS = 90;      // how long one runs once taken
+const POWER_WARN  = 22;      // and when it starts flashing to say it is going
+const POWER_LIFE  = 110;     // how long one waits on the board to be taken
+const GAP_MIN     = 150;     // steps between one leaving and the next arriving
+const GAP_MAX     = 280;
+const MAGNET_REACH = 3;      // cells, measured as a square around her
+const MAGNET_FLY   = 190;    // ms the ink takes to reach her once it lets go
+
+const POWERS = {
+  magnet: { name: 'Magnetic Ink', glow: '#E8394F' },
+  phase:  { name: 'Phasing',      glow: '#7FDAF5' }
+};
+
+const POWER_KEYS = Object.keys(POWERS);
+
+/* ============================================================
    The rooms
    ============================================================
    A room is a fixed arrangement, identical every time you pick it.
@@ -470,7 +500,29 @@ function paintPrinter(ctx, cell, dirKey, over, gape) {
    each lobe as the control point keeps every corner rounded. */
 function paintSplat(ctx, blob, now) {
   ctx.save();
-  ctx.translate(blob.x * CELL + CELL / 2, blob.y * CELL + CELL / 2);
+
+  /* On the board it sits in a cell. Pulled by the magnet it comes off the
+     grid entirely and is drawn wherever it has got to, which is the whole
+     point of the thing: a cell at a time was a crawl she could outrun. */
+  const cx = blob.px != null ? blob.px : blob.x * CELL + CELL / 2;
+  const cy = blob.py != null ? blob.py : blob.y * CELL + CELL / 2;
+
+  if (blob.fly) {
+    const back = Math.atan2(blob.fly.y0 - cy, blob.fly.x0 - cx);
+    for (let i = 1; i <= 3; i++) {
+      ctx.save();
+      ctx.globalAlpha = 0.26 / i;
+      ctx.translate(cx + Math.cos(back) * i * 9, cy + Math.sin(back) * i * 9);
+      ctx.scale(U * (1 - i * 0.18), U * (1 - i * 0.18));
+      ctx.fillStyle = blob.ink.fill;
+      ctx.beginPath();
+      ctx.arc(0, 0, 6.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  ctx.translate(cx, cy);
   ctx.scale(U, U);
 
   const pulse = 1 + Math.sin((now - blob.born) / 300) * 0.05;
@@ -527,6 +579,130 @@ function makeBlob(x, y, ink, salt) {
   return { x, y, ink, born: performance.now(), radii, spots };
 }
 
+/* ---- the pickups, drawn the way everything else here is: shapes in a
+   24-unit box, no glyphs and no images. An emoji would arrive looking
+   like a different thing on every machine, and none of them would look
+   like they came out of this printer. ---- */
+
+function drawMagnet(ctx) {
+  const R = 8, r = 4.3;
+
+  ctx.fillStyle = '#E8394F';
+  ctx.beginPath();
+  ctx.arc(0, 1, R, Math.PI, 0, false);
+  ctx.lineTo(r, 1);
+  ctx.arc(0, 1, r, 0, Math.PI, true);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillRect(-R, 1, R - r, 4.6);
+  ctx.fillRect(r, 1, R - r, 4.6);
+
+  // The poles, which are the half that says magnet rather than horseshoe.
+  ctx.fillStyle = '#C7CBD6';
+  ctx.fillRect(-R, 5.6, R - r, 2.8);
+  ctx.fillRect(r, 5.6, R - r, 2.8);
+}
+
+function drawFlask(ctx) {
+  ctx.fillStyle = '#C7CBD6';
+  ctx.fillRect(-3.1, -9.6, 6.2, 2.4);          // the stopper
+
+  ctx.fillStyle = 'rgba(127, 218, 245, 0.55)';
+  ctx.beginPath();
+  ctx.moveTo(-2.2, -7.2);
+  ctx.lineTo(2.2, -7.2);
+  ctx.lineTo(2.2, -2.4);
+  ctx.lineTo(6.6, 5.4);
+  ctx.quadraticCurveTo(7.6, 8.2, 4.6, 8.2);
+  ctx.lineTo(-4.6, 8.2);
+  ctx.quadraticCurveTo(-7.6, 8.2, -6.6, 5.4);
+  ctx.lineTo(-2.2, -2.4);
+  ctx.closePath();
+  ctx.fill();
+
+  // What is in it, filled to about the shoulder.
+  ctx.fillStyle = '#22B8E6';
+  ctx.beginPath();
+  ctx.moveTo(-4.6, 2.6);
+  ctx.lineTo(4.6, 2.6);
+  ctx.lineTo(6.6, 5.4);
+  ctx.quadraticCurveTo(7.6, 8.2, 4.6, 8.2);
+  ctx.lineTo(-4.6, 8.2);
+  ctx.quadraticCurveTo(-7.6, 8.2, -6.6, 5.4);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#9BD7F5';
+  ctx.beginPath();
+  ctx.ellipse(-2.2, 4.6, 1.5, 1.1, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+const PICK_ART = { magnet: drawMagnet, phase: drawFlask };
+
+/* On the board waiting to be taken. The halo is what separates a pickup
+   from the furniture: everything else on here is either gray scenery or
+   an ink splat, so a thing that breathes is a thing to go and get.
+
+   Near the end of its stay it blinks, for the same reason a running one
+   does -- so it going is something you saw rather than something that
+   happened while you were looking at the other end of the board. */
+function paintPickup(ctx, pick, now) {
+  if (pick.left <= 26 && Math.floor(now / 130) % 2) return;
+
+  const kind = POWERS[pick.kind];
+  ctx.save();
+  ctx.translate(pick.x * CELL + CELL / 2, pick.y * CELL + CELL / 2);
+  ctx.scale(U, U);
+
+  const pulse = 1 + Math.sin((now - pick.born) / 260) * 0.07;
+
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = kind.glow;
+  ctx.beginPath();
+  ctx.arc(0, 0, 11 * pulse, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.scale(pulse, pulse);
+  PICK_ART[pick.kind](ctx);
+  ctx.restore();
+}
+
+/* The one running, said in the corner of the board rather than on the
+   message line under it. The line is where the game talks and gets talked
+   over; a thing you have to keep track of while steering needs somewhere
+   of its own that nothing else writes to. */
+function paintPowerBar(ctx, kind, left, shape) {
+  const S = shapeOf(shape);
+  const warn = left <= POWER_WARN;
+  if (warn && Math.floor(performance.now() / 110) % 2) return;
+
+  const w = 86, h = 20, x = 8, y = S.rows * CELL - h - 8;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(8, 10, 16, 0.82)';
+  rr(ctx, x, y, w, h, 5);
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(x + 13, y + h / 2);
+  ctx.scale(U * 0.52, U * 0.52);
+  PICK_ART[kind](ctx);
+  ctx.restore();
+
+  const bx = x + 26, bw = w - 34;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+  rr(ctx, bx, y + h / 2 - 3, bw, 6, 3);
+  ctx.fill();
+
+  ctx.fillStyle = warn ? '#F2EFE6' : POWERS[kind].glow;
+  rr(ctx, bx, y + h / 2 - 3, Math.max(2, bw * (left / POWER_STEPS)), 6, 3);
+  ctx.fill();
+  ctx.restore();
+}
+
 /* A still of a room, for the chooser. Her and a couple of print-offs are in
    it on purpose: without something of known size the picture says nothing
    about how tight the gaps actually are. */
@@ -574,10 +750,19 @@ export function startPaperTrail(options) {
   let snake, dir, queued, blob, ink, sheets, running, over, acc, last, raf;
   let roomKey = 'classic', walls = new Set();
 
-  function freeCell() {
+  // pick: the one sitting on the board. power: the one running, and the
+  // steps it has left. gapLeft: the wait before another turns up.
+  let pick = null, power = null, powerLeft = 0, gapLeft = 0;
+
+  // Sheets owed. Eating off the grid finishes between steps, so the growing
+  // has to wait for the next one rather than happening mid-frame.
+  let grow = 0;
+
+  function freeCell(...avoid) {
     // Few enough cells that collecting the empty ones is cheaper to reason
     // about than rejection sampling near the end of a long run.
     const taken = new Set(snake.map(s => s.x + ',' + s.y));
+    for (const a of avoid) if (a) taken.add(a.x + ',' + a.y);
     const open = [];
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
@@ -590,9 +775,109 @@ export function startPaperTrail(options) {
   }
 
   function spawnBlob() {
-    const cell = freeCell();
+    // Not under the pickup, which would make one of them unreadable. If that
+    // is the only square left the ink wins: the ink is what the game is.
+    const cell = freeCell(pick) || freeCell();
     if (!cell) { blob = null; return; }
     blob = makeBlob(cell.x, cell.y, INKS[(Math.random() * INKS.length) | 0], snake.length);
+  }
+
+  const nextGap = () => GAP_MIN + ((Math.random() * (GAP_MAX - GAP_MIN)) | 0);
+
+  function spawnPick() {
+    const cell = freeCell(blob);
+    if (!cell) return;
+    pick = {
+      x: cell.x, y: cell.y,
+      kind: POWER_KEYS[(Math.random() * POWER_KEYS.length) | 0],
+      left: POWER_LIFE,
+      born: performance.now()
+    };
+  }
+
+  function tellPower() {
+    if (options.onPower) options.onPower(power, powerLeft);
+  }
+
+  /* Phasing must not drop while she is standing inside something, or the
+     timer kills her for a mistake she did not make. It holds until she is
+     out. Nothing else can be inside anything, so nothing else needs this. */
+  function stuck() {
+    const h = snake[0];
+    if (walls.has(h.x + ',' + h.y)) return true;
+    return snake.some((s, i) => i > 0 && s.x === h.x && s.y === h.y);
+  }
+
+  function agePower() {
+    if (!power) return;
+    powerLeft--;
+    if (powerLeft > 0) { tellPower(); return; }
+    if (power === 'phase' && stuck()) return;
+    power = null;
+    powerLeft = 0;
+    gapLeft = nextGap();
+    tellPower();
+  }
+
+  /* The magnet. The first version moved the splat one square a step, which
+     is exactly the speed she moves -- so it never gained on her and the
+     whole thing read as broken. It does not crawl now. Once she is within
+     reach the ink lets go of the grid and flies straight at her, and she
+     has it a fifth of a second later wherever she has gone in the meantime.
+
+     Reach is what keeps it from being a vacuum: she still has to get near
+     the ink. What it buys is not having to line up on the exact square,
+     which in a game about not being able to turn around is most of the
+     work. */
+  function maybeFly() {
+    if (!blob || blob.fly) return;
+    const h = snake[0];
+    const away = Math.max(Math.abs(blob.x - h.x), Math.abs(blob.y - h.y));
+    if (away > MAGNET_REACH) return;
+
+    blob.fly = {
+      t0: performance.now(),
+      x0: blob.x * CELL + CELL / 2,
+      y0: blob.y * CELL + CELL / 2
+    };
+    if (options.onPull) options.onPull();
+  }
+
+  function takeInk(next) {
+    ink = next;                // reload: sheets from here on come out this color
+    sheets++;
+    if (options.onScore) options.onScore(sheets);
+  }
+
+  /* Runs on the frame clock rather than the step clock, because it is an
+     animation and has to look like one however fast the board is going.
+     It aims at where her head is now, not where it was when the ink let
+     go, so it still lands on her when she is moving across it. */
+  function flyInk(now) {
+    if (!blob || !blob.fly) return;
+
+    const f = blob.fly;
+    const k = Math.min(1, (now - f.t0) / MAGNET_FLY);
+    const ease = 1 - Math.pow(1 - k, 3);
+    const h = snake[0];
+
+    blob.px = f.x0 + (h.x * CELL + CELL / 2 - f.x0) * ease;
+    blob.py = f.y0 + (h.y * CELL + CELL / 2 - f.y0) * ease;
+    if (k < 1) return;
+
+    takeInk(blob.ink);
+    grow++;
+    spawnBlob();
+    if (!blob) full();         // whole tray printed, which is a win
+  }
+
+  function agePick() {
+    if (pick) {
+      if (--pick.left <= 0) { pick = null; gapLeft = nextGap(); }
+      return;
+    }
+    if (power) return;                 // one at a time, on the board and running
+    if (--gapLeft <= 0) spawnPick();
   }
 
   function reset(room) {
@@ -618,6 +903,12 @@ export function startPaperTrail(options) {
     sheets = 0;
     over = false;
     acc = 0;
+    pick = null;
+    power = null;
+    powerLeft = 0;
+    grow = 0;
+    gapLeft = nextGap();
+    tellPower();
     spawnBlob();
   }
 
@@ -640,29 +931,46 @@ export function startPaperTrail(options) {
     const d = DIRS[dir];
     const head = { x: snake[0].x + d.x, y: snake[0].y + d.y, ink };
 
-    // The tray edge is a wall. No wrapping: a printer does not print off
-    // one side of the page and back on from the other.
+    // The tray edge is a wall, phasing or not. No wrapping and no way out:
+    // a printer does not print off one side of the page and back on from
+    // the other, and the page is the one thing she is never inside of.
     if (head.x < 0 || head.y < 0 || head.x >= COLS || head.y >= ROWS) return jam();
 
-    // Furniture is as solid as the edge of the tray.
-    if (walls.has(head.x + ',' + head.y)) return jam();
+    const ghost = power === 'phase';
 
-    // The tail cell is about to be vacated, so running into it is fine
-    // unless you are also growing into it this step.
-    const ate = blob && head.x === blob.x && head.y === blob.y;
-    const body = ate ? snake : snake.slice(0, -1);
-    if (body.some(s => s.x === head.x && s.y === head.y)) return jam();
+    // Furniture is as solid as the edge of the tray, unless she is not.
+    if (!ghost && walls.has(head.x + ',' + head.y)) return jam();
+
+    /* The tail cell is about to be vacated, so running into it is fine
+       unless you are also growing into it this step -- either by driving
+       over the ink or by owing a sheet for ink the magnet brought in. */
+    const ate = blob && !blob.fly && head.x === blob.x && head.y === blob.y;
+    const body = (ate || grow > 0) ? snake : snake.slice(0, -1);
+    if (!ghost && body.some(s => s.x === head.x && s.y === head.y)) return jam();
 
     snake.unshift(head);
     if (ate) {
-      ink = blob.ink;          // reload: sheets from here on come out this color
-      sheets++;
+      takeInk(blob.ink);
       spawnBlob();
-      if (options.onScore) options.onScore(sheets);
       if (!blob) return full(); // whole tray printed, which is a win
+    } else if (grow > 0) {
+      grow--;
     } else {
       snake.pop();
     }
+
+    // Taken by driving over it, the same as the ink is.
+    if (pick && head.x === pick.x && head.y === pick.y) {
+      power = pick.kind;
+      powerLeft = POWER_STEPS;
+      pick = null;
+      if (options.onTake) options.onTake(power);
+      tellPower();
+    }
+
+    agePower();
+    if (power === 'magnet') maybeFly();
+    agePick();
   }
 
   function jam() {
@@ -689,9 +997,26 @@ export function startPaperTrail(options) {
 
   function drawSheet(cell, index) { paintStack(ctx, cell, index === snake.length - 1); }
 
-  function drawHead() {
+  function drawHead(now) {
     const h = snake[0];
     const near = blob ? Math.abs(blob.x - h.x) + Math.abs(blob.y - h.y) : 9;
+
+    /* Phasing is drawn on her, not only in the corner. The rule it changes
+       is about her and the thing she is about to hit, so it has to be
+       readable where she is, at the moment she decides. */
+    if (power === 'phase') {
+      const warn = powerLeft <= POWER_WARN;
+      if (!warn || Math.floor(now / 110) % 2 === 0) {
+        ctx.save();
+        ctx.globalAlpha = warn ? 0.5 : 0.3;
+        ctx.fillStyle = '#7FDAF5';
+        ctx.beginPath();
+        ctx.arc(h.x * CELL + CELL / 2, h.y * CELL + CELL / 2, CELL * 0.72, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
     paintPrinter(ctx, h, dir, over, near <= 1 ? 4 : near <= 3 ? 3.1 : 2.3);
   }
 
@@ -700,11 +1025,14 @@ export function startPaperTrail(options) {
   }
 
   function draw(now) {
+    now = now || performance.now();
     drawTray();
     drawRoom();
     for (let i = snake.length - 1; i >= 1; i--) drawSheet(snake[i], i);
-    drawBlob(now || performance.now());
-    drawHead();
+    drawBlob(now);
+    if (pick) paintPickup(ctx, pick, now);
+    drawHead(now);
+    if (power) paintPowerBar(ctx, power, powerLeft, SHAPE);
   }
 
   /* ---- loop --------------------------------------------------- */
@@ -724,6 +1052,9 @@ export function startPaperTrail(options) {
       acc -= ms;
       step();
     }
+
+    // After the stepping, so it aims at where she actually ended up.
+    if (running) flyInk(now);
     draw(now);
   }
 
@@ -814,6 +1145,19 @@ export function startPaperTrail(options) {
     isRunning: () => running,
     isOver: () => over,
     room: () => roomKey,
+
+    /* What is on the board, for the stand-in player that tunes the pickups.
+       Read only, and copied rather than handed out, so nothing outside can
+       reach in and move a sheet. Nothing in the game itself calls it. */
+    peek: () => ({
+      cols: COLS, rows: ROWS,
+      snake: snake.map(s => ({ x: s.x, y: s.y })),
+      dir,
+      walls: Array.from(walls),
+      blob: blob ? { x: blob.x, y: blob.y } : null,
+      pick: pick ? { x: pick.x, y: pick.y, kind: pick.kind, left: pick.left } : null,
+      power, powerLeft, sheets
+    }),
     destroy() {
       cancelAnimationFrame(raf);
       raf = null;

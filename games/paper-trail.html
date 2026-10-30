@@ -191,14 +191,28 @@ body {
           <div class="trailband" id="pTrail" aria-hidden="true" hidden><i></i></div>
 
           <!-- The rules sit in the markup rather than being built, so they
-               are there for anyone with no scripting at all. -->
+               are there for anyone with no scripting at all.
+
+               Two columns, and the four plates across them: cyan, magenta
+               and yellow on the rules, black on the pickups. The right half
+               of this strip was empty before. -->
           <div class="howto" id="pHowto">
-            <p class="howto-label">How to Play</p>
-            <ul class="rules">
-              <li>WASD, arrow keys, or swipe</li>
-              <li>Consume ink to keep printing</li>
-              <li>Hit your own printouts or the wall and it&rsquo;s game over</li>
-            </ul>
+            <div class="howto-col">
+              <p class="howto-label">How to Play</p>
+              <ul class="rules">
+                <li>WASD, arrow keys, or swipe</li>
+                <li>Consume ink to keep printing</li>
+                <li>Hit your own printouts or the wall and it&rsquo;s game over</li>
+              </ul>
+            </div>
+
+            <div class="howto-col">
+              <p class="howto-label k">PowerUps</p>
+              <ul class="picks">
+                <li><svg class="pick-ic" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 14a8 8 0 0 1 16 0v2h-4.6v-2a3.4 3.4 0 0 0-6.8 0v2H4z" fill="#E8394F"/><rect x="4" y="16" width="4.6" height="3.2" fill="#C7CBD6"/><rect x="15.4" y="16" width="4.6" height="3.2" fill="#C7CBD6"/></svg><b>Magnet</b> drags nearby ink toward you</li>
+                <li><svg class="pick-ic" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="9.2" y="2.4" width="5.6" height="2.4" fill="#C7CBD6"/><path d="M10.2 5.4h3.6v4.2l4 7a2 2 0 0 1-1.7 3H7.9a2 2 0 0 1-1.7-3l4-7z" fill="#7FDAF5" opacity=".55"/><path d="M8.1 14.4h7.8l1.9 3.2a2 2 0 0 1-1.7 3H7.9a2 2 0 0 1-1.7-3z" fill="#22B8E6"/></svg><b>Phasing</b> run through your own printouts and the furniture</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -352,6 +366,14 @@ function makeGame() {
       }
     },
 
+    /* Taken, and then how long it has left. The sound module decides what
+       to do with both; the game only says what happened. */
+    onTake(kind) { mods.sound.take(kind); },
+
+    onPull() { mods.sound.pull(); },
+
+    onPower(kind, left) { mods.sound.setPower(kind, left > 0 && left <= 22); },
+
     onPause() {
       mode = 'paused';
       mods.sound.stopMusic();
@@ -464,8 +486,19 @@ function showChooser() {
   veil(CHOOSE, '', '');
 }
 
-/* The board on its own, reached from the title panel rather than from a
-   jam. It shows the room played last, Classic until one has been. */
+/* Classic first, because it is the room everybody starts in, then the
+   rest by name. Not play order: somebody looking a room up on a list is
+   looking it up by its name. */
+function scoreOrder() {
+  const rest = mods.order.filter((k) => k !== 'classic')
+    .sort((a, b) => mods.rooms[a].name.localeCompare(mods.rooms[b].name, 'en'));
+  return ['classic'].concat(rest);
+}
+
+/* All five boards, reached from the title panel rather than from a jam.
+   One room open at a time: five tens is fifty rows to scroll through, and
+   a Mail Room score and a Data Center score are not the same achievement
+   anyway, so there is nothing to be had from seeing them side by side. */
 async function showScores() {
   mode = 'scores';
   say(null);
@@ -475,7 +508,42 @@ async function showScores() {
   elAfter.hidden = false;
   elBack.hidden = true;
   veil('High Scores', '', 'Back');
-  await showBoard(mods.rooms[room].name);
+
+  const keys = scoreOrder();
+  elExtra.innerHTML = '<div class="board-wrap"><div class="board-rooms">' +
+    keys.map((key) => (
+      '<div class="board-room" data-room="' + key + '">' +
+        '<button class="room-row" type="button" aria-expanded="false" aria-controls="brd-' + key + '">' +
+          CURSOR + '<span class="room-nm">' + esc(mods.rooms[key].name) + '</span>' +
+        '</button>' +
+        '<ol class="board" id="brd-' + key + '" hidden></ol>' +
+      '</div>'
+    )).join('') + '</div></div>';
+
+  const wrap = elExtra.querySelector('.board-rooms');
+  if (!wrap) return;
+
+  const asked = new Set();
+
+  const open = async (key) => {
+    wrap.querySelectorAll('.board-room').forEach((sec) => {
+      const on = sec.dataset.room === key;
+      sec.querySelector('.room-row').setAttribute('aria-expanded', on ? 'true' : 'false');
+      sec.querySelector('ol.board').hidden = !on;
+    });
+    const ol = wrap.querySelector('#brd-' + key);
+    if (!ol || asked.has(key)) return;
+    asked.add(key);                    // fetched once, however often it is reopened
+    ol.innerHTML = '<li class="none"><span class="nm">Loading&hellip;</span></li>';
+    await fillBoard(ol, key);
+  };
+
+  wrap.querySelectorAll('.room-row').forEach((btn) => {
+    btn.addEventListener('click', () => open(btn.closest('.board-room').dataset.room));
+  });
+
+  // The room last played is the one somebody came here to look at.
+  await open(keys.indexOf(room) >= 0 ? room : 'classic');
 }
 
 function startRoom(key) {
@@ -508,6 +576,49 @@ function faceHTML(name, url) {
   return '<span class="av" aria-hidden="true">' + esc(letter) + '</span>';
 }
 
+/* One row of a board. club_high_board hands back the place, the picture
+   and the score together, so there is no second trip for faces and no
+   first pass drawn with initials waiting to be replaced. */
+function rowHTML(r, mine, best) {
+  const cls = (best ? 'top ' : '') + (mine ? 'me' : '');
+  return '<li' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '>' +
+         CURSOR +
+         '<span class="rk">' + r.place + '</span>' +
+         faceHTML(r.display_name, r.avatar_url) +
+         '<span class="nm">' + esc(r.display_name) + '</span>' +
+         '<span class="sc">' + r.score + '</span></li>';
+}
+
+/* Fills one room's list. Called from the board after a run and from the
+   five-room page, which both only care that the list ends up right. */
+async function fillBoard(ol, roomKey) {
+  const rows = await mods.auth.highBoard(GAME, roomKey, 10);
+  if (!ol.isConnected) return;
+
+  if (rows === null) {
+    ol.innerHTML = '<li class="none"><span class="nm">Board unavailable right now.</span></li>';
+    return;
+  }
+  if (!rows.length) {
+    ol.innerHTML = '<li class="none"><span class="nm">Nobody has printed in this room yet.</span></li>';
+    return;
+  }
+
+  const me = mods.auth.currentMember();
+  const mineIn = me && rows.some((r) => r.display_name === me.displayName);
+  let html = rows.map((r) => rowHTML(r, me && r.display_name === me.displayName, r.place === 1)).join('');
+
+  /* Outside the top ten your own row goes on the end rather than being
+     missing: a board you are not on says nothing about how you did. */
+  if (me && !mineIn) {
+    const standing = await mods.auth.highMe(GAME, roomKey);
+    if (!ol.isConnected) return;
+    if (standing && standing.score != null) html += rowHTML(standing, true, false);
+  }
+
+  ol.innerHTML = html;
+}
+
 async function showBoard(heading) {
   const label = heading || 'High Scores';
 
@@ -515,42 +626,8 @@ async function showBoard(heading) {
     '<div class="board-wrap"><div class="board-top"><h3>' + esc(label) + '</h3><i></i></div>' +
     '<ol class="board" id="pBoard"><li class="none"><span class="nm">Loading&hellip;</span></li></ol></div>';
 
-  const rows = await mods.auth.leaderboard(GAME, room, 10);
   const ol = document.getElementById('pBoard');
-  if (!ol) return;
-
-  if (rows === null) {
-    ol.innerHTML = '<li class="none"><span class="nm">Board unavailable right now.</span></li>';
-    return;
-  }
-  if (!rows.length) {
-    ol.innerHTML = '<li class="none"><span class="nm">Nobody has posted a score yet.</span></li>';
-    return;
-  }
-
-  const me = mods.auth.currentMember();
-
-  /* Drawn once with initials so the board is up immediately, then again
-     once the pictures are in. */
-  const draw = (faces) => {
-    ol.innerHTML = rows.map((r, i) => {
-      const mine = me && r.display_name === me.displayName;
-      const cls = (i === 0 ? 'top ' : '') + (mine ? 'me' : '');
-      return '<li' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '>' +
-             CURSOR +
-             '<span class="rk">' + (i + 1) + '</span>' +
-             faceHTML(r.display_name, r.avatar_url || faces[r.display_name]) +
-             '<span class="nm">' + esc(r.display_name) + '</span>' +
-             '<span class="sc">' + r.score + '</span></li>';
-    }).join('');
-  };
-
-  draw({});
-
-  if (mods.auth.avatarsFor) {
-    const faces = await mods.auth.avatarsFor(rows.map((r) => r.display_name));
-    if (document.getElementById('pBoard') === ol) draw(faces);
-  }
+  if (ol) await fillBoard(ol, room);
 }
 
 function drawSignedOut() {
