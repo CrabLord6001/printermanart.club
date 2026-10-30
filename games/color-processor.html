@@ -852,25 +852,13 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   image-rendering: pixelated;
   opacity: 0;
   pointer-events: none;
-  animation: glitchHer 7s steps(1) infinite;
+  transition: opacity .07s steps(2);
 }
 
-/* Twice, briefly, then gone for seven seconds. Long enough apart that
-   catching one feels like catching it rather than like watching a loop. */
-@keyframes glitchHer {
-  0%, 94%   { opacity: 0; }
-  95%       { opacity: .85; }
-  96%       { opacity: 0; }
-  97%       { opacity: .65; }
-  98%, 100% { opacity: 0; }
-}
-
-/* Not all at once. Counted across every square of the board rather than
-   across the zones, so which zone is on which beat is as good as random. */
-.cell.glitch:nth-child(4n+1)::before { animation-delay: 0s; }
-.cell.glitch:nth-child(4n+2)::before { animation-delay: 1.9s; }
-.cell.glitch:nth-child(4n+3)::before { animation-delay: 3.4s; }
-.cell.glitch:nth-child(4n)::before   { animation-delay: 5.2s; }
+/* Rolled for rather than scheduled. On a keyframe loop she turned up on
+   the beat, every zone on its own clock, and a thing that always happens
+   is not a glimpse of anything -- it is decoration. */
+.cell.glitch.her::before { opacity: .82; }
 
 /* Scanline tearing over the top of it, so it reads as a picture that is
    broken rather than as a tile that happens to be busy. */
@@ -902,7 +890,7 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 
 @media (prefers-reduced-motion: reduce) {
   .cell.glitch, .cell.glitch::after { animation: none; }
-  .cell.glitch::before { animation: none; opacity: 0; }
+  .cell.glitch.her::before { opacity: 0; }
 }
 
 /* A virus wears its own ink: it matches on color like any other drop,
@@ -4734,6 +4722,38 @@ const GLITCH_ART = [
 
 const artCells = (a) => a.join('').split('#').length - 1;
 
+/* How often she is glimpsed in one. A roll every couple of seconds, and
+   one zone at a time, so across a board of them she surfaces about once
+   every twenty seconds -- a thing you catch rather than a thing that is
+   happening. */
+const HER_CHANCE = 0.1, HER_EVERY = 2000, HER_HELD = 260;
+
+/* Which squares are showing her this instant. Held here rather than as a
+   class on the tile, because paint() rebuilds every className from the
+   board and would wipe it between the drops. */
+const herOn = new Set();
+let herJob = 0;
+
+function herStop() {
+  if (herJob) { clearInterval(herJob); herJob = 0; }
+  herOn.clear();
+}
+
+function herStart() {
+  herStop();
+  herJob = setInterval(() => {
+    if (!started || paused || over) return;
+    const ix = [];
+    for (let i = 0; i < well.length; i++) if (isGlitch(well[i])) ix.push(i);
+    if (!ix.length) { herStop(); return; }      // all scrubbed; nothing left to haunt
+    if (Math.random() >= HER_CHANCE) return;
+    const i = ix[(Math.random() * ix.length) | 0];
+    herOn.add(i);
+    paint();
+    setTimeout(() => { herOn.delete(i); paint(); }, HER_HELD);
+  }, HER_EVERY);
+}
+
 /* The same shape every time a level is played: the series is ranked on
    time, so a board that is harder on one attempt than the next would be
    ranking luck. */
@@ -6327,7 +6347,7 @@ function classFor(code) {
 
 function paint() {
   for (let i = 0; i < tiles.length; i++) {
-    tiles[i].className = classFor(well[i]);
+    tiles[i].className = classFor(well[i]) + (herOn.has(i) ? ' her' : '');
     tiles[i].textContent = isBug(well[i]) ? bugLeft(well[i]) : '';
   }
 
@@ -11796,6 +11816,7 @@ function newPrint(face) {
   // what this board is built from, for telling later whether it still matches
   applied = reading();
 
+  herStop();                                    // whatever the last print left running
   well = new Array(COLS * ROWS).fill(null);
   /* Practice and the party have none, for the same reason they have no
      virus: one is where a board gets worked out, and the other has no
@@ -11803,6 +11824,7 @@ function newPrint(face) {
   if (!discoOn && campOn) {
     const gd = levelSetup(Math.min(campAt, campList().length - 1), campList().length);
     seedGlitch(gd.glitch, gd.glitchLift);
+    if (gd.glitch > 0) herStart();
   }
   points = 0; bestChain = 0; over = false; busy = false;
   queue = []; piece = null;
@@ -12537,6 +12559,7 @@ function closeRules() {
    game somebody has already left. */
 function leaveRun() {
   started = false; paused = false; phase = 'ready';
+  herStop();
   stopTick();
   stopClock();
   well = new Array(COLS * ROWS).fill(null);
