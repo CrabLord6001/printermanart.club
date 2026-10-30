@@ -1090,8 +1090,7 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
      cells shrink to make room for it. The record is the part worth
      keeping: it carries the color and the speed between them. The
      meters under it are decoration, so they go first. */
-  .rig.party .tubes,
-  .rig.party .tubetags { display: none; }
+  .rig.party .tubes { display: none; }
   .rig.party .deckwrap { margin-bottom: 0; }
 }
 
@@ -1114,9 +1113,9 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 
 /* The queue. One pair per row, soonest at the top, the rest a shade back
    so the order reads without having to be labeled. */
-/* Four standing tubes of ink, one per plate, drawn down by every clear.
-   Empty means that plate is finished and further clears of its color are
-   board work rather than print work. */
+/* Four ink cartridges, one per plate, filling as the print takes that
+   color. Full means that plate is finished and further clears of its
+   color are board work rather than print work. */
 .platebox { margin-top: 8px; }
 
 /* In the readout row, over the rail's column: the same width as the rail
@@ -1278,7 +1277,13 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
 .rankbtn.on .rankdial { color: var(--accent); border-color: var(--accent); }
 .rankbtn.on .lbl { color: var(--accent); }
 
-.tubes { display: flex; justify-content: center; gap: 6px; }
+/* A column of four, each one the whole width of the rail. Two across
+   was the first try and it was wrong: the rail is 56px on a phone and
+   the box inside it 40px, so a two-column square came out 18px a side
+   with an 11px number in it. Dropping the tubes freed 176px of rail --
+   more than the four squares need -- so the width is what is scarce
+   here, and a square as wide as the rail is the biggest one there is. */
+.tubes { display: grid; grid-template-columns: 1fr; gap: 4px; }
 
 /* ---- the deck ----
    The rail is a narrow column, so the record is as wide as the column
@@ -1334,47 +1339,153 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   box-shadow: inset 0 0 0 2px rgba(255,255,255,0.22), 0 0 10px 1px rgba(255,255,255,0.14);
 }
 
-.rig.party .tubes .tube { height: 26px; width: 8px; border-radius: 3px; }
-.rig.party .tubetags b { opacity: 0.55; }
+/* The deck takes a square of the rail in here, so the four of them give
+   up being square and sit as a short stack underneath it. */
+.rig.party .tubes { --plateH: 20px; }
+.rig.party .tubes .tube b { opacity: 0.55; }
 
+/* A cartridge is the object the readouts above the board already are --
+   panel, lit cut edge, one sweep of reflection across the face -- so the
+   two places that carry a number say it the same way. Square, and the
+   square comes from the rail's own width; fitRail only ever overrides
+   that height to stop the rail hanging below the board. Each one is its
+   own query container so the number inside scales with it. */
 .tubes .tube {
-  width: 10px;
-  height: var(--tubeH, 132px);
-  border-radius: 4px;
-  background: #141821;
-  box-shadow: inset 0 0 0 1px #242A35;
   position: relative;
   overflow: hidden;
+  height: var(--plateH, auto);
+  aspect-ratio: 1 / 1;
+  container-type: size;
+  border: 1px solid #2B3141;
+  border-radius: 6px;
+  background: linear-gradient(168deg, #161B25 0%, #0B0D12 58%, #0E1119 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    inset 0 -5px 10px rgba(0,0,0,0.45),
+    0 2px 6px rgba(0,0,0,0.5);
 }
 
+/* The lit edge where the sheet over the face is cut, and the reflection
+   itself -- the same two the readout boxes carry. */
+.tubes .tube::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.12),
+    inset -1px -1px 0 rgba(255,255,255,0.045);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.tubes .tube::after {
+  content: '';
+  position: absolute;
+  left: -34%; right: -14%; top: -150%;
+  height: 218%;
+  border-radius: 50%;
+  transform: rotate(-7deg);
+  background: linear-gradient(to bottom,
+              rgba(255,255,255,0.13) 0%,
+              rgba(255,255,255,0.05) 48%,
+              rgba(255,255,255,0.01) 76%,
+              rgba(255,255,255,0) 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* The ink standing in it. The element is only ever as tall as the plate
+   has been filled; everything that makes it look like liquid is drawn
+   inside it, so at zero there is nothing to see rather than a line of
+   color along the bottom. */
 .tubes .tube i {
   position: absolute;
   left: 0; right: 0; bottom: 0;
+  height: 0;
   transition: height 0.35s ease;
 }
 
-.tubes .tube.full { box-shadow: inset 0 0 0 1px var(--accent); }
+/* The surface, in two parts. The first is the ink itself: a tongue half
+   again as wide as the cartridge, domed along the top, rocking. Its
+   sides hang outside the box and are cut off by it, which is what keeps
+   the ink flush to the walls while the top moves.
+
+   The second is the light on that surface, rocking at its own rate. Two
+   tongues of the same ink were the first try and the movement barely
+   showed: where they overlap there is nothing to see, so all that
+   changed was a crescent a couple of pixels deep along the outside. The
+   sheen is a different tone from what it slides over, so the same few
+   pixels of travel read across the whole width of the box. */
+.tubes .tube i::before,
+.tubes .tube i::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -34%;
+  width: 168%;
+  border-radius: 50% 50% 0 0 / 14px 14px 0 0;
+  animation: slosh 2.6s ease-in-out infinite alternate;
+}
+
+.tubes .tube i::before { background: inherit; }
+
+.tubes .tube i::after {
+  top: 2px;
+  background: linear-gradient(to bottom,
+              rgba(255,255,255,0.46) 0%,
+              rgba(255,255,255,0.16) 34%,
+              rgba(255,255,255,0) 72%);
+  animation-duration: 3.9s;
+  animation-direction: alternate-reverse;
+}
+
+/* The crest has to travel far enough to be seen crossing a box forty
+   pixels wide, so the slide is most of a cartridge rather than a nudge:
+   at seven percent of a tongue half again as wide as the box the two
+   domes moved four pixels and the surface read as a flat bar. */
+@keyframes slosh {
+  from { transform: translateX(-17%) rotate(-2.4deg); }
+  to   { transform: translateX(17%)  rotate(2.4deg); }
+}
 
 .tube.c i { background: var(--cyan); }
 .tube.m i { background: var(--magenta); }
 .tube.y i { background: var(--yellow); }
 .tube.k i { background: var(--key); }
 
-.tubetags { display: flex; justify-content: center; gap: 6px; margin-top: 5px; }
-
-.tubetags b {
-  width: 10px;
+/* The reading, in the middle of the box. It has to sit over the dark
+   panel at the start of a plate and over full yellow at the end of one,
+   so it carries its own shade: a soft dark wash that falls away before
+   it reaches the walls, which leaves the ink's color showing round it
+   and the number white on dark wherever the level happens to be. */
+.tubes .tube b {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-variant-numeric: tabular-nums;
-  text-align: center;
-  font-size: 0.48rem;
-  font-weight: 700;
-  color: var(--dim);
+  font-size: 0.8rem;
+  font-size: clamp(8px, 40cqh, 17px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+  background: radial-gradient(ellipse 62% 38% at 50% 50%,
+              rgba(8,10,14,0.66) 0%,
+              rgba(8,10,14,0.30) 55%,
+              rgba(8,10,14,0) 100%);
 }
 
-.tubetags b.full { color: var(--accent); }
+.tubes .tube.full { border-color: var(--accent); }
+.tubes .tube b.full { color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
   .tubes .tube i { transition: none; }
+  .tubes .tube i::before,
+  .tubes .tube i::after { animation: none; }
 }
 
 .nextlist { display: flex; flex-direction: column; align-items: center; gap: 9px; }
@@ -4704,7 +4815,6 @@ nav.menu {
              came off the board last. -->
         <div class="deckwrap" id="deckWrap" hidden><canvas id="deck"></canvas></div>
         <div class="tubes" id="tubes"></div>
-        <div class="tubetags" id="tubetags"></div>
       </div>
       <!-- The board, reachable from the rail as well as from the last page
            of the instructions. Somebody who has just finished a run wants to
@@ -6401,22 +6511,30 @@ function buildGrid() {
    board, and it makes the page scroll -- which then costs the board
    cells, which makes the rail stick out further.
 
-   The tubes give it back. They are a scale rather than a measurement, so
-   a shorter one says the same thing. The next pieces need no help: they
-   are already drawn off the cell size, so they shrink with the board.
-   Forty four is the floor -- below that four tubes side by side stop
-   reading as levels and start reading as four marks. */
-const TUBE_H = 132;
+   The cartridges give it back. They are a scale rather than a
+   measurement, so a shorter one says the same thing. The next pieces
+   need no help: they are already drawn off the cell size, so they shrink
+   with the board.
+
+   Left alone a cartridge is square, which is the rail's width -- so
+   there is no number here to shrink from, only one to measure. They
+   stand in a column of four, so every pixel off one is four off the
+   rail: the overhang is divided before it comes off the height. Twenty
+   two is the floor, where the number inside still reads. */
+const PLATE_MIN = 22;
 function fitRail() {
   const side = document.querySelector('.side');
   const stack = document.querySelector('.stack');
   if (!side || !stack) return;
 
-  document.documentElement.style.setProperty('--tubeH', TUBE_H + 'px');
+  document.documentElement.style.removeProperty('--plateH');
   const over = side.offsetHeight - stack.offsetHeight;
   if (over <= 0) return;
 
-  document.documentElement.style.setProperty('--tubeH', Math.max(44, TUBE_H - over) + 'px');
+  const sq = document.querySelector('.tubes .tube');
+  const h = sq ? sq.getBoundingClientRect().height : 30;
+  document.documentElement.style.setProperty(
+    '--plateH', Math.max(PLATE_MIN, Math.round(h - over / 4)) + 'px');
 }
 
 /* The badge, over the middle of whatever just came off the board.
@@ -6649,17 +6767,25 @@ const TUBE_ORDER = ['c', 'm', 'y', 'k'];
 
 function buildTubes() {
   const tubes = document.getElementById('tubes');
-  const tags = document.getElementById('tubetags');
-  if (!tubes || !tags) return;
+  if (!tubes) return;
+  /* The ink and its reading in the same box. They used to be two rows --
+     four tubes, then four numbers in a strip underneath -- and the strip
+     was 0.48rem type, the smallest on the screen, carrying one of the two
+     things a player reads while a drop is falling. */
   tubes.innerHTML = TUBE_ORDER.map(pl =>
-    '<span class="tube ' + pl + '" id="tube-' + pl + '"><i></i></span>').join('');
-  tags.innerHTML = TUBE_ORDER.map(pl =>
-    '<b id="tubetag-' + pl + '">' + TAGS[pl] + '</b>').join('');
+    '<span class="tube ' + pl + '" id="tube-' + pl + '">' +
+    '<i></i><b id="tubetag-' + pl + '">' + TAGS[pl] + '</b></span>').join('');
   paintTubes();
 }
 
 function paintTubes() {
-  if (discoOn && floorRaf) return;               // the mixer runs off the floor
+  /* Not "and the floor loop is running". Entering Endless sets the four
+     of them to their channel letters and then starts the loop, and
+     anything that repainted in between -- a new print does -- put a
+     campaign percentage in a rail that has no plates, which came out as
+     four zeros under the deck. In here they are never goals, so this
+     has nothing to say about them whether the loop has started or not. */
+  if (discoOn) return;                           // the mixer runs off the floor
   const rest = onHome();                         // nothing has been printed yet
   for (const pl of TUBE_ORDER) {
     const tube = document.getElementById('tube-' + pl);
