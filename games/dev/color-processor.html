@@ -3833,7 +3833,9 @@ nav.menu {
    outside it -- and drawn in the club's own inks. */
 .panel {
   width: 100%;
-  max-width: 21rem;
+  /* The plate above it is 26rem. At 21rem the panel sat narrower than the
+     picture it hangs under, with a strip of black down either side. */
+  max-width: 26rem;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -3936,10 +3938,17 @@ nav.menu {
 /* Three rows rather than two. Everything comes in a size: the icon, the
    padding round it, and the line under it that is the first thing you
    can do without. */
-.panel.tight .app { padding: 6px 4px; gap: 4px; }
-.panel.tight .app .tile { width: 34px; height: 34px; }
-.panel.tight .app b { font-size: 0.54rem; }
+.panel.tight .app { gap: 5px; }
 .panel.tight .app .sub { display: none; }
+
+/* And smaller again only where three rows genuinely will not fit. On a
+   desktop board the rows are 200px tall and there was no reason for the
+   icons to have come down at all. */
+@media (max-height: 780px) {
+  .panel.tight .app { padding: 6px 4px; gap: 4px; }
+  .panel.tight .app .tile { width: 34px; height: 34px; }
+  .panel.tight .app b { font-size: 0.54rem; }
+}
 
 /* Newly earned: the lamp on a panel rather than a badge on a button. */
 .panel .app.fresh { background: #FFFBEE; box-shadow: inset 0 0 0 2px var(--accent); }
