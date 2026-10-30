@@ -17,53 +17,93 @@
   --paper:#F2EFE6; --m:#E6007E;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--ground);color:var(--muted);
-  font-family:'Poppins',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+/* ---- inside the machine ----
+   The run is not a page with parts drawn on it. It is the inside of the
+   printer, seen side on, with the sheet going down through it -- so the
+   ground is panel metal and the sheet is the brightest thing in the
+   frame, because it is the only thing in here that is paper. */
+html,body{margin:0;color:var(--muted);
+  font-family:'Poppins',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  background:#0B0D12}
 
-.wrap{max-width:430px;margin:0 auto;padding:16px 0 40px;position:relative}
+body{
+  background-image:
+    /* the channel the sheet runs down, lit from inside */
+    radial-gradient(120% 60% at 50% 0%, rgba(88,101,242,.07), transparent 60%),
+    linear-gradient(to right,
+      #0A0C11 0, #121520 16%, #171B27 34%,
+      #1A1E2B 50%,
+      #171B27 66%, #121520 84%, #0A0C11 100%),
+    /* brushed panel, fine and almost not there */
+    repeating-linear-gradient(to bottom,
+      rgba(255,255,255,.014) 0 1px, transparent 1px 3px);
+  background-attachment:fixed,fixed,fixed}
+
+/* Rails down both sides, bolted at intervals. They are what makes the
+   middle read as a channel rather than as a column of cards. */
+.rail{position:fixed;top:0;bottom:0;width:26px;pointer-events:none;z-index:1;
+  background:
+    linear-gradient(to right, #0A0C11, #22273a 40%, #171B27 70%, #0A0C11),
+    repeating-linear-gradient(to bottom,
+      transparent 0 44px,
+      rgba(0,0,0,.55) 44px 52px)}
+.rail::after{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(to bottom,
+    transparent 0 40px,
+    rgba(255,255,255,.10) 40px 42px,
+    transparent 42px 88px)}
+.rail.l{left:max(0px, calc(50% - 215px))}
+.rail.r{right:max(0px, calc(50% - 215px))}
+
+.wrap{max-width:430px;margin:0 auto;padding:16px 0 40px;position:relative;z-index:2}
 .top{padding:10px 18px 18px;text-align:center}
 .top h1{margin:0;font-size:1.1rem;font-weight:600;color:var(--text)}
 .top p{margin:4px 0 0;font-size:.72rem;color:var(--dim)}
 
 /* ---- the sheet ----
-   One strip straight down the run. Linear rather than weaving: a winding
-   path has to fit its turns inside the screen width, and on a phone that
-   leaves the nodes squeezed against the edges with the labels fighting
-   them for the middle. Straight down, a label has the whole width beside
-   it however narrow the screen gets. */
+   Linear rather than weaving: a winding path has to fit its turns inside
+   the screen width, and on a phone that leaves the nodes pressed against
+   the edges with the labels fighting them for the middle. */
 .path{position:relative;padding-bottom:10px}
-.sheet{position:absolute;top:0;bottom:0;left:50%;width:36px;
+.sheet{position:absolute;top:0;bottom:0;left:50%;width:38px;
   transform:translateX(-50%);pointer-events:none;
   background:
     linear-gradient(to right,
-      rgba(242,239,230,.00) 0,  rgba(242,239,230,.09) 12%,
-      rgba(242,239,230,.13) 50%,
-      rgba(242,239,230,.09) 88%, rgba(242,239,230,.00) 100%)}
+      rgba(242,239,230,.00) 0,
+      rgba(242,239,230,.20) 10%,
+      rgba(242,239,230,.30) 50%,
+      rgba(242,239,230,.20) 90%,
+      rgba(242,239,230,.00) 100%);
+  box-shadow:0 0 22px rgba(242,239,230,.08)}
 
 /* ---- a station ----
-   The sheet runs behind it and comes out underneath, so the machinery is
-   something the page goes through rather than a sign it passes. The two
-   slots are where it goes in and where it comes back out. */
-.station{position:relative;margin:26px 18px 6px;
-  background:var(--panel);border:1px solid var(--border);border-radius:14px;
-  padding:13px 14px;display:flex;gap:12px;align-items:center;z-index:2}
+   A housing bolted across the channel, not a card floating on it. The
+   sheet runs behind and comes out underneath; the two slots are where it
+   goes in and where it comes back out. */
+.station{position:relative;margin:30px 0 8px;
+  background:
+    linear-gradient(to bottom, #232838, #1A1E2B 42%, #151925);
+  border-top:1px solid #333a50;border-bottom:1px solid #0A0C11;
+  padding:14px 18px;display:flex;gap:12px;align-items:center;z-index:3;
+  box-shadow:0 10px 22px rgba(0,0,0,.5)}
 .station::before,.station::after{content:'';position:absolute;left:50%;
-  transform:translateX(-50%);width:40px;height:7px;border-radius:2px;
-  background:#0B0D12;box-shadow:inset 0 0 0 1px var(--border)}
-.station::before{top:-4px}
-.station::after{bottom:-4px}
+  transform:translateX(-50%);width:44px;height:8px;
+  background:#07080C;box-shadow:inset 0 2px 4px rgba(0,0,0,.9)}
+.station::before{top:0}
+.station::after{bottom:0}
 .station svg{flex:none}
 .station .nm{font-size:.6rem;font-weight:600;letter-spacing:.14em;
   text-transform:uppercase;color:var(--dim)}
 .station .room{font-size:.92rem;font-weight:600;color:var(--text);margin-top:2px}
 .station .n{margin-left:auto;font-size:.66rem;color:var(--dim)}
-.station.her{border-color:rgba(230,0,126,.45)}
+.station.her{border-top-color:rgba(230,0,126,.5);
+  background:linear-gradient(to bottom,#2a1b26,#1d1520 45%,#151018)}
 .station.her::after{display:none}       /* nothing comes out the far side */
 
 /* ---- a print ----
    The node holds the middle whatever the label does, so every circle on
    the run lines up on the sheet. */
-.run{position:relative;z-index:2;display:grid;
+.run{position:relative;z-index:3;display:grid;
   grid-template-columns:1fr auto 1fr;align-items:center;
   gap:12px;padding:9px 18px}
 .run .tag{grid-column:3;font-size:.72rem;color:var(--dim);text-align:left}
@@ -71,14 +111,16 @@ html,body{margin:0;background:var(--ground);color:var(--muted);
 
 .node{grid-column:2;width:48px;height:48px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:.88rem;font-weight:700;border:2px solid var(--border);
-  background:var(--panel);color:var(--dim);cursor:pointer;
-  box-shadow:0 2px 0 rgba(0,0,0,.45)}
-.node.done{background:var(--paper);border-color:var(--paper);color:#1A1A1A}
+  font-size:.88rem;font-weight:700;border:2px solid #333a50;
+  background:#1A1E2B;color:var(--dim);cursor:pointer;
+  box-shadow:0 3px 0 rgba(0,0,0,.6)}
+.node.done{background:var(--paper);border-color:#fff;color:#1A1A1A;
+  box-shadow:0 3px 0 rgba(0,0,0,.6),0 0 16px rgba(242,239,230,.25)}
 .node.now{border-color:var(--accent);color:var(--accent);
-  box-shadow:0 0 0 4px rgba(212,162,76,.18),0 2px 0 rgba(0,0,0,.45)}
+  box-shadow:0 0 0 4px rgba(212,162,76,.2),0 3px 0 rgba(0,0,0,.6)}
 .node.locked{opacity:.4;cursor:default}
-.node.boss{width:62px;height:62px;border-color:var(--m);color:var(--m);font-size:.62rem}
+.node.boss{width:62px;height:62px;border-color:var(--m);color:var(--m);font-size:.62rem;
+  box-shadow:0 0 0 4px rgba(230,0,126,.14),0 3px 0 rgba(0,0,0,.6)}
 
 .foot{text-align:center;padding:22px 18px 0;font-size:.7rem;color:var(--dim)}
 .note{max-width:430px;margin:0 auto;padding:22px 18px 40px;font-size:.72rem;
@@ -86,6 +128,8 @@ html,body{margin:0;background:var(--ground);color:var(--muted);
 </style>
 </head>
 <body>
+
+<div class="rail l"></div><div class="rail r"></div>
 
 <div class="wrap">
   <div class="top">
