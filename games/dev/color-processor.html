@@ -12300,6 +12300,21 @@ function asilHush() {
    so it shows exactly what is about to fall rather than a drawing of
    it. */
 const MECHANICS = [
+  /* Classics had nothing to introduce, because it is the chapter with no
+     hazard in it. It has the magnet, which has been falling since level
+     one and was only ever explained on a screen somebody had to go and
+     open. Leading with it also sets the shape of the series: the first
+     special block is the one that helps, and every chapter after it adds
+     one that does not. */
+  {
+    id: 'magnet',
+    kicker: 'New in this chapter',
+    title: 'Magnet Drops',
+    say: 'Pulls a matching color out of a diagonal and into line above it. '
+       + 'Place them where a clump is one short.',
+    live: () => true,
+    demo: ['c mag', '>', 'c', 'c', 'c']
+  },
   {
     id: 'virus',
     kicker: 'New in this chapter',
