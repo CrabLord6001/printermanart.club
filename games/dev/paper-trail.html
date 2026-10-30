@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- A preview build. Not indexed, not in sitemap.xml, not linked from
+     anywhere public. Reached from /admin/previews.html, which is gated. -->
+<meta name="robots" content="noindex, nofollow">
+<title>Ms. Printer: Paper Trail</title>
+<meta name="description" content="Snake, played as a printer. Eat the ink, print the sheets, and do not jam the tray.">
+<link rel="canonical" href="https://printermanart.club/games/paper-trail.html">
+<meta name="theme-color" content="#5865F2">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- The panels are drawn as an arcade cabinet screen and this is the face on
+     them. On the lander it was fetched only once somebody opened the game.
+     Here the game is the page, so it comes with the page. -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/games/arcade.css">
+
+<style>
+/* The club's tokens. arcade.css reads them and the lander used to supply
+   them; on the game's own page they are declared here. */
+:root {
+  --blurple:       #5865F2;
+  --blurple-text:  #99A2F7;
+  --ground:        #101218;
+  --panel:         #171A22;
+  --border:        #272B36;
+  --text:          #FFFFFF;
+  --text-muted:    #9BA0AE;
+  --text-dim:      #7A8094;
+  --accent:        #D4A24C;
+}
+
+/* The lander set this for everything on it, and the panel's padding is
+   written expecting it: without it the cabinet overflows its own box by the
+   width of that padding, and a phone gets a page that scrolls under a swipe
+   meant for the board. */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ground);
+  color: var(--text-muted);
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The rail back to the club, the same one Gallery Printshop wears. One row,
+   never wrapping: the way out is the part that has to survive a narrow
+   screen, so the other links come off before it does. */
+.sitebar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px max(10px, env(safe-area-inset-right)) 7px max(10px, env(safe-area-inset-left));
+  background: #0C0E13;
+  border-bottom: 1px solid #1B1F29;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sitebar a { color: var(--text-dim); text-decoration: none; }
+.sitebar a:hover { color: var(--accent); }
+.sb-home { color: var(--text-muted) !important; font-weight: 600; }
+.sb-home:hover { color: var(--accent) !important; }
+.sb-nav { display: flex; gap: 14px; overflow: hidden; }
+
+@media (max-width: 560px) {
+  .sb-nav { display: none; }
+  .sitebar { font-size: 0.58rem; }
+}
+
+/* It was a dialog floating over the lander, with a button to fill the
+   screen. On its own page there is nothing to fill into and nothing behind
+   it to leave room for, so it starts filled and the button is gone: it takes
+   everything the rail leaves. The rail is the one thing kept above it,
+   because it is the way back out. */
+#playbox {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  max-width: none;
+  max-height: none;
+}
+
+/* .full is the shape it is always in now: no floating card, no frame around
+   the board, and the picture fitted to whatever room there is. */
+#playbox.full {
+  width: auto;
+  height: auto;
+  inset: auto;
+  margin: 0;
+}
+
+#playbox.full .play-wrap { width: 100%; height: 100%; }
+</style>
+</head>
+
+<body class="play-open">
+
+  <header class="sitebar">
+    <a class="sb-home" href="/"><span aria-hidden="true">&larr;</span> PrinterMan&rsquo;s Art Club</a>
+    <nav class="sb-nav">
+      <a href="/games/color-processor.html">Gallery Printshop</a>
+      <a href="/art-history/">Weekly Art History</a>
+      <a href="/about.html">About</a>
+      <a href="/faq.html">FAQ</a>
+    </nav>
+  </header>
+
+  <div id="playbox">
+    <div class="play-wrap">
+
+      <div class="play-head">
+        <p class="play-name">Paper Trail</p>
+        <div class="who-row" id="pWho"></div>
+
+        <button class="snd" id="pSound" type="button" aria-pressed="false" aria-label="Turn sound on">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6 9H2v6h4l5 4z"/>
+            <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+            <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
+          </svg>
+        </button>
+
+        <div class="play-stats">
+          <span>Prints <b id="pScore">0</b></span>
+          <span class="best">Best <b id="pBest">&mdash;</b></span>
+        </div>
+      </div>
+
+      <div class="tray">
+        <canvas id="play" width="768" height="576" aria-label="Paper Trail game board"></canvas>
+
+        <!-- Everything that is not the board lives on this panel: the
+             marquee and the menu before the first run, the score and the
+             board after a jam. -->
+        <div class="veil" id="pVeil">
+
+          <div class="marquee" id="pMarquee" hidden>
+            <svg class="star" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.6 1.4 6.8L12 17.1 5.9 20.5l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>
+            <div>
+              <p class="mq-sub">Ms.&nbsp;Printer</p>
+              <p class="mq-name">Paper Trail</p>
+            </div>
+            <svg class="star" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.6 1.4 6.8L12 17.1 5.9 20.5l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>
+          </div>
+
+          <div class="inkrule" id="pRule" aria-hidden="true" hidden><i></i><i></i><i></i><i></i></div>
+
+          <div class="veil-mid">
+            <h2 id="pTitle" class="lore">Ms.&nbsp;Printer: Paper Trail</h2>
+            <p id="pText" hidden></p>
+
+            <p class="where" id="pWhere" hidden></p>
+
+            <div id="pExtra"></div>
+
+            <div class="rooms" id="pRooms"></div>
+
+            <div class="after" id="pAfter" hidden>
+              <button class="btn" id="pBtn" type="button">Print again</button>
+              <button class="btn ghost" id="pBack" type="button">Change room</button>
+            </div>
+
+            <div class="arc-menu" id="pMenu" hidden>
+              <button class="menu-row" id="pHow" type="button" aria-expanded="true" aria-controls="pHowto">
+                <span class="cur"><svg viewBox="0 0 4 8" width="11" height="16" fill="currentColor" aria-hidden="true"><path d="M0 0h1v1H0zM0 1h2v1H0zM0 2h3v1H0zM0 3h4v2H0zM0 5h3v1H0zM0 6h2v1H0zM0 7h1v1H0z"/></svg></span>How to Play
+              </button>
+              <button class="menu-row" id="pHigh" type="button">
+                <span class="cur"><svg viewBox="0 0 4 8" width="11" height="16" fill="currentColor" aria-hidden="true"><path d="M0 0h1v1H0zM0 1h2v1H0zM0 2h3v1H0zM0 3h4v2H0zM0 5h3v1H0zM0 6h2v1H0zM0 7h1v1H0z"/></svg></span>High Scores
+              </button>
+            </div>
+
+            <p class="msg" id="pMsg" hidden></p>
+          </div>
+
+          <div class="trailband" id="pTrail" aria-hidden="true" hidden><i></i></div>
+
+          <!-- The rules sit in the markup rather than being built, so they
+               are there for anyone with no scripting at all.
+
+               Two columns, and the four plates across them: cyan, magenta
+               and yellow on the rules, black on the pickups. The right half
+               of this strip was empty before. -->
+          <div class="howto" id="pHowto">
+            <div class="howto-col">
+              <p class="howto-label">How to Play</p>
+              <ul class="rules">
+                <li>WASD, arrow keys, or swipe</li>
+                <li>Consume ink to keep printing</li>
+                <li>Hit your own printouts or the wall and it&rsquo;s game over</li>
+              </ul>
+            </div>
+
+            <div class="howto-col">
+              <p class="howto-label k">PowerUps</p>
+              <ul class="picks">
+                <li><svg class="pick-ic" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 14a8 8 0 0 1 16 0v2h-4.6v-2a3.4 3.4 0 0 0-6.8 0v2H4z" fill="#E8394F"/><rect x="4" y="16" width="4.6" height="3.2" fill="#C7CBD6"/><rect x="15.4" y="16" width="4.6" height="3.2" fill="#C7CBD6"/></svg><b>Magnet</b> drags nearby ink toward you</li>
+                <li><svg class="pick-ic" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="9.2" y="2.4" width="5.6" height="2.4" fill="#C7CBD6"/><path d="M10.2 5.4h3.6v4.2l4 7a2 2 0 0 1-1.7 3H7.9a2 2 0 0 1-1.7-3l4-7z" fill="#7FDAF5" opacity=".55"/><path d="M8.1 14.4h7.8l1.9 3.2a2 2 0 0 1-1.7 3H7.9a2 2 0 0 1-1.7-3z" fill="#22B8E6"/></svg><b>Phasing</b> run through your own printouts and the furniture</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="scan" aria-hidden="true"></div>
+      </div>
+
+    </div>
+  </div>
+
+<script type="module">
+const GAME = 'paper-trail';
+
+/* One page serves two addresses. Under /games/dev/ this is a preview build:
+   it keeps its own best times under a separate storage prefix, and it posts
+   nothing to the leaderboard. Working that out from the path, rather than
+   from an edited copy, is what keeps the dev file and the live file the same
+   file -- with no flag anybody has to remember to turn back.
+
+   Browser storage belongs to the whole site rather than to one folder, so
+   without the prefix a preview run would overwrite the real best times. */
+const DEV_BUILD = location.pathname.includes('/games/dev/');
+const LOCAL_BEST = DEV_BUILD ? 'ptdev-best' : 'pt-best';
+
+const box     = document.getElementById('playbox');
+const canvas  = document.getElementById('play');
+const elScore = document.getElementById('pScore');
+const elBest  = document.getElementById('pBest');
+const elVeil  = document.getElementById('pVeil');
+const elTitle = document.getElementById('pTitle');
+const elText  = document.getElementById('pText');
+const elExtra = document.getElementById('pExtra');
+const elBtn   = document.getElementById('pBtn');
+const elRooms = document.getElementById('pRooms');
+const elAfter = document.getElementById('pAfter');
+const elBack  = document.getElementById('pBack');
+const elWhere = document.getElementById('pWhere');
+const elWho   = document.getElementById('pWho');
+const elMsg   = document.getElementById('pMsg');
+const elTray  = box ? box.querySelector('.tray') : null;
+
+const elMarquee = document.getElementById('pMarquee');
+const elRule    = document.getElementById('pRule');
+const elTrail   = document.getElementById('pTrail');
+const elHowto   = document.getElementById('pHowto');
+const elMenu    = document.getElementById('pMenu');
+const elHow     = document.getElementById('pHow');
+const elHigh    = document.getElementById('pHigh');
+
+/* Which panel is showing. The two buttons at the bottom do a different
+   thing on each one, and reading the heading to work that out was always
+   going to break the moment a heading changed. */
+let mode = 'intro';
+let howOpen = true;
+
+let mods = null, game = null, signedIn = false, room = 'classic';
+
+/* A best kept in this browser as well as on the server, so the number is
+   there before sign-in and stays there for anyone who never signs in.
+   One per room, because a Classic score and a Data Center score are not
+   the same achievement. */
+let best = 0;
+const bestKey = (r) => LOCAL_BEST + '-' + r;
+
+function loadBest(r) {
+  try { best = Number(localStorage.getItem(bestKey(r)) || 0) || 0; }
+  catch (e) { best = 0; }
+  showBest();
+}
+
+const esc = (v) => String(v).replace(/[&<>"]/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+const showBest = () => { elBest.innerHTML = best > 0 ? String(best) : '&mdash;'; };
+
+const say = (text, kind) => {
+  if (!text) { elMsg.hidden = true; return; }
+  elMsg.hidden = false;
+  elMsg.textContent = text;
+  elMsg.className = 'msg' + (kind ? ' ' + kind : '');
+};
+
+const LORE = 'Ms.\u00A0Printer: Paper Trail';
+const CHOOSE = 'Choose Your Stage';
+
+/* The opening panel is the title and the three lines and nothing else.
+   Later panels swap in a score line, which is what text is for. */
+const veil = (title, text, button, jammed) => {
+  elTitle.textContent = title;
+  elTitle.className = (jammed ? 'jam' : '') + (title === LORE ? ' lore' : '');
+  elText.textContent = text || '';
+  elText.hidden = !text;
+  elBtn.textContent = button;
+  elVeil.hidden = false;
+};
+
+/* The title panel wears the marquee, the menu and the how-to strip. Every
+   other panel is the plain centered one. */
+function startChrome(on) {
+  elVeil.classList.toggle('start', on);
+  elMarquee.hidden = !on;
+  elRule.hidden = !on;
+  elTrail.hidden = !on;
+  elMenu.hidden = !on;
+  elHowto.hidden = !on || !howOpen;
+  elTitle.hidden = on;                 // the marquee is the title here
+  elBtn.classList.toggle('big', on);
+  elHow.setAttribute('aria-expanded', howOpen ? 'true' : 'false');
+}
+
+const CURSOR = '<span class="cur" aria-hidden="true">' +
+  '<svg viewBox="0 0 4 8" width="10" height="14" fill="currentColor">' +
+  '<path d="M0 0h1v1H0zM0 1h2v1H0zM0 2h3v1H0zM0 3h4v2H0zM0 5h3v1H0zM0 6h2v1H0zM0 7h1v1H0z"/>' +
+  '</svg></span>';
+
+async function ensureModules() {
+  if (mods) return mods;
+  const [pt, auth, sound] = await Promise.all([
+    import('/games/dev/paper-trail.js'),
+    import('/games/club-auth.js'),
+    import('/games/chiptune.js')
+  ]);
+  mods = {
+    startPaperTrail: pt.startPaperTrail,
+    drawPreview: pt.drawPreview,
+    rooms: pt.ROOMS, order: pt.ROOM_ORDER,
+    auth, sound
+  };
+  mods.auth.onMember(whenMemberChanges);
+  paintSound();
+  buildRooms();
+  return mods;
+}
+
+function makeGame() {
+  if (game) return game;
+
+  game = mods.startPaperTrail({
+    canvas,
+
+    // Swipes are read from the whole tray, not just the board, so a
+    // gesture that lands a little wide still steers.
+    surface: elTray,
+    shape: SHAPE,
+
+    onScore(sheets) {
+      elScore.textContent = sheets;
+      if (sheets > 0) {
+        mods.sound.eat(sheets);
+        // The loop speeds up with her, so getting faster is audible.
+        mods.sound.setRate(1 + sheets * 0.012);
+      }
+    },
+
+    /* Taken, and then how long it has left. The sound module decides what
+       to do with both; the game only says what happened. */
+    onTake(kind) { mods.sound.take(kind); },
+
+    onPower(kind, left) { mods.sound.setPower(kind, left > 0 && left <= 22); },
+
+    onPause() {
+      mode = 'paused';
+      mods.sound.stopMusic();
+      veil('Paused', 'Nothing is printing.', 'Resume');
+      startChrome(false);
+      elExtra.innerHTML = '';
+      elWhere.hidden = true;
+      elRooms.hidden = true;
+      elAfter.hidden = false;
+      elBack.hidden = true;        // leaving mid-run would lose the run
+    },
+
+    onResume() {
+      mode = 'playing';
+      elVeil.hidden = true;
+      mods.sound.startMusic();
+    },
+
+    onConfirm() { elBtn.click(); },
+
+    async onEnd(result) {
+      mode = 'over';
+      mods.sound.stopMusic();
+      if (result.reason === 'full') mods.sound.begin(); else mods.sound.jam();
+
+      const beatIt = result.sheets > best;
+      if (beatIt) {
+        best = result.sheets;
+        try { localStorage.setItem(bestKey(room), String(best)); } catch (e) {}
+        showBest();
+      }
+
+      const word = result.sheets === 1 ? 'sheet' : 'sheets';
+      if (result.reason === 'full') {
+        veil('Tray Full', 'You printed the whole room. That is the end of the paper.', 'Print again');
+      } else {
+        veil('Paper Jam', 'You printed ' + result.sheets + ' ' + word + '.', 'Print again', true);
+      }
+
+      elWhere.textContent = mods.rooms[room].name;
+      elWhere.hidden = false;
+      elRooms.hidden = true;
+      elAfter.hidden = false;
+      elBack.hidden = false;
+      startChrome(false);
+
+      showBoard();
+
+      // Nothing to say when signed out -- the sign-in button is right there
+      // and already says what it is for.
+      if (!signedIn) { say(null); return; }
+      if (DEV_BUILD) { say('Preview build. This run was not recorded.'); return; }
+
+      const posted = await mods.auth.postScore(GAME, result.sheets, { reason: result.reason }, room);
+      if (!posted.ok) { say('That run did not save. Try again in a moment.', 'bad'); return; }
+      say(beatIt ? 'Saved. New personal best.' : 'Saved.', 'good');
+      showBoard();
+    }
+  });
+
+  return game;
+}
+
+/* One still of each room, drawn by the same code that draws the live
+   board, so a preview can never show a layout the game does not have.
+   Names alone told you nothing about what you were picking. */
+function buildRooms() {
+  elRooms.innerHTML = '';
+
+  mods.order.forEach((key) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'room-card' + (key === 'classic' ? ' plain' : '');
+
+    const shot = document.createElement('canvas');
+    card.appendChild(shot);
+
+    const label = document.createElement('span');
+    label.textContent = mods.rooms[key].name;
+    card.appendChild(label);
+
+    card.addEventListener('click', () => startRoom(key));
+    elRooms.appendChild(card);
+
+    mods.drawPreview(shot, key, SHAPE);
+  });
+}
+
+/* Two panels before you play: what the game is, then which room. */
+function showIntro() {
+  mode = 'intro';
+  say(null);
+  elExtra.innerHTML = '';
+  elWhere.hidden = true;
+  elRooms.hidden = true;
+  elAfter.hidden = false;
+  elBack.hidden = true;
+  veil(LORE, '', 'Play');
+  startChrome(true);
+}
+
+function showChooser() {
+  mode = 'chooser';
+  say(null);
+  startChrome(false);
+  elExtra.innerHTML = '';
+  elWhere.hidden = true;
+  elRooms.hidden = false;
+  elAfter.hidden = true;
+  veil(CHOOSE, '', '');
+}
+
+/* Classic first, because it is the room everybody starts in, then the
+   rest by name. Not play order: somebody looking a room up on a list is
+   looking it up by its name. */
+function scoreOrder() {
+  const rest = mods.order.filter((k) => k !== 'classic')
+    .sort((a, b) => mods.rooms[a].name.localeCompare(mods.rooms[b].name, 'en'));
+  return ['classic'].concat(rest);
+}
+
+/* All five boards, reached from the title panel rather than from a jam.
+   One room open at a time: five tens is fifty rows to scroll through, and
+   a Mail Room score and a Data Center score are not the same achievement
+   anyway, so there is nothing to be had from seeing them side by side. */
+async function showScores() {
+  mode = 'scores';
+  say(null);
+  startChrome(false);
+  elWhere.hidden = true;
+  elRooms.hidden = true;
+  elAfter.hidden = false;
+  elBack.hidden = true;
+  veil('High Scores', '', 'Back');
+
+  const keys = scoreOrder();
+  elExtra.innerHTML = '<div class="board-wrap"><div class="board-rooms">' +
+    keys.map((key) => (
+      '<div class="board-room" data-room="' + key + '">' +
+        '<button class="room-row" type="button" aria-expanded="false" aria-controls="brd-' + key + '">' +
+          CURSOR + '<span class="room-nm">' + esc(mods.rooms[key].name) + '</span>' +
+        '</button>' +
+        '<ol class="board" id="brd-' + key + '" hidden></ol>' +
+      '</div>'
+    )).join('') + '</div></div>';
+
+  const wrap = elExtra.querySelector('.board-rooms');
+  if (!wrap) return;
+
+  const asked = new Set();
+
+  const open = async (key) => {
+    wrap.querySelectorAll('.board-room').forEach((sec) => {
+      const on = sec.dataset.room === key;
+      sec.querySelector('.room-row').setAttribute('aria-expanded', on ? 'true' : 'false');
+      sec.querySelector('ol.board').hidden = !on;
+    });
+    const ol = wrap.querySelector('#brd-' + key);
+    if (!ol || asked.has(key)) return;
+    asked.add(key);                    // fetched once, however often it is reopened
+    ol.innerHTML = '<li class="none"><span class="nm">Loading&hellip;</span></li>';
+    await fillBoard(ol, key);
+  };
+
+  wrap.querySelectorAll('.room-row').forEach((btn) => {
+    btn.addEventListener('click', () => open(btn.closest('.board-room').dataset.room));
+  });
+
+  // The room last played is the one somebody came here to look at.
+  await open(keys.indexOf(room) >= 0 ? room : 'classic');
+}
+
+function startRoom(key) {
+  mode = 'playing';
+  room = key;
+  loadBest(room);
+  say(null);
+
+  startChrome(false);
+  elExtra.innerHTML = '';
+  elVeil.hidden = true;
+
+  mods.sound.arm();
+  mods.sound.setRate(1);
+  mods.sound.begin();
+  mods.sound.startMusic();
+
+  game.begin(room);
+  if (signedIn) syncBest();
+}
+
+/* A face for every row. The board returns names and scores only, so the
+   pictures come from the member list in one more query, and a name with
+   no picture on it gets its initial instead. */
+function faceHTML(name, url) {
+  if (url) {
+    return '<img class="av" src="' + esc(url) + '" alt="" loading="lazy" width="20" height="20">';
+  }
+  const letter = (name || '?').trim().charAt(0).toUpperCase() || '?';
+  return '<span class="av" aria-hidden="true">' + esc(letter) + '</span>';
+}
+
+/* One row of a board. club_high_board hands back the place, the picture
+   and the score together, so there is no second trip for faces and no
+   first pass drawn with initials waiting to be replaced. */
+function rowHTML(r, mine, best) {
+  const cls = (best ? 'top ' : '') + (mine ? 'me' : '');
+  return '<li' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '>' +
+         CURSOR +
+         '<span class="rk">' + r.place + '</span>' +
+         faceHTML(r.display_name, r.avatar_url) +
+         '<span class="nm">' + esc(r.display_name) + '</span>' +
+         '<span class="sc">' + r.score + '</span></li>';
+}
+
+/* Fills one room's list. Called from the board after a run and from the
+   five-room page, which both only care that the list ends up right. */
+async function fillBoard(ol, roomKey) {
+  const rows = await mods.auth.highBoard(GAME, roomKey, 10);
+  if (!ol.isConnected) return;
+
+  if (rows === null) {
+    ol.innerHTML = '<li class="none"><span class="nm">Board unavailable right now.</span></li>';
+    return;
+  }
+  if (!rows.length) {
+    ol.innerHTML = '<li class="none"><span class="nm">Nobody has printed in this room yet.</span></li>';
+    return;
+  }
+
+  const me = mods.auth.currentMember();
+  const mineIn = me && rows.some((r) => r.display_name === me.displayName);
+  let html = rows.map((r) => rowHTML(r, me && r.display_name === me.displayName, r.place === 1)).join('');
+
+  /* Outside the top ten your own row goes on the end rather than being
+     missing: a board you are not on says nothing about how you did. */
+  if (me && !mineIn) {
+    const standing = await mods.auth.highMe(GAME, roomKey);
+    if (!ol.isConnected) return;
+    if (standing && standing.score != null) html += rowHTML(standing, true, false);
+  }
+
+  ol.innerHTML = html;
+}
+
+async function showBoard(heading) {
+  const label = heading || 'High Scores';
+
+  elExtra.innerHTML =
+    '<div class="board-wrap"><div class="board-top"><h3>' + esc(label) + '</h3><i></i></div>' +
+    '<ol class="board" id="pBoard"><li class="none"><span class="nm">Loading&hellip;</span></li></ol></div>';
+
+  const ol = document.getElementById('pBoard');
+  if (ol) await fillBoard(ol, room);
+}
+
+function drawSignedOut() {
+  elWho.innerHTML = '';
+
+  // No explanatory line beside it: the button label is the explanation.
+  const button = document.createElement('button');
+  button.className = 'btn ghost small';
+  button.type = 'button';
+  button.textContent = 'Sign in to save score';
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+    try { await mods.auth.signIn(); }
+    catch (err) { button.disabled = false; say('Could not reach Discord sign-in.', 'bad'); }
+  });
+
+  elWho.append(button);
+}
+
+function drawSignedIn(member) {
+  elWho.innerHTML = '';
+
+  if (member.avatarUrl) {
+    const img = document.createElement('img');
+    img.className = 'avatar';
+    img.src = member.avatarUrl;
+    img.alt = '';
+    img.width = 26; img.height = 26;
+    elWho.append(img);
+  }
+
+  const name = document.createElement('span');
+  name.className = 'nm';
+  name.textContent = member.displayName;
+
+  const out = document.createElement('button');
+  out.className = 'btn ghost small';
+  out.type = 'button';
+  out.textContent = 'Sign out';
+  out.addEventListener('click', () => mods.auth.signOut());
+
+  elWho.append(name, out);
+}
+
+async function whenMemberChanges(member) {
+  signedIn = !!member;
+  if (!member) { drawSignedOut(); return; }
+
+  drawSignedIn(member);
+  syncBest();
+}
+
+/* The server wins if it is higher: a best set on another device should not
+   be lost just because this browser has not seen it. Per room, like
+   everything else about a score. */
+async function syncBest() {
+  if (DEV_BUILD) return;
+  const serverBest = await mods.auth.myBest(GAME, room);
+  if (serverBest && serverBest > best) {
+    best = serverBest;
+    try { localStorage.setItem(bestKey(room), String(best)); } catch (e) {}
+    showBest();
+  }
+}
+
+/* The page opens straight into the title panel. There is nothing to open
+   out of any more: this is the game's own address. */
+async function boot() {
+  mode = 'intro';
+  howOpen = true;
+
+  elScore.textContent = '0';
+  elExtra.innerHTML = '';
+  elWhere.hidden = true;
+  elRooms.hidden = true;
+  elAfter.hidden = false;
+  elBack.hidden = true;
+  elBtn.disabled = true;
+  veil(LORE, '', 'Loading\u2026');
+  startChrome(true);
+  say(null);
+  loadBest(room);
+
+  try {
+    await ensureModules();
+  } catch (err) {
+    elBtn.textContent = 'Unavailable';
+    say('The game could not load. Try again in a moment.', 'bad');
+    return;
+  }
+
+  elBtn.disabled = false;
+  elBtn.textContent = 'Play';
+  makeGame();
+}
+
+/* ---- the size it plays at ----
+   One size: everything the rail leaves. It used to be a window on the lander
+   with a button to fill the screen, which is a button this page has no use
+   for -- the page is already the size the button was for. */
+const COARSE = window.matchMedia('(hover: none) and (pointer: coarse)');
+box.classList.add('full');
+
+/* Which board. A phone gets the tall one whichever way it is being held,
+   so nothing has to reflow mid-run when somebody tilts it on the couch.
+   Decided once, when the page loads. */
+const SHAPE = (COARSE.matches && Math.min(window.innerWidth, window.innerHeight) < 820)
+  ? 'tall' : 'wide';
+
+/* The document is locked while the game is open, which is what stops the
+   page scrolling under a swipe. This stops the sheet itself rubber-banding
+   on top of that. The chooser panel scrolls, so touches there are let by. */
+box.addEventListener('touchmove', (e) => {
+  if (!elVeil.hidden && e.target.closest && e.target.closest('.veil')) return;
+  if (e.cancelable) e.preventDefault();
+}, { passive: false });
+
+const sndBtn = document.getElementById('pSound');
+
+function paintSound() {
+  const lit = mods && mods.sound.isOn();
+  sndBtn.setAttribute('aria-pressed', lit ? 'true' : 'false');
+  sndBtn.setAttribute('aria-label', lit ? 'Turn sound off' : 'Turn sound on');
+}
+
+// setOn arms the audio, which has to happen inside a click: browsers will
+// not start audio any other way.
+sndBtn.addEventListener('click', () => {
+  if (!mods) return;
+  mods.sound.setOn(!mods.sound.isOn());
+  paintSound();
+  if (mods.sound.isOn() && game && game.isRunning()) mods.sound.startMusic();
+});
+
+elBtn.addEventListener('click', () => {
+  if (!game || game.isRunning() || elBtn.disabled) return;
+  if (mode === 'paused') { game.resume(); return; }
+  if (mode === 'scores') { showIntro(); return; }
+  if (mode === 'intro')  { showChooser(); return; }
+  startRoom(room);                 // same room again
+});
+
+elBack.addEventListener('click', () => { if (game) showChooser(); });
+
+/* How to Play folds the strip away, which is what gets PLAY above the fold
+   on a phone. High Scores swaps the panel for the board. */
+elHow.addEventListener('click', () => {
+  howOpen = !howOpen;
+  elHowto.hidden = !howOpen;
+  elHow.setAttribute('aria-expanded', howOpen ? 'true' : 'false');
+});
+
+elHigh.addEventListener('click', () => { if (mods) showScores(); });
+
+showBest();
+boot();
+</script>
+
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0b3e30f708cd4777957b92defbbdd859"}'></script><!-- End Cloudflare Web Analytics -->
+<!-- GoatCounter --><script data-goatcounter="https://crablord9001.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script><!-- End GoatCounter -->
+
+</body>
+</html>

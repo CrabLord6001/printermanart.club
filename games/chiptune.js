@@ -30,6 +30,7 @@ const TICK = 25;          // ms between visits to the scheduler
 let ctx = null;
 let master = null, musicBus = null, sfxBus = null;
 let timer = null, step = 0, nextAt = 0, rate = 1;
+let powerKind = null, powerWarn = false;
 let on = false;
 let playing = false;
 
@@ -109,7 +110,27 @@ function playStep(n, when) {
 
   // A tick on the offbeat, which is all the percussion this needs.
   if (n % 2 === 1) hiss(when, 0.025, 0.05);
+
+  /* A pickup's own motif, laid over the loop rather than replacing it: the
+     run is still going on and the music still belongs to the run. Every
+     fourth step normally, every other step once it is nearly out, so the
+     thing running out is something you hear without looking down. */
+  if (powerKind && n % (powerWarn ? 2 : 4) === 0) {
+    const m = POWER_MOTIF[powerKind];
+    const pair = m.notes[(n >> 2) % m.notes.length];
+    tone(musicBus, when, pair, dur * m.hold, m.wave, m.peak, m.bend ? pair + m.bend : 0);
+  }
 }
+
+/* One idea each, and nothing like the other: the magnet is a low fifth that
+   drops, the way something being pulled in does, and phasing is a thin high
+   note that climbs and thins out. Both sit under the lead rather than over
+   it -- a sound you cannot turn off and cannot get away from for ninety
+   steps has to be something you stop noticing. */
+const POWER_MOTIF = {
+  magnet: { notes: [45, 52, 45, 50], wave: 'triangle', peak: 0.42, hold: 1.3, bend: -5 },
+  phase:  { notes: [84, 88, 91, 88], wave: 'sine',     peak: 0.26, hold: 1.1, bend: 4 }
+};
 
 function pump() {
   while (nextAt < ctx.currentTime + LOOKAHEAD) {
@@ -159,6 +180,7 @@ export function startMusic() {
 
 export function stopMusic() {
   playing = false;
+  powerKind = null;          // nothing of the run carries on past the run
   if (timer) { clearInterval(timer); timer = null; }
 }
 
@@ -187,6 +209,26 @@ export function jam() {
   tone(sfxBus, t, 57, 0.18, 'square', 0.5, 45);
   tone(sfxBus, t + 0.12, 45, 0.3, 'sawtooth', 0.4, 33);
   hiss(t + 0.1, 0.32, 0.12);
+}
+
+/* Taken. One sting each, in the same shape as its motif so the thing you
+   heard on the way in is the thing that keeps going. */
+export function take(kind) {
+  if (!on || !ctx) return;
+  const t = ctx.currentTime;
+  if (kind === 'magnet') {
+    [57, 64, 69].forEach((n, i) => tone(sfxBus, t + i * 0.045, n, 0.1, 'triangle', 0.5, n - 7));
+    hiss(t + 0.09, 0.06, 0.07);
+  } else {
+    [76, 83, 88, 93].forEach((n, i) => tone(sfxBus, t + i * 0.04, n, 0.12, 'sine', 0.38, n + 5));
+  }
+}
+
+/* Which motif the loop should be carrying, and whether it is running out.
+   Null for neither, which is also what the end of a run passes. */
+export function setPower(kind, warn) {
+  powerKind = POWER_MOTIF[kind] ? kind : null;
+  powerWarn = !!warn;
 }
 
 export function begin() {
