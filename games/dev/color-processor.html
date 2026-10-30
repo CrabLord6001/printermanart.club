@@ -565,6 +565,65 @@ body.gridon .gridlines { opacity: 1; }
       rgba(0,0,0,0) 62%);
 }
 
+/* ---- meeting a new drop ----
+   Over the board, because the board is the thing being explained. The
+   example is built from the game's own cells, so it cannot drift from
+   what the player is about to see. */
+.learn {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px;
+  text-align: center;
+  background: rgba(10, 12, 18, 0.9);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.learn-kicker {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.learn-title { margin: 0; font-size: 18px; font-weight: 700; color: #fff; }
+
+.learn-demo { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 2px; }
+.learn-demo .cell { width: 26px; height: 26px; }
+.learn-demo .arrow { color: var(--muted); font-size: 15px; }
+
+.learn-say {
+  margin: 0;
+  max-width: 24em;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.learn-go {
+  margin-top: 4px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #11131A;
+  background: var(--accent);
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 22px;
+  cursor: pointer;
+}
+.learn-go:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
 /* ---- a half that is about to go ----
    Thinned and blotched rather than only faded. The point is that it reads
    as ink running out at a glance, in the middle of a falling piece, with
@@ -3650,6 +3709,17 @@ nav.menu {
              so the burst covers the print and the drops but never the
              words. -->
         <canvas class="zap" id="zap" aria-hidden="true"></canvas>
+
+        <!-- A mechanic you have not met, the once, on the level that
+             brings it in. Over the board rather than on a screen of its
+             own: the thing being explained is the board. -->
+        <div class="learn" id="learn" hidden>
+          <p class="learn-kicker" id="learnKick"></p>
+          <h2 class="learn-title" id="learnTitle"></h2>
+          <div class="learn-demo" id="learnDemo" aria-hidden="true"></div>
+          <p class="learn-say" id="learnSay"></p>
+          <button class="learn-go" id="learnGo" type="button">Got it</button>
+        </div>
         <!-- What a chain pays, said where it was earned. -->
         <div class="bonus" id="bonus" aria-hidden="true"></div>
         <canvas class="galart" id="galArt" aria-hidden="true" hidden></canvas>
@@ -11349,6 +11419,88 @@ function asilHush() {
   hearShow('bossHear');
 }
 
+/* ---- meeting a new drop ----
+   Each of these is shown once, on the first level that can produce the
+   thing it describes. Which level that is comes from the same dials the
+   level itself is built from, so a card can never turn up a chapter
+   early or a chapter late because a number moved somewhere else.
+
+   The example is built out of the game's own cells and its own classes,
+   so it shows exactly what is about to fall rather than a drawing of
+   it. */
+const MECHANICS = [
+  {
+    id: 'virus',
+    kicker: 'New in this chapter',
+    title: 'Corrupted supply',
+    say: 'It never matches and it never clears on its own. The number is how '
+       + 'long you have. Clear a clump touching it, or it rewrites what it is '
+       + 'sitting against.',
+    live: (d) => d.virusRate > 0,
+    demo: ['c virus', '>', 'c', 'c', 'c']
+  },
+  {
+    id: 'lowink',
+    kicker: 'New in this chapter',
+    title: 'Low ink',
+    say: 'A pale half is running out. It falls four rows and then it is gone, '
+       + 'leaving the other one to place. Watch the queue before you commit to '
+       + 'where it lands.',
+    live: (d) => d.lowRate > 0,
+    demo: ['m', 'm lowink', '>', 'm']
+  }
+];
+
+function metGot(id) {
+  try { return localStorage.getItem(SKEY + 'met-' + id) === '1'; }
+  catch (e) { return false; }
+}
+
+function metSet(id) {
+  try { localStorage.setItem(SKEY + 'met-' + id, '1'); } catch (e) {}
+}
+
+/* The first one this level can produce that has not been met. Practice and
+   the party have their own dials and introduce nothing. */
+function newMechanic() {
+  if (!campOn || discoOn) return null;
+  const list = campList();
+  const d = levelSetup(Math.min(campAt, list.length - 1), list.length);
+  return MECHANICS.find((m) => m.live(d) && !metGot(m.id)) || null;
+}
+
+function showLearn(m) {
+  document.getElementById('learnKick').textContent = m.kicker;
+  document.getElementById('learnTitle').textContent = m.title;
+  document.getElementById('learnSay').textContent = m.say;
+
+  const demo = document.getElementById('learnDemo');
+  demo.innerHTML = '';
+  for (const bit of m.demo) {
+    if (bit === '>') {
+      const a = document.createElement('span');
+      a.className = 'arrow';
+      a.textContent = '\u2192';
+      demo.appendChild(a);
+      continue;
+    }
+    const c = document.createElement('div');
+    c.className = 'cell ' + bit;
+    if (bit.indexOf('virus') !== -1) c.textContent = '3';
+    demo.appendChild(c);
+  }
+
+  document.getElementById('learn').hidden = false;
+  document.getElementById('learnGo').focus();
+}
+
+document.getElementById('learnGo').addEventListener('click', () => {
+  document.getElementById('learn').hidden = true;
+  const m = newMechanic();
+  if (m) metSet(m.id);
+  begin();
+});
+
 /* The right-hand button: start the first print, or start the next one. */
 document.getElementById('again').addEventListener('click', () => {
   /* Continue, on the page handed over before the first print. Marked as
@@ -11377,6 +11529,11 @@ document.getElementById('again').addEventListener('click', () => {
       showFace('victor');
       return;
     }
+    /* And the same bargain for a drop nobody has met: one card, then the
+       print. Marked as met when it is dismissed rather than when it
+       opens, so backing out to the menu gets it again. */
+    const meet = newMechanic();
+    if (meet) { showLearn(meet); return; }
     begin();
     return;
   }
