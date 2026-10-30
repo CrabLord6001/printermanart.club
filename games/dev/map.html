@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper Path &mdash; greybox</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#101218; --panel:#171A22; --border:#272B36;
+  --text:#fff; --muted:#9BA0AE; --dim:#7A8094;
+  --blurple:#5865F2; --blurple-text:#99A2F7; --accent:#D4A24C;
+  --paper:#F2EFE6;
+  --c:#0093D3; --m:#E6007E; --y:#F3E500; --k:#2A2D36;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ground);color:var(--muted);
+  font-family:'Poppins',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+
+.wrap{max-width:430px;margin:0 auto;padding:16px 0 70px;position:relative}
+
+.top{padding:10px 18px 16px;text-align:center}
+.top h1{margin:0;font-size:1.1rem;font-weight:600;color:var(--text)}
+.top p{margin:4px 0 0;font-size:.72rem;color:var(--dim)}
+
+/* The sheet. One ribbon down the whole run, behind everything, so the
+   path is the page being printed rather than a road drawn over a
+   printer. */
+.path{position:relative}
+.ribbon{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+
+.station{position:relative;padding:22px 18px 10px}
+.rig{position:relative;background:var(--panel);border:1px solid var(--border);
+  border-radius:14px;padding:12px 14px 14px;display:flex;gap:12px;align-items:center}
+.rig svg{flex:none}
+.rig .nm{font-size:.62rem;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--dim)}
+.rig .room{font-size:.92rem;font-weight:600;color:var(--text);margin-top:2px}
+.rig .n{margin-left:auto;font-size:.68rem;color:var(--dim)}
+
+/* Level nodes sit on the sheet, alternating so the ribbon has to weave. */
+.runs{position:relative;padding:14px 0 6px}
+.run{position:relative;display:flex;align-items:center;gap:10px;padding:7px 18px}
+.run.r{flex-direction:row-reverse}
+
+.node{width:46px;height:46px;border-radius:50%;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.86rem;font-weight:700;border:2px solid var(--border);
+  background:var(--panel);color:var(--dim);cursor:pointer;
+  box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.node.done{background:var(--paper);border-color:var(--paper);color:#1A1A1A}
+.node.now{border-color:var(--accent);color:var(--accent);
+  box-shadow:0 0 0 4px rgba(212,162,76,.18),0 2px 0 rgba(0,0,0,.4)}
+.node.locked{opacity:.45;cursor:default}
+.node.boss{width:62px;height:62px;border-color:var(--m);color:var(--m);font-size:.66rem}
+
+.tag{font-size:.68rem;color:var(--dim);max-width:46%}
+.tag b{display:block;color:var(--muted);font-weight:500;font-size:.72rem}
+
+.stars{display:flex;gap:2px;margin-top:3px}
+.stars i{width:7px;height:7px;background:var(--accent);
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  opacity:.25}
+.stars i.on{opacity:1}
+
+.foot{text-align:center;padding:24px 18px;font-size:.7rem;color:var(--dim)}
+.note{max-width:430px;margin:0 auto;padding:0 18px 30px;font-size:.72rem;
+  color:var(--dim);line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <h1>The paper path</h1>
+    <p>Greybox &mdash; layout only, no art</p>
+  </div>
+  <div class="path" id="path"><svg class="ribbon" id="ribbon" aria-hidden="true"></svg></div>
+  <p class="foot">&mdash; print complete &mdash;</p>
+</div>
+
+<script>
+/* Six stations, in the order a sheet actually meets them. The boards are
+   not on the paper path at all, which is why she is at the end of it. */
+const STATIONS = [
+  { nm:'Station one',   room:'Classics',    art:'tray' },
+  { nm:'Station two',   room:'Landscape',   art:'rollers' },
+  { nm:'Station three', room:'Figures',     art:'reg' },
+  { nm:'Station four',  room:'Faith',       art:'drum' },
+  { nm:'Station five',  room:'Fantasy',     art:'fuser' },
+  { nm:'Station six',   room:'Non-Western', art:'out' }
+];
+
+const PER = 5;          // 10 once the art exists; the layout does not care
+const CLEARED = 13;     // pretend progress, to show the three states
+
+const ART = {
+  tray:'<rect x="3" y="14" width="38" height="18" rx="3" fill="#2A2D36" stroke="#3A3F4C" stroke-width="2"/><rect x="9" y="9" width="26" height="8" rx="2" fill="#F2EFE6" opacity=".85"/><rect x="12" y="6" width="20" height="6" rx="2" fill="#F2EFE6" opacity=".45"/>',
+  rollers:'<circle cx="14" cy="16" r="9" fill="#2A2D36" stroke="#3A3F4C" stroke-width="2"/><circle cx="30" cy="16" r="9" fill="#2A2D36" stroke="#3A3F4C" stroke-width="2"/><circle cx="14" cy="16" r="3" fill="#3A3F4C"/><circle cx="30" cy="16" r="3" fill="#3A3F4C"/><rect x="2" y="28" width="40" height="5" rx="2" fill="#F2EFE6" opacity=".8"/>',
+  reg:'<rect x="4" y="10" width="36" height="22" rx="3" fill="#2A2D36" stroke="#3A3F4C" stroke-width="2"/><path d="M12 14v14M22 14v14M32 14v14" stroke="#3A3F4C" stroke-width="2"/><rect x="4" y="18" width="36" height="5" rx="2" fill="#F2EFE6" opacity=".85"/>',
+  drum:'<circle cx="22" cy="20" r="14" fill="#2A2D36" stroke="#3A3F4C" stroke-width="2"/><circle cx="22" cy="20" r="6" fill="#0093D3" opacity=".5"/><path d="M4 32h36" stroke="#F2EFE6" stroke-width="4" stroke-linecap="round" opacity=".8"/>',
+  fuser:'<rect x="5" y="12" width="34" height="18" rx="9" fill="#2A2D36" stroke="#3A3F4C" stroke-width="2"/><path d="M12 21h20" stroke="#E6007E" stroke-width="3" stroke-linecap="round" opacity=".6"/><path d="M9 7c2 3-2 4 0 7M22 5c2 3-2 4 0 7M35 7c2 3-2 4 0 7" stroke="#D4A24C" stroke-width="2" stroke-linecap="round" opacity=".55" fill="none"/>',
+  out:'<rect x="3" y="20" width="38" height="14" rx="3" fill="#2A2D36" stroke="#3A3F4C" stroke-width="2"/><rect x="9" y="12" width="26" height="9" rx="2" fill="#F2EFE6" opacity=".9"/><rect x="13" y="6" width="20" height="8" rx="2" fill="#F2EFE6" opacity=".6"/>'
+};
+
+const path = document.getElementById('path');
+let lvl = 0;
+
+STATIONS.forEach((st, si) => {
+  const sec = document.createElement('div');
+  sec.className = 'station';
+  sec.innerHTML =
+    '<div class="rig"><svg width="44" height="38" viewBox="0 0 44 38">' + ART[st.art] + '</svg>' +
+    '<div><div class="nm">' + st.nm + '</div><div class="room">' + st.room + '</div></div>' +
+    '<div class="n">' + PER + ' prints</div></div>';
+
+  const runs = document.createElement('div');
+  runs.className = 'runs';
+
+  for (let i = 0; i < PER; i++) {
+    lvl++;
+    const row = document.createElement('div');
+    row.className = 'run' + (i % 2 ? ' r' : '');
+    const state = lvl < CLEARED ? 'done' : (lvl === CLEARED ? 'now' : 'locked');
+    const stars = lvl < CLEARED ? (lvl % 3) + 1 : 0;
+    row.innerHTML =
+      '<button class="node ' + state + '" data-l="' + lvl + '">' + lvl + '</button>' +
+      '<span class="tag"><b>' + (state === 'locked' ? 'Not printed' : 'Print ' + lvl) + '</b>' +
+      (state === 'locked' ? '' :
+        '<span class="stars">' + [1,2,3].map(n =>
+          '<i class="' + (n <= stars ? 'on' : '') + '"></i>').join('') + '</span>') +
+      '</span>';
+    runs.appendChild(row);
+  }
+  sec.appendChild(runs);
+  path.appendChild(sec);
+});
+
+/* Her, on the formatter board, which no sheet ever touches. */
+const end = document.createElement('div');
+end.className = 'station';
+end.innerHTML =
+  '<div class="rig" style="border-color:rgba(230,0,126,.45)">' +
+  '<svg width="44" height="38" viewBox="0 0 44 38">' +
+  '<rect x="4" y="8" width="36" height="24" rx="3" fill="#1A1C24" stroke="#E6007E" stroke-width="2" opacity=".8"/>' +
+  '<rect x="10" y="14" width="10" height="7" rx="1" fill="#E6007E" opacity=".5"/>' +
+  '<rect x="24" y="14" width="10" height="7" rx="1" fill="#0093D3" opacity=".4"/>' +
+  '<path d="M10 26h24" stroke="#F3E500" stroke-width="2" opacity=".4"/></svg>' +
+  '<div><div class="nm">Formatter board</div><div class="room">Asil Anom</div></div></div>' +
+  '<div class="runs"><div class="run"><button class="node boss">BOSS</button>' +
+  '<span class="tag"><b>The last print</b>Not on the paper path. Nothing that travels the machine ever touches it &mdash; which is how she has been reaching every sheet.</span></div></div>';
+path.appendChild(end);
+
+/* The sheet itself: one ribbon weaving between the nodes, drawn after
+   layout so it follows wherever they actually landed. */
+function drawRibbon() {
+  const svg = document.getElementById('ribbon');
+  const box = path.getBoundingClientRect();
+  svg.setAttribute('viewBox', '0 0 ' + box.width + ' ' + box.height);
+  const pts = [...path.querySelectorAll('.node')].map((n) => {
+    const r = n.getBoundingClientRect();
+    return [r.left - box.left + r.width / 2, r.top - box.top + r.height / 2];
+  });
+  if (pts.length < 2) return;
+  let d = 'M ' + pts[0][0] + ' ' + pts[0][1];
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+    const my = (y0 + y1) / 2;
+    d += ' C ' + x0 + ' ' + my + ' ' + x1 + ' ' + my + ' ' + x1 + ' ' + y1;
+  }
+  /* No centre line. A grey strip with dashes down the middle is a road,
+     and this is meant to be a sheet. Three passes instead: the width of
+     the paper, a lighter core for the sheen off it, and a faint hairline
+     at the very middle where a fold would sit. */
+  svg.innerHTML =
+    '<path d="' + d + '" fill="none" stroke="#F2EFE6" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" opacity=".09"/>' +
+    '<path d="' + d + '" fill="none" stroke="#F2EFE6" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity=".07"/>' +
+    '<path d="' + d + '" fill="none" stroke="#F2EFE6" stroke-width="1" stroke-linecap="round" opacity=".10"/>';
+}
+drawRibbon();
+addEventListener('resize', drawRibbon);
+addEventListener('load', drawRibbon);
+</script>
+
+<p class="note">Greybox. The machinery is placeholder shapes, the progress is
+invented, and nothing here is wired to the game yet. What is being asked is
+whether the shape is right: stations down the sheet, prints along it, and
+her at the end on a board no sheet ever reaches.</p>
+
+</body>
+</html>
