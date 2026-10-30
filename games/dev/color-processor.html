@@ -3809,6 +3809,138 @@ nav.menu {
    the one place with nothing else to look at, so these are cut heavier
    than the deck: more room inside, bigger lettering, and the whole width
    of the plate above them. */
+
+/* ---- the control panel ----
+   The home screen is the machine's own panel: a lit screen under the
+   title plate, the destinations as apps on it, and the small print along
+   the bottom edge where a printer keeps its manual. Built from the parts
+   the rest of the page already uses -- a hair line, a ring of panel
+   outside it -- and drawn in the club's own inks. */
+.panel {
+  width: 100%;
+  max-width: 21rem;
+  margin: 10px auto 0;
+  border: 1px solid #2E333F;
+  border-radius: 4px;
+  background: #F2EFE6;
+  box-shadow: 0 0 0 3px #15181F, 0 8px 22px rgba(0,0,0,0.55);
+  overflow: hidden;
+  text-align: left;
+}
+
+.pnl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 9px;
+  background: #E3DFD2;
+  border-bottom: 1px solid #CFCABA;
+  font-size: 0.44rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.pnl-ready { display: flex; align-items: center; gap: 5px; color: #4E7A4A; }
+.pnl-ready i {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #56A24E; box-shadow: 0 0 5px #56A24E;
+}
+.pnl-name { color: #8A8475; }
+
+/* Three across where there is room, two on a narrow phone. The gaps are
+   the divisions: the panel shows through them, so no tile carries a
+   border of its own. */
+.pnl-apps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: #D8D3C4;
+  border-bottom: 1px solid #CFCABA;
+}
+@media (max-width: 400px) {
+  .pnl-apps { grid-template-columns: repeat(2, 1fr); }
+}
+
+.panel .app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 11px 5px 9px;
+  border: 0;
+  border-radius: 0;
+  background: #F7F5EE;
+  font-family: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.panel .app[hidden] { display: none; }
+.panel .app:hover, .panel .app:focus-visible { background: #fff; outline: none; }
+.panel .app:active { background: #EDEAE0; }
+
+.panel .app .tile {
+  width: 42px; height: 42px;
+  border-radius: 9px;
+  display: grid; place-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.panel .app .tile svg {
+  width: 23px; height: 23px;
+  fill: none; stroke: #fff; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.t-gal { background: linear-gradient(160deg, #2FC4EE, #1794BC); }
+.t-lv  { background: linear-gradient(160deg, #F05CAC, #C62D7E); }
+.t-pr  { background: linear-gradient(160deg, #EFD055, #C9A422); }
+.t-en  { background: linear-gradient(160deg, #9B7BE8, #6A49C4); }
+
+.panel .app b {
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #30333B;
+}
+.panel .app .sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.44rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8A8475;
+}
+
+/* Newly earned: the lamp on a panel rather than a badge on a button. */
+.panel .app.fresh { background: #FFFBEE; box-shadow: inset 0 0 0 2px var(--accent); }
+
+.pnl-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 9px;
+  background: #E3DFD2;
+  font-size: 0.44rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.panel .pnl-link {
+  margin: 0; padding: 0;
+  border: 0; background: none;
+  font: inherit; color: #6E6A5E;
+  cursor: pointer;
+}
+.panel .pnl-link:hover, .panel .pnl-link:focus-visible { color: #30333B; outline: none; }
+.pnl-ink { display: flex; gap: 3px; margin-left: auto; }
+.pnl-ink i { width: 6px; height: 12px; border-radius: 2px; }
+.pnl-ink .c { background: #22B8E6; }
+.pnl-ink .m { background: #E8459B; }
+.pnl-ink .y { background: #E8C53D; }
+.pnl-ink .k { background: #2B2F3A; }
+
 .menu .mi {
   position: relative;
   isolation: isolate;            /* so the sheet can pass under the lettering */
@@ -4305,22 +4437,41 @@ nav.menu {
             <div class="rules homeface" id="overHome" hidden>
               <div class="plate"><canvas id="titleArt"></canvas></div>
               <p class="faceline" id="faceLine" hidden></p>
-              <nav class="menu" id="titleMenu">
-                <button class="mi" type="button" data-go="gallery">Play Gallery<span class="sub" id="miWhere"></span></button>
-                <button class="mi" type="button" data-go="levels">Level Select</button>
-                <button class="mi" type="button" data-go="practice" id="miFree">Practice<span class="sub">Try with community art</span></button>
-                <button class="mi" type="button" data-go="endless" id="miDisco" hidden>Endless</button>
-                <button class="mi" type="button" data-go="intro">Introduction</button>
-                <!-- The board used to be here as well as on the rail, and
-                     the menu was long enough to need scrolling for it. The
-                     dial beside the well is on every screen in the game,
-                     this one included, so the second door was costing a
-                     scroll to say the same thing twice. -->
-                <!-- The reel used to be reachable only by finishing the
-                     series, which meant the museums lending the paintings
-                     were credited on a screen most players never saw. -->
-                <button class="mi" type="button" data-go="credits">Credits</button>
-              </nav>
+              <!-- The machine's own control panel. The destinations are the
+                   apps on it; how to play and the credits are the small
+                   print along the bottom, where a printer keeps its manual
+                   rather than on the face of the thing. -->
+              <div class="panel" id="titleMenu">
+                <div class="pnl-head">
+                  <span class="pnl-ready"><i></i>Ready</span>
+                  <span class="pnl-name">Gallery Printshop</span>
+                </div>
+
+                <div class="pnl-apps">
+                  <button class="mi app" type="button" data-go="gallery">
+                    <span class="tile t-gal" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 15l5-4 4 3 3-3 6 5"/><circle cx="8.3" cy="9" r="1.3"/></svg></span>
+                    <b>Gallery</b><span class="sub" id="miWhere"></span>
+                  </button>
+                  <button class="mi app" type="button" data-go="levels">
+                    <span class="tile t-lv" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 5v3a3 3 0 003 3h6a3 3 0 013 3v3"/><circle cx="6" cy="5" r="1.7"/><circle cx="12" cy="11" r="1.7"/><circle cx="18" cy="17" r="1.7"/><circle cx="6" cy="19" r="1.7"/></svg></span>
+                    <b>Levels</b>
+                  </button>
+                  <button class="mi app" type="button" data-go="practice" id="miFree">
+                    <span class="tile t-pr" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg></span>
+                    <b>Practice</b><span class="sub">Community art</span>
+                  </button>
+                  <button class="mi app" type="button" data-go="endless" id="miDisco" hidden>
+                    <span class="tile t-en" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9.6 12c0 1.8-1.2 3.2-2.8 3.2S4 13.8 4 12s1.2-3.2 2.8-3.2c2.6 0 4 6.4 6.6 6.4 1.6 0 2.8-1.4 2.8-3.2s-1.2-3.2-2.8-3.2C10.8 8.8 9.6 10.2 9.6 12z"/></svg></span>
+                    <b>Endless</b>
+                  </button>
+                </div>
+
+                <div class="pnl-foot">
+                  <button class="mi pnl-link" type="button" data-go="intro">How to play</button>
+                  <button class="mi pnl-link" type="button" data-go="credits">Credits</button>
+                  <span class="pnl-ink" aria-hidden="true"><i class="c"></i><i class="m"></i><i class="y"></i><i class="k"></i></span>
+                </div>
+              </div>
             </div>
 
             <!-- Every level printed so far, by chapter. The rooms are the
