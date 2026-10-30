@@ -565,6 +565,25 @@ body.gridon .gridlines { opacity: 1; }
       rgba(0,0,0,0) 62%);
 }
 
+/* ---- a half that is about to go ----
+   Thinned and blotched rather than only faded. The point is that it reads
+   as ink running out at a glance, in the middle of a falling piece, with
+   no time to study it. It comes after the shading above on purpose: same
+   specificity, so the later rule is the one that lands. */
+.cell.lowink {
+  background-image:
+    radial-gradient(circle at 31% 33%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0) 27%),
+    radial-gradient(circle at 67% 57%, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0) 23%),
+    radial-gradient(circle at 47% 77%, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0) 19%),
+    radial-gradient(circle at 34% 27%, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 57%);
+  animation: lowInk 0.85s ease-in-out infinite;
+}
+
+@keyframes lowInk {
+  0%, 100% { opacity: 0.68; }
+  50%      { opacity: 0.42; }
+}
+
 /* Black has no room to darken underneath and the highlight is the only
    thing holding its shape, so it gets more of one. */
 .cell.k {
@@ -4277,6 +4296,21 @@ const bugCost = () => Math.max(1, Math.round(inkPer * 0.15));
 
 let mode = 'office', virusRate = VIRUS_FROM;
 
+/* ---- low ink ----
+   A pair of the same color is four in two moves, which is the easiest
+   thing in the game and happens by itself. A low ink half breaks that:
+   it spawns with its partner, falls a few rows, and goes, leaving one
+   drop to place and a plan that has to have allowed for it.
+
+   Measured in rows fallen rather than seconds. Later levels fall half
+   again as fast, so a second and a half is four rows early on and seven
+   late -- the same drop would be a different mechanic at either end.
+   Rows read the same everywhere. */
+const LOW_ROWS = 4;        // how far it falls before it fades
+const LOW_RATE = 0.16;     // of drops, once they start
+const LOW_FROM = 0.66;     // how far in they begin -- level 21 of 31, which is Fantasy
+let lowRate = 0;
+
 /* Puyo clears start at four, so the table shifts up one from the one we
    drew for a swap board: the smallest clear pays 10, and it climbs the
    same way from there. */
@@ -5828,9 +5862,9 @@ function paint() {
   }
 
   if (piece) {
-    for (const [x, y, code] of pieceCells(piece)) {
+    for (const [x, y, code, low] of pieceCells(piece)) {
       if (!inside(x, y)) continue;
-      tiles[idx(x, y)].className = classFor(code) + ' live';
+      tiles[idx(x, y)].className = classFor(code) + ' live' + (low ? ' lowink' : '');
       tiles[idx(x, y)].textContent = isBug(code) ? bugLeft(code) : '';
     }
   }
@@ -5911,7 +5945,14 @@ function restPress() {
 
 function pieceCells(p) {
   const [dx, dy] = ROT[p.rot];
-  return [[p.x, p.y, p.a], [p.x + dx, p.y + dy, p.b]];
+  const out = [];
+  /* A faded half is simply not there any more -- not a cell holding
+     nothing. Everything that asks what a piece occupies asks here, so
+     fitting, landing, rotating and painting all agree without any of
+     them being told about low ink. */
+  if (p.gone !== 'a') out.push([p.x, p.y, p.a, p.low === 'a']);
+  if (p.gone !== 'b') out.push([p.x + dx, p.y + dy, p.b, p.low === 'b']);
+  return out;
 }
 
 function fits(p) {
@@ -5933,9 +5974,19 @@ function roll() {
 }
 
 function newPair() {
-  const p = { x: (COLS >> 1) - 1, y: 1, rot: 0, a: roll(), b: roll() };
+  const p = { x: (COLS >> 1) - 1, y: 1, rot: 0, a: roll(), b: roll(), low: null, gone: null };
   // never both halves corrupted -- two at once is a punishment nobody can read
   if (isBug(p.a) && isBug(p.b)) p.b = rand();
+
+  /* Plain ink only. A virus that leaves before it can be dealt with is
+     not a threat, and a magnet that leaves has not done its one trick --
+     either way the drop would be saying two things at once. */
+  if (Math.random() < lowRate) {
+    const can = [];
+    if (!isBug(p.a) && !isMag(p.a)) can.push('a');
+    if (!isBug(p.b) && !isMag(p.b)) can.push('b');
+    if (can.length) p.low = can[(Math.random() * can.length) | 0];
+  }
   return p;
 }
 
@@ -6480,8 +6531,12 @@ async function resolve() {
 function tick() {
   if (!piece || busy || over) return;
   const down = { ...piece, y: piece.y + 1 };
-  if (fits(down)) { piece = down; paint(); }
-  else lock();
+  if (fits(down)) {
+    piece = down;
+    /* Spawned at y = 1, so the row it is on is how far it has come. */
+    if (piece.low && !piece.gone && piece.y - 1 >= LOW_ROWS) piece.gone = piece.low;
+    paint();
+  } else lock();
 }
 
 let clock = null;
@@ -9581,7 +9636,12 @@ function levelSetup(i, n) {
     mode: ['office', 'five-lc', 'photo'][band],
     inkPer: Math.round(from + (to - from) * within),
     fallMs: Math.round(900 - 570 * t),
-    virusRate: VIRUS_FROM + (VIRUS_TO - VIRUS_FROM) * t
+    virusRate: VIRUS_FROM + (VIRUS_TO - VIRUS_FROM) * t,
+    /* Held at nothing until the back of the campaign, then straight in.
+       Keyed to progress rather than named for a chapter because every
+       other dial here is, and the chapters move when the rotation
+       changes. It lands in Fantasy as things stand. */
+    lowRate: t < LOW_FROM ? 0 : LOW_RATE
   };
 }
 
@@ -10852,6 +10912,10 @@ function newPrint(face) {
   virusRate = discoOn ? 0
             : (campOn ? levelSetup(Math.min(campAt, campList().length - 1), campList().length).virusRate
                       : VIRUS_FROM);
+  /* Practice has none either: it is where somebody works a board out, and
+     a drop that leaves is the wrong thing to be learning against. */
+  lowRate = (discoOn || !campOn) ? 0
+          : levelSetup(Math.min(campAt, campList().length - 1), campList().length).lowRate;
 
   inkPer = Math.max(3, Number(document.getElementById('setTarget').value) || 10);
   discoDrops = 0;
