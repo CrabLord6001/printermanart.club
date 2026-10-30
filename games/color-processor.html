@@ -1112,24 +1112,61 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    board work rather than print work. */
 .platebox { margin-top: 8px; }
 
-/* Volume and Rankings together, the two things on the rail anybody
-   presses during a run. Stacked rather than side by side: the rail is
-   56px across, and two labelled dials in a row came to 115px and pushed
-   the whole board sideways off a phone. */
-.railpair {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+/* One bank of four, chromed like the times strip on a level card: a hair
+   line round the outside, a ring of panel outside that, and the divisions
+   drawn by letting the panel through the 1px gaps. Two columns rather
+   than four, because the rail is 56px across on a phone. */
+.railopts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  width: 100%;
   margin-top: 10px;
+  border: 1px solid #2E333F;
+  border-radius: 3px;
+  background: #2E333F;
+  box-shadow: 0 0 0 3px #15181F, 0 6px 18px rgba(0,0,0,0.5);
+  overflow: hidden;
 }
-.railone { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.railpair .rankbtn { margin-top: 0; }
-.railpair .snd { width: 40px; height: 40px; border-radius: 10px; }
 
-/* Upward from down here, or it opens off the bottom of the page, and
-   centred on its own button rather than hung off the rail's right edge. */
-.railpair .volpop {
+/* Every cell the same square whatever is in it, so the bank reads as one
+   object rather than as four buttons that happen to touch. Each of these
+   arrives with a border and a radius of its own, and the bank's divisions
+   are the 1px gaps, so those come off. */
+.railopts > .sndwrap,
+.railopts > .snd,
+.railopts > .rankbtn {
+  aspect-ratio: 1;
+  background: rgba(10,12,17,0.9);
+}
+.railopts .sndwrap,
+.railopts .snd,
+.railopts .rankbtn,
+.railopts .rankdial {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  display: grid;
+  place-items: center;
+}
+.railopts .snd,
+.railopts .rankdial { background: none; }
+.railopts .rankbtn .lbl { display: none; }
+
+/* A setting that is on lights its whole cell rather than drawing a ring
+   inside a bank whose divisions are already drawn. */
+.railopts .snd[aria-pressed="true"] { background: rgba(212,162,76,0.10); }
+
+/* The one way off the rail to the board stays lit; the three settings
+   light only when they are on. */
+.railopts .rankbtn { color: var(--accent); }
+
+/* Opening upward, and centred on the bank rather than hung off its edge:
+   from down here a panel that drops would go off the foot of the page. */
+.railopts .volpop {
   top: auto;
   bottom: calc(100% + 6px);
   right: auto;
@@ -4329,24 +4366,6 @@ nav.menu {
            its job and the slot says who the run is being saved for. The
            same dark cartridge as the sound buttons and the rankings dial,
            because this is now a reading rather than a thing to press. -->
-      <div class="switches">
-      <!-- Not a difficulty: whether the board can be read at all. It sits
-           with the mute rather than in a mode, so no one pays for it. -->
-      <!-- Not a difficulty either: some people line a drop up against a
-           square and some would rather see the painting. -->
-      <button class="snd" id="gridBtn" type="button" aria-pressed="false" aria-label="Turn the grid on">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
-        </svg>
-      </button>
-      <button class="snd" id="cbBtn" type="button" aria-pressed="false" aria-label="Turn colorblind marks on">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M5.2 13.8 13.8 5.2M8.4 17.6 17.6 8.4"/>
-        </svg>
-      </button>
-      </div>
       <div class="nextbox">
         <p class="lbl">Next</p>
         <div class="nextlist" id="nextlist"></div>
@@ -4366,8 +4385,12 @@ nav.menu {
       <!-- The board, reachable from the rail as well as from the last page
            of the instructions. Somebody who has just finished a run wants to
            see where it put them, not to walk back through the rules. -->
-      <div class="railpair">
-      <div class="railone">
+      <!-- Sound, grid, colorblind and the board: four things you set or go
+           to, in one bank with four divisions, built like the times strip on
+           a level card. They were a card and two loose buttons at the top of
+           the rail and a dial at the bottom, which is four separate objects
+           for one idea -- and the rail is wanted for the plates. -->
+      <div class="railopts">
       <div class="sndwrap" id="sndWrap">
       <button class="snd" id="snd" type="button" aria-pressed="true" aria-expanded="false" aria-label="Sound and volume">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -4385,7 +4408,18 @@ nav.menu {
               min="0" max="100" step="1" value="100" aria-label="Volume"></span>
       </div>
       </div>
-      </div>
+      <button class="snd" id="gridBtn" type="button" aria-pressed="false" aria-label="Turn the grid on">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
+        </svg>
+      </button>
+      <button class="snd" id="cbBtn" type="button" aria-pressed="false" aria-label="Turn colorblind marks on">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M5.2 13.8 13.8 5.2M8.4 17.6 17.6 8.4"/>
+        </svg>
+      </button>
       <button class="rankbtn" id="rankBtn" type="button" aria-label="Rankings">
         <span class="rankdial">
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
