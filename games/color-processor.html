@@ -1112,8 +1112,32 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
    board work rather than print work. */
 .platebox { margin-top: 8px; }
 
-/* The way to the board from inside a run. Round, so it reads as another
-   instrument on the rail rather than one more word to click. */
+/* Volume and Rankings together, the two things on the rail anybody
+   presses during a run. Stacked rather than side by side: the rail is
+   56px across, and two labelled dials in a row came to 115px and pushed
+   the whole board sideways off a phone. */
+.railpair {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.railone { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.railpair .rankbtn { margin-top: 0; }
+.railpair .snd { width: 40px; height: 40px; border-radius: 10px; }
+
+/* Upward from down here, or it opens off the bottom of the page, and
+   centred on its own button rather than hung off the rail's right edge. */
+.railpair .volpop {
+  top: auto;
+  bottom: calc(100% + 6px);
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* The way to the board from inside a run. */
 .rankbtn {
   display: flex;
   flex-direction: column;
@@ -1132,7 +1156,9 @@ body.angles .cell.k::before, body.angles .nextlist .dot.k::before {
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  /* Square, like everything else on the rail. A lone circle among the
+     readouts read as something that had wandered in from another screen. */
+  border-radius: 10px;
   background: #0C0E13;
   /* Lit at rest rather than dim. It reads as the one way to the board
      because it is the one way to the board. */
@@ -1988,40 +2014,20 @@ button.go:not(.ghost):hover {
    press except the way back out. */
 .whoami {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  width: 100%;
-  padding: 6px 2px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: #13161D;
+  align-items: baseline;
+  gap: 8px;
+  flex: none;
 }
 
 .whoami[hidden] { display: none; }
 
-.whoami-face {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #0C0E13 50% / cover no-repeat;
-  box-shadow: inset 0 0 0 1px var(--border);
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: var(--dim);
-  text-transform: uppercase;
-}
-
-/* Their name, cut off rather than wrapped: the rail is as wide as it is,
-   and a second line here is a cell off the board. */
+/* Their name, cut off rather than wrapped. */
 .whoami-name {
-  max-width: 100%;
+  max-width: 14ch;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.48rem;
+  font-size: 0.62rem;
   letter-spacing: 0.04em;
   color: var(--muted);
 }
@@ -2047,10 +2053,11 @@ button.go:not(.ghost):hover {
 .whoami-out:active { transform: translateY(1px); }
 .whoami-out:disabled { opacity: 0.6; cursor: default; }
 
-/* The name goes on the narrow rail the way the word goes off the blue
-   button. The picture says who, and Sign out still says what. */
+/* The name used to be dropped here, because the rail it sat on was 56px
+   across and the picture beside it said who. It is in the page header now,
+   with a header's width to spend, and the picture is gone -- so hiding the
+   name would leave Sign out standing on its own. */
 @media (max-width: 560px) {
-  .whoami-name { display: none; }
 }
 
 /* What the three of them add up to, falling. Built from the same drops the
@@ -3958,6 +3965,13 @@ nav.menu {
       <a href="/about.html">About</a>
       <a href="/faq.html">FAQ</a>
     </nav>
+    <!-- Who is signed in, beside the club's name. It used to be a card on
+         the rail beside the board, with a Discord picture on it that said
+         nothing the name was not already saying. -->
+    <div class="whoami" id="meBox" hidden>
+      <span class="whoami-name" id="meName"></span>
+      <button class="whoami-out" id="signOut" type="button">Sign out</button>
+    </div>
   </header>
 
   <div class="head">
@@ -4315,29 +4329,7 @@ nav.menu {
            its job and the slot says who the run is being saved for. The
            same dark cartridge as the sound buttons and the rankings dial,
            because this is now a reading rather than a thing to press. -->
-      <div class="whoami" id="meBox" hidden>
-        <span class="whoami-face" id="meFace"></span>
-        <span class="whoami-name" id="meName"></span>
-        <button class="whoami-out" id="signOut" type="button">Sign out</button>
-      </div>
       <div class="switches">
-      <div class="sndwrap" id="sndWrap">
-      <button class="snd" id="snd" type="button" aria-pressed="true" aria-expanded="false" aria-label="Sound and volume">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M11 5 6 9H2v6h4l5 4z"/>
-          <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
-          <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
-        </svg>
-      </button>
-      <!-- Opening this holds the clock, the way the settings panel does.
-           Nobody should lose seconds off a run because the music was too
-           loud to think over. -->
-      <div class="volpop" id="volPop" hidden>
-        <button class="volmute" id="volMute" type="button" aria-pressed="false">Mute</button>
-        <span class="volcage"><input class="volrange" id="volRange" type="range"
-              min="0" max="100" step="1" value="100" aria-label="Volume"></span>
-      </div>
-      </div>
       <!-- Not a difficulty: whether the board can be read at all. It sits
            with the mute rather than in a mode, so no one pays for it. -->
       <!-- Not a difficulty either: some people line a drop up against a
@@ -4374,6 +4366,26 @@ nav.menu {
       <!-- The board, reachable from the rail as well as from the last page
            of the instructions. Somebody who has just finished a run wants to
            see where it put them, not to walk back through the rules. -->
+      <div class="railpair">
+      <div class="railone">
+      <div class="sndwrap" id="sndWrap">
+      <button class="snd" id="snd" type="button" aria-pressed="true" aria-expanded="false" aria-label="Sound and volume">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M11 5 6 9H2v6h4l5 4z"/>
+          <path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+          <path class="snd-off" d="M22 9l-6 6M16 9l6 6"/>
+        </svg>
+      </button>
+      <!-- Opening this holds the clock, the way the settings panel does.
+           Nobody should lose seconds off a run because the music was too
+           loud to think over. -->
+      <div class="volpop" id="volPop" hidden>
+        <button class="volmute" id="volMute" type="button" aria-pressed="false">Mute</button>
+        <span class="volcage"><input class="volrange" id="volRange" type="range"
+              min="0" max="100" step="1" value="100" aria-label="Volume"></span>
+      </div>
+      </div>
+      </div>
       <button class="rankbtn" id="rankBtn" type="button" aria-label="Rankings">
         <span class="rankdial">
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -4382,6 +4394,7 @@ nav.menu {
         </span>
         <span class="lbl">Rankings</span>
       </button>
+      </div>
       <p class="chainnow" id="chainnow">&nbsp;</p>
     </div>
   </div>
@@ -11722,18 +11735,8 @@ window.CPMember = function (m) {
   if (!m) return;
 
   const name = String(m.displayName || '').trim();
-  /* The picture goes into a CSS url(), so anything that could close the
-     quote or the bracket disqualifies it and the letter stands in. */
-  const raw = String(m.avatarUrl || '');
-  const pic = /^https:\/\/[^"'()\s\\]+$/.test(raw) ? raw : '';
-
-  const face = document.getElementById('meFace');
   const label = document.getElementById('meName');
   if (label) label.textContent = name;
-  if (face) {
-    face.textContent = pic ? '' : (name.charAt(0) || '?');
-    face.style.backgroundImage = pic ? 'url("' + pic + '")' : '';
-  }
   meBox.title = 'Signed in as ' + name;
 };
 
