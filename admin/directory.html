@@ -56,7 +56,7 @@
   <div class="panel wide" id="main" hidden>
     <div class="dir-bar">
       <input type="search" class="dir-find" id="find" placeholder="Find a member&hellip;" autocomplete="off" spellcheck="false">
-      <button class="btn ghost small" id="showAll" type="button" aria-pressed="false">Show sign-ins</button>
+      <button class="btn ghost small" id="showAll" type="button" aria-pressed="false">Show No Activity</button>
     </div>
     <div id="list"></div>
     <p class="note" id="say" hidden></p>
@@ -409,7 +409,7 @@ find.addEventListener('input', draw);
 document.getElementById('showAll').addEventListener('click', (e) => {
   showAll = !showAll;
   e.currentTarget.setAttribute('aria-pressed', showAll ? 'true' : 'false');
-  e.currentTarget.textContent = showAll ? 'Hide sign-ins' : 'Show sign-ins';
+  e.currentTarget.textContent = showAll ? 'Hide No Activity' : 'Show No Activity';
   draw();
 });
 
