@@ -12117,13 +12117,18 @@ function paintGalleryArt(here, level, total) {
   if (W < 40 || H < 40) return;                  // the panel has no size yet
 
   const show = () => {
-    /* Only ever behind the card. The sheet is fetched before the card
+    /* Only ever behind a panel. The sheet is fetched before the card
        opens and arrives whenever it arrives, so on a Try again -- which
        goes straight to the board -- this used to land after play had
        begun and hang the painting, and her, behind the level at 55%.
        Hiding it when the board starts was not enough on its own: this
-       is what puts it back. */
-    if (started || phase === 'playing') { clearGalleryArt(); return; }
+       is what puts it back.
+
+       The test is whether there is a panel in front of the board, not
+       whether a run is going. Asking whether play had started took the
+       pause screen's backdrop with it: pausing is a card over a live
+       board, which is the one case where both are true at once. */
+    if (elOver.hidden) { clearGalleryArt(); return; }
     cv.hidden = false;
     if (vl) vl.hidden = false;
     elOver.classList.add('hasart');
