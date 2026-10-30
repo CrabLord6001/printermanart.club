@@ -3958,6 +3958,9 @@ body.jamface .deck #again:focus-visible {
   color: #6E6A5E;
 }
 
+/* One thought. It is moved to the next line in one piece. */
+.creditsface .ph { display: inline-block; }
+
 /* Three houses, side by side. Their own marks are their own, so these are
    the generic fronts the idea of a museum is made of. */
 .creditsface .chouses {
@@ -11173,23 +11176,41 @@ const HOUSE_ART = {
          + '<path d="M4 33h36"/>'
 };
 
+/* Lines break between thoughts, not through the middle of one. Each
+   comma-separated phrase is set as its own inline-block, so it moves to
+   the next line whole -- "Story & design," then "coding directed by
+   Claude", rather than the clause being cut after "coding". A phrase
+   still wraps inside itself if it is too wide for the card on its own,
+   so this cannot push anything off the sheet. */
+/* And inside a thought, a short word belongs to what follows it rather
+   than hanging at the end of a line: "Museum / of Art", never "Museum
+   of / Art", and "Musee / du Louvre" rather than "Musee du / Louvre".
+   Only ever moves one short word down, so it cannot overrun a column. */
+const bind = (s) => s.replace(
+  /(^|\s)(of|du|de|des|the|van|von|di|la|le)\s+/gi, '$1$2\u00A0');
+
+const phrase = (s) => s.split(/,\s+/)
+  .map((part, i, all) => '<span class="ph">' + bind(part) +
+       (i < all.length - 1 ? ',' : '') + '</span>')
+  .join(' ');
+
 function buildCredits() {
   const card = document.getElementById('creditCard');
   if (!card) return;
   const C = CREDITS;
   const house = (h) =>
     '<li class="chouse"><svg viewBox="0 0 44 36" aria-hidden="true">' + HOUSE_ART[h.art] + '</svg>' +
-    '<b>' + h.name + '</b><i>' + h.note + '</i></li>';
+    '<b>' + bind(h.name) + '</b><i>' + h.note + '</i></li>';
 
   card.innerHTML =
     '<h2 class="ctitle">' + C.title + '</h2>' +
     '<p class="ckick">' + C.by.kicker + '</p>' +
     '<p class="cname">' + C.by.name + '</p>' +
-    '<p class="cnote">' + C.by.note + '</p>' +
+    '<p class="cnote">' + phrase(C.by.note) + '</p>' +
     '<p class="ckick">' + C.art.kicker + '</p>' +
     '<ul class="chouses">' + C.art.houses.map(house).join('') + '</ul>' +
     '<p class="ckick">' + C.thanks.kicker + '</p>' +
-    '<p class="cname">' + C.thanks.name + '</p>' +
+    '<p class="cname">' + phrase(C.thanks.name) + '</p>' +
     '<p class="cnote"><a class="cjoin" href="' + C.thanks.href +
       '" target="_blank" rel="noopener">' + C.thanks.cta + '</a></p>';
 }
