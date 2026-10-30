@@ -2224,6 +2224,15 @@ body .peek .cell { position: absolute; }
   flex-direction: column;
 }
 
+/* Unless one of the faces is open underneath it. The rule above is for
+   the hub, where this block holds the control panel and is meant to take
+   the room. On practice it holds a heading and a paragraph with nothing
+   in it, and the free space was being split with the face below -- so
+   309 pixels went to carry 26 pixels of heading, and the dials and the
+   preview sat in the bottom half of a panel that was half empty. The
+   face is the content on those pages; it gets the space. */
+.over.menu:has(.rules:not([hidden])) .over-in { flex: 0 0 auto; }
+
 /* And the hub and its folder, for the same reason: the control panel ends
    at the foot of the board rather than halfway down it with black
    underneath. The rule above is what does it; these only had to be let in. */
@@ -5308,7 +5317,14 @@ const GLITCH_FROM = 3, GLITCH_TO = 7;
    Five to ten seconds is from the design doc. The wait between panes is
    what ramps: by Non-Western one is open almost as often as not. */
 const FATE_MS   = [5000, 10000];
-const FATE_GAP  = [7000, 2600];     // Faith, to the end of the series
+/* The wait between panes, Faith to the end of the series. First set at
+   seven seconds down to two and a half, which put a pane over the board
+   52% of the time on the chapter that introduces it and 74% by the end
+   -- a column glassed almost always, so anybody avoiding it was playing
+   a five wide well while seven squares were glitched and a sixth of the
+   drops faded. "Sometimes covers a column" is the brief. These give 27%
+   at Faith, 35% at Fantasy, 43% at the end. */
+const FATE_GAP  = [20000, 10000];
 const FATE_STEP = 180;              // one ink to the next, while it spins
 
 /* Shapes rather than scatter. A spray of random squares reads as noise;
@@ -13031,8 +13047,8 @@ const MECHANICS = [
     id: 'fate',
     kicker: 'New in this chapter',
     title: 'Fate Columns',
-    say: 'Glass pane sometimes cover a column for a few seconds. Any '
-       + 'falling blocks entering it cycles through random colors. You can '
+    say: 'A glass pane sometimes covers a column for a few seconds. Any '
+       + 'falling block entering it cycles through random colors. You can '
        + 'try to reroll to colors you need or avoid them altogether.',
     live: (d) => d.fateGap > 0,
     /* One cell, under the glass, running. The first pass was three
