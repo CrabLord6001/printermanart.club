@@ -13463,9 +13463,24 @@ if (!soundWanted()) {
 (function armOnFirstTouch() {
   if (!soundWanted()) return;
   const go = async (e) => {
-    /* The mute button runs its own handler; letting this one fire too
-       would turn the sound on and straight back off again. */
-    if (e && e.target && e.target.closest && e.target.closest('#snd')) return off();
+    /* The sound control runs its own handlers, and this one firing as
+       well would fight them. It used to name #snd, the speaker, which is
+       the wrong half of the control twice over.
+
+       The speaker opens the volume panel and never calls setSound, so a
+       first tap there disarmed this and turned nothing on -- somebody
+       reaching for the speaker because they wanted sound was the one
+       person who did not get it.
+
+       And #volMute is not inside #snd, so a first tap on Unmute ran this
+       first, in the capture phase: sound on, aria-pressed true, and then
+       the button's own handler read that and turned it straight back
+       off. Unmute did nothing until the second press.
+
+       Naming the whole control fixes both. It also does not disarm on
+       the way out any more: a tap that was not for this leaves it armed
+       for whatever tap comes next. */
+    if (e && e.target && e.target.closest && e.target.closest('#sndWrap')) return;
     off();
     await setSound(true);
   };

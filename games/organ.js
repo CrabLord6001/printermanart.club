@@ -810,6 +810,15 @@ export function arm() {
   if (ctx.state === 'suspended') {
     ctx.resume().then(() => {
       if (on && cueWant && cueWant !== cueHave) setCue(cueWant);
+      /* And the written organ, which has its own clock. The page tries to
+         open with sound, so on a phone startMusic has usually already run
+         against a context that was not moving: currentTime sat at zero
+         while the scheduler ran on wall time, and nextAt was left behind
+         in a past that only begins now. startMusic will not fix it on the
+         way back in -- it returns early while the timer is up -- so the
+         next note is put just ahead of where the context has actually
+         got to. */
+      if (timer) nextAt = ctx.currentTime + 0.1;
     }).catch(() => { /* still not allowed; the next gesture tries again */ });
   }
 }
