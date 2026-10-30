@@ -3905,6 +3905,16 @@ nav.menu {
 .t-pr  { background: linear-gradient(160deg, #EFD055, #C9A422); }
 .t-en  { background: linear-gradient(160deg, #9B7BE8, #6A49C4); }
 .t-cr  { background: linear-gradient(160deg, #6FA86A, #3F7A4A); }
+.t-ho  { background: linear-gradient(160deg, #7C8698, #4A5162); }
+
+/* Four apps make a square and the manual stays in the small print. Five
+   would leave a hole in the corner, so at five the manual comes up out
+   of the footer and fills it -- six apps, no hole, and the footer goes
+   down to the lamp it started as. */
+#miHow { display: none; }
+.panel.tight #miHow { display: flex; }
+.panel.tight .pnl-link { display: none; }
+.panel.tight .pnl-foot { padding: 5px 10px; }
 
 .panel .app b {
   font-size: 0.6rem;
@@ -4484,6 +4494,10 @@ nav.menu {
                   <button class="mi app" type="button" data-go="credits">
                     <span class="tile t-cr" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1.6"/><path d="M6.5 10h5M6.5 13h3"/><circle cx="16.5" cy="12" r="2.2"/></svg></span>
                     <b>Credits</b>
+                  </button>
+                  <button class="mi app" type="button" data-go="intro" id="miHow">
+                    <span class="tile t-ho" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 014.7 1.1c0 1.7-2.3 2.1-2.3 3.6"/><path d="M12 17.2v.01"/></svg></span>
+                    <b>How to play</b>
                   </button>
                 </div>
 
