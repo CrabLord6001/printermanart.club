@@ -1,14 +1,13 @@
 /* ============================================================
-   Arcade — the expanded play view
+   Arcade — Paper Trail's cabinet
    ============================================================
-   The game lives in a dialog on the home page, opened from the
-   Arcade block, the same way a meme opens from the strip above it.
-   Only what is inside that dialog is styled here; the block and its
-   deck belong to the index and are styled with the other blocks.
+   Everything inside the game's panel on /games/paper-trail.html.
+   The Arcade block on the home page is only the deck of cards that
+   points at it, and is styled with the other blocks on the index.
 
-   Palette tokens are declared on the index. This file reads them,
-   and falls back to literals so the dialog still looks right if it
-   is ever opened from a page that does not set them.
+   Palette tokens come from the page. This file reads them, and
+   falls back to literals so the panel still looks right anywhere
+   that does not set them.
    ============================================================ */
 
 /* ---- the cabinet screen ----
@@ -30,8 +29,7 @@
    and most of the title panel is switched that way. */
 #playbox [hidden] { display: none !important; }
 
-#playbox,
-#cpbox {
+#playbox {
   border: 0;
   padding: 0;
   background: transparent;
@@ -42,8 +40,7 @@
   font-family: 'Poppins', system-ui, -apple-system, sans-serif;
 }
 
-#playbox::backdrop,
-#cpbox::backdrop { background: rgba(8, 9, 13, 0.9); }
+#playbox::backdrop { background: rgba(8, 9, 13, 0.9); }
 
 /* Width drives everything: the canvas is 4:3, so capping width by viewport
    height is what stops the board running off the bottom of a laptop screen. */
@@ -121,26 +118,6 @@
 .snd[aria-pressed="true"] { color: var(--accent, #D4A24C); }
 .snd[aria-pressed="true"] .snd-off { display: none; }
 .snd[aria-pressed="false"] .snd-on { display: none; }
-
-#playbox .box-close,
-#cpbox .box-close {
-  position: absolute;
-  top: -14px;
-  right: -14px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #171A22;
-  border: 1px solid #3A404F;
-  color: #C7CBD6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-#playbox .box-close:hover,
-#cpbox .box-close:hover { color: #D4A24C; border-color: #D4A24C; }
 
 /* ---- the tray the paper comes out of ---- */
 
@@ -347,6 +324,21 @@ canvas#play {
   background: #070A0E;
   padding: 11px 18px 13px;
   text-align: left;
+
+  /* Two columns: the rules on the left, the pickups on the right. The right
+     half of this strip used to be nothing at all. */
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.howto-col { flex: 1 1 0; min-width: 0; }
+
+/* Narrow enough and side by side turns both columns into word-per-line, so
+   they stack instead. */
+@media (max-width: 460px) {
+  .howto { display: block; }
+  .howto-col + .howto-col { margin-top: 11px; }
 }
 
 .veil .howto-label {
@@ -407,6 +399,43 @@ canvas#play {
 .rules li:nth-child(3)::before { background: #E8C53D; }
 
 .rules li b { color: var(--text, #fff); font-weight: 600; }
+
+/* ---- the pickups, beside the rules ----
+   The rules carry cyan, magenta and yellow; this column is the black plate,
+   so its label gets the square the rules give their lines. The pickups
+   themselves are marked by what they look like on the board rather than by
+   a fourth colored square -- the icon is the thing you have to recognize at
+   speed, so it is the thing shown. */
+
+.howto-label.k { display: flex; align-items: center; gap: 9px; }
+.howto-label.k::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  background: #5A6070;
+}
+
+.picks { margin: 0; padding: 0; list-style: none; text-align: left; }
+
+.picks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: 6px;
+  font-size: 0.78rem;
+  font-weight: 300;
+  line-height: 1.45;
+  color: var(--crt-text);
+}
+
+.picks li:last-child { padding-bottom: 0; }
+
+.picks b { color: var(--text, #fff); font-weight: 600; }
+
+.pick-ic { flex: none; margin-top: 0.16em; }
+
+@media (max-width: 560px) { .picks li { font-size: 0.74rem; } }
 
 /* ---- buttons ---- */
 
@@ -612,6 +641,45 @@ canvas#play {
   color: var(--crt-dim);
 }
 
+/* ---- five rooms, one open ----
+   A score is only worth reading against the same room, so the rooms are
+   listed rather than merged, and only the one being read is unrolled. The
+   room played last is the one that starts open. */
+
+.board-rooms { width: 100%; }
+
+.board-room + .board-room { margin-top: 2px; }
+
+.room-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 34px;
+  padding: 6px 2px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--crt-edge);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--pixel);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--crt-dim);
+}
+
+.room-row:hover, .room-row:focus-visible { color: var(--crt-text); }
+.room-row:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.room-row[aria-expanded="true"] { color: var(--crt-name); }
+
+.room-row .cur { flex: none; display: inline-flex; color: var(--crt-ink); visibility: hidden; }
+.room-row:hover .cur,
+.room-row:focus-visible .cur,
+.room-row[aria-expanded="true"] .cur { visibility: visible; }
+
+.board-room ol.board { margin: 4px 0 14px; }
+
 ol.board {
   list-style: none;
   margin: 0;
@@ -723,8 +791,7 @@ body.play-open { overflow: hidden; }
 /* Both games are steered by dragging, and a drag across a page is how you
    select things: on iOS it was catching the board in a selection, handles
    and all. Nothing inside a game is meant to be selected by dragging. */
-#playbox,
-#cpbox {
+#playbox {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
@@ -736,8 +803,7 @@ body.play-open { overflow: hidden; }
   overscroll-behavior: contain;
 }
 
-#playbox.full,
-#cpbox.full {
+#playbox.full {
   width: 100%;
   height: 100%;
   max-width: none;
@@ -761,17 +827,6 @@ body.play-open { overflow: hidden; }
   padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
            max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
 }
-
-/* The close button hangs off the corner of the floating card. With no card
-   to hang off it comes inside the sheet. */
-#playbox.full .box-close,
-#cpbox.full .box-close {
-  top: max(8px, env(safe-area-inset-top));
-  right: max(8px, env(safe-area-inset-right));
-}
-
-/* and the bar leaves it room rather than running under it */
-#playbox.full .play-head { padding-right: 44px; }
 
 /* The board takes whatever the head bar leaves and the 4:3 picture is fitted
    inside it, so an upright phone shows the room centered rather than stretched.
@@ -800,79 +855,11 @@ body.play-open { overflow: hidden; }
 #playbox.full .veil { inset: 0; }
 #playbox.full .scan { inset: 0; }
 
-/* ---- the expand button ---- */
-
-.grow .grow-in { display: none; }
-#playbox.full .grow .grow-out,
-#cpbox.full .grow .grow-out { display: none; }
-#playbox.full .grow .grow-in,
-#cpbox.full .grow .grow-in { display: block; }
-
-/* Touch is always full screen, so there is nothing to toggle. */
-@media (hover: none) and (pointer: coarse) {
-  .grow { display: none; }
-}
-
 @media (max-width: 560px) {
-  #playbox .box-close { top: 4px; right: 4px; }
   .who-row .nm { display: none; }
-  .play-head { padding-right: 40px; }
   .rules li { font-size: 0.74rem; }
   .marquee { padding: 11px 12px 13px; }
   .howto { padding: 10px 14px 12px; }
   .trailband { margin: 0 14px 10px; }
   .board-wrap { max-width: 340px; }
-}
-
-
-/* ============================================================
-   Color Processor
-   ============================================================
-   The game keeps its own page; this window just holds it, so
-   nothing had to be rewritten to put it beside Paper Trail. The
-   frame is only loaded when somebody opens it and is emptied
-   again on close, which stops the game and its music dead.
-   ============================================================ */
-
-.cp-wrap {
-  position: relative;
-  width: min(520px, 94vw);
-  height: min(880px, 90vh);
-  background: var(--panel, #171A22);
-  border: 1px solid var(--border, #272B36);
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.cp-wrap iframe {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* The buttons sit over the frame rather than in it: the page inside has no
-   idea it is in a window. */
-.cp-bar {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: flex;
-  gap: 7px;
-  z-index: 4;
-}
-
-#cpbox .box-close,
-#cpbox.full .box-close { position: static; }
-
-#cpbox.full .cp-wrap {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: 0;
-}
-
-#cpbox.full .cp-bar {
-  top: max(8px, env(safe-area-inset-top));
-  right: max(8px, env(safe-area-inset-right));
 }
