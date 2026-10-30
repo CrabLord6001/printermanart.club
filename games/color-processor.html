@@ -12263,34 +12263,28 @@ const MECHANICS = [
   {
     id: 'virus',
     kicker: 'New in this chapter',
-    title: 'Corrupted supply',
-    /* This card used to describe the virus as it was two rewrites ago --
-       a colorless cell that scrambled its neighbours. It carries ink and
-       matches like anything else now, so the card was teaching a rule
-       the game does not have. */
-    say: 'It carries ink and matches like any other drop. The number is how '
-       + 'many drops before it goes off and takes ink back off its plate. '
-       + 'Clear it before it gets there.',
+    title: 'Virus Drops',
+    say: 'Number counts down after each drop until it removes some of your '
+       + 'progress for its color. Break by matching its color.',
     live: (d) => d.virusRate > 0,
     demo: ['c virus', '>', 'c', 'c', 'c']
   },
   {
     id: 'glitch',
     kicker: 'New in this chapter',
-    title: 'Corrupted zones',
-    say: 'Squares she has taken off the board. They never fall and never '
-       + 'match, and nothing drops past them. Clear any four touching one '
-       + 'and it is scrubbed back to open board.',
+    title: 'Glitch Zones',
+    say: 'Physical blockages for falling colors. Remove by breaking a color '
+       + 'vertically touching it.',
     live: (d) => d.glitch > 0,
     demo: ['glitch', 'c', 'c', 'c', 'c', '>', '']
   },
   {
     id: 'lowink',
     kicker: 'New in this chapter',
-    title: 'Low ink',
-    say: 'A pale half is running out. It falls four rows and then it is gone, '
-       + 'leaving the other one to place. Watch the queue before you commit to '
-       + 'where it lands.',
+    title: 'Low Ink',
+    say: 'The faded half of a pair quickly disappears. Use it as soon it '
+       + 'releases or focus on the other. Watch the queue of next blocks '
+       + 'to plan.',
     live: (d) => d.lowRate > 0,
     demo: ['m', 'm lowink', '>', 'm']
   }
