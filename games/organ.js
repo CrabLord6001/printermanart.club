@@ -822,7 +822,10 @@ export function isOn() { return on; }
    the game was before there was a slider. At 0 it is silence, which is
    why the panel's mute and the bottom of the slider agree. */
 const MASTER_FULL = 0.9;
-let vol = 1;
+/* Half, to agree with where the slider starts. The organ is imported on
+   the first touch and told the remembered value then, so this is what
+   plays in the moment before that arrives. */
+let vol = 0.5;
 
 function masterTarget() {
   return Math.max(MASTER_FULL * vol, 0.0001);   // an exponential ramp cannot reach 0

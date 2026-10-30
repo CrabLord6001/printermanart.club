@@ -2619,6 +2619,11 @@ ol.board.tight li.gap { min-height: 8px; font-size: 0.7rem; }
 }
 .levelsface .pp-run .lv.boss { width: 56px; height: 56px; }
 
+/* A run is a 44px print on 6px either side, so a chapter of n runs is
+   n * 56px. padding-block replaces that 6px, so the growth is measured
+   from the print itself: (n - 1) runs' worth, halved. */
+.levelsface .pp-run.alone { padding-block: calc((var(--runs, 5) - 1) * 28px); }
+
 /* Panel metal rather than nothing. The run is inside a machine, and the
    inside of a machine is not black.
 
@@ -8216,6 +8221,13 @@ function buildLevels() {
   sheet.setAttribute('aria-hidden', 'true');
   path.appendChild(sheet);
 
+  /* One level is still a stage. Without this Asil's stretch came out a
+     quarter the height of a chapter, and a short band at the end reads as
+     a mistake rather than as the finale. Taken from the longest chapter so
+     it keeps up when chapters go from five levels to ten. */
+  const chapLen = Math.max(5, ...[...rooms]
+    .filter(([k]) => k !== 'last').map(([, v]) => v.length));
+
   for (const [key, items] of rooms) {
     const last = key === 'last';
     const ch = CHAPTERS[key];
@@ -8241,6 +8253,10 @@ function buildLevels() {
          the run reads as one continuous feed rather than a zigzag. */
       run.style.setProperty('--x', (0.5 + 0.33 * Math.sin(lv * 0.82)).toFixed(3));
       run.dataset.ch = String(key);        // which stretch of machine this is in
+      if (last) {
+        run.classList.add('alone');
+        run.style.setProperty('--runs', String(chapLen));
+      }
 
       const b = document.createElement('button');
       b.type = 'button';
@@ -8346,7 +8362,7 @@ function drawSheet(path, svg) {
    every skin a chapter out from the gate above it -- the gate said The
    drum while the band behind it was the fuser. The names are the
    authority; the art follows them. */
-const PP_SKIN = ['paper', 'belts', 'registration', 'drum', 'fuser', 'ink'];
+const PP_SKIN = ['paper', 'belts', 'registration', 'drum', 'fuser', 'out'];
 
 /* Where a band has real art, it uses it instead of the shapes written
    here. One part per band, laid in whole: a printer has one drum and one
@@ -8364,7 +8380,12 @@ const PP_IMG = {
   fuser:        { src: '/games/img/path/fuser.png',        opacity: 0.28 },
   /* Hers is the board itself -- the part that decides what the rest
      of the machine prints, which is the one she took over. */
-  glitch:       { src: '/games/img/path/formatter.png',    opacity: 0.26 }
+  /* Stood on end, mouth upward. It was drawn lying flat, and a landscape
+     drawing filling a portrait band showed 38% of itself; turned, it fills
+     the band with 96% of the tray in view, and the open end faces the
+     sheet coming down to it. */
+  out:          { src: '/games/img/path/output-tray.png', opacity: 0.26 },
+  glitch:       { src: '/games/img/path/boss-board.png',   opacity: 0.30 }
 };
 
 function ppBand(kind, y0, y1, W, rnd) {
@@ -8531,20 +8552,27 @@ function drawDeco(path, svg) {
   let seed = 11;
   const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
 
+  /* Every band reaches its neighbours, and the first and last reach the
+     ends of the run. Padding each one by a fixed 44px left a strip of bare
+     panel between every chapter and at both ends of the sheet. */
+  const rows = [...bands.entries()];
   let out = '';
-  for (const [k, b] of bands) {
+  for (let i = 0; i < rows.length; i++) {
+    const [k, b] = rows[i];
     const kind = k === 'last' ? 'glitch' : (PP_SKIN[k] || 'paper');
-    const top = Math.max(0, b.lo - 44), bot = b.hi + 44;
+    const top = i === 0 ? 0 : (rows[i - 1][1].hi + b.lo) / 2;
+    const bot = i === rows.length - 1 ? box.height : (b.hi + rows[i + 1][1].lo) / 2;
     const art = PP_IMG[kind];
 
     if (art) {
-      /* Whole, centered, and as large as the band allows: meet scales to
-         whichever side binds first and centers it in the other. */
-      const bw = W * 0.96, bh = bot - top;
-      out += '<image href="' + art.src + '" x="' + ((W - bw) / 2).toFixed(1) +
-             '" y="' + top.toFixed(1) + '" width="' + bw.toFixed(1) +
-             '" height="' + bh.toFixed(1) + '" opacity="' + art.opacity +
-             '" preserveAspectRatio="xMidYMid meet"/>';
+      /* slice, not meet: the drawing covers the band and is cropped by it
+         rather than being fitted inside it with bare rails either side.
+         The x/y/width/height box does the cropping, so nothing spills into
+         the chapter above or below. */
+      out += '<image href="' + art.src + '" x="0" y="' + top.toFixed(1) +
+             '" width="' + W.toFixed(1) + '" height="' + (bot - top).toFixed(1) +
+             '" opacity="' + art.opacity +
+             '" preserveAspectRatio="xMidYMid slice"/>';
       continue;
     }
 
@@ -12016,8 +12044,11 @@ function volWanted() {
   try {
     const v = parseInt(localStorage.getItem(SKEY + 'vol'), 10);
     if (isFinite(v) && v >= 0 && v <= 100) return v;
-  } catch (e) { /* a browser that will not remember plays at full */ }
-  return 100;
+  } catch (e) { /* a browser that will not remember starts in the middle */ }
+  /* The middle of the slider, not the top. Full was too loud over Asil's
+     taunts, and starting there made the slider something to turn down
+     rather than something to set. */
+  return 50;
 }
 
 function applyVol(pct, remember) {
