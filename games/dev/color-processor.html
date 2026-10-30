@@ -8220,6 +8220,7 @@ function buildLevels() {
          now, so the width is the sheet's to use. The turn is a sine so
          the run reads as one continuous feed rather than a zigzag. */
       run.style.setProperty('--x', (0.5 + 0.33 * Math.sin(lv * 0.82)).toFixed(3));
+      run.dataset.ch = String(key);        // which stretch of machine this is in
 
       const b = document.createElement('button');
       b.type = 'button';
@@ -8310,74 +8311,118 @@ function drawSheet(path, svg) {
   svg.innerHTML = line(34, .16) + line(26, .07) + line(1, .10);
 }
 
-/* What fills the space the run is not using. Everything here is placed
-   from the prints' own positions: a loom hangs on whichever side the
-   sheet has left slack, a gear sits where there is a gap wide enough to
-   hold one, and the markings go on the metal between them. All of it is
-   stencilled rather than drawn -- it is the inside of a machine, and the
-   inside of a machine is covered in part numbers. */
+/* ---- what the machine looks like where you are ----
+   The background is not one wallpaper down the whole run. Each stretch
+   is the place the sheet is actually passing through, so it changes as
+   you travel: stacked paper at the tray, belts and rollers through the
+   pickup, control traces at registration, the laser firing at the drum,
+   heat at the fuser, ink at the exit, and her board a corrupted version
+   of the traces.
+
+   All of it is drawn into the band that chapter's prints occupy, worked
+   out from where they landed, so it stretches and shrinks with the run
+   rather than being positioned by hand. */
+const PP_SKIN = ['paper', 'belts', 'traces', 'laser', 'heat', 'ink'];
+
+function ppBand(kind, y0, y1, W, rnd) {
+  const h = y1 - y0;
+  let g = '';
+  const at = (x, y) => x.toFixed(1) + ' ' + y.toFixed(1);
+
+  if (kind === 'paper') {
+    // sheets stacked and feeding, on the diagonal
+    for (let i = 0; i < 7; i++) {
+      const y = y0 + (i + 0.5) * (h / 7), w = 46 + rnd() * 54, x = rnd() * (W - w);
+      g += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) +
+           '" height="9" rx="2" fill="#F2EFE6" opacity=".05"' +
+           ' transform="rotate(' + (-6 + rnd() * 12).toFixed(1) + ' ' + at(x + w / 2, y + 4) + ')"/>';
+    }
+  } else if (kind === 'belts') {
+    // a belt line with rollers along it
+    for (let i = 0; i < 4; i++) {
+      const y = y0 + (i + 0.5) * (h / 4);
+      g += '<path d="M0 ' + y.toFixed(1) + 'h' + W.toFixed(1) + '" stroke="#1E2230" stroke-width="5"/>';
+      for (let k = 0; k < 4; k++) {
+        const x = (k + 0.5) * (W / 4) + (rnd() - 0.5) * 20;
+        g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) +
+             '" r="7" fill="#232838" stroke="#30364a" stroke-width="1.5"/>';
+      }
+    }
+  } else if (kind === 'traces' || kind === 'glitch') {
+    // board traces, right angles and vias
+    const col = kind === 'glitch' ? '#3A1F30' : '#1D2A24';
+    const via = kind === 'glitch' ? '#5A2740' : '#24402F';
+    for (let i = 0; i < 8; i++) {
+      const y = y0 + rnd() * h, x = rnd() * W * 0.7;
+      const run1 = 26 + rnd() * 50, dy = (rnd() < 0.5 ? -1 : 1) * (18 + rnd() * 26);
+      g += '<path d="M' + at(x, y) + 'h' + run1.toFixed(1) + 'v' + dy.toFixed(1) +
+           'h' + (20 + rnd() * 40).toFixed(1) + '" fill="none" stroke="' + col + '" stroke-width="2"/>' +
+           '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3" fill="' + via + '"/>';
+    }
+  } else if (kind === 'laser') {
+    // the beam fanning out, and the scan lines it leaves
+    const sx = W * 0.92, sy = y0 + h * 0.12;
+    for (let i = 0; i < 9; i++) {
+      const ey = y0 + h * (0.2 + i * 0.09);
+      g += '<path d="M' + at(sx, sy) + 'L' + at(W * 0.06, ey) + '" stroke="#E6007E" stroke-width="1" opacity=".07"/>';
+    }
+    for (let i = 0; i < 5; i++) {
+      const y = y0 + rnd() * h;
+      g += '<path d="M0 ' + y.toFixed(1) + 'h' + W.toFixed(1) +
+           '" stroke="#99A2F7" stroke-width="1" opacity=".05"/>';
+    }
+  } else if (kind === 'heat') {
+    // the chamber: arcs of heat coming off the rollers
+    for (let i = 0; i < 6; i++) {
+      const y = y0 + (i + 0.5) * (h / 6), amp = 7 + rnd() * 7;
+      let d = 'M0 ' + y.toFixed(1);
+      for (let x = 0; x <= W; x += 26) d += ' q13 ' + (-amp).toFixed(1) + ' 26 0';
+      g += '<path d="' + d + '" fill="none" stroke="#E6007E" stroke-width="2" opacity=".06"/>';
+    }
+  } else if (kind === 'ink') {
+    // drips hanging, and what they have pooled into
+    for (let i = 0; i < 7; i++) {
+      const x = rnd() * W, len = 20 + rnd() * 46, y = y0 + rnd() * (h * 0.5);
+      const c = ['#0093D3', '#E6007E', '#F3E500'][(rnd() * 3) | 0];
+      g += '<path d="M' + at(x, y) + 'v' + len.toFixed(1) + '" stroke="' + c +
+           '" stroke-width="3" stroke-linecap="round" opacity=".07"/>' +
+           '<circle cx="' + x.toFixed(1) + '" cy="' + (y + len).toFixed(1) +
+           '" r="4" fill="' + c + '" opacity=".09"/>';
+    }
+  }
+  return g;
+}
+
 function drawDeco(path, svg) {
   const box = path.getBoundingClientRect();
   if (!box.width || !box.height) return;
-  svg.setAttribute('viewBox', '0 0 ' + box.width + ' ' + box.height);
-
-  const nodes = [...path.querySelectorAll('.pp-run .lv')].map((n) => {
-    const r = n.getBoundingClientRect();
-    return { x: r.left - box.left + r.width / 2, y: r.top - box.top + r.height / 2 };
-  });
-  if (nodes.length < 3) { svg.innerHTML = ''; return; }
-
   const W = box.width;
-  let out = '';
-  let seed = 7;
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + box.height);
+
+  /* Each chapter's prints, so a band can be the height of its own
+     stretch rather than a fixed slab. */
+  const bands = new Map();
+  for (const run of path.querySelectorAll('.pp-run')) {
+    const n = run.querySelector('.lv');
+    if (!n) continue;
+    const r = n.getBoundingClientRect();
+    const y = r.top - box.top + r.height / 2;
+    const k = run.dataset.ch;
+    if (!bands.has(k)) bands.set(k, { lo: y, hi: y });
+    const b = bands.get(k);
+    b.lo = Math.min(b.lo, y);
+    b.hi = Math.max(b.hi, y);
+  }
+  if (!bands.size) { svg.innerHTML = ''; return; }
+
+  let seed = 11;
   const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
 
-  for (let i = 1; i < nodes.length - 1; i += 2) {
-    const n = nodes[i];
-    /* Which side has room, and how much of it. */
-    const left = n.x < W / 2;
-    const edge = left ? W : 0;
-    const room = Math.abs(edge - n.x);
-    if (room < 86) continue;
-
-    const cx = left ? n.x + room * 0.52 : n.x - room * 0.52;
-    const r = rnd();
-
-    if (r < 0.42) {
-      // a gear, half out of frame the way they are in a cutaway
-      const rad = 16 + rnd() * 10;
-      let teeth = '';
-      for (let t = 0; t < 8; t++) {
-        const a = (t / 8) * Math.PI * 2;
-        teeth += '<rect x="' + (-2.5) + '" y="' + (-rad - 5) + '" width="5" height="6" rx="1" ' +
-                 'transform="rotate(' + (a * 180 / Math.PI) + ')"/>';
-      }
-      out += '<g class="pp-gear" style="--d:' + (16 + rnd() * 14).toFixed(1) + 's' +
-             (rnd() < 0.5 ? ';--dir:reverse' : '') + '" transform="translate(' +
-             cx.toFixed(1) + ',' + n.y.toFixed(1) + ')">' +
-             '<g fill="#232838" stroke="#30364a" stroke-width="1.5">' +
-             '<circle r="' + rad + '"/>' + teeth +
-             '<circle r="' + (rad * 0.3).toFixed(1) + '" fill="#171B27"/></g></g>';
-    } else if (r < 0.74) {
-      // a cable loom, hanging the way a loom hangs
-      const x2 = left ? W + 10 : -10;
-      const sag = 26 + rnd() * 26;
-      const d = 'M ' + cx.toFixed(1) + ' ' + (n.y - 30).toFixed(1) +
-                ' Q ' + ((cx + x2) / 2).toFixed(1) + ' ' + (n.y + sag).toFixed(1) +
-                ' ' + x2 + ' ' + (n.y + 6).toFixed(1);
-      out += '<path d="' + d + '" fill="none" stroke="#1E2230" stroke-width="7" stroke-linecap="round"/>' +
-             '<path d="' + d + '" fill="none" stroke="#2A3045" stroke-width="3" stroke-linecap="round"/>';
-    } else {
-      // stencilled markings on the metal
-      const tag = ['RB-2016', 'FM1-A', 'CM-04', 'DRUM 21K', 'FU-220', 'PU-08'][(rnd() * 6) | 0];
-      out += '<text x="' + cx.toFixed(1) + '" y="' + n.y.toFixed(1) + '" class="pp-mark" ' +
-             'text-anchor="middle">' + tag + '</text>' +
-             '<path d="M' + (cx - 16).toFixed(1) + ' ' + (n.y + 11).toFixed(1) +
-             'h26l-5-4m5 4l-5 4" fill="none" stroke="#262B3A" stroke-width="2" ' +
-             'stroke-linecap="round" stroke-linejoin="round"/>';
-    }
+  let out = '';
+  for (const [k, b] of bands) {
+    const kind = k === 'last' ? 'glitch' : (PP_SKIN[k] || 'paper');
+    out += ppBand(kind, Math.max(0, b.lo - 44), b.hi + 44, W, rnd);
   }
-
   svg.innerHTML = out;
 }
 
