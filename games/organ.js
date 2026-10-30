@@ -490,7 +490,37 @@ function cueRemixBar(at) {
   return slot;
 }
 
+/* ---- her lines over her own track ----
+   The remix placed these by the bar, which it could do because it was
+   cutting the cue into bars anyway. Her own track is played whole, so
+   they go on a clock instead: the first once the track has had a few
+   seconds to establish itself, then one every twenty to thirty.
+
+   Written only a moment ahead rather than a lap ahead. A lap of this
+   track is three minutes, so scheduling by the lap would have queued her
+   whole level's worth of lines into a future that may not happen -- and
+   they would have gone on arriving over whatever came next. */
+const STAB_FIRST = 9;                 // seconds in, for the first line
+const STAB_GAP = [20, 31];            // seconds between the ones after it
+let stabNext = 0;
+let stabOpened = false;
+
+function stabsTick() {
+  if (!on || !ctx || cueFx || cueHave !== 'boss') return;
+  if (!stabBuf) { stabLoad(); return; }       // next tick, once it is here
+  const now = ctx.currentTime;
+  if (!stabNext) stabNext = now + STAB_FIRST;
+  while (stabNext < now + CUE_LOOK) {
+    /* Her first is "I am art", asked for rather than rolled: of the five
+       it is the one about what she is doing to the place. */
+    stabFire(stabNext, stabOpened ? null : 'art');
+    stabOpened = true;
+    stabNext += STAB_GAP[0] + rnd() * (STAB_GAP[1] - STAB_GAP[0]);
+  }
+}
+
 function cueSchedule() {
+  stabsTick();
   if (!cueBuf || !ctx) return;
   while (cueAt < ctx.currentTime + CUE_LOOK) {
     if (cueFx) { cueAt += cueRemixBar(cueAt); continue; }
@@ -502,6 +532,8 @@ function cueSchedule() {
 function cueSilence() {
   for (const { src } of cueLive) { try { src.stop(); } catch (e) {} }
   cueLive = [];
+  stabNext = 0;
+  stabOpened = false;
   clearInterval(cueTimer);
   cueTimer = null;
   cueBuf = null;
@@ -531,6 +563,9 @@ export async function setCue(name) {
   cueSeed = 1;
   cueHave = name;
   cueAt = ctx.currentTime + 0.06;
+  /* Her stage used to get these through corrupt(), which is no longer on
+     the path now that she has a track of her own. */
+  if (name === 'boss') stabLoad();
   cueSchedule();
   cueTimer = setInterval(cueSchedule, 200);
   cueFade(CUE_LEVEL, mine);
