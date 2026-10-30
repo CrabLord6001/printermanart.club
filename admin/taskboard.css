@@ -19,9 +19,19 @@
 
 .tb-wrap { max-width: 1600px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
 
-.tb-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.35rem; }
+/* Every other admin page keeps the strip inside its padded column. This one
+   hangs it straight off the body, so the club name sat against one edge of
+   the window and Approvals against the other. Same gutters as the board. */
+.site-strip { max-width: 1600px; margin: 0 auto; padding-left: 1.25rem; padding-right: 1.25rem; }
+
+/* The way back, in the same words and the same place the other admin pages
+   put it -- above the title -- but left aligned, because this page is. */
+.tb-back { display: inline-block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-dim); text-decoration: none; margin-bottom: 16px; }
+.tb-back:hover { color: var(--accent); }
+
+.tb-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
 .tb-head h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 0; }
-.tb-sub { color: var(--text-dim); font-size: 0.82rem; margin: 0 0 1.25rem; }
 
 .tb-bar { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
 .tb-btn { font-family: inherit; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.14em;
