@@ -6388,6 +6388,32 @@ function burnDown() {
   return gone;
 }
 
+/* How many of its own color a drop is touching, counted orthogonally the
+   way a clump is. Asked of a copy of the board when the question is what
+   a move would be worth, so asking never changes anything. */
+function groupAt(w, x, y) {
+  if (!inside(x, y)) return 0;
+  const v = at(w, x, y);
+  if (!v || isBug(v)) return 0;
+  const ink = inkOf(v);
+
+  const seen = new Set();
+  const stack = [[x, y]];
+  let n = 0;
+  while (stack.length) {
+    const [cx, cy] = stack.pop();
+    if (!inside(cx, cy)) continue;
+    const k = cy * COLS + cx;
+    if (seen.has(k)) continue;
+    const c = at(w, cx, cy);
+    if (!c || isBug(c) || inkOf(c) !== ink) continue;
+    seen.add(k);
+    n++;
+    stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
+  }
+  return n;
+}
+
 /* Magnetic ink drags its own color out of a diagonal and into line: if the
    square above the magnet is free and a matching drop sits diagonally above
    it, that drop slides across. */
@@ -6405,17 +6431,37 @@ function pullMagnets() {
       const ink = inkOf(here);
       if (y - 1 < 0 || at(well, x, y - 1)) continue;      // no room above it
 
+      /* Both diagonals are weighed rather than the left one taken because
+         it was looked at first. Two things decide it.
+
+         A drop already touching two of its own is part of something the
+         player is building, and dragging it out of that to put it beside
+         a magnet took away more than it gave. That was the complaint:
+         the magnet working against you. It is left where it is.
+
+         Of what is left, the pull that ends in the bigger group wins, so
+         when either diagonal would do, the magnet takes the one that
+         actually builds toward a clear. */
+      let best = null;
       for (const dx of [-1, 1]) {
         const nx = x + dx, ny = y - 1;
         if (!inside(nx, ny)) continue;
         const v = at(well, nx, ny);
         if (!v || isBug(v) || inkOf(v) !== ink) continue;
+        if (groupAt(well, nx, ny) >= 3) continue;       // already working
 
-        put(well, nx, ny, null);
-        put(well, x, y - 1, v);
+        const trial = well.slice();
+        put(trial, nx, ny, null);
+        put(trial, x, y - 1, v);
+        const size = groupAt(trial, x, y - 1);
+        if (!best || size > best.size) best = { nx, ny, v, size };
+      }
+
+      if (best) {
+        put(well, best.nx, best.ny, null);
+        put(well, x, y - 1, best.v);
         pulled.push([x, y - 1], [x, y]);
         moved = true;
-        break;
       }
     }
   }
