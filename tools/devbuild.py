@@ -27,7 +27,7 @@ GAMES = {
     'printshop': {
         'name': 'Gallery Printshop',
         # (live, dev). The .html of the pair is the first one.
-        'files': [('games/color-processor.html', 'games/dev/color-processor.html')],
+        'files': [('games/gallery-printshop.html', 'games/dev/gallery-printshop.html')],
         'swaps': [],
     },
     'papertrail': {

@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arcade &mdash; PrinterMan&#x27;s Art Club</title>
+<link rel="canonical" href="https://printermanart.club/games/">
+<meta name="theme-color" content="#5865F2">
+<meta name="description" content="games I&#x27;ve experimented coding with AI">
+
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PrinterMan&#x27;s Art Club">
+<meta property="og:title" content="Arcade &mdash; PrinterMan&#x27;s Art Club">
+<meta property="og:url" content="https://printermanart.club/games/">
+<meta property="og:description" content="games I&#x27;ve experimented coding with AI">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* The club's tokens, same as the lander and both game pages. */
+:root {
+  --blurple:       #5865F2;
+  --blurple-text:  #99A2F7;
+  --ground:        #101218;
+  --panel:         #171A22;
+  --border:        #272B36;
+  --text:          #FFFFFF;
+  --text-muted:    #9BA0AE;
+  --text-dim:      #7A8094;
+  --accent:        #D4A24C;
+  --font: 'Poppins', system-ui, -apple-system, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text-muted);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The same rail both games wear, so moving between a game and this page
+   never changes the furniture at the top of the window. */
+.sitebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px max(10px, env(safe-area-inset-right)) 7px max(10px, env(safe-area-inset-left));
+  background: #0C0E13;
+  border-bottom: 1px solid #1B1F29;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.sitebar a { color: var(--text-dim); text-decoration: none; }
+.sitebar a:hover { color: var(--accent); }
+.sb-home { color: var(--text-muted) !important; font-weight: 600; }
+.sb-home:hover { color: var(--accent) !important; }
+.sb-nav { display: flex; gap: 14px; overflow: hidden; }
+
+@media (max-width: 560px) {
+  .sb-nav { display: none; }
+  .sitebar { font-size: 0.58rem; }
+}
+
+.col { max-width: 880px; margin: 0 auto; padding: 0 16px 48px; }
+
+header.page { padding: 34px 0 22px; text-align: center; }
+header.page h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+header.page .tag {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+/* Two games now, more later: the grid wraps on its own rather than being
+   told how many columns to make. */
+.shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.arc-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: #13161D;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color .15s, transform .15s;
+}
+.arc-card:hover { border-color: var(--blurple-text); transform: translateY(-2px); }
+.arc-card:focus-visible { outline: 2px solid var(--blurple-text); outline-offset: 3px; }
+
+.arc-plate {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 240px;
+  padding: 18px;
+  background: #0C0E13;
+  border-bottom: 1px solid var(--border);
+}
+.arc-plate svg { width: 100%; height: 100%; display: block; }
+
+.arc-veil {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10,12,17,.74);
+  color: #fff;
+  font-size: .72rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+  opacity: 0; transition: opacity .15s;
+}
+.arc-card:hover .arc-veil, .arc-card:focus-visible .arc-veil { opacity: 1; }
+
+.arc-who { display: block; padding: 16px 18px 18px; text-align: center; }
+.arc-name {
+  display: block;
+  font-size: 1.05rem; font-weight: 600; line-height: 1.35;
+  color: var(--blurple-text); text-wrap: balance;
+}
+.arc-note {
+  display: block; margin-top: 4px;
+  font-size: .84rem; color: var(--text-dim); text-wrap: balance;
+}
+
+footer {
+  margin-top: 40px; padding-top: 20px;
+  border-top: 1px solid var(--border);
+  text-align: center; font-size: .78rem; color: var(--text-dim);
+}
+footer a { color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+  <header class="sitebar">
+    <a class="sb-home" href="/"><span aria-hidden="true">&larr;</span> PrinterMan&rsquo;s Art Club</a>
+    <nav class="sb-nav">
+      <a href="/news.html">Daily News Briefing</a>
+      <a href="/art-history/">Weekly Art History</a>
+      <a href="/about.html">About</a>
+      <a href="/faq.html">FAQ</a>
+    </nav>
+  </header>
+
+  <div class="col">
+
+    <header class="page">
+      <h1>Arcade</h1>
+      <p class="tag">The Fun Place</p>
+    </header>
+
+    <section class="shelf" aria-label="Games">
+
+        <a class="arc-card" href="/games/gallery-printshop.html">
+          <span class="arc-plate">
+            <!-- Four toner tanks over a page printing itself in halftone. -->
+            <svg viewBox="0 0 240 150" role="img" aria-label="Four toner tanks above a page, printing itself in halftone dots as a laser sweeps across it."><rect x="26" y="58" width="188" height="80" rx="3" fill="#F2EFE6"/><g fill="#1A1A1A" opacity=".9"><circle cx="169" cy="77" r="1.6"/><circle cx="177" cy="84" r="1.6"/><circle cx="155" cy="77" r="1.6"/><circle cx="162" cy="84" r="1.9"/><circle cx="169" cy="91" r="1.9"/><circle cx="177" cy="98" r="1.6"/><circle cx="148" cy="84" r="1.9"/><circle cx="155" cy="91" r="2.1"/><circle cx="162" cy="98" r="2.1"/><circle cx="169" cy="105" r="1.7"/><circle cx="113" cy="63" r="1.7"/><circle cx="134" cy="84" r="1.6"/><circle cx="141" cy="91" r="2.1"/><circle cx="148" cy="98" r="2.3"/><circle cx="155" cy="105" r="2.2"/><circle cx="162" cy="112" r="1.8"/><circle cx="99" cy="63" r="2.4"/><circle cx="106" cy="70" r="1.6"/><circle cx="127" cy="91" r="1.9"/><circle cx="134" cy="98" r="2.4"/><circle cx="141" cy="105" r="2.5"/><circle cx="148" cy="112" r="2.3"/><circle cx="155" cy="119" r="1.9"/><circle cx="85" cy="63" r="3.0"/><circle cx="92" cy="70" r="2.3"/><circle cx="120" cy="98" r="2.1"/><circle cx="127" cy="105" r="2.6"/><circle cx="134" cy="112" r="2.7"/><circle cx="141" cy="119" r="2.4"/><circle cx="148" cy="126" r="1.9"/><circle cx="71" cy="63" r="3.5"/><circle cx="78" cy="70" r="2.9"/><circle cx="85" cy="77" r="2.1"/><circle cx="106" cy="98" r="1.7"/><circle cx="113" cy="105" r="2.4"/><circle cx="120" cy="112" r="2.8"/><circle cx="127" cy="119" r="2.8"/><circle cx="134" cy="126" r="2.4"/><circle cx="141" cy="133" r="1.9"/><circle cx="56" cy="63" r="3.7"/><circle cx="63" cy="70" r="3.4"/><circle cx="71" cy="77" r="2.8"/><circle cx="78" cy="84" r="1.9"/><circle cx="99" cy="105" r="2.0"/><circle cx="106" cy="112" r="2.6"/><circle cx="113" cy="119" r="2.9"/><circle cx="120" cy="126" r="2.9"/><circle cx="127" cy="133" r="2.4"/><circle cx="42" cy="63" r="3.7"/><circle cx="49" cy="70" r="3.8"/><circle cx="56" cy="77" r="3.4"/><circle cx="63" cy="84" r="2.7"/><circle cx="71" cy="91" r="1.7"/><circle cx="85" cy="105" r="1.5"/><circle cx="92" cy="112" r="2.3"/><circle cx="99" cy="119" r="2.9"/><circle cx="106" cy="126" r="3.1"/><circle cx="113" cy="133" r="2.9"/><circle cx="28" cy="63" r="3.4"/><circle cx="35" cy="70" r="3.8"/><circle cx="42" cy="77" r="3.8"/><circle cx="49" cy="84" r="3.3"/><circle cx="56" cy="91" r="2.5"/><circle cx="63" cy="98" r="1.5"/><circle cx="78" cy="112" r="1.8"/><circle cx="85" cy="119" r="2.6"/><circle cx="92" cy="126" r="3.1"/><circle cx="99" cy="133" r="3.2"/><circle cx="28" cy="77" r="4.0"/><circle cx="35" cy="84" r="3.8"/><circle cx="42" cy="91" r="3.2"/><circle cx="49" cy="98" r="2.3"/><circle cx="71" cy="119" r="2.1"/><circle cx="78" cy="126" r="2.8"/><circle cx="85" cy="133" r="3.2"/><circle cx="28" cy="91" r="3.8"/><circle cx="35" cy="98" r="3.0"/><circle cx="42" cy="105" r="2.1"/><circle cx="63" cy="126" r="2.3"/><circle cx="71" cy="133" r="3.1"/><circle cx="28" cy="105" r="2.9"/><circle cx="35" cy="112" r="1.8"/><circle cx="49" cy="126" r="1.8"/><circle cx="56" cy="133" r="2.6"/><circle cx="28" cy="119" r="1.6"/><circle cx="42" cy="133" r="2.0"/></g><g fill="#0093D3" opacity=".9"><circle cx="107" cy="60" r="1.9"/><circle cx="62" cy="60" r="3.8"/><circle cx="73" cy="63" r="3.5"/><circle cx="83" cy="65" r="2.9"/><circle cx="94" cy="68" r="2.2"/><circle cx="27" cy="62" r="3.6"/><circle cx="38" cy="65" r="4.0"/><circle cx="48" cy="67" r="4.0"/><circle cx="59" cy="70" r="3.7"/><circle cx="70" cy="73" r="3.1"/><circle cx="80" cy="76" r="2.4"/><circle cx="35" cy="75" r="4.3"/><circle cx="46" cy="78" r="4.0"/><circle cx="56" cy="81" r="3.4"/><circle cx="67" cy="84" r="2.6"/><circle cx="77" cy="87" r="1.7"/><circle cx="120" cy="98" r="1.7"/><circle cx="32" cy="86" r="4.2"/><circle cx="43" cy="89" r="3.6"/><circle cx="53" cy="92" r="2.7"/><circle cx="64" cy="94" r="1.9"/><circle cx="96" cy="103" r="1.7"/><circle cx="107" cy="106" r="2.0"/><circle cx="117" cy="109" r="2.1"/><circle cx="128" cy="111" r="1.9"/><circle cx="29" cy="96" r="3.8"/><circle cx="40" cy="99" r="2.9"/><circle cx="51" cy="102" r="2.0"/><circle cx="82" cy="111" r="1.8"/><circle cx="93" cy="114" r="2.3"/><circle cx="104" cy="116" r="2.5"/><circle cx="114" cy="119" r="2.5"/><circle cx="125" cy="122" r="2.1"/><circle cx="37" cy="110" r="2.1"/><circle cx="69" cy="118" r="2.0"/><circle cx="80" cy="121" r="2.6"/><circle cx="90" cy="124" r="2.9"/><circle cx="101" cy="127" r="2.9"/><circle cx="111" cy="130" r="2.6"/><circle cx="122" cy="133" r="2.0"/><circle cx="55" cy="126" r="2.1"/><circle cx="66" cy="129" r="2.8"/><circle cx="77" cy="132" r="3.1"/><circle cx="87" cy="135" r="3.2"/><circle cx="42" cy="134" r="2.3"/><circle cx="53" cy="137" r="2.9"/></g><g fill="#E6007E" opacity=".9"><circle cx="88" cy="69" r="1.8"/><circle cx="73" cy="61" r="3.2"/><circle cx="76" cy="73" r="2.5"/><circle cx="88" cy="119" r="1.9"/><circle cx="91" cy="130" r="2.1"/><circle cx="61" cy="64" r="3.7"/><circle cx="64" cy="76" r="3.2"/><circle cx="67" cy="87" r="2.1"/><circle cx="77" cy="122" r="2.2"/><circle cx="80" cy="134" r="2.7"/><circle cx="50" cy="67" r="4.1"/><circle cx="53" cy="79" r="3.7"/><circle cx="56" cy="90" r="2.7"/><circle cx="65" cy="125" r="2.3"/><circle cx="68" cy="137" r="3.1"/><circle cx="38" cy="70" r="4.4"/><circle cx="41" cy="82" r="4.2"/><circle cx="44" cy="93" r="3.3"/><circle cx="47" cy="105" r="2.0"/><circle cx="54" cy="128" r="2.3"/><circle cx="30" cy="85" r="4.6"/><circle cx="33" cy="97" r="3.8"/><circle cx="36" cy="108" r="2.5"/><circle cx="42" cy="131" r="2.1"/><circle cx="30" cy="134" r="1.9"/></g><g fill="#F3E500" opacity=".9"><circle cx="36" cy="62" r="3.9"/><circle cx="48" cy="62" r="3.6"/><circle cx="60" cy="62" r="2.7"/><circle cx="36" cy="74" r="4.3"/><circle cx="48" cy="74" r="3.6"/><circle cx="60" cy="74" r="2.5"/><circle cx="36" cy="86" r="4.1"/><circle cx="48" cy="86" r="3.2"/><circle cx="60" cy="86" r="2.0"/><circle cx="36" cy="98" r="3.3"/><circle cx="48" cy="98" r="2.3"/><circle cx="36" cy="110" r="2.2"/><circle cx="36" cy="134" r="2.0"/><circle cx="48" cy="134" r="2.3"/><circle cx="60" cy="134" r="2.1"/></g><rect x="26" y="10" width="44" height="30" rx="5" fill="#11131A" stroke="#3A404F" stroke-width="1.4"/><rect x="30" y="22" width="36" height="14" rx="3" fill="#0093D3"/><rect x="44" y="40" width="8" height="5" rx="1.5" fill="#3A404F"/><text x="48" y="20" text-anchor="middle" font-family="Poppins, system-ui, sans-serif" font-size="8" font-weight="700" fill="#7A8094">C</text><rect x="74" y="10" width="44" height="30" rx="5" fill="#11131A" stroke="#3A404F" stroke-width="1.4"/><rect x="78" y="22" width="36" height="14" rx="3" fill="#E6007E"/><rect x="92" y="40" width="8" height="5" rx="1.5" fill="#3A404F"/><text x="96" y="20" text-anchor="middle" font-family="Poppins, system-ui, sans-serif" font-size="8" font-weight="700" fill="#7A8094">M</text><rect x="122" y="10" width="44" height="30" rx="5" fill="#11131A" stroke="#3A404F" stroke-width="1.4"/><rect x="126" y="22" width="36" height="14" rx="3" fill="#F3E500"/><rect x="140" y="40" width="8" height="5" rx="1.5" fill="#3A404F"/><text x="144" y="20" text-anchor="middle" font-family="Poppins, system-ui, sans-serif" font-size="8" font-weight="700" fill="#7A8094">Y</text><rect x="170" y="10" width="44" height="30" rx="5" fill="#11131A" stroke="#3A404F" stroke-width="1.4"/><rect x="174" y="22" width="36" height="14" rx="3" fill="#4A5162"/><rect x="188" y="40" width="8" height="5" rx="1.5" fill="#3A404F"/><text x="192" y="20" text-anchor="middle" font-family="Poppins, system-ui, sans-serif" font-size="8" font-weight="700" fill="#7A8094">K</text><circle cx="48" cy="50" r="5.2" fill="#0093D3"/><circle cx="96" cy="48" r="4.4" fill="#E6007E"/><circle cx="144" cy="52" r="4.8" fill="#F3E500"/><circle cx="192" cy="47" r="4.0" fill="#1A1A1A"/><rect x="26" y="96" width="188" height="1.6" fill="#D4A24C" opacity=".85"/><rect x="26" y="94.4" width="188" height="4.8" fill="#D4A24C" opacity=".18"/></svg>
+            <span class="arc-veil">Play</span>
+          </span>
+          <span class="arc-who">
+            <span class="arc-name">Gallery Printshop</span>
+            <span class="arc-note">Match the Toner, Print the Page</span>
+          </span>
+        </a>
+
+        <a class="arc-card" href="/games/paper-trail.html">
+          <span class="arc-plate">
+            <!-- Ms. Printer, her trail, and the ink ahead of her. -->
+            <svg viewBox="0 0 240 150" role="img" aria-label="Ms. Printer trailing stacks of printed paper, with ink splats ahead of her.">
+                  <g>
+                    <rect x="20"  y="66" width="22" height="22" rx="3" fill="#B9B3A4"/>
+                    <rect x="17"  y="63" width="22" height="22" rx="3" fill="#D6D0C2"/>
+                    <rect x="14"  y="60" width="22" height="22" rx="3" fill="#F2EFE6"/>
+                    <rect x="17"  y="63" width="16" height="4" rx="1.5" fill="#2B2F3A"/>
+                    <rect x="17"  y="71" width="16" height="1.8" fill="#C9C3B4"/>
+                    <rect x="17"  y="75" width="11" height="1.8" fill="#C9C3B4"/>
+
+                    <rect x="58"  y="66" width="22" height="22" rx="3" fill="#B9B3A4"/>
+                    <rect x="55"  y="63" width="22" height="22" rx="3" fill="#D6D0C2"/>
+                    <rect x="52"  y="60" width="22" height="22" rx="3" fill="#F2EFE6"/>
+                    <rect x="55"  y="63" width="16" height="4" rx="1.5" fill="#E8C53D"/>
+                    <rect x="55"  y="71" width="16" height="1.8" fill="#C9C3B4"/>
+                    <rect x="55"  y="75" width="11" height="1.8" fill="#C9C3B4"/>
+
+                    <rect x="96"  y="66" width="22" height="22" rx="3" fill="#B9B3A4"/>
+                    <rect x="93"  y="63" width="22" height="22" rx="3" fill="#D6D0C2"/>
+                    <rect x="90"  y="60" width="22" height="22" rx="3" fill="#F2EFE6"/>
+                    <rect x="93"  y="63" width="16" height="4" rx="1.5" fill="#22B8E6"/>
+                    <rect x="93"  y="71" width="16" height="1.8" fill="#C9C3B4"/>
+                    <rect x="93"  y="75" width="11" height="1.8" fill="#C9C3B4"/>
+                  </g>
+
+                  <g>
+                    <rect x="138" y="42" width="20" height="13" rx="2" fill="#F2EFE6"/>
+                    <rect x="141" y="45" width="14" height="1.8" fill="#C9C3B4"/>
+                    <rect x="141" y="49" width="14" height="1.8" fill="#C9C3B4"/>
+                    <rect x="134" y="86" width="28" height="7" rx="2.6" fill="#C72E42"/>
+                    <rect x="126" y="52" width="44" height="40" rx="9" fill="#E8394F"/>
+                    <rect x="131" y="60" width="34" height="25" rx="6" fill="#F7F4ED"/>
+                    <rect x="136" y="55" width="24" height="4" rx="2" fill="#C72E42"/>
+                    <circle cx="137" cy="79" r="3" fill="#F79AAC"/>
+                    <circle cx="159" cy="79" r="3" fill="#F79AAC"/>
+                    <circle cx="142" cy="70" r="6.2" fill="#fff"/>
+                    <circle cx="154" cy="70" r="6.2" fill="#fff"/>
+                    <circle cx="144" cy="70" r="3.1" fill="#241B22"/>
+                    <circle cx="156" cy="70" r="3.1" fill="#241B22"/>
+                    <circle cx="145" cy="68.5" r="1.2" fill="#fff"/>
+                    <circle cx="157" cy="68.5" r="1.2" fill="#fff"/>
+                    <path d="M140 77 a8 8 0 0 0 16 0 Z" fill="#7A1626"/>
+                    <path d="M143.5 79 a4.6 4.6 0 0 0 9 0 Z" fill="#F07A95"/>
+                  </g>
+
+                  <g>
+                    <path d="M196 34 q10 -6 16 2 q10 -2 9 9 q6 7 -3 12 q-1 10 -11 7 q-7 6 -13 -2 q-11 1 -9 -10 q-5 -8 4 -12 q1 -8 7 -6 Z" fill="#E8459B"/>
+                    <circle cx="219" cy="24" r="2.6" fill="#E8459B"/>
+                    <circle cx="189" cy="60" r="2" fill="#E8459B"/>
+                    <path d="M200 104 q9 -5 14 2 q9 -1 8 8 q5 6 -3 10 q-1 9 -10 6 q-6 5 -11 -2 q-10 1 -8 -9 q-5 -7 3 -11 Z" fill="#22B8E6"/>
+                    <circle cx="222" cy="97" r="2.3" fill="#22B8E6"/>
+                  </g>
+                </svg>
+            <span class="arc-veil">Play</span>
+          </span>
+          <span class="arc-who">
+            <span class="arc-name">Ms.&nbsp;Printer: Paper Trail</span>
+            <span class="arc-note">Eat the Ink, Don&rsquo;t Jam</span>
+          </span>
+        </a>
+
+    </section>
+
+    <footer>
+      printermanart.club &nbsp;&middot;&nbsp; <a href="/about.html">About</a> &nbsp;&middot;&nbsp; <a href="/faq.html">FAQ</a> &nbsp;&middot;&nbsp; &copy;&nbsp;2026&nbsp;PrinterMan
+    </footer>
+
+  </div>
+
+</body>
+</html>

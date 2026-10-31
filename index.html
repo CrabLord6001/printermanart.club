@@ -445,30 +445,19 @@
     .art-frame, .art-all{ height:440px; }
   }
 
-  /* ---- Arcade: one card per game ----
-     Same deck mechanics as the two strips above with its own element ids.
-     One game for now, so the arrows and dots stay hidden until there is a
-     second slide worth moving to -- the script hides them, rather than the
-     markup pretending there is nowhere to go. Clicking a card opens the
-     game over the page the way a meme opens, so the index stays the one
-     place everything lives. */
-  .arc{ margin-top:36px; padding:22px 0 2px; border-top:1px solid #272B36; }
-  .arc-stage{ position:relative; }
-  .arc-track{
-    display:flex; overflow-x:auto;
-    scroll-snap-type:x mandatory; scroll-behavior:smooth;
-    -webkit-overflow-scrolling:touch; scrollbar-width:none;
-  }
-  .arc-track::-webkit-scrollbar{ display:none; }
-  .arc-slide{
-    flex:0 0 100%; scroll-snap-align:center;
-    display:flex; align-items:center; justify-content:center;
-  }
+  /* ---- Arcade: the door to the arcade ----
+     There are two games now and each has a page of its own, so the deck of
+     cards that used to sit here moved to /games/ and this is one card
+     pointing at it. A link rather than a button: it goes somewhere, which
+     means the block needs no script at all now.
 
-  /* a button, not a link: it opens something rather than going somewhere */
+     The block label above the picture already says Arcade, so the card
+     carries the line and nothing else. */
+  .arc{ margin-top:36px; padding:22px 0 2px; border-top:1px solid #272B36; }
+
   .arc-card{
     width:100%; max-width:430px; margin:0 auto; padding:0;
-    display:block; cursor:pointer; font:inherit; color:inherit;
+    display:block; text-decoration:none; color:inherit;
     background:#13161D; border:1px solid #272B36; border-radius:12px;
     overflow:hidden; transition:border-color .15s, transform .15s;
   }
@@ -491,42 +480,9 @@
   }
   .arc-card:hover .arc-veil, .arc-card:focus-visible .arc-veil{ opacity:1; }
 
-  /* A button may only hold phrasing content, so these are spans rather than
-     a p. They need telling to stack. */
   .arc-who{ display:block; padding:14px 16px 16px; text-align:center; }
-  .arc-name{
-    display:block; font-size:1rem; font-weight:600; line-height:1.35;
-    color:var(--blurple-text); text-wrap:balance;
-  }
-  .arc-note{ display:block; margin-top:3px; font-size:.8rem; color:var(--text-dim); text-wrap:balance; }
+  .arc-note{ display:block; font-size:.9rem; color:var(--text-muted); text-wrap:balance; }
 
-  .arc-nav{
-    position:absolute; top:120px; transform:translateY(-50%);
-    width:34px; height:34px; border-radius:50%;
-    background:rgba(12,14,19,.72); border:1px solid #3A404F; color:#C7CBD6;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer; padding:0; transition:color .15s, border-color .15s, opacity .15s;
-  }
-  .arc-nav:hover{ color:#D4A24C; border-color:#D4A24C; }
-  .arc-nav:focus-visible{ outline:2px solid #D4A24C; outline-offset:2px; }
-  .arc-nav[disabled]{ opacity:.3; cursor:default; }
-  .arc-nav[disabled]:hover{ color:#C7CBD6; border-color:#3A404F; }
-  .arc-prev{ left:12px; }
-  .arc-next{ right:12px; }
-
-  .arc-dots{ display:flex; justify-content:center; gap:7px; margin-top:14px; }
-  .arc-dot{
-    width:7px; height:7px; padding:0; border-radius:50%;
-    background:#2F3442; border:0; cursor:pointer; transition:background .15s;
-  }
-  .arc-dot[aria-current="true"]{ background:#D4A24C; }
-  .arc-dot:focus-visible{ outline:2px solid #D4A24C; outline-offset:3px; }
-
-  /* display:flex would otherwise beat the hidden attribute, so the single
-     game still showed arrows pointing nowhere. */
-  .arc-nav[hidden], .arc-dots[hidden]{ display:none; }
-
-  @media (max-width:560px){ .arc-nav{ display:none; } }
 
   /* ---- Server Change Log: beaded rail, newest first ---- */
   .rail{ margin-top:36px; padding:22px 0 2px; border-top:1px solid #272B36; }
@@ -565,6 +521,7 @@
     <nav class="menu">
       <a href="/news.html">Daily News Briefing</a>
       <a href="/art-history/">Weekly Art History</a>
+      <a href="/games/">Arcade</a>
     </nav>
 
     <div class="card-body">
@@ -645,107 +602,98 @@
     <section class="arc" aria-label="Arcade">
       <p class="block-label">Arcade</p>
 
-      <div class="arc-stage">
-        <button class="arc-nav arc-prev" type="button" aria-label="Previous game" disabled>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg>
-        </button>
+      <a class="arc-card" href="/games/">
+        <span class="arc-plate">
+          <!-- A room of cabinets, their screens lit in the four process colors. -->
+          <svg viewBox="0 0 240 150" role="img" aria-label="A dim arcade: a row of cabinets glowing cyan, magenta, yellow and blue under a neon sign, two players at the machines.">
+                  <rect width="240" height="150" fill="#16112E"/>
+                  <rect y="112" width="240" height="38" fill="#241C4A"/>
+                  <g fill="#2E2558">
+                    <polygon points="0,112 24,112 12,150 -18,150"/>
+                    <polygon points="48,112 72,112 76,150 46,150"/>
+                    <polygon points="96,112 120,112 134,150 104,150"/>
+                    <polygon points="144,112 168,112 192,150 162,150"/>
+                    <polygon points="192,112 216,112 250,150 220,150"/>
+                  </g>
+                  <rect y="110" width="240" height="2.5" fill="#3B3072"/>
 
-        <div class="arc-track" id="arcdeck">
+                  <path d="M0 10 Q 22 22 46 13 Q 70 4 94 14" fill="none" stroke="#3B3072" stroke-width="1.2"/>
+                  <path d="M146 14 Q 170 4 194 13 Q 218 22 240 10" fill="none" stroke="#3B3072" stroke-width="1.2"/>
+                  <g fill="#F3E500"><circle cx="22" cy="18" r="2"/><circle cx="46" cy="13" r="2"/><circle cx="70" cy="9" r="2"/><circle cx="170" cy="9" r="2"/><circle cx="194" cy="13" r="2"/><circle cx="218" cy="18" r="2"/></g>
 
-          <!-- One slide per game. Copy the block below, swap the plate, the
-               name, the line and data-href. -->
-          <div class="arc-slide">
-            <button class="arc-card" type="button" data-href="/games/color-processor.html">
-              <span class="arc-plate">
-                <!-- Four toner tanks over a page printing itself in halftone. -->
-                <svg viewBox="0 0 240 150" role="img" aria-label="Four toner tanks above a page, printing itself in halftone dots as a laser sweeps across it."><rect x="26" y="58" width="188" height="80" rx="3" fill="#F2EFE6"/><g fill="#1A1A1A" opacity=".9"><circle cx="169" cy="77" r="1.6"/><circle cx="177" cy="84" r="1.6"/><circle cx="155" cy="77" r="1.6"/><circle cx="162" cy="84" r="1.9"/><circle cx="169" cy="91" r="1.9"/><circle cx="177" cy="98" r="1.6"/><circle cx="148" cy="84" r="1.9"/><circle cx="155" cy="91" r="2.1"/><circle cx="162" cy="98" r="2.1"/><circle cx="169" cy="105" r="1.7"/><circle cx="113" cy="63" r="1.7"/><circle cx="134" cy="84" r="1.6"/><circle cx="141" cy="91" r="2.1"/><circle cx="148" cy="98" r="2.3"/><circle cx="155" cy="105" r="2.2"/><circle cx="162" cy="112" r="1.8"/><circle cx="99" cy="63" r="2.4"/><circle cx="106" cy="70" r="1.6"/><circle cx="127" cy="91" r="1.9"/><circle cx="134" cy="98" r="2.4"/><circle cx="141" cy="105" r="2.5"/><circle cx="148" cy="112" r="2.3"/><circle cx="155" cy="119" r="1.9"/><circle cx="85" cy="63" r="3.0"/><circle cx="92" cy="70" r="2.3"/><circle cx="120" cy="98" r="2.1"/><circle cx="127" cy="105" r="2.6"/><circle cx="134" cy="112" r="2.7"/><circle cx="141" cy="119" r="2.4"/><circle cx="148" cy="126" r="1.9"/><circle cx="71" cy="63" r="3.5"/><circle cx="78" cy="70" r="2.9"/><circle cx="85" cy="77" r="2.1"/><circle cx="106" cy="98" r="1.7"/><circle cx="113" cy="105" r="2.4"/><circle cx="120" cy="112" r="2.8"/><circle cx="127" cy="119" r="2.8"/><circle cx="134" cy="126" r="2.4"/><circle cx="141" cy="133" r="1.9"/><circle cx="56" cy="63" r="3.7"/><circle cx="63" cy="70" r="3.4"/><circle cx="71" cy="77" r="2.8"/><circle cx="78" cy="84" r="1.9"/><circle cx="99" cy="105" r="2.0"/><circle cx="106" cy="112" r="2.6"/><circle cx="113" cy="119" r="2.9"/><circle cx="120" cy="126" r="2.9"/><circle cx="127" cy="133" r="2.4"/><circle cx="42" cy="63" r="3.7"/><circle cx="49" cy="70" r="3.8"/><circle cx="56" cy="77" r="3.4"/><circle cx="63" cy="84" r="2.7"/><circle cx="71" cy="91" r="1.7"/><circle cx="85" cy="105" r="1.5"/><circle cx="92" cy="112" r="2.3"/><circle cx="99" cy="119" r="2.9"/><circle cx="106" cy="126" r="3.1"/><circle cx="113" cy="133" r="2.9"/><circle cx="28" cy="63" r="3.4"/><circle cx="35" cy="70" r="3.8"/><circle cx="42" cy="77" r="3.8"/><circle cx="49" cy="84" r="3.3"/><circle cx="56" cy="91" r="2.5"/><circle cx="63" cy="98" r="1.5"/><circle cx="78" cy="112" r="1.8"/><circle cx="85" cy="119" r="2.6"/><circle cx="92" cy="126" r="3.1"/><circle cx="99" cy="133" r="3.2"/><circle cx="28" cy="77" r="4.0"/><circle cx="35" cy="84" r="3.8"/><circle cx="42" cy="91" r="3.2"/><circle cx="49" cy="98" r="2.3"/><circle cx="71" cy="119" r="2.1"/><circle cx="78" cy="126" r="2.8"/><circle cx="85" cy="133" r="3.2"/><circle cx="28" cy="91" r="3.8"/><circle cx="35" cy="98" r="3.0"/><circle cx="42" cy="105" r="2.1"/><circle cx="63" cy="126" r="2.3"/><circle cx="71" cy="133" r="3.1"/><circle cx="28" cy="105" r="2.9"/><circle cx="35" cy="112" r="1.8"/><circle cx="49" cy="126" r="1.8"/><circle cx="56" cy="133" r="2.6"/><circle cx="28" cy="119" r="1.6"/><circle cx="42" cy="133" r="2.0"/></g><g fill="#0093D3" opacity=".9"><circle cx="107" cy="60" r="1.9"/><circle cx="62" cy="60" r="3.8"/><circle cx="73" cy="63" r="3.5"/><circle cx="83" cy="65" r="2.9"/><circle cx="94" cy="68" r="2.2"/><circle cx="27" cy="62" r="3.6"/><circle cx="38" cy="65" r="4.0"/><circle cx="48" cy="67" r="4.0"/><circle cx="59" cy="70" r="3.7"/><circle cx="70" cy="73" r="3.1"/><circle cx="80" cy="76" r="2.4"/><circle cx="35" cy="75" r="4.3"/><circle cx="46" cy="78" r="4.0"/><circle cx="56" cy="81" r="3.4"/><circle cx="67" cy="84" r="2.6"/><circle cx="77" cy="87" r="1.7"/><circle cx="120" cy="98" r="1.7"/><circle cx="32" cy="86" r="4.2"/><circle cx="43" cy="89" r="3.6"/><circle cx="53" cy="92" r="2.7"/><circle cx="64" cy="94" r="1.9"/><circle cx="96" cy="103" r="1.7"/><circle cx="107" cy="106" r="2.0"/><circle cx="117" cy="109" r="2.1"/><circle cx="128" cy="111" r="1.9"/><circle cx="29" cy="96" r="3.8"/><circle cx="40" cy="99" r="2.9"/><circle cx="51" cy="102" r="2.0"/><circle cx="82" cy="111" r="1.8"/><circle cx="93" cy="114" r="2.3"/><circle cx="104" cy="116" r="2.5"/><circle cx="114" cy="119" r="2.5"/><circle cx="125" cy="122" r="2.1"/><circle cx="37" cy="110" r="2.1"/><circle cx="69" cy="118" r="2.0"/><circle cx="80" cy="121" r="2.6"/><circle cx="90" cy="124" r="2.9"/><circle cx="101" cy="127" r="2.9"/><circle cx="111" cy="130" r="2.6"/><circle cx="122" cy="133" r="2.0"/><circle cx="55" cy="126" r="2.1"/><circle cx="66" cy="129" r="2.8"/><circle cx="77" cy="132" r="3.1"/><circle cx="87" cy="135" r="3.2"/><circle cx="42" cy="134" r="2.3"/><circle cx="53" cy="137" r="2.9"/></g><g fill="#E6007E" opacity=".9"><circle cx="88" cy="69" r="1.8"/><circle cx="73" cy="61" r="3.2"/><circle cx="76" cy="73" r="2.5"/><circle cx="88" cy="119" r="1.9"/><circle cx="91" cy="130" r="2.1"/><circle cx="61" cy="64" r="3.7"/><circle cx="64" cy="76" r="3.2"/><circle cx="67" cy="87" r="2.1"/><circle cx="77" cy="122" r="2.2"/><circle cx="80" cy="134" r="2.7"/><circle cx="50" cy="67" r="4.1"/><circle cx="53" cy="79" r="3.7"/><circle cx="56" cy="90" r="2.7"/><circle cx="65" cy="125" r="2.3"/><circle cx="68" cy="137" r="3.1"/><circle cx="38" cy="70" r="4.4"/><circle cx="41" cy="82" r="4.2"/><circle cx="44" cy="93" r="3.3"/><circle cx="47" cy="105" r="2.0"/><circle cx="54" cy="128" r="2.3"/><circle cx="30" cy="85" r="4.6"/><circle cx="33" cy="97" r="3.8"/><circle cx="36" cy="108" r="2.5"/><circle cx="42" cy="131" r="2.1"/><circle cx="30" cy="134" r="1.9"/></g><g fill="#F3E500" opacity=".9"><circle cx="36" cy="62" r="3.9"/><circle cx="48" cy="62" r="3.6"/><circle cx="60" cy="62" r="2.7"/><circle cx="36" cy="74" r="4.3"/><circle cx="48" cy="74" r="3.6"/><circle cx="60" cy="74" r="2.5"/><circle cx="36" cy="86" r="4.1"/><circle cx="48" cy="86" r="3.2"/><circle cx="60" cy="86" r="2.0"/><circle cx="36" cy="98" r="3.3"/><circle cx="48" cy="98" r="2.3"/><circle cx="36" cy="110" r="2.2"/><circle cx="36" cy="134" r="2.0"/><circle cx="48" cy="134" r="2.3"/><circle cx="60" cy="134" r="2.1"/></g><rect x="26" y="10" width="44" height="30" rx="5" fill="#11131A" stroke="#3A404F" stroke-width="1.4"/><rect x="30" y="22" width="36" height="14" rx="3" fill="#0093D3"/><rect x="44" y="40" width="8" height="5" rx="1.5" fill="#3A404F"/><text x="48" y="20" text-anchor="middle" font-family="Poppins, system-ui, sans-serif" font-size="8" font-weight="700" fill="#7A8094">C</text><rect x="74" y="10" width="44" height="30" rx="5" fill="#11131A" stroke="#3A404F" stroke-width="1.4"/><rect x="78" y="22" width="36" height="14" rx="3" fill="#E6007E"/><rect x="92" y="40" width="8" height="5" rx="1.5" fill="#3A404F"/><text x="96" y="20" text-anchor="middle" font-family="Poppins, system-ui, sans-serif" font-size="8" font-weight="700" fill="#7A8094">M</text><rect x="122" y="10" width="44" height="30" rx="5" fill="#11131A" stroke="#3A404F" stroke-width="1.4"/><rect x="126" y="22" width="36" height="14" rx="3" fill="#F3E500"/><rect x="140" y="40" width="8" height="5" rx="1.5" fill="#3A404F"/><text x="144" y="20" text-anchor="middle" font-family="Poppins, system-ui, sans-serif" font-size="8" font-weight="700" fill="#7A8094">Y</text><rect x="170" y="10" width="44" height="30" rx="5" fill="#11131A" stroke="#3A404F" stroke-width="1.4"/><rect x="174" y="22" width="36" height="14" rx="3" fill="#4A5162"/><rect x="188" y="40" width="8" height="5" rx="1.5" fill="#3A404F"/><text x="192" y="20" text-anchor="middle" font-family="Poppins, system-ui, sans-serif" font-size="8" font-weight="700" fill="#7A8094">K</text><circle cx="48" cy="50" r="5.2" fill="#0093D3"/><circle cx="96" cy="48" r="4.4" fill="#E6007E"/><circle cx="144" cy="52" r="4.8" fill="#F3E500"/><circle cx="192" cy="47" r="4.0" fill="#1A1A1A"/><rect x="26" y="96" width="188" height="1.6" fill="#D4A24C" opacity=".85"/><rect x="26" y="94.4" width="188" height="4.8" fill="#D4A24C" opacity=".18"/></svg>
-                <span class="arc-veil">Play</span>
-              </span>
-              <span class="arc-who">
-                <span class="arc-name">Gallery Printshop</span>
-                <span class="arc-note">Match the Toner, Print the Page</span>
-              </span>
-            </button>
-          </div>
-          <div class="arc-slide">
-            <button class="arc-card" type="button" data-href="/games/paper-trail.html">
-              <span class="arc-plate">
-                <!-- Ms. Printer, her trail, and the ink ahead of her. -->
-                <svg viewBox="0 0 240 150" role="img" aria-label="Ms. Printer trailing stacks of printed paper, with ink splats ahead of her.">
+                  <rect x="98" y="8" width="44" height="20" rx="3" fill="#1F1740" stroke="#FF4FA3" stroke-width="1.6"/>
+                  <text x="120" y="22" text-anchor="middle" font-family="Poppins, system-ui, sans-serif" font-size="10" font-weight="700" fill="#FF4FA3" letter-spacing="1.5">OPEN</text>
+
+                  <g fill="#2A2350"><rect x="18" y="36" width="26" height="20" rx="2"/><rect x="56" y="30" width="20" height="24" rx="2"/><rect x="170" y="32" width="22" height="22" rx="2"/><rect x="202" y="38" width="26" height="18" rx="2"/></g>
+
                   <g>
-                    <rect x="20"  y="66" width="22" height="22" rx="3" fill="#B9B3A4"/>
-                    <rect x="17"  y="63" width="22" height="22" rx="3" fill="#D6D0C2"/>
-                    <rect x="14"  y="60" width="22" height="22" rx="3" fill="#F2EFE6"/>
-                    <rect x="17"  y="63" width="16" height="4" rx="1.5" fill="#2B2F3A"/>
-                    <rect x="17"  y="71" width="16" height="1.8" fill="#C9C3B4"/>
-                    <rect x="17"  y="75" width="11" height="1.8" fill="#C9C3B4"/>
-
-                    <rect x="58"  y="66" width="22" height="22" rx="3" fill="#B9B3A4"/>
-                    <rect x="55"  y="63" width="22" height="22" rx="3" fill="#D6D0C2"/>
-                    <rect x="52"  y="60" width="22" height="22" rx="3" fill="#F2EFE6"/>
-                    <rect x="55"  y="63" width="16" height="4" rx="1.5" fill="#E8C53D"/>
-                    <rect x="55"  y="71" width="16" height="1.8" fill="#C9C3B4"/>
-                    <rect x="55"  y="75" width="11" height="1.8" fill="#C9C3B4"/>
-
-                    <rect x="96"  y="66" width="22" height="22" rx="3" fill="#B9B3A4"/>
-                    <rect x="93"  y="63" width="22" height="22" rx="3" fill="#D6D0C2"/>
-                    <rect x="90"  y="60" width="22" height="22" rx="3" fill="#F2EFE6"/>
-                    <rect x="93"  y="63" width="16" height="4" rx="1.5" fill="#22B8E6"/>
-                    <rect x="93"  y="71" width="16" height="1.8" fill="#C9C3B4"/>
-                    <rect x="93"  y="75" width="11" height="1.8" fill="#C9C3B4"/>
+                    <rect x="8" y="52" width="30" height="9" rx="2" fill="#00A8E8"/>
+                    <rect x="8" y="61" width="30" height="34" rx="2" fill="#322A58"/>
+                    <rect x="12" y="65" width="22" height="17" rx="1.5" fill="#0C2A3E"/>
+                    <rect x="14" y="67" width="18" height="13" fill="#00A8E8" opacity=".55"/>
+                    <rect x="6" y="85" width="34" height="8" rx="2" fill="#3F3568"/>
+                    <circle cx="14" cy="89" r="2" fill="#FF4FA3"/><circle cx="22" cy="89" r="1.6" fill="#F3E500"/><circle cx="29" cy="89" r="1.6" fill="#00A8E8"/>
+                    <rect x="10" y="93" width="26" height="24" rx="2" fill="#2A2350"/>
+                  </g>
+                  <g>
+                    <rect x="44" y="52" width="30" height="9" rx="2" fill="#E6007E"/>
+                    <rect x="44" y="61" width="30" height="34" rx="2" fill="#322A58"/>
+                    <rect x="48" y="65" width="22" height="17" rx="1.5" fill="#3A0C28"/>
+                    <rect x="50" y="67" width="18" height="13" fill="#E6007E" opacity=".55"/>
+                    <rect x="42" y="85" width="34" height="8" rx="2" fill="#3F3568"/>
+                    <circle cx="50" cy="89" r="2" fill="#00A8E8"/><circle cx="58" cy="89" r="1.6" fill="#F3E500"/><circle cx="65" cy="89" r="1.6" fill="#FF4FA3"/>
+                    <rect x="46" y="93" width="26" height="24" rx="2" fill="#2A2350"/>
+                  </g>
+                  <g>
+                    <rect x="92" y="48" width="34" height="9" rx="2" fill="#5865F2"/>
+                    <rect x="92" y="57" width="34" height="38" rx="2" fill="#322A58"/>
+                    <rect x="96" y="61" width="26" height="19" rx="1.5" fill="#1A1C4A"/>
+                    <rect x="98" y="63" width="22" height="15" fill="#99A2F7" opacity=".5"/>
+                    <rect x="90" y="85" width="38" height="8" rx="2" fill="#3F3568"/>
+                    <rect x="94" y="93" width="30" height="24" rx="2" fill="#2A2350"/>
+                  </g>
+                  <g>
+                    <rect x="140" y="48" width="34" height="9" rx="2" fill="#F3E500"/>
+                    <rect x="140" y="57" width="34" height="38" rx="2" fill="#322A58"/>
+                    <rect x="144" y="61" width="26" height="19" rx="1.5" fill="#3A3410"/>
+                    <rect x="146" y="63" width="22" height="15" fill="#F3E500" opacity=".5"/>
+                    <rect x="138" y="85" width="38" height="8" rx="2" fill="#3F3568"/>
+                    <rect x="142" y="93" width="30" height="24" rx="2" fill="#2A2350"/>
+                  </g>
+                  <g>
+                    <rect x="192" y="52" width="30" height="9" rx="2" fill="#99A2F7"/>
+                    <rect x="192" y="61" width="30" height="34" rx="2" fill="#322A58"/>
+                    <rect x="196" y="65" width="22" height="17" rx="1.5" fill="#1A1C4A"/>
+                    <rect x="198" y="67" width="18" height="13" fill="#5865F2" opacity=".55"/>
+                    <rect x="190" y="85" width="34" height="8" rx="2" fill="#3F3568"/>
+                    <circle cx="198" cy="89" r="2" fill="#F3E500"/><circle cx="206" cy="89" r="1.6" fill="#FF4FA3"/><circle cx="213" cy="89" r="1.6" fill="#00A8E8"/>
+                    <rect x="194" y="93" width="26" height="24" rx="2" fill="#2A2350"/>
                   </g>
 
-                  <g>
-                    <rect x="138" y="42" width="20" height="13" rx="2" fill="#F2EFE6"/>
-                    <rect x="141" y="45" width="14" height="1.8" fill="#C9C3B4"/>
-                    <rect x="141" y="49" width="14" height="1.8" fill="#C9C3B4"/>
-                    <rect x="134" y="86" width="28" height="7" rx="2.6" fill="#C72E42"/>
-                    <rect x="126" y="52" width="44" height="40" rx="9" fill="#E8394F"/>
-                    <rect x="131" y="60" width="34" height="25" rx="6" fill="#F7F4ED"/>
-                    <rect x="136" y="55" width="24" height="4" rx="2" fill="#C72E42"/>
-                    <circle cx="137" cy="79" r="3" fill="#F79AAC"/>
-                    <circle cx="159" cy="79" r="3" fill="#F79AAC"/>
-                    <circle cx="142" cy="70" r="6.2" fill="#fff"/>
-                    <circle cx="154" cy="70" r="6.2" fill="#fff"/>
-                    <circle cx="144" cy="70" r="3.1" fill="#241B22"/>
-                    <circle cx="156" cy="70" r="3.1" fill="#241B22"/>
-                    <circle cx="145" cy="68.5" r="1.2" fill="#fff"/>
-                    <circle cx="157" cy="68.5" r="1.2" fill="#fff"/>
-                    <path d="M140 77 a8 8 0 0 0 16 0 Z" fill="#7A1626"/>
-                    <path d="M143.5 79 a4.6 4.6 0 0 0 9 0 Z" fill="#F07A95"/>
-                  </g>
+                  <g fill="#3F3568"><rect x="76" y="103" width="12" height="3" rx="1.5"/><rect x="80.5" y="105" width="3" height="12"/><rect x="76" y="116" width="12" height="2.5" rx="1.2"/></g>
+                  <g fill="#3F3568"><rect x="178" y="103" width="12" height="3" rx="1.5"/><rect x="182.5" y="105" width="3" height="12"/><rect x="178" y="116" width="12" height="2.5" rx="1.2"/></g>
 
-                  <g>
-                    <path d="M196 34 q10 -6 16 2 q10 -2 9 9 q6 7 -3 12 q-1 10 -11 7 q-7 6 -13 -2 q-11 1 -9 -10 q-5 -8 4 -12 q1 -8 7 -6 Z" fill="#E8459B"/>
-                    <circle cx="219" cy="24" r="2.6" fill="#E8459B"/>
-                    <circle cx="189" cy="60" r="2" fill="#E8459B"/>
-                    <path d="M200 104 q9 -5 14 2 q9 -1 8 8 q5 6 -3 10 q-1 9 -10 6 q-6 5 -11 -2 q-10 1 -8 -9 q-5 -7 3 -11 Z" fill="#22B8E6"/>
-                    <circle cx="222" cy="97" r="2.3" fill="#22B8E6"/>
+                  <g fill="#15102A">
+                    <circle cx="109" cy="64" r="7.5"/>
+                    <path d="M101 74 q8 -4 16 0 l3 24 -4 0 -1 20 -5 0 -1 -16 -1 16 -5 0 -1 -20 -4 0 Z"/>
+                  </g>
+                  <g fill="#15102A">
+                    <rect x="150" y="104" width="14" height="3.5" rx="1.7" fill="#3F3568"/>
+                    <rect x="155.5" y="106" width="3" height="11" fill="#3F3568"/>
+                    <rect x="150" y="116" width="14" height="2.5" rx="1.2" fill="#3F3568"/>
+                    <circle cx="157" cy="72" r="7"/>
+                    <path d="M149 82 q8 -4 16 0 l2 22 -20 0 Z"/>
+                    <rect x="148" y="104" width="6" height="12" rx="2"/>
+                    <rect x="160" y="104" width="6" height="12" rx="2"/>
                   </g>
                 </svg>
-                <span class="arc-veil">Play</span>
-              </span>
-              <span class="arc-who">
-                <span class="arc-name">Ms.&nbsp;Printer: Paper Trail</span>
-                <span class="arc-note">Eat the Ink, Don&rsquo;t Jam</span>
-              </span>
-            </button>
-          </div>
-
-        </div>
-
-        <button class="arc-nav arc-next" type="button" aria-label="Next game">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-      </div>
-
-      <div class="arc-dots">
-        <button class="arc-dot" type="button" aria-label="Go to game 1" aria-current="true"></button>
-        <button class="arc-dot" type="button" aria-label="Go to game 2"></button>
-      </div>
+          <span class="arc-veil">Play</span>
+        </span>
+        <span class="arc-who">
+          <span class="arc-note">games I&rsquo;ve experimented coding with AI</span>
+        </span>
+      </a>
     </section>
-
-
 
     <section class="rail">
       <p class="block-label">Server Change Log</p>
@@ -881,65 +829,6 @@
 
 </script>
 
-<script type="module">
-/* Arcade block: the deck, and the game that opens out of it.
-
-   Nothing the game needs is downloaded until someone clicks a card. A
-   visitor who only reads the page never fetches the game or the Supabase
-   client, which matters because this is the home page. */
-
-const track = document.getElementById('arcdeck');
-
-if (track) {
-  const slides  = Array.from(track.querySelectorAll('.arc-slide'));
-  const prev    = document.querySelector('.arc-prev');
-  const next    = document.querySelector('.arc-next');
-  const dotWrap = document.querySelector('.arc-dots');
-  const dots    = Array.from(document.querySelectorAll('.arc-dot'));
-  let i = 0;
-
-  // One game means nowhere to page to, so the controls stay out of the way
-  // until a second slide exists.
-  if (slides.length < 2) {
-    if (prev) prev.hidden = true;
-    if (next) next.hidden = true;
-    if (dotWrap) dotWrap.hidden = true;
-  }
-
-  const sync = () => {
-    if (prev) prev.disabled = i === 0;
-    if (next) next.disabled = i === slides.length - 1;
-    dots.forEach((d, n) => {
-      if (n === i) d.setAttribute('aria-current', 'true');
-      else d.removeAttribute('aria-current');
-    });
-  };
-  const go = (n) => {
-    i = Math.max(0, Math.min(slides.length - 1, n));
-    track.scrollTo({ left: slides[i].offsetLeft - track.offsetLeft, behavior: 'smooth' });
-    sync();
-  };
-
-  if (prev) prev.addEventListener('click', () => go(i - 1));
-  if (next) next.addEventListener('click', () => go(i + 1));
-  dots.forEach((d, n) => d.addEventListener('click', () => go(n)));
-
-  let t;
-  track.addEventListener('scroll', () => {
-    clearTimeout(t);
-    t = setTimeout(() => { i = Math.round(track.scrollLeft / track.clientWidth); sync(); }, 120);
-  });
-  sync();
-
-  /* Each card is a door to that game's own page. Both games have outgrown
-     opening in a window on this one: on its own page a game gets the whole
-     window, a rail back to the club, and an address that can be sent to
-     somebody or bookmarked -- none of which a window on the lander can have. */
-  document.querySelectorAll('.arc-card[data-href]').forEach((card) => {
-    card.addEventListener('click', () => { location.href = card.dataset.href; });
-  });
-}
-</script>
 
 <script type="module">
 /* Member Art Showcase: one slide per artist, straight from the database.
