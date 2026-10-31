@@ -349,6 +349,23 @@ header.page .bio {
 .site-foot a { color: var(--blurple-text); text-decoration: none; }
 .site-foot a:hover { text-decoration: underline; }
 
+/* The name and the copyright are what the site is; the links are what you
+   can do here. The line is too long for a phone at any readable size, so
+   it breaks on that seam rather than wherever the text happens to run out,
+   and the separator that joined the two halves goes with the break instead
+   of being stranded at the end of a line. */
+.foot-id, .foot-links { display: block; }
+.foot-links { margin-top: 5px; }
+.foot-sep { padding: 0 3px; }
+.site-foot a { white-space: nowrap; }
+
+/* Narrower than this the name and the copyright cannot share a line
+   either, so they split on the same principle. */
+@media (max-width: 374px) {
+  .foot-c { display: block; }
+  .foot-idsep { display: none; }
+}
+
 @media (max-width: 560px) {
   .controls { gap: 12px; }
   .work .plate { min-height: 200px; }

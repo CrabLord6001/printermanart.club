@@ -185,8 +185,17 @@
     outline-offset: -2px;
   }
 
-  @media (max-width: 400px) {
-    .menu a { letter-spacing: 0.08em; padding: 13px 8px; }
+  /* Three items instead of two, and an uppercase label with wide tracking
+     costs more width than the words suggest. Rather than let a label break
+     in half, the tracking and the padding come in first, then the size.
+     Every label has to sit on one line: the row is the shape, and a tile
+     twice the height of its neighbours is what makes it look broken. */
+  @media (max-width: 480px) {
+    .menu a { font-size: 0.66rem; letter-spacing: 0.06em; padding: 13px 6px; }
+  }
+
+  @media (max-width: 374px) {
+    .menu a { font-size: 0.6rem; letter-spacing: 0.04em; padding: 13px 4px; }
   }
 
   .cta {
@@ -224,6 +233,23 @@
 
   footer a { color: var(--blurple-text); text-decoration: none; }
   footer a:hover { text-decoration: underline; }
+
+  /* The name and the copyright are what the site is; the links are what you
+     can do here. The line is too long for a phone at any readable size, so
+     it breaks on that seam rather than wherever the text happens to run out,
+     and the separator that joined the two halves goes with the break instead
+     of being stranded at the end of a line. */
+  .foot-id, .foot-links { display: block; }
+  .foot-links { margin-top: 5px; }
+  .foot-sep { padding: 0 3px; }
+  footer a { white-space: nowrap; }
+
+  /* Narrower than this the name and the copyright cannot share a line
+     either, so they split on the same principle. */
+  @media (max-width: 374px) {
+    .foot-c { display: block; }
+    .foot-idsep { display: none; }
+  }
 
   @media (max-width: 480px) {
     .card-body { padding: 28px 22px 34px; }
@@ -519,8 +545,8 @@
     </header>
 
     <nav class="menu">
-      <a href="/news.html">Daily News Briefing</a>
-      <a href="/art-history/">Weekly Art History</a>
+      <a href="/news.html">News Briefing</a>
+      <a href="/art-history/">Art History</a>
       <a href="/games/">Arcade</a>
     </nav>
 
@@ -709,7 +735,8 @@
     </section>
 
     <footer>
-      printermanart.club &nbsp;·&nbsp; <a href="/about.html">About</a> &nbsp;·&nbsp; <a href="/member-art/submit.html">Sign in</a> &nbsp;·&nbsp; <a href="/faq.html">FAQ</a> &nbsp;·&nbsp; &copy;&nbsp;2026&nbsp;PrinterMan
+      <span class="foot-id">printermanart.club <span class="foot-sep foot-idsep">&middot;</span> <span class="foot-c">&copy;&nbsp;2026&nbsp;PrinterMan</span></span>
+      <span class="foot-links"><a href="/about.html">About</a> <span class="foot-sep">&middot;</span> <a href="/member-art/submit.html">Sign in</a> <span class="foot-sep">&middot;</span> <a href="/faq.html">FAQ</a></span>
     </footer>
     </div>
   </main>
