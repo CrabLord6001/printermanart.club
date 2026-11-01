@@ -23,7 +23,7 @@ ROOMS = [
      "pos": "pos-upper",
      "card_alt": "Detail of Caravaggio's Crucifixion of Saint Andrew: an executioner on a ladder reaching up toward the ropes."},
     {"slug": "fantasy",     "name": "Fantasy Art", "short": "Fantasy",
-     "card": "https://images.metmuseum.org/CRDImages/ep/web-large/DP-14201-003.jpg",
+     "card": "https://images.metmuseum.org/CRDImages/ep/web-large/DP-47457-001.jpg",
      "pos": "",
      "card_alt": "Detail of Böcklin's Island of the Dead: a walled rocky island with black cypresses rising at its center."},
     {"slug": "classics",    "name": "Classics", "short": "Classics",
