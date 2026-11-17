@@ -91,10 +91,13 @@ header.page .tag {
 /* Two games now, more later: the grid wraps on its own rather than being
    told how many columns to make. */
 .shelf {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;      /* an odd card out sits centered under the pair above it */
   gap: 20px;
 }
+.shelf > .arc-card { flex: 0 1 calc(50% - 10px); min-width: 0; }
+@media (max-width: 640px) { .shelf > .arc-card { flex-basis: 100%; } }
 
 .arc-card {
   display: block;
@@ -166,6 +169,21 @@ footer a { white-space: nowrap; }
   .foot-c { display: block; }
   .foot-idsep { display: none; }
 }
+/* Fort Life: the plate plays the trailer in place; the name below downloads the game. */
+.fl-plate { padding: 0; }
+.fl-vid { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; image-rendering: pixelated; }
+.fl-play {
+  position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%);
+  width: 58px; height: 58px; border-radius: 50%; border: 0; cursor: pointer;
+  display: grid; place-items: center;
+  background: rgba(10,12,17,.62); color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.55);
+  transition: background .15s, transform .15s;
+}
+.fl-play svg { width: 26px; height: 26px; margin-left: 3px; }
+.fl-card:hover .fl-play { background: var(--blurple-text); }
+.fl-card.playing .fl-play { display: none; }
+.fl-get { text-decoration: none; color: inherit; }
+.fl-get:hover .arc-name { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -264,6 +282,17 @@ footer a { white-space: nowrap; }
           </span>
         </a>
 
+        <div class="arc-card fl-card">
+          <span class="arc-plate fl-plate">
+            <video class="fl-vid" src="fort-life/trailer.mp4" poster="fort-life/card.jpg" preload="none" playsinline aria-label="Fort Life trailer"></video>
+            <button type="button" class="fl-play" aria-label="Play the trailer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></button>
+          </span>
+          <a class="arc-who fl-get" href="https://github.com/CrabLord6001/printermanart.club/releases/latest/download/FortLife-win-x64.zip">
+            <span class="arc-name">Fort Life</span>
+            <span class="arc-note">Task Manager Gamified Kingdom Sim.<br>Click to Download!</span>
+          </a>
+        </div>
+
     </section>
 
     <footer>
@@ -273,5 +302,13 @@ footer a { white-space: nowrap; }
 
   </div>
 
+<script>
+  // the Fort Life card: click the picture to play the trailer right there, with its controls
+  document.querySelectorAll('.fl-card').forEach(card => {
+    const v = card.querySelector('.fl-vid'), play = () => { card.classList.add('playing'); v.controls = true; v.play(); };
+    card.querySelector('.fl-play').addEventListener('click', play);
+    v.addEventListener('click', () => { if (!card.classList.contains('playing')) play(); });
+  });
+</script>
 </body>
 </html>
