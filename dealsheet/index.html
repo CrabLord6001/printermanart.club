@@ -27,7 +27,7 @@
   <div class="liner-inner">
     <a class="home" href="/">PrinterMan's Art Club</a>
     <h1 class="wordmark"><span>Deal</span><span>Sheet</span></h1>
-    <p class="lede">Fast food deals in one table. Pick the places you actually eat, and the rest disappears.</p>
+    <p class="lede">Your Deals on One Table</p>
   </div>
 </header>
 
@@ -46,6 +46,10 @@
           <button type="submit" class="btn small">Set</button>
           <button type="button" class="linkbtn" id="zip-clear" hidden>Clear</button>
         </div>
+        <div class="radius" id="radius-wrap">
+          <label for="radius">Search within <output id="radius-out" for="radius">15 miles</output></label>
+          <input type="range" id="radius" min="1" max="50" step="1" value="15">
+        </div>
         <p class="near-status" id="near-status" aria-live="polite"></p>
       </form>
     </div>
@@ -63,7 +67,7 @@
       </div>
       <div class="chips" id="chips" role="group" aria-labelledby="picker-h"></div>
       <div class="picker-foot">
-        <p class="picker-note">Tap the places you eat. Picks stay in this browser. Restaurants with no current deals are listed too, so you'll see their next one. Missing a restaurant? <a href="https://discord.gg/nn3xjcS745">Ask for it on our Discord</a>.</p>
+        <p class="picker-note">Tap the places you eat. Missing one? <a href="https://discord.gg/nn3xjcS745">Ask on our Discord</a>.</p>
         <button type="button" class="btn" id="done-picks">Done</button>
       </div>
     </div>
@@ -125,12 +129,11 @@
     </div>
   </section>
 
-  <section class="about" aria-labelledby="about-h">
-    <h2 id="about-h">Where these deals come from</h2>
-    <p>Each deal links to the report where it was found. Deals with a stated end date drop off the table on their own once they expire. Deals inside each chain's app can differ by person and by store, so confirm in the app or at the counter before you order.</p>
-    <p>Distances use store locations from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, which can miss a store or two. Your ZIP code is saved only in this browser. It goes to a ZIP lookup service to get map coordinates, and those coordinates go to OpenStreetMap to find nearby stores.</p>
+  <section class="about" aria-label="About these deals">
+    <p class="verify">Verify all deals through the attached links or each store's app.</p>
+    <p>Distances use store locations from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, which can miss a store or two.</p>
     <p class="updated" id="updated"></p>
-    <p class="fine">DealSheet is not affiliated with any restaurant. Prices and availability vary by location.</p>
+    <p class="fine">DealSheet is not affiliated with any restaurant.</p>
   </section>
 </main>
 

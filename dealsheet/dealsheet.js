@@ -6,7 +6,7 @@
 
   var STORE = 'dealsheet:v1';
   var NEAR_CACHE = 'dealsheet:near:v1';
-  var RADIUS_MI = 15;
+  var RADIUS_MI = 15; // default; visitors change it with the slider
   var OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
   var HOW_LABEL = { 'in-store': 'In restaurant', 'drive-thru': 'Drive-thru', app: 'App', online: 'Online', delivery: 'Delivery' };
   var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5 5 9l5-6" fill="none" stroke="#F4C542" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -70,7 +70,7 @@
     var names = [];
     list.forEach(function (c) { (osmNames[c] || [c]).forEach(function (n) { names.push(reEsc(n)); }); });
     var q = '[out:json][timeout:40];nwr["brand"~"^(' + names.join('|') + ')$"](around:' +
-            Math.round(RADIUS_MI * 1609) + ',' + loc.lat + ',' + loc.lon + ');out center;';
+            Math.round(radius() * 1609) + ',' + loc.lat + ',' + loc.lon + ');out center;';
     var body = 'data=' + encodeURIComponent(q);
     var tries = OVERPASS.map(function (u) {
       return timeoutFetch(u, { method: 'POST', body: body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, 45000)
@@ -91,22 +91,31 @@
     });
   }
 
+  function radius() { return Math.min(50, Math.max(1, +state.radius || RADIUS_MI)); }
+  function showRadius() {
+    var r = radius();
+    el('radius').value = r;
+    el('radius-out').textContent = r + (r === 1 ? ' mile' : ' miles');
+  }
+
   function setNearStatus(msg, err) { $nearStatus.textContent = msg; $nearStatus.classList.toggle('err', !!err); }
 
   function applyZip(zip, fromLoad) {
     if (!/^\d{5}$/.test(zip)) { setNearStatus('Enter a 5-digit ZIP code.', true); return; }
     var cache = load(NEAR_CACHE);
-    var key = picked().slice().sort().join('|');
+    var key = picked().slice().sort().join('|') + '@' + radius();
     var fresh = cache.zip === zip && cache.key === key && Date.now() - (cache.at || 0) < 7 * 864e5;
     state.zip = zip; save();
     $zipClear.hidden = false;
+    el('radius-wrap').hidden = false;
     el('sort-near').disabled = false;
     if (fresh) { near = cache.near; afterNear(); return; }
     setNearStatus('Looking up ' + zip + '…');
+    el('radius-wrap').hidden = false;
     lookupZip(zip).then(function (loc) {
       near = loc; near.stores = null;
       afterNear();
-      setNearStatus('Finding your restaurants near ' + loc.place + ', ' + loc.state + '. This can take up to half a minute…');
+      setNearStatus('Showing for ' + loc.place + '. Finding stores…');
       if (!state.picks || !picked().length) { near.stores = null; near.needPicks = true; afterNear(); return; }
       near.needPicks = false;
       return lookupStores(loc, picked()).then(function (stores) {
@@ -125,19 +134,16 @@
 
   function afterNear() {
     if (!near) { setNearStatus(''); render(); renderMine(); return; }
-    var where = near.place + ', ' + near.state;
-    if (near.needPicks) setNearStatus('Showing deals for ' + where + '. Choose your restaurants to see how far each one is.');
-    else if (near.failed) setNearStatus('Showing deals for ' + where + '. Store distances didn’t load; use the map links instead.');
-    else if (near.stores) {
-      var n = picked().filter(function (c) { return near.stores[c]; }).length;
-      setNearStatus('Showing deals for ' + where + '. ' + n + ' of your restaurants have a location within ' + RADIUS_MI + ' miles.');
-    } else setNearStatus('Showing deals for ' + where + '.');
+    var where = near.place;
+    if (near.needPicks) setNearStatus('Showing for ' + where + '. Choose restaurants to see distances.');
+    else if (near.failed) setNearStatus('Showing for ' + where + '. Distances didn’t load, so rows link to a map.');
+    else setNearStatus('Showing for ' + where + (near.stores ? '' : '. Finding stores…'));
     renderChips(); renderMine(); render();
   }
 
   function clearZip() {
     near = null; delete state.zip; save();
-    $zip.value = ''; $zipClear.hidden = true;
+    $zip.value = ''; $zipClear.hidden = true; el('radius-wrap').hidden = true;
     var o = el('sort-near'); o.disabled = true;
     if ($sort.value === 'near') { $sort.value = 'ends'; persistControls(); }
     setNearStatus(''); renderChips(); renderMine(); render();
@@ -151,7 +157,7 @@
       return '<span class="dist"><a href="' + url + '" target="_blank" rel="noopener" aria-label="Directions to the nearest ' + esc(chain) + ', ' + s.mi.toFixed(1) + ' miles away">' + s.mi.toFixed(1) + ' mi away</a></span>';
     }
     var search = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(chain + ' near ' + near.zip);
-    if (near.stores) return '<span class="dist far">None within ' + RADIUS_MI + ' mi · <a href="' + search + '" target="_blank" rel="noopener">Map</a></span>';
+    if (near.stores) return '<span class="dist far">None within ' + radius() + ' mi · <a href="' + search + '" target="_blank" rel="noopener">Map</a></span>';
     return '<span class="dist"><a href="' + search + '" target="_blank" rel="noopener">Find on map</a></span>';
   }
   function distOf(chain) { var s = near && near.stores && near.stores[chain]; return s ? s.mi : 1e9; }
@@ -247,7 +253,7 @@
   function renderMine() {
     var picks = picked(), $l = el('mine-list');
     if (!state.picks || picks.length === chains.length) {
-      $l.innerHTML = 'Showing deals from <strong>all ' + chains.length + ' restaurants</strong>. Choose the ones you use to cut the list down.';
+      $l.innerHTML = 'All <strong>' + chains.length + ' restaurants</strong>. Choose yours to cut the list down.';
     } else if (!picks.length) {
       $l.textContent = 'No restaurants chosen yet.';
     } else {
@@ -338,6 +344,8 @@
   });
   el('near-form').addEventListener('submit', function (e) { e.preventDefault(); applyZip(($zip.value || '').trim()); });
   $zipClear.addEventListener('click', clearZip);
+  el('radius').addEventListener('input', function () { state.radius = +this.value; showRadius(); });
+  el('radius').addEventListener('change', function () { state.radius = +this.value; save(); if (state.zip) applyZip(state.zip); });
   el('reset').addEventListener('click', function () {
     $q.value = ''; $how.value = ''; $noapp.checked = false;
     persistControls(); render();
@@ -345,6 +353,8 @@
   });
 
   // Restore controls
+  showRadius();
+  el('radius-wrap').hidden = !state.zip;
   if (state.q) $q.value = state.q;
   if (state.how) $how.value = state.how;
   $noapp.checked = !!state.noapp;
