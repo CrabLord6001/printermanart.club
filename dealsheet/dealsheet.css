@@ -224,7 +224,8 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
 
 /* ---------- About ---------- */
 .about { margin-top: 48px; color: var(--ink-2); border-top: 2px solid var(--ink); padding-top: 20px; }
-.about .verify { font-weight: 700; color: var(--ink); font-size: 17px; }
+.about p { font-size: 14px; font-style: italic; color: var(--ink-3); margin: 0 0 6px; }
+.about .updated { font-weight: 400; color: var(--ink-3); }
 .about h2 { color: var(--ink); margin-bottom: 8px; }
 .about p { margin: 0 0 10px; }
 .updated { font-weight: 700; color: var(--ink); }
@@ -309,7 +310,7 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
 .field.grow input { width: 100%; max-width: 320px; }
 .picker .chips { max-height: 260px; overflow-y: auto; padding: 2px; }
 .chip .n.zero { opacity: .55; }
-.picker-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-top: 14px; }
+.picker-foot { display: flex; justify-content: flex-end; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-top: 14px; }
 .picker-foot .picker-note { margin: 0; max-width: 60ch; }
 .picker-foot a { font-weight: 700; color: var(--ketchup); }
 .chips .none { color: var(--ink-3); font-size: 14px; margin: 4px 0; }

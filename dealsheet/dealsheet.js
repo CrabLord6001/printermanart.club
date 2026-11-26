@@ -91,7 +91,7 @@
     });
   }
 
-  function radius() { return Math.min(50, Math.max(1, +state.radius || RADIUS_MI)); }
+  function radius() { return Math.min(30, Math.max(1, +state.radius || RADIUS_MI)); }
   function showRadius() {
     var r = radius();
     el('radius').value = r;
