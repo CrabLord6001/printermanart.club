@@ -547,8 +547,8 @@ button.tag { font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; 
 .lede::before, .lede::after {
   content: "\2665"; font-size: .7em; color: #E78A9C;
 }
-/* Fork and knife beside the plate on wide screens */
-@media (min-width: 761px) {
+/* Fork and knife: beside the plate on wide screens, crossed behind it on phones */
+@media (min-width: 0px) {
   .liner::before, .liner::after {
     content: ""; position: absolute; top: 50%; width: 46px; height: 330px; transform: translateY(-50%);
     background-repeat: no-repeat; background-position: center; background-size: contain;
@@ -567,4 +567,14 @@ button.tag { font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; 
   .liner { padding: 24px 12px 30px; }
   .wordmark { box-shadow: 4px 4px 0 var(--ink); }
   .lede { margin-top: 14px; }
+}
+
+@media (max-width: 760px) {
+  .liner-inner { z-index: 1; }
+  .liner::before, .liner::after {
+    left: 50%; top: 50%; width: min(17vw, 66px); height: min(120vw, 470px);
+    margin-left: max(-8.5vw, -33px); z-index: 0;
+  }
+  .liner::before { transform: translateY(-50%) rotate(-38deg); }
+  .liner::after { transform: translateY(-50%) rotate(38deg); }
 }
