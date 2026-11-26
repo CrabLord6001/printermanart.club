@@ -1,0 +1,1635 @@
+{
+ "updated": "2026-11-26T15:52:04Z",
+ "chains": [
+  {
+   "name": "7-Eleven",
+   "osm": [
+    "7-Eleven"
+   ]
+  },
+  {
+   "name": "Arby's",
+   "osm": [
+    "Arby's"
+   ]
+  },
+  {
+   "name": "Biggby Coffee",
+   "osm": [
+    "Biggby Coffee"
+   ]
+  },
+  {
+   "name": "Black Rock Coffee Bar",
+   "osm": [
+    "Black Rock Coffee Bar"
+   ]
+  },
+  {
+   "name": "Blimpie",
+   "osm": [
+    "Blimpie"
+   ]
+  },
+  {
+   "name": "Bojangles",
+   "osm": [
+    "Bojangles",
+    "Bojangles'"
+   ]
+  },
+  {
+   "name": "Burger King",
+   "osm": [
+    "Burger King"
+   ]
+  },
+  {
+   "name": "Carl's Jr.",
+   "osm": [
+    "Carl's Jr.",
+    "Carl's Jr"
+   ]
+  },
+  {
+   "name": "Casey's",
+   "osm": [
+    "Casey's"
+   ]
+  },
+  {
+   "name": "Checkers",
+   "osm": [
+    "Checkers",
+    "Rally's"
+   ]
+  },
+  {
+   "name": "Chick-fil-A",
+   "osm": [
+    "Chick-fil-A"
+   ]
+  },
+  {
+   "name": "Chipotle",
+   "osm": [
+    "Chipotle",
+    "Chipotle Mexican Grill"
+   ]
+  },
+  {
+   "name": "Chronic Tacos",
+   "osm": [
+    "Chronic Tacos"
+   ]
+  },
+  {
+   "name": "Church's Texas Chicken",
+   "osm": [
+    "Church's Texas Chicken",
+    "Church's Chicken"
+   ]
+  },
+  {
+   "name": "Cinnabon",
+   "osm": [
+    "Cinnabon"
+   ]
+  },
+  {
+   "name": "Crisp & Green",
+   "osm": [
+    "Crisp & Green"
+   ]
+  },
+  {
+   "name": "Culver's",
+   "osm": [
+    "Culver's"
+   ]
+  },
+  {
+   "name": "Dairy Queen",
+   "osm": [
+    "Dairy Queen",
+    "DQ"
+   ]
+  },
+  {
+   "name": "Del Taco",
+   "osm": [
+    "Del Taco"
+   ]
+  },
+  {
+   "name": "Domino's",
+   "osm": [
+    "Domino's",
+    "Domino's Pizza"
+   ]
+  },
+  {
+   "name": "Dunkin'",
+   "osm": [
+    "Dunkin'",
+    "Dunkin",
+    "Dunkin' Donuts"
+   ]
+  },
+  {
+   "name": "Fazoli's",
+   "osm": [
+    "Fazoli's"
+   ]
+  },
+  {
+   "name": "Firehouse Subs",
+   "osm": [
+    "Firehouse Subs"
+   ]
+  },
+  {
+   "name": "Five Guys",
+   "osm": [
+    "Five Guys"
+   ]
+  },
+  {
+   "name": "Freddy's",
+   "osm": [
+    "Freddy's"
+   ]
+  },
+  {
+   "name": "Freebirds World Burrito",
+   "osm": [
+    "Freebirds World Burrito"
+   ]
+  },
+  {
+   "name": "Habit Burger & Grill",
+   "osm": [
+    "The Habit Burger Grill"
+   ]
+  },
+  {
+   "name": "Hardee's",
+   "osm": [
+    "Hardee's"
+   ]
+  },
+  {
+   "name": "Jack in the Box",
+   "osm": [
+    "Jack in the Box"
+   ]
+  },
+  {
+   "name": "Jamba",
+   "osm": [
+    "Jamba",
+    "Jamba Juice"
+   ]
+  },
+  {
+   "name": "Jason's Deli",
+   "osm": [
+    "Jason's Deli"
+   ]
+  },
+  {
+   "name": "Jersey Mike's",
+   "osm": [
+    "Jersey Mike's",
+    "Jersey Mike's Subs"
+   ]
+  },
+  {
+   "name": "Jimmy John's",
+   "osm": [
+    "Jimmy John's"
+   ]
+  },
+  {
+   "name": "KFC",
+   "osm": [
+    "KFC"
+   ]
+  },
+  {
+   "name": "Krispy Kreme",
+   "osm": [
+    "Krispy Kreme"
+   ]
+  },
+  {
+   "name": "Krystal",
+   "osm": [
+    "Krystal"
+   ]
+  },
+  {
+   "name": "Little Caesars",
+   "osm": [
+    "Little Caesars"
+   ]
+  },
+  {
+   "name": "Long John Silver's",
+   "osm": [
+    "Long John Silver's"
+   ]
+  },
+  {
+   "name": "McDonald's",
+   "osm": [
+    "McDonald's"
+   ]
+  },
+  {
+   "name": "Moe's Southwest Grill",
+   "osm": [
+    "Moe's Southwest Grill"
+   ]
+  },
+  {
+   "name": "Panda Express",
+   "osm": [
+    "Panda Express"
+   ]
+  },
+  {
+   "name": "Panera Bread",
+   "osm": [
+    "Panera Bread",
+    "Panera"
+   ]
+  },
+  {
+   "name": "Paris Baguette",
+   "osm": [
+    "Paris Baguette"
+   ]
+  },
+  {
+   "name": "Pizza Hut",
+   "osm": [
+    "Pizza Hut"
+   ]
+  },
+  {
+   "name": "Pokeworks",
+   "osm": [
+    "Pokeworks"
+   ]
+  },
+  {
+   "name": "Popeyes",
+   "osm": [
+    "Popeyes",
+    "Popeyes Louisiana Kitchen"
+   ]
+  },
+  {
+   "name": "Port of Subs",
+   "osm": [
+    "Port of Subs"
+   ]
+  },
+  {
+   "name": "Potbelly",
+   "osm": [
+    "Potbelly"
+   ]
+  },
+  {
+   "name": "Raising Cane's",
+   "osm": [
+    "Raising Cane's",
+    "Raising Cane's Chicken Fingers"
+   ]
+  },
+  {
+   "name": "Shake Shack",
+   "osm": [
+    "Shake Shack"
+   ]
+  },
+  {
+   "name": "Sonic",
+   "osm": [
+    "Sonic",
+    "Sonic Drive-In"
+   ]
+  },
+  {
+   "name": "Starbucks",
+   "osm": [
+    "Starbucks"
+   ]
+  },
+  {
+   "name": "Subway",
+   "osm": [
+    "Subway"
+   ]
+  },
+  {
+   "name": "Taco Bell",
+   "osm": [
+    "Taco Bell"
+   ]
+  },
+  {
+   "name": "Taco Cabana",
+   "osm": [
+    "Taco Cabana"
+   ]
+  },
+  {
+   "name": "Tijuana Flats",
+   "osm": [
+    "Tijuana Flats"
+   ]
+  },
+  {
+   "name": "Tocaya",
+   "osm": [
+    "Tocaya"
+   ]
+  },
+  {
+   "name": "Wayback Burgers",
+   "osm": [
+    "Wayback Burgers"
+   ]
+  },
+  {
+   "name": "Wendy's",
+   "osm": [
+    "Wendy's"
+   ]
+  },
+  {
+   "name": "Whataburger",
+   "osm": [
+    "Whataburger"
+   ]
+  },
+  {
+   "name": "Wienerschnitzel",
+   "osm": [
+    "Wienerschnitzel"
+   ]
+  },
+  {
+   "name": "Wingstop",
+   "osm": [
+    "Wingstop"
+   ]
+  },
+  {
+   "name": "Yogurtland",
+   "osm": [
+    "Yogurtland"
+   ]
+  },
+  {
+   "name": "Zaxby's",
+   "osm": [
+    "Zaxby's"
+   ]
+  }
+ ],
+ "deals": [
+  {
+   "id": "7eleven-bf-pizza",
+   "chain": "7-Eleven",
+   "title": "Free large pizza with delivery",
+   "details": "Get a free large pizza on a 7NOW app delivery order of $30 or more.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "how": [
+    "app",
+    "delivery"
+   ],
+   "app_only": true,
+   "rewards": false,
+   "code": "BLKFRI",
+   "fine_print": "Black Friday only. Requires a 7NOW delivery order of $30 or more with code BLKFRI.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "arbys-1-curly",
+   "chain": "Arby's",
+   "title": "Any-size curly fries for $1",
+   "details": "Curly fries in any size for $1 when you spend at least $5.",
+   "price": "$1",
+   "price_value": 1,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "how": [],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Black Friday only. For Loaded Rewards members, with a $5 minimum purchase.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "ongoing": false,
+   "official": "https://www.arbys.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "bk-free-sandwich",
+   "chain": "Burger King",
+   "title": "Free sandwich every day",
+   "details": "Pick a free Cheeseburger, Original Chicken Sandwich, or Croissan'wich, once per day.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": "2026-11-30",
+   "how": [
+    "app",
+    "online"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Rewards members only. $5 minimum purchase. Order online or in the app. Limit one free sandwich per day.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "chipotle-cyber26",
+   "chain": "Chipotle",
+   "title": "$0 delivery fee",
+   "details": "No delivery fee on orders of $10 or more.",
+   "price": "$0 fee",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-30",
+   "how": [
+    "app",
+    "online",
+    "delivery"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": "CYBER26",
+   "fine_print": "Order online or in the Chipotle app with code CYBER26. $10 minimum.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "dunkin-donut-fridays",
+   "chain": "Dunkin'",
+   "title": "Free Donut Fridays",
+   "details": "A free classic donut with any drink, every Friday.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": "2026-12-11",
+   "ongoing": true,
+   "how": [],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Dunkin' Rewards members only, one per member each Friday, with any drink. Runs Fridays from Nov 27 through Dec 11.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.dunkindonuts.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "jamba-focker",
+   "chain": "Jamba",
+   "title": "$5 small Bananas Focker smoothie",
+   "details": "The Banana Cream Pie Smoothie, renamed for a movie tie-in, in a small size for $5.",
+   "price": "$5",
+   "price_value": 5,
+   "start": "2026-11-25",
+   "end": "2026-12-01",
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": "FOCKER",
+   "fine_print": "Use promo code FOCKER. Small size only.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "moes-bogo",
+   "chain": "Moe's Southwest Grill",
+   "title": "Buy one entree, get one free",
+   "details": "Buy-one-get-one-free entrees when you order online or in the app.",
+   "price": "BOGO",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-29",
+   "how": [
+    "app",
+    "online"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Rewards members only. Online or app orders.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "whataburger-hbcb",
+   "chain": "Whataburger",
+   "title": "BOGO Honey Butter Chicken Biscuit",
+   "details": "Buy a Honey Butter Chicken Biscuit and get a second one free.",
+   "price": "BOGO",
+   "price_value": null,
+   "start": "2026-11-25",
+   "end": "2026-11-30",
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Breakfast hours only.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "yogurtland-bf",
+   "chain": "Yogurtland",
+   "title": "Second froyo 50% off",
+   "details": "Buy one frozen yogurt and get the second at half price, in store.",
+   "price": "50% off",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "how": [
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Black Friday only, in store. Rewards members also earn double points.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "churchs-3pc-feast",
+   "chain": "Church's Texas Chicken",
+   "title": "Texas 3-piece Feast",
+   "details": "A three-piece chicken meal at a value price.",
+   "price": "$4.49",
+   "price_value": 4.49,
+   "end": "2026-12-27",
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "Valid through December 27 at your local restaurant.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "churchs-6wings",
+   "chain": "Church's Texas Chicken",
+   "title": "6-piece wings with a dipping sauce",
+   "details": "Six wings and one dipping sauce. A 9-piece with two sauces is $8.99.",
+   "price": "$5.99",
+   "price_value": 5.99,
+   "end": "2026-12-27",
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "Valid through December 27. Combos run $9.99 (6-piece) and $12.99 (9-piece).",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "churchs-family",
+   "chain": "Church's Texas Chicken",
+   "title": "10-piece Family Meal",
+   "details": "Ten pieces of chicken for the table. A 24-piece wing pack with four sauces is the same price.",
+   "price": "$19.99",
+   "price_value": 19.99,
+   "end": "2026-12-27",
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "Valid through December 27.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "cinnabon-5-reward",
+   "chain": "Cinnabon",
+   "title": "$5 reward with any CinnaPack",
+   "details": "Buy a CinnaPack of any size and get $5 toward a future visit.",
+   "price": "$5 back",
+   "price_value": null,
+   "end": "2026-12-31",
+   "how": [
+    "in-store"
+   ],
+   "rewards": true,
+   "fine_print": "Cinnabon Rewards members. Reward is for a future purchase, through December 31.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "cinnabon-tue-20",
+   "chain": "Cinnabon",
+   "title": "20% off CinnaPacks on Tuesdays",
+   "details": "Every Tuesday, 20% off any CinnaPack.",
+   "price": "20% off",
+   "price_value": null,
+   "ongoing": true,
+   "how": [
+    "app",
+    "online"
+   ],
+   "rewards": true,
+   "fine_print": "Cinnabon Rewards members, online or app orders, Tuesdays. The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "app_only": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "dq-8-meal",
+   "chain": "Dairy Queen",
+   "title": "$8 Meal Deal",
+   "details": "Chicken strips or a cheeseburger, fries, a drink, and a sundae. Upgrade to a Blizzard for $2.",
+   "price": "$8",
+   "price_value": 8,
+   "end": "2026-11-29",
+   "how": [
+    "in-store",
+    "drive-thru"
+   ],
+   "fine_print": "Through November 29 at your local restaurant.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "jitb-tacos",
+   "chain": "Jack in the Box",
+   "title": "Two tacos for 75 cents on Tuesdays",
+   "details": "Every Tuesday, two tacos for $0.75 with any app purchase.",
+   "price": "$0.75",
+   "price_value": 0.75,
+   "ongoing": true,
+   "end": "2026-12-27",
+   "how": [
+    "app"
+   ],
+   "app_only": true,
+   "rewards": true,
+   "fine_print": "Jack Pack members, with any in-app purchase. Tuesdays through December 27.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "popeyes-mon-wings",
+   "chain": "Popeyes",
+   "title": "Free 6-piece wings on Mondays",
+   "details": "Every Monday, free 6-piece wings with a $10 order. Pick your sauce.",
+   "price": "Free",
+   "price_value": 0,
+   "ongoing": true,
+   "end": "2027-01-04",
+   "how": [
+    "app",
+    "online"
+   ],
+   "fine_print": "$10 minimum. Online or app orders only. Mondays through January 4, 2027.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "popeyes-20-box",
+   "chain": "Popeyes",
+   "title": "3 proteins and 2 sides for $20",
+   "details": "Mix chicken sandwiches, 3-piece tenders, 6-piece wings, or 2-piece chicken, plus two regular sides.",
+   "price": "$20",
+   "price_value": 20,
+   "how": [
+    "app",
+    "online"
+   ],
+   "fine_print": "Online and app orders. The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "shakeshack-sundays",
+   "chain": "Shake Shack",
+   "title": "Free sandwich on Sundays",
+   "details": "Every Sunday, a free Chicken Shack, ShackBurger, or 6-piece chicken bites with a $10 order.",
+   "price": "Free",
+   "price_value": 0,
+   "ongoing": true,
+   "end": "2026-12-27",
+   "how": [
+    "app",
+    "online",
+    "in-store"
+   ],
+   "code": "SHACKSUNDAY",
+   "fine_print": "$10 minimum. Use code SHACKSUNDAY online, in the app, or at a kiosk. Sundays through December 27.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "app_only": false,
+   "rewards": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "wendys-daves-half",
+   "chain": "Wendy's",
+   "title": "Half off a Dave's Single",
+   "details": "50% off a Dave's Single with any purchase, once a week.",
+   "price": "50% off",
+   "price_value": null,
+   "end": "2026-12-04",
+   "how": [
+    "app",
+    "online"
+   ],
+   "rewards": true,
+   "code": "FOXBIGNOON",
+   "fine_print": "Wendy's Rewards members, once per week, online or app orders with code FOXBIGNOON. Through December 4.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "subway-happy-hour",
+   "chain": "Subway",
+   "title": "Happy Hour: second Footlong half off",
+   "details": "Buy a Footlong, get the second half off, from 4 PM to close or all day on weekends.",
+   "price": "50% off",
+   "price_value": null,
+   "ongoing": true,
+   "how": [
+    "in-store",
+    "app",
+    "online"
+   ],
+   "code": "BOGO50",
+   "fine_print": "4 PM to close local time, or all day Saturday and Sunday. Use BOGO50 online or in the app. The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "app_only": false,
+   "rewards": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "bojangles-iced-coffee",
+   "chain": "Bojangles",
+   "title": "Free iced coffee, 2 to 4 PM",
+   "details": "A free iced coffee with any purchase of $1 or more in the afternoon window.",
+   "price": "Free",
+   "price_value": 0,
+   "ongoing": true,
+   "how": [
+    "in-store",
+    "app",
+    "online"
+   ],
+   "code": "ICEICEBABY",
+   "fine_print": "2 to 4 PM with a $1 purchase. Online or app orders need code ICEICEBABY. The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "app_only": false,
+   "rewards": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "ljs-thursday",
+   "chain": "Long John Silver's",
+   "title": "2-piece Chicken Basket on Thursdays",
+   "details": "Weekly Thursday price on a 2-piece chicken basket. Other days have their own codes.",
+   "price": "$3.99",
+   "price_value": 3.99,
+   "ongoing": true,
+   "how": [
+    "app",
+    "online"
+   ],
+   "code": "THURSCKN",
+   "fine_print": "Online or app orders. Other weekly codes: MONDAY (2 meals $11.99), 10TUES ($10 Variety Platter, limit six), WED25 (25% off), DTFISH ($30 Date Night), WKNDFAM ($25 family meal on weekends). The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "app_only": false,
+   "rewards": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "blimpie-best-meal",
+   "chain": "Blimpie",
+   "title": "Best Meal Deal",
+   "details": "A regular sub, chips, and a drink, with a different sub featured each day.",
+   "price": "$7.99",
+   "price_value": 7.99,
+   "ongoing": true,
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "$11.99 with a large sub. Featured sub rotates daily. The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "7eleven-loadup",
+   "chain": "7-Eleven",
+   "title": "$25 off a $50 delivery order",
+   "details": "Take $25 off a 7NOW delivery order of $50 or more.",
+   "price": "$25 off",
+   "price_value": null,
+   "start": "2026-11-30",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "app",
+    "delivery"
+   ],
+   "app_only": true,
+   "rewards": false,
+   "code": "LOADUP",
+   "fine_print": "Nov 30 only. 7NOW delivery orders of $50 or more at participating 7-Eleven, Speedway, and Stripes stores.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.7now.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "dunkin-6-meal",
+   "chain": "Dunkin'",
+   "title": "$6 breakfast meal",
+   "details": "A medium coffee, bacon, egg and cheese sandwich, and hash browns for $6.",
+   "price": "$6",
+   "price_value": 6,
+   "start": null,
+   "end": "2026-12-29",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Runs through Dec 29. The source gives no start date.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.dunkindonuts.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "churchs-grande-meal",
+   "chain": "Church's Texas Chicken",
+   "title": "$24.99 Grande Meal",
+   "details": "16 pieces of chicken, three large sides, and six honey-butter biscuits.",
+   "price": "$24.99",
+   "price_value": 24.99,
+   "start": "2026-11-25",
+   "end": "2026-11-29",
+   "ongoing": false,
+   "how": [
+    "online",
+    "app"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Real Rewards members, online or in the app.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.churchs.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "churchs-8pc-499",
+   "chain": "Church's Texas Chicken",
+   "title": "8 pieces for $4.99",
+   "details": "Eight pieces of chicken for $4.99.",
+   "price": "$4.99",
+   "price_value": 4.99,
+   "start": "2026-11-30",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "online",
+    "app"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Nov 30 only. Real Rewards members, online or in the app.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.churchs.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "hardees-5-off-15",
+   "chain": "Hardee's",
+   "title": "$5 off $15",
+   "details": "Take $5 off an order of $15 or more.",
+   "price": "$5 off",
+   "price_value": null,
+   "start": null,
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "online",
+    "app",
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "My Rewards members; scan at checkout in store. One per day. Runs through Nov 30.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.hardees.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "wienerschnitzel-4-dogs",
+   "chain": "Wienerschnitzel",
+   "title": "Four chili dogs for $4",
+   "details": "Original Chili Dogs, four for $4, in sets of four.",
+   "price": "$4",
+   "price_value": 4,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Black Friday only.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.wienerschnitzel.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "caseys-12-pizza",
+   "chain": "Casey's",
+   "title": "Any pan pizza for $12",
+   "details": "Any pan pizza for $12 with a code in the app.",
+   "price": "$12",
+   "price_value": 12,
+   "start": "2026-11-25",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [
+    "app"
+   ],
+   "app_only": true,
+   "rewards": false,
+   "code": "HOLIDAY",
+   "fine_print": "Excludes Mega Slices.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.caseys.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "chronic-bogo-burrito",
+   "chain": "Chronic Tacos",
+   "title": "Second burrito half off",
+   "details": "Buy a burrito, get the second one 50% off.",
+   "price": "50% off",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "app"
+   ],
+   "app_only": true,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Rewards members, in the app.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.chronictacos.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "fazolis-free-pizza",
+   "chain": "Fazoli's",
+   "title": "Free pizza with a family meal",
+   "details": "A free whole pizza with a Fresh Tossed Family Meal.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-25",
+   "end": "2026-12-01",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": "THANKS26",
+   "fine_print": "Use code THANKS26.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://fazolis.com",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "fazolis-bogo-alfredo",
+   "chain": "Fazoli's",
+   "title": "BOGO fettuccine Alfredo",
+   "details": "Buy one fettuccine Alfredo, get one free.",
+   "price": "BOGO",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-12-01",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": "SHOP26",
+   "fine_print": "Use code SHOP26.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://fazolis.com",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "freddys-6-off-25",
+   "chain": "Freddy's",
+   "title": "$6 off $25",
+   "details": "Take $6 off an order of $25 or more.",
+   "price": "$6 off",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-29",
+   "ongoing": false,
+   "how": [
+    "app",
+    "drive-thru",
+    "in-store",
+    "delivery"
+   ],
+   "app_only": true,
+   "rewards": false,
+   "code": null,
+   "fine_print": "In-app offer, one per guest. Works for drive-thru, dine-in, pickup, and delivery.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.freddys.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "freddys-8-off-30",
+   "chain": "Freddy's",
+   "title": "$8 off $30 online",
+   "details": "Take $8 off an online order of $30 or more.",
+   "price": "$8 off",
+   "price_value": null,
+   "start": "2026-11-30",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "online"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Nov 30 only. One per guest.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.freddys.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "freebirds-bogo",
+   "chain": "Freebirds World Burrito",
+   "title": "BOGO burritos or bowls",
+   "details": "Buy a burrito or bowl of any size, get one free.",
+   "price": "BOGO",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [
+    "in-store",
+    "online"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": "FRIYAY",
+   "fine_print": "Black Friday only. Use code FRIYAY.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.freebirds.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "habit-30-off",
+   "chain": "Habit Burger & Grill",
+   "title": "30% off $10",
+   "details": "Take 30% off an order of $10 or more.",
+   "price": "30% off",
+   "price_value": null,
+   "start": "2026-11-25",
+   "end": "2026-12-01",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "MyHabit Rewards members only.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.habitburger.com",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "krystal-sackful",
+   "chain": "Krystal",
+   "title": "$12 Sackful",
+   "details": "A Sackful for $12, or a Cheese Sackful for $15, with a qualifying purchase.",
+   "price": "$12",
+   "price_value": 12,
+   "start": "2026-11-22",
+   "end": "2026-11-29",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Club Krystal members, one per member. The source does not say what the qualifying purchase is.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.krystal.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "parisbaguette-cyber",
+   "chain": "Paris Baguette",
+   "title": "Free coffee or pastry",
+   "details": "A free medium coffee or pastry with any purchase.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-30",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "app"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Cyber Monday only. PB Rewards members; joining in the app is free.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://parisbaguette.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "pokeworks-half-points",
+   "chain": "Pokeworks",
+   "title": "Rewards at half the points",
+   "details": "Rewards in the marketplace cost half the usual points.",
+   "price": "Half points",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-12-06",
+   "ongoing": false,
+   "how": [
+    "in-store",
+    "online"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Rewards members only.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://pokeworks.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "portofsubs-25-off",
+   "chain": "Port of Subs",
+   "title": "25% off your order",
+   "details": "Take 25% off an order.",
+   "price": "25% off",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "The source does not say how to redeem.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://portofsubs.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "potbelly-cyber-20",
+   "chain": "Potbelly",
+   "title": "20% off $15",
+   "details": "Take 20% off an online or app order of $15 or more.",
+   "price": "20% off",
+   "price_value": null,
+   "start": "2026-11-30",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "online",
+    "app"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Cyber Monday only. Perks members.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.potbelly.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "tacocabana-1-tacos",
+   "chain": "Taco Cabana",
+   "title": "$1 bean and cheese tacos",
+   "details": "Bean and cheese tacos for $1, plus $2 margarita cheesecakes.",
+   "price": "$1",
+   "price_value": 1,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Black Friday only.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.tacocabana.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "tijuanaflats-3-off-15",
+   "chain": "Tijuana Flats",
+   "title": "$3 off $15",
+   "details": "Take $3 off an order of $15 or more.",
+   "price": "$3 off",
+   "price_value": null,
+   "start": null,
+   "end": "2026-11-29",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Flathead Rewards members. Runs through Nov 29.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.tijuanaflats.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "tocaya-free-dessert",
+   "chain": "Tocaya",
+   "title": "Free dessert with an entree",
+   "details": "A free dessert with an entree.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": "2026-11-29",
+   "ongoing": false,
+   "how": [
+    "online",
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Rewards members, one per member.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.tocaya.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "wayback-free-delivery",
+   "chain": "Wayback Burgers",
+   "title": "Free delivery",
+   "details": "No delivery fee when you order directly online or in the app.",
+   "price": "$0 delivery",
+   "price_value": 0,
+   "start": null,
+   "end": "2026-11-29",
+   "ongoing": false,
+   "how": [
+    "online",
+    "app",
+    "delivery"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Order through Wayback's own site or app. Runs through Nov 29.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://waybackburgers.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "biggby-bf-coffee",
+   "chain": "Biggby Coffee",
+   "title": "Free coffee with breakfast",
+   "details": "A free 16-oz black coffee with a Bragel or Maple Waffle Sandwich.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Black Friday, first hour after opening only.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.biggby.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "blackrock-free-delivery",
+   "chain": "Black Rock Coffee Bar",
+   "title": "Free delivery on $12",
+   "details": "Free delivery on online or app orders of $12 or more.",
+   "price": "$0 delivery",
+   "price_value": 0,
+   "start": null,
+   "end": "2026-11-29",
+   "ongoing": false,
+   "how": [
+    "online",
+    "app",
+    "delivery"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "First 2,500 orders only. Runs through Nov 29.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://br.coffee/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "crispgreen-bf-10",
+   "chain": "Crisp & Green",
+   "title": "$10 entree and smoothie",
+   "details": "An entree and a 16-oz smoothie for $10.",
+   "price": "$10",
+   "price_value": 10,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "CRISP Rewards check-in, in store. One per member, while supplies last.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://crispandgreen.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "jasonsdeli-5-entrees",
+   "chain": "Jason's Deli",
+   "title": "$5 entrees",
+   "details": "Eight entrees for $5 each.",
+   "price": "$5",
+   "price_value": 5,
+   "start": "2026-11-30",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Nov 30 only. One per guest; the salad bar option is dine-in only.",
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 25, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "official": "https://www.jasonsdeli.com/",
+   "added": "2026-11-26"
+  }
+ ]
+}
