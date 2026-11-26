@@ -464,3 +464,22 @@ td.c-more > * + * { margin-left: 6px; }
 @media (max-width: 760px) {
   .deals tr.deal:has(.go) td.c-more { justify-content: flex-start; }
 }
+
+/* ---------- Copy code, pin ---------- */
+button.tag { font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; line-height: inherit; }
+.tag .copy { width: 11px; height: 11px; }
+.tag.code.copied { background: var(--pickle); border-color: var(--pickle); color: #fff; }
+.pin {
+  display: inline-grid; place-items: center; width: 24px; height: 24px; margin: -3px 6px -3px -4px; vertical-align: middle;
+  padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink-3);
+}
+.pin svg { width: 16px; height: 16px; fill: none; }
+.pin:hover { color: var(--ink); }
+.pin[aria-pressed="true"] { color: var(--mustard-deep); }
+.pin[aria-pressed="true"] svg { fill: var(--mustard); }
+.deals tr.deal.pinned td:first-child { box-shadow: inset 4px 0 0 var(--mustard); }
+@media (max-width: 760px) {
+  button.tag { font-size: 11px; }
+  .deals tr.deal.pinned td:first-child { box-shadow: none; }
+  .deals tr.deal.pinned { box-shadow: inset 4px 0 0 var(--mustard); }
+}

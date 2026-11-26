@@ -10,11 +10,13 @@
   var OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
   var HOW_LABEL = { 'in-store': 'In restaurant', 'drive-thru': 'Drive-thru', app: 'App', online: 'Online', delivery: 'Delivery' };
   var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5 5 9l5-6" fill="none" stroke="#F4C542" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var COPY = '<svg class="copy" viewBox="0 0 12 12" aria-hidden="true"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2 8V2.8C2 2.4 2.4 2 2.8 2H8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+  var STAR = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6l1.95 4 4.4.6-3.2 3.08.78 4.37L8 11.57 4.07 13.65l.78-4.37L1.65 6.2l4.4-.6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
   var CHEV = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   var el = function (id) { return document.getElementById(id); };
   var $rows = el('rows'), $chips = el('chips'), $count = el('sheet-h'), $empty = el('empty'),
-      $q = el('q'), $how = el('how'), $sort = el('sort'), $noapp = el('noapp'), $table = el('deals'),
+      $q = el('q'), $how = el('how'), $type = el('type'), $sort = el('sort'), $noapp = el('noapp'), $table = el('deals'),
       $picker = el('picker'), $edit = el('edit-picks'), $chainQ = el('chain-q'),
       $zip = el('zip'), $nearStatus = el('near-status'), $zipClear = el('zip-clear');
 
@@ -220,7 +222,7 @@
     if (d.app_only) out.unshift('<span class="tag app" title="Claim it in the app, then use it any of the ways listed">In-app offer</span>');
     if (d.areas && d.areas.length) out.unshift('<span class="tag area">Only in ' + esc(d.areas.join(', ')) + '</span>');
     if (d.rewards) out.push('<span class="tag rewards">Rewards members</span>');
-    if (d.code) out.push('<span class="tag code" title="Promo code">Code ' + esc(d.code) + '</span>');
+    if (d.code) out.push('<button type="button" class="tag code" data-code="' + esc(d.code) + '" aria-label="Copy code ' + esc(d.code) + '">Code ' + esc(d.code) + COPY + '</button>');
     if (!out.length) out.push('<span class="tag">Not stated</span>');
     return '<div class="tags">' + out.join('') + '</div>';
   }
@@ -268,6 +270,7 @@
     var list = data.deals.filter(function (d) {
       if (!isLive(d) || picks.indexOf(d.chain) === -1 || !inArea(d) || !hasStoreNear(d.chain)) return false;
       if ($noapp.checked && d.app_only) return false;
+      if ($type.value && ((chainInfo[d.chain] || {}).types || []).indexOf($type.value) === -1) return false;
       if (how) {
         var h = d.how || [];
         if (how === 'app' ? (h.indexOf('app') === -1 && h.indexOf('online') === -1) : h.indexOf(how) === -1) return false;
@@ -286,7 +289,10 @@
       new: function (a, b) { return (b.added || '').localeCompare(a.added || '') || endKey(a) - endKey(b); },
       near: function (a, b) { return distOf(a.chain) - distOf(b.chain) || a.chain.localeCompare(b.chain) || endKey(a) - endKey(b); }
     };
-    return list.sort(by[$sort.value] || by.ends);
+    var pins = state.pins || [], base = by[$sort.value] || by.ends;
+    return list.sort(function (a, b) {
+      return (pins.indexOf(a.id) === -1) - (pins.indexOf(b.id) === -1) || base(a, b);
+    });
   }
 
   function liveCounts() {
@@ -331,9 +337,10 @@
       (list.length ? ' at ' + np + (np === 1 ? ' place' : ' places') : '');
 
     $rows.innerHTML = list.map(function (d, i) {
-      var open = openId === d.id, alt = i % 2 ? ' alt' : '';
-      return '<tr class="deal' + alt + (open ? ' open' : '') + '">' +
-        '<td class="c-chain">' + esc(d.chain) + distHtml(d.chain) + '</td>' +
+      var open = openId === d.id, alt = i % 2 ? ' alt' : '', pinned = (state.pins || []).indexOf(d.id) !== -1;
+      return '<tr class="deal' + alt + (open ? ' open' : '') + (pinned ? ' pinned' : '') + '">' +
+        '<td class="c-chain"><button type="button" class="pin" data-pin="' + esc(d.id) + '" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + ' this deal">' + STAR + '</button>' +
+        esc(d.chain) + distHtml(d.chain) + '</td>' +
         '<td class="c-deal"><span class="t">' + esc(d.title) + '</span><span class="d">' + esc(d.details) + '</span></td>' +
         '<td class="c-price">' + priceCell(d) + '</td>' +
         '<td class="c-ends">' + endsCell(d) + '</td>' +
@@ -354,7 +361,7 @@
   }
 
   function persistControls() {
-    state.q = $q.value; state.how = $how.value; state.sort = $sort.value; state.noapp = $noapp.checked;
+    state.q = $q.value; state.how = $how.value; state.type = $type.value; state.sort = $sort.value; state.noapp = $noapp.checked;
     save();
   }
   var picksAtOpen = '';
@@ -388,6 +395,24 @@
     save(); renderChips(); renderMine(); render();
   });
   $rows.addEventListener('click', function (e) {
+    var pin = e.target.closest('.pin');
+    if (pin) {
+      var pid = pin.getAttribute('data-pin'), pins = (state.pins || []).filter(function (x) { return x !== pid; });
+      if (pin.getAttribute('aria-pressed') !== 'true') pins.unshift(pid);
+      state.pins = pins; save(); render();
+      return;
+    }
+    var cb = e.target.closest('.tag.code');
+    if (cb) {
+      var code = cb.getAttribute('data-code');
+      var done = function () {
+        cb.classList.add('copied'); cb.firstChild.textContent = 'Copied ';
+        setTimeout(function () { cb.classList.remove('copied'); cb.firstChild.textContent = 'Code ' + code; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, function () {});
+      return;
+    }
+
     var b = e.target.closest('.more'); if (!b) return;
     var id = b.getAttribute('data-id');
     openId = openId === id ? null : id;
@@ -395,7 +420,7 @@
     var again = $rows.querySelector('.more[data-id="' + CSS.escape(id) + '"]');
     if (again) again.focus();
   });
-  [$q, $how, $sort, $noapp].forEach(function (c) {
+  [$q, $how, $type, $sort, $noapp].forEach(function (c) {
     c.addEventListener(c === $q ? 'input' : 'change', function () { persistControls(); render(); });
   });
   el('near-form').addEventListener('submit', function (e) { e.preventDefault(); applyZip(($zip.value || '').trim()); });
@@ -403,7 +428,7 @@
   el('radius').addEventListener('input', function () { state.radius = +this.value; showRadius(); });
   el('radius').addEventListener('change', function () { state.radius = +this.value; save(); if (state.zip) applyZip(state.zip); });
   el('reset').addEventListener('click', function () {
-    $q.value = ''; $how.value = ''; $noapp.checked = false;
+    $q.value = ''; $how.value = ''; $type.value = ''; $noapp.checked = false;
     persistControls(); render();
     if (!picked().length) setPicker(true);
   });
@@ -422,13 +447,19 @@
       var seen = {};
       (data.chains || []).forEach(function (c) {
         seen[c.name] = 1;
-        chainInfo[c.name] = { ios: c.ios, web: c.web };
+        chainInfo[c.name] = { ios: c.ios, web: c.web, types: c.types || [] };
         var list = (c.osm || [c.name]).slice();
         list.forEach(function (n) { if (n.indexOf("'") !== -1) list.push(n.replace(/'/g, '\u2019')); });
         osmNames[c.name] = list;
       });
       data.deals.forEach(function (d) { if (isLive(d)) seen[d.chain] = 1; });
       chains = Object.keys(seen).sort(function (a, b) { return a.localeCompare(b); });
+      var types = {};
+      (data.chains || []).forEach(function (c) { (c.types || []).forEach(function (t) { types[t] = 1; }); });
+      Object.keys(types).sort().forEach(function (t) {
+        var o = document.createElement('option'); o.value = t; o.textContent = t; $type.appendChild(o);
+      });
+      if (state.type && types[state.type]) $type.value = state.type;
       if (data.updated) {
         var u = new Date(data.updated);
         el('updated').textContent = 'Last checked ' + u.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) + '.';

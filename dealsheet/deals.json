@@ -7,7 +7,10 @@
     "7-Eleven"
    ],
    "ios": 589653414,
-   "web": "https://www.7-eleven.com/"
+   "web": "https://www.7-eleven.com/",
+   "types": [
+    "Convenience"
+   ]
   },
   {
    "name": "Arby's",
@@ -15,7 +18,10 @@
     "Arby's"
    ],
    "ios": 1348507359,
-   "web": "https://www.arbys.com/"
+   "web": "https://www.arbys.com/",
+   "types": [
+    "Sandwiches"
+   ]
   },
   {
    "name": "Biggby Coffee",
@@ -23,7 +29,10 @@
     "Biggby Coffee"
    ],
    "ios": 907566791,
-   "web": "https://www.biggby.com/"
+   "web": "https://www.biggby.com/",
+   "types": [
+    "Coffee & Breakfast"
+   ]
   },
   {
    "name": "Black Rock Coffee Bar",
@@ -31,7 +40,10 @@
     "Black Rock Coffee Bar"
    ],
    "ios": 6483943441,
-   "web": "https://br.coffee/"
+   "web": "https://br.coffee/",
+   "types": [
+    "Coffee & Breakfast"
+   ]
   },
   {
    "name": "Blimpie",
@@ -39,7 +51,10 @@
     "Blimpie"
    ],
    "ios": 1511175953,
-   "web": "https://www.blimpie.com/"
+   "web": "https://www.blimpie.com/",
+   "types": [
+    "Sandwiches"
+   ]
   },
   {
    "name": "Bojangles",
@@ -48,7 +63,10 @@
     "Bojangles'"
    ],
    "ios": 1564685788,
-   "web": "https://www.bojangles.com/"
+   "web": "https://www.bojangles.com/",
+   "types": [
+    "Chicken & Wings"
+   ]
   },
   {
    "name": "Burger King",
@@ -56,7 +74,10 @@
     "Burger King"
    ],
    "ios": 638323895,
-   "web": "https://www.bk.com/"
+   "web": "https://www.bk.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Carl's Jr.",
@@ -65,7 +86,10 @@
     "Carl's Jr"
    ],
    "ios": 1577790958,
-   "web": "https://carlsjr.com/"
+   "web": "https://carlsjr.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Casey's",
@@ -73,7 +97,11 @@
     "Casey's"
    ],
    "ios": 1470522110,
-   "web": "https://www.caseys.com/"
+   "web": "https://www.caseys.com/",
+   "types": [
+    "Pizza & Italian",
+    "Convenience"
+   ]
   },
   {
    "name": "Checkers",
@@ -82,7 +110,10 @@
     "Rally's"
    ],
    "ios": 1531948632,
-   "web": "https://www.checkersandrallys.com/"
+   "web": "https://www.checkersandrallys.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Chick-fil-A",
@@ -90,7 +121,10 @@
     "Chick-fil-A"
    ],
    "ios": 488818252,
-   "web": "https://www.chick-fil-a.com/"
+   "web": "https://www.chick-fil-a.com/",
+   "types": [
+    "Chicken & Wings"
+   ]
   },
   {
    "name": "Chipotle",
@@ -99,7 +133,10 @@
     "Chipotle Mexican Grill"
    ],
    "ios": 327228455,
-   "web": "https://www.chipotle.com/"
+   "web": "https://www.chipotle.com/",
+   "types": [
+    "Mexican"
+   ]
   },
   {
    "name": "Chronic Tacos",
@@ -107,7 +144,10 @@
     "Chronic Tacos"
    ],
    "ios": 1610719960,
-   "web": "https://chronictacos.com/"
+   "web": "https://chronictacos.com/",
+   "types": [
+    "Mexican"
+   ]
   },
   {
    "name": "Church's Texas Chicken",
@@ -116,7 +156,10 @@
     "Church's Chicken"
    ],
    "ios": 653653356,
-   "web": "https://www.churchs.com/"
+   "web": "https://www.churchs.com/",
+   "types": [
+    "Chicken & Wings"
+   ]
   },
   {
    "name": "Cinnabon",
@@ -124,7 +167,10 @@
     "Cinnabon"
    ],
    "ios": 1532016072,
-   "web": "https://www.cinnabon.com/"
+   "web": "https://www.cinnabon.com/",
+   "types": [
+    "Sweets"
+   ]
   },
   {
    "name": "Crisp & Green",
@@ -132,7 +178,10 @@
     "Crisp & Green"
    ],
    "ios": 1180644340,
-   "web": "https://www.crispandgreen.com/"
+   "web": "https://www.crispandgreen.com/",
+   "types": [
+    "Salads & Smoothies"
+   ]
   },
   {
    "name": "Culver's",
@@ -140,7 +189,10 @@
     "Culver's"
    ],
    "ios": 6450863099,
-   "web": "https://www.culvers.com/"
+   "web": "https://www.culvers.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Dairy Queen",
@@ -149,7 +201,12 @@
     "DQ"
    ],
    "ios": 1359480496,
-   "web": "https://www.dairyqueen.com/"
+   "web": "https://www.dairyqueen.com/",
+   "types": [
+    "Sweets",
+    "Burgers",
+    "Chicken & Wings"
+   ]
   },
   {
    "name": "Del Taco",
@@ -157,7 +214,10 @@
     "Del Taco"
    ],
    "ios": 1114398020,
-   "web": "https://www.deltaco.com/"
+   "web": "https://www.deltaco.com/",
+   "types": [
+    "Mexican"
+   ]
   },
   {
    "name": "Domino's",
@@ -166,7 +226,10 @@
     "Domino's Pizza"
    ],
    "ios": 436491861,
-   "web": "https://www.dominos.com/"
+   "web": "https://www.dominos.com/",
+   "types": [
+    "Pizza & Italian"
+   ]
   },
   {
    "name": "Dunkin'",
@@ -176,7 +239,10 @@
     "Dunkin' Donuts"
    ],
    "ios": 1056813463,
-   "web": "https://www.dunkindonuts.com/"
+   "web": "https://www.dunkindonuts.com/",
+   "types": [
+    "Coffee & Breakfast"
+   ]
   },
   {
    "name": "Fazoli's",
@@ -184,7 +250,10 @@
     "Fazoli's"
    ],
    "ios": 1258045562,
-   "web": "https://fazolis.com/"
+   "web": "https://fazolis.com/",
+   "types": [
+    "Pizza & Italian"
+   ]
   },
   {
    "name": "Firehouse Subs",
@@ -192,7 +261,10 @@
     "Firehouse Subs"
    ],
    "ios": 894658475,
-   "web": "https://www.firehousesubs.com/"
+   "web": "https://www.firehousesubs.com/",
+   "types": [
+    "Sandwiches"
+   ]
   },
   {
    "name": "Five Guys",
@@ -200,7 +272,10 @@
     "Five Guys"
    ],
    "ios": 457494327,
-   "web": "https://www.fiveguys.com/"
+   "web": "https://www.fiveguys.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Freddy's",
@@ -208,7 +283,11 @@
     "Freddy's"
    ],
    "ios": 1463076279,
-   "web": "https://freddys.com/"
+   "web": "https://freddys.com/",
+   "types": [
+    "Burgers",
+    "Sweets"
+   ]
   },
   {
    "name": "Freebirds World Burrito",
@@ -216,7 +295,10 @@
     "Freebirds World Burrito"
    ],
    "ios": 1079328303,
-   "web": "https://www.freebirds.com/"
+   "web": "https://www.freebirds.com/",
+   "types": [
+    "Mexican"
+   ]
   },
   {
    "name": "Habit Burger & Grill",
@@ -224,7 +306,10 @@
     "The Habit Burger Grill"
    ],
    "ios": 1398002552,
-   "web": "https://www.habitburger.com/"
+   "web": "https://www.habitburger.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Hardee's",
@@ -232,7 +317,10 @@
     "Hardee's"
    ],
    "ios": 1577790947,
-   "web": "https://hardees.com/"
+   "web": "https://hardees.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Jack in the Box",
@@ -240,7 +328,10 @@
     "Jack in the Box"
    ],
    "ios": 1283768751,
-   "web": "https://www.jackinthebox.com/"
+   "web": "https://www.jackinthebox.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Jamba",
@@ -249,7 +340,10 @@
     "Jamba Juice"
    ],
    "ios": 932885438,
-   "web": "https://www.jamba.com/"
+   "web": "https://www.jamba.com/",
+   "types": [
+    "Salads & Smoothies"
+   ]
   },
   {
    "name": "Jason's Deli",
@@ -257,7 +351,10 @@
     "Jason's Deli"
    ],
    "ios": 1225753298,
-   "web": "https://www.jasonsdeli.com/"
+   "web": "https://www.jasonsdeli.com/",
+   "types": [
+    "Sandwiches"
+   ]
   },
   {
    "name": "Jersey Mike's",
@@ -266,7 +363,10 @@
     "Jersey Mike's Subs"
    ],
    "ios": 718290805,
-   "web": "https://www.jerseymikes.com/"
+   "web": "https://www.jerseymikes.com/",
+   "types": [
+    "Sandwiches"
+   ]
   },
   {
    "name": "Jimmy John's",
@@ -274,7 +374,10 @@
     "Jimmy John's"
    ],
    "ios": 409366411,
-   "web": "https://www.jimmyjohns.com/"
+   "web": "https://www.jimmyjohns.com/",
+   "types": [
+    "Sandwiches"
+   ]
   },
   {
    "name": "KFC",
@@ -282,7 +385,10 @@
     "KFC"
    ],
    "ios": 1538999662,
-   "web": "https://www.kfc.com/"
+   "web": "https://www.kfc.com/",
+   "types": [
+    "Chicken & Wings"
+   ]
   },
   {
    "name": "Krispy Kreme",
@@ -290,7 +396,11 @@
     "Krispy Kreme"
    ],
    "ios": 482752836,
-   "web": "https://www.krispykreme.com/"
+   "web": "https://www.krispykreme.com/",
+   "types": [
+    "Coffee & Breakfast",
+    "Sweets"
+   ]
   },
   {
    "name": "Krystal",
@@ -298,7 +408,10 @@
     "Krystal"
    ],
    "ios": 1577457805,
-   "web": "https://www.krystal.com/"
+   "web": "https://www.krystal.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Little Caesars",
@@ -306,7 +419,10 @@
     "Little Caesars"
    ],
    "ios": 992600579,
-   "web": "https://www.littlecaesars.com/"
+   "web": "https://www.littlecaesars.com/",
+   "types": [
+    "Pizza & Italian"
+   ]
   },
   {
    "name": "Long John Silver's",
@@ -314,7 +430,10 @@
     "Long John Silver's"
    ],
    "ios": 6473635406,
-   "web": "https://www.ljsilvers.com/"
+   "web": "https://www.ljsilvers.com/",
+   "types": [
+    "Seafood"
+   ]
   },
   {
    "name": "McDonald's",
@@ -322,7 +441,10 @@
     "McDonald's"
    ],
    "ios": 922103212,
-   "web": "https://www.mcdonalds.com/"
+   "web": "https://www.mcdonalds.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Moe's Southwest Grill",
@@ -330,7 +452,10 @@
     "Moe's Southwest Grill"
    ],
    "ios": 1008719375,
-   "web": "https://moes.com/"
+   "web": "https://moes.com/",
+   "types": [
+    "Mexican"
+   ]
   },
   {
    "name": "Panda Express",
@@ -338,7 +463,10 @@
     "Panda Express"
    ],
    "ios": 903990394,
-   "web": "https://www.pandaexpress.com/"
+   "web": "https://www.pandaexpress.com/",
+   "types": [
+    "Asian"
+   ]
   },
   {
    "name": "Panera Bread",
@@ -347,7 +475,11 @@
     "Panera"
    ],
    "ios": 692365393,
-   "web": "https://www.panerabread.com/"
+   "web": "https://www.panerabread.com/",
+   "types": [
+    "Sandwiches",
+    "Coffee & Breakfast"
+   ]
   },
   {
    "name": "Paris Baguette",
@@ -355,7 +487,10 @@
     "Paris Baguette"
    ],
    "ios": 1435128100,
-   "web": "https://parisbaguette.com/"
+   "web": "https://parisbaguette.com/",
+   "types": [
+    "Coffee & Breakfast"
+   ]
   },
   {
    "name": "Pizza Hut",
@@ -363,7 +498,10 @@
     "Pizza Hut"
    ],
    "ios": 321560858,
-   "web": "https://www.pizzahut.com/"
+   "web": "https://www.pizzahut.com/",
+   "types": [
+    "Pizza & Italian"
+   ]
   },
   {
    "name": "Pokeworks",
@@ -371,7 +509,10 @@
     "Pokeworks"
    ],
    "ios": 1591233747,
-   "web": "https://pokeworks.com/"
+   "web": "https://pokeworks.com/",
+   "types": [
+    "Asian"
+   ]
   },
   {
    "name": "Popeyes",
@@ -380,7 +521,10 @@
     "Popeyes Louisiana Kitchen"
    ],
    "ios": 1386566985,
-   "web": "https://www.popeyes.com/"
+   "web": "https://www.popeyes.com/",
+   "types": [
+    "Chicken & Wings"
+   ]
   },
   {
    "name": "Port of Subs",
@@ -388,7 +532,10 @@
     "Port of Subs"
    ],
    "ios": 953131651,
-   "web": "https://portofsubs.com/"
+   "web": "https://portofsubs.com/",
+   "types": [
+    "Sandwiches"
+   ]
   },
   {
    "name": "Potbelly",
@@ -396,7 +543,10 @@
     "Potbelly"
    ],
    "ios": 835528979,
-   "web": "https://www.potbelly.com/"
+   "web": "https://www.potbelly.com/",
+   "types": [
+    "Sandwiches"
+   ]
   },
   {
    "name": "Raising Cane's",
@@ -405,7 +555,10 @@
     "Raising Cane's Chicken Fingers"
    ],
    "ios": 1530642656,
-   "web": "https://www.raisingcanes.com/"
+   "web": "https://www.raisingcanes.com/",
+   "types": [
+    "Chicken & Wings"
+   ]
   },
   {
    "name": "Shake Shack",
@@ -413,7 +566,10 @@
     "Shake Shack"
    ],
    "ios": 317279545,
-   "web": "https://www.shakeshack.com/"
+   "web": "https://www.shakeshack.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Sonic",
@@ -422,7 +578,10 @@
     "Sonic Drive-In"
    ],
    "ios": 867827909,
-   "web": "https://www.sonicdrivein.com/"
+   "web": "https://www.sonicdrivein.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Starbucks",
@@ -430,7 +589,10 @@
     "Starbucks"
    ],
    "ios": 331177714,
-   "web": "https://www.starbucks.com/"
+   "web": "https://www.starbucks.com/",
+   "types": [
+    "Coffee & Breakfast"
+   ]
   },
   {
    "name": "Subway",
@@ -438,7 +600,10 @@
     "Subway"
    ],
    "ios": 901941015,
-   "web": "https://www.subway.com/"
+   "web": "https://www.subway.com/",
+   "types": [
+    "Sandwiches"
+   ]
   },
   {
    "name": "Taco Bell",
@@ -446,7 +611,10 @@
     "Taco Bell"
    ],
    "ios": 497387361,
-   "web": "https://www.tacobell.com/"
+   "web": "https://www.tacobell.com/",
+   "types": [
+    "Mexican"
+   ]
   },
   {
    "name": "Taco Cabana",
@@ -454,7 +622,10 @@
     "Taco Cabana"
    ],
    "ios": 1012035722,
-   "web": "https://www.tacocabana.com/"
+   "web": "https://www.tacocabana.com/",
+   "types": [
+    "Mexican"
+   ]
   },
   {
    "name": "Tijuana Flats",
@@ -462,7 +633,10 @@
     "Tijuana Flats"
    ],
    "ios": 1491125522,
-   "web": "https://www.tijuanaflats.com/"
+   "web": "https://www.tijuanaflats.com/",
+   "types": [
+    "Mexican"
+   ]
   },
   {
    "name": "Tocaya",
@@ -470,7 +644,10 @@
     "Tocaya"
    ],
    "ios": 1192424606,
-   "web": "https://tocayaorganica.com/"
+   "web": "https://tocayaorganica.com/",
+   "types": [
+    "Mexican"
+   ]
   },
   {
    "name": "Wayback Burgers",
@@ -478,7 +655,10 @@
     "Wayback Burgers"
    ],
    "ios": 966235042,
-   "web": "https://waybackburgers.com/"
+   "web": "https://waybackburgers.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Wendy's",
@@ -486,7 +666,10 @@
     "Wendy's"
    ],
    "ios": 540518599,
-   "web": "https://www.wendys.com/"
+   "web": "https://www.wendys.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Whataburger",
@@ -494,7 +677,10 @@
     "Whataburger"
    ],
    "ios": 1141643627,
-   "web": "https://whataburger.com/"
+   "web": "https://whataburger.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Wienerschnitzel",
@@ -502,7 +688,10 @@
     "Wienerschnitzel"
    ],
    "ios": 6448481896,
-   "web": "https://www.wienerschnitzel.com/"
+   "web": "https://www.wienerschnitzel.com/",
+   "types": [
+    "Burgers"
+   ]
   },
   {
    "name": "Wingstop",
@@ -510,7 +699,10 @@
     "Wingstop"
    ],
    "ios": 454719277,
-   "web": "https://www.wingstop.com/"
+   "web": "https://www.wingstop.com/",
+   "types": [
+    "Chicken & Wings"
+   ]
   },
   {
    "name": "Yogurtland",
@@ -518,7 +710,10 @@
     "Yogurtland"
    ],
    "ios": 604968321,
-   "web": "https://www.yogurtland.com/"
+   "web": "https://www.yogurtland.com/",
+   "types": [
+    "Sweets"
+   ]
   },
   {
    "name": "Zaxby's",
@@ -526,7 +721,10 @@
     "Zaxby's"
    ],
    "ios": 480603264,
-   "web": "https://www.zaxbys.com/"
+   "web": "https://www.zaxbys.com/",
+   "types": [
+    "Chicken & Wings"
+   ]
   }
  ],
  "deals": [
