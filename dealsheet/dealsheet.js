@@ -186,7 +186,7 @@
     var out = (d.how || []).filter(function (h) { return !(d.app_only && h === 'app'); }).map(function (h) {
       return '<span class="tag' + (h === 'app' ? ' app' : '') + '">' + esc(HOW_LABEL[h] || h) + '</span>';
     });
-    if (d.app_only) out.unshift('<span class="tag app">App only</span>');
+    if (d.app_only) out.unshift('<span class="tag app" title="Claim it in the app, then use it any of the ways listed">In-app offer</span>');
     if (d.areas && d.areas.length) out.unshift('<span class="tag area">Only in ' + esc(d.areas.join(', ')) + '</span>');
     if (d.rewards) out.push('<span class="tag rewards">Rewards members</span>');
     if (d.code) out.push('<span class="tag code" title="Promo code">Code ' + esc(d.code) + '</span>');
