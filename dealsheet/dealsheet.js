@@ -10,16 +10,33 @@
   var OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
   var HOW_LABEL = { 'in-store': 'In restaurant', 'drive-thru': 'Drive-thru', app: 'App', online: 'Online', delivery: 'Delivery' };
   var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5 5 9l5-6" fill="none" stroke="#F4C542" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var COPY = '<svg class="copy" viewBox="0 0 12 12" aria-hidden="true"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2 8V2.8C2 2.4 2.4 2 2.8 2H8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+  var STAR = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6l1.95 4 4.4.6-3.2 3.08.78 4.37L8 11.57 4.07 13.65l.78-4.37L1.65 6.2l4.4-.6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+  // One dot color per food type (a chain's first type).
+  var TYPE_COLOR = {
+    'Burgers': '#C2410C', 'Chicken & Wings': '#E0A21B', 'Mexican': '#2E9E4F', 'Pizza & Italian': '#D7263D',
+    'Sandwiches': '#A47551', 'Coffee & Breakfast': '#5B3A29', 'Sweets': '#E879A6', 'Asian': '#7C3AED',
+    'Salads & Smoothies': '#84CC16', 'Seafood': '#0EA5E9', 'Convenience': '#64748B'
+  };
+  function dot(chain) {
+    var t = ((chainInfo[chain] || {}).types || [])[0];
+    if (!t || !TYPE_COLOR[t]) return '';
+    return '<span class="type-dot" style="background:' + TYPE_COLOR[t] + '" title="' + esc(t) + '" role="img" aria-label="' + esc(t) + '"></span>';
+  }
   var CHEV = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   var el = function (id) { return document.getElementById(id); };
   var $rows = el('rows'), $chips = el('chips'), $count = el('sheet-h'), $empty = el('empty'),
-      $q = el('q'), $how = el('how'), $sort = el('sort'), $noapp = el('noapp'), $table = el('deals'),
+      $q = el('q'), $how = el('how'), $type = el('type'), $sort = el('sort'), $noapp = el('noapp'), $table = el('deals'),
       $picker = el('picker'), $edit = el('edit-picks'), $chainQ = el('chain-q'),
       $zip = el('zip'), $nearStatus = el('near-status'), $zipClear = el('zip-clear');
 
   var data = { deals: [], chains: [] };
   var chains = [];          // all chain names, A to Z
+  var chainInfo = {};       // name -> { ios: App Store id, web: official site }
+  var UA = navigator.userAgent || '';
+  var IS_IOS = /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1);
+  var IS_ANDROID = /Android/.test(UA);
   var osmNames = {};        // chain -> [brand names used on OpenStreetMap]
   var state = load(STORE);
   var near = null;          // { zip, lat, lon, state, place, stores: {chain: {mi, lat, lon}} | null, failed }
@@ -91,6 +108,28 @@
     });
   }
 
+  // The free OpenStreetMap servers often turn requests away when busy, so a
+  // failed store lookup is tried again after a pause before giving up.
+  function withRetry(fn, waits, onRetry) {
+    return fn().catch(function (err) {
+      if (!waits.length) throw err;
+      onRetry && onRetry(3 - waits.length);
+      return new Promise(function (r) { setTimeout(r, waits[0]); })
+        .then(function () { return withRetry(fn, waits.slice(1), onRetry); });
+    });
+  }
+
+  // With a ZIP set and store locations known, a restaurant with no store
+  // inside the radius drops out of the table (its deals can't be used).
+  function hasStoreNear(chain) {
+    if (!near || !near.stores) return true;
+    return !!near.stores[chain];
+  }
+  function farChains() {
+    if (!near || !near.stores) return [];
+    return picked().filter(function (c) { return !near.stores[c]; });
+  }
+
   function radius() { return Math.min(30, Math.max(1, +state.radius || RADIUS_MI)); }
   function showRadius() {
     var r = radius();
@@ -116,9 +155,11 @@
       near = loc; near.stores = null;
       afterNear();
       setNearStatus('Showing for ' + loc.place + '. Finding stores…');
-      if (!state.picks || !picked().length) { near.stores = null; near.needPicks = true; afterNear(); return; }
+      if (!picked().length) { near.stores = null; near.needPicks = true; afterNear(); return; }
       near.needPicks = false;
-      return lookupStores(loc, picked()).then(function (stores) {
+      return withRetry(function () { return lookupStores(loc, picked()); }, [8000, 25000], function (n) {
+        if (state.zip === zip) setNearStatus('Showing for ' + loc.place + '. The store map is busy, trying again (' + n + ' of 2)…');
+      }).then(function (stores) {
         near.stores = stores; near.failed = false;
         try { localStorage.setItem(NEAR_CACHE, JSON.stringify({ zip: zip, near: near, at: Date.now(), key: key })); } catch (e) { /* ignore */ }
         afterNear();
@@ -137,7 +178,14 @@
     var where = near.place;
     if (near.needPicks) setNearStatus('Showing for ' + where + '. Choose restaurants to see distances.');
     else if (near.failed) setNearStatus('Showing for ' + where + '. Distances didn’t load, so rows link to a map.');
-    else setNearStatus('Showing for ' + where + (near.stores ? '' : '. Finding stores…'));
+    else if (!near.stores) setNearStatus('Showing for ' + where + '. Finding stores…');
+    else {
+      var far = farChains().filter(function (c) { return data.deals.some(function (d) { return d.chain === c && isLive(d); }); });
+      $nearStatus.classList.remove('err');
+      $nearStatus.innerHTML = 'Showing for ' + esc(where) + (far.length
+        ? '. ' + far.length + (far.length === 1 ? ' store' : ' stores') + ' out of range.'
+        : '.');
+    }
     renderChips(); renderMine(); render();
   }
 
@@ -182,19 +230,40 @@
     var out = (d.how || []).filter(function (h) { return !(d.app_only && h === 'app'); }).map(function (h) {
       return '<span class="tag' + (h === 'app' ? ' app' : '') + '">' + esc(HOW_LABEL[h] || h) + '</span>';
     });
-    if (d.app_only) out.unshift('<span class="tag app">App only</span>');
+    if (d.app_only) out.unshift('<span class="tag app" title="Claim it in the app, then use it any of the ways listed">In-app offer</span>');
     if (d.areas && d.areas.length) out.unshift('<span class="tag area">Only in ' + esc(d.areas.join(', ')) + '</span>');
     if (d.rewards) out.push('<span class="tag rewards">Rewards members</span>');
-    if (d.code) out.push('<span class="tag code" title="Promo code">Code ' + esc(d.code) + '</span>');
+    if (d.code) out.push('<button type="button" class="tag code" data-code="' + esc(d.code) + '" aria-label="Copy code ' + esc(d.code) + '">' + COPY + '<span class="ct"><span class="cw">Code </span>' + esc(d.code) + '</span></button>');
     if (!out.length) out.push('<span class="tag">Not stated</span>');
     return '<div class="tags">' + out.join('') + '</div>';
   }
+  // The button that starts the order. App deals go to the store listing, which
+  // shows "Open" when the app is already installed; online deals go to the
+  // deal's own page on the chain's site, or the site's home page.
+  function goLink(d) {
+    var info = chainInfo[d.chain] || {}, how = d.how || [];
+    var online = how.indexOf('online') !== -1 || how.indexOf('delivery') !== -1;
+    var app = d.app_only || how.indexOf('app') !== -1;
+    var href, label;
+    if (online && !d.app_only && (d.official || info.web)) {
+      href = d.official || info.web; label = 'Order online';
+    } else if (app && (d.app_ios || info.ios || IS_ANDROID)) {
+      if (IS_ANDROID) href = 'https://play.google.com/store/search?q=' + encodeURIComponent(d.chain) + '&c=apps';
+      else href = 'https://apps.apple.com/us/app/id' + (d.app_ios || info.ios);
+      label = (IS_IOS || IS_ANDROID) ? 'Open app' : 'Get the app';
+    } else if (app && info.web) {
+      href = info.web; label = 'Open site';
+    }
+    if (!href) return '';
+    return '<a class="go" href="' + esc(href) + '" target="_blank" rel="noopener">' + label + '</a>';
+  }
+
   function detailRow(d) {
     var src = '<p><a href="' + esc(d.source.url) + '" target="_blank" rel="noopener">' + esc(d.source.name) + '</a></p>';
     if (d.official) src += '<p><a href="' + esc(d.official) + '" target="_blank" rel="noopener">' + esc(d.chain) + "'s own page</a></p>";
     return '<tr class="detail" id="detail-' + esc(d.id) + '"><td colspan="6"><div class="detail-body">' +
-      '<div><h3>Fine print</h3><p>' + esc(d.fine_print || 'None stated by the source. Check with the restaurant.') + '</p></div>' +
-      '<div class="src"><h3>Where we found it</h3>' + src + '</div>' +
+      '<div><p>' + esc(d.fine_print || 'The source gave no extra terms. Check with the restaurant.') + '</p></div>' +
+      '<div class="src"><h3>Source</h3>' + src + '</div>' +
       '</div></td></tr>';
   }
 
@@ -210,8 +279,9 @@
   function visible() {
     var picks = picked(), q = ($q.value || '').trim().toLowerCase(), how = $how.value;
     var list = data.deals.filter(function (d) {
-      if (!isLive(d) || picks.indexOf(d.chain) === -1 || !inArea(d)) return false;
+      if (!isLive(d) || picks.indexOf(d.chain) === -1 || !inArea(d) || !hasStoreNear(d.chain)) return false;
       if ($noapp.checked && d.app_only) return false;
+      if ($type.value && ((chainInfo[d.chain] || {}).types || []).indexOf($type.value) === -1) return false;
       if (how) {
         var h = d.how || [];
         if (how === 'app' ? (h.indexOf('app') === -1 && h.indexOf('online') === -1) : h.indexOf(how) === -1) return false;
@@ -230,7 +300,10 @@
       new: function (a, b) { return (b.added || '').localeCompare(a.added || '') || endKey(a) - endKey(b); },
       near: function (a, b) { return distOf(a.chain) - distOf(b.chain) || a.chain.localeCompare(b.chain) || endKey(a) - endKey(b); }
     };
-    return list.sort(by[$sort.value] || by.ends);
+    var pins = state.pins || [], base = by[$sort.value] || by.ends;
+    return list.sort(function (a, b) {
+      return (pins.indexOf(a.id) === -1) - (pins.indexOf(b.id) === -1) || base(a, b);
+    });
   }
 
   function liveCounts() {
@@ -245,7 +318,7 @@
     $chips.innerHTML = shown.length ? shown.map(function (c) {
       var on = !!state.picks && picks.indexOf(c) !== -1, n = counts[c] || 0;
       return '<button type="button" class="chip" aria-pressed="' + on + '" data-chain="' + esc(c) + '">' +
-        '<span class="box">' + CHECK + '</span>' + esc(c) +
+        '<span class="box">' + CHECK + '</span>' + dot(c) + esc(c) +
         ' <span class="n' + (n ? '' : ' zero') + '">' + (n ? n + (n === 1 ? ' deal' : ' deals') : 'no deals yet') + '</span></button>';
     }).join('') : '<p class="none">No restaurant matches “' + esc($chainQ.value) + '”.</p>';
   }
@@ -253,7 +326,7 @@
   function renderMine() {
     var picks = picked(), $l = el('mine-list');
     if (!state.picks || picks.length === chains.length) {
-      $l.innerHTML = 'All <strong>' + chains.length + ' restaurants</strong>. Choose yours to cut the list down.';
+      $l.innerHTML = 'All <strong>' + chains.length + ' restaurants</strong>.';
     } else if (!picks.length) {
       $l.textContent = 'No restaurants chosen yet.';
     } else {
@@ -275,15 +348,16 @@
       (list.length ? ' at ' + np + (np === 1 ? ' place' : ' places') : '');
 
     $rows.innerHTML = list.map(function (d, i) {
-      var open = openId === d.id, alt = i % 2 ? ' alt' : '';
-      return '<tr class="deal' + alt + (open ? ' open' : '') + '">' +
-        '<td class="c-chain">' + esc(d.chain) + distHtml(d.chain) + '</td>' +
+      var open = openId === d.id, alt = i % 2 ? ' alt' : '', pinned = (state.pins || []).indexOf(d.id) !== -1;
+      return '<tr class="deal' + alt + (open ? ' open' : '') + (pinned ? ' pinned' : '') + '">' +
+        '<td class="c-chain"><button type="button" class="pin" data-pin="' + esc(d.id) + '" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + ' this deal">' + STAR + '</button>' +
+        dot(d.chain) + esc(d.chain) + distHtml(d.chain) + '</td>' +
         '<td class="c-deal"><span class="t">' + esc(d.title) + '</span><span class="d">' + esc(d.details) + '</span></td>' +
         '<td class="c-price">' + priceCell(d) + '</td>' +
         '<td class="c-ends">' + endsCell(d) + '</td>' +
         '<td class="c-how">' + tags(d) + '</td>' +
-        '<td class="c-more"><button type="button" class="more" data-id="' + esc(d.id) + '" aria-expanded="' + open + '" aria-controls="detail-' + esc(d.id) + '">' +
-        (open ? 'Hide' : 'Fine print') + CHEV + '</button></td>' +
+        '<td class="c-more">' + goLink(d) + '<button type="button" class="more" data-id="' + esc(d.id) + '" aria-expanded="' + open + '" aria-controls="detail-' + esc(d.id) + '">' +
+        (open ? 'Hide' : 'Details') + CHEV + '</button></td>' +
         '</tr>' + (open ? detailRow(d).replace('class="detail"', 'class="detail' + alt + '"') : '');
     }).join('');
 
@@ -298,7 +372,7 @@
   }
 
   function persistControls() {
-    state.q = $q.value; state.how = $how.value; state.sort = $sort.value; state.noapp = $noapp.checked;
+    state.q = $q.value; state.how = $how.value; state.type = $type.value; state.sort = $sort.value; state.noapp = $noapp.checked;
     save();
   }
   var picksAtOpen = '';
@@ -332,6 +406,25 @@
     save(); renderChips(); renderMine(); render();
   });
   $rows.addEventListener('click', function (e) {
+    var pin = e.target.closest('.pin');
+    if (pin) {
+      var pid = pin.getAttribute('data-pin'), pins = (state.pins || []).filter(function (x) { return x !== pid; });
+      if (pin.getAttribute('aria-pressed') !== 'true') pins.unshift(pid);
+      state.pins = pins; save(); render();
+      return;
+    }
+    var cb = e.target.closest('.tag.code');
+    if (cb) {
+      var code = cb.getAttribute('data-code');
+      var done = function () {
+        var ct = cb.querySelector('.ct'), was = ct.innerHTML;
+        cb.classList.add('copied'); ct.textContent = 'Copied';
+        setTimeout(function () { cb.classList.remove('copied'); ct.innerHTML = was; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, function () {});
+      return;
+    }
+
     var b = e.target.closest('.more'); if (!b) return;
     var id = b.getAttribute('data-id');
     openId = openId === id ? null : id;
@@ -339,7 +432,7 @@
     var again = $rows.querySelector('.more[data-id="' + CSS.escape(id) + '"]');
     if (again) again.focus();
   });
-  [$q, $how, $sort, $noapp].forEach(function (c) {
+  [$q, $how, $type, $sort, $noapp].forEach(function (c) {
     c.addEventListener(c === $q ? 'input' : 'change', function () { persistControls(); render(); });
   });
   el('near-form').addEventListener('submit', function (e) { e.preventDefault(); applyZip(($zip.value || '').trim()); });
@@ -347,7 +440,7 @@
   el('radius').addEventListener('input', function () { state.radius = +this.value; showRadius(); });
   el('radius').addEventListener('change', function () { state.radius = +this.value; save(); if (state.zip) applyZip(state.zip); });
   el('reset').addEventListener('click', function () {
-    $q.value = ''; $how.value = ''; $noapp.checked = false;
+    $q.value = ''; $how.value = ''; $type.value = ''; $noapp.checked = false;
     persistControls(); render();
     if (!picked().length) setPicker(true);
   });
@@ -366,12 +459,19 @@
       var seen = {};
       (data.chains || []).forEach(function (c) {
         seen[c.name] = 1;
+        chainInfo[c.name] = { ios: c.ios, web: c.web, types: c.types || [] };
         var list = (c.osm || [c.name]).slice();
         list.forEach(function (n) { if (n.indexOf("'") !== -1) list.push(n.replace(/'/g, '\u2019')); });
         osmNames[c.name] = list;
       });
       data.deals.forEach(function (d) { if (isLive(d)) seen[d.chain] = 1; });
       chains = Object.keys(seen).sort(function (a, b) { return a.localeCompare(b); });
+      var types = {};
+      (data.chains || []).forEach(function (c) { (c.types || []).forEach(function (t) { types[t] = 1; }); });
+      Object.keys(types).sort().forEach(function (t) {
+        var o = document.createElement('option'); o.value = t; o.textContent = t; $type.appendChild(o);
+      });
+      if (state.type && types[state.type]) $type.value = state.type;
       if (data.updated) {
         var u = new Date(data.updated);
         el('updated').textContent = 'Last checked ' + u.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) + '.';

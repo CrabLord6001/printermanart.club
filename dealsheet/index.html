@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DealSheet: fast food deals in one table</title>
-<meta name="description" content="Current fast food and quick-service deals in one sortable table. Pick the restaurants you use and see only their deals, with expiration dates and fine print.">
+<meta name="description" content="Current fast food and quick-service deals in one sortable table. Pick the restaurants you use and see only their deals, with end dates and details.">
 <link rel="canonical" href="https://printermanart.club/dealsheet/">
 <meta name="theme-color" content="#F4C542">
 <link rel="icon" href="/img/favicon-32.png" sizes="32x32">
@@ -19,13 +19,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="dealsheet.css?v=6">
+<link rel="stylesheet" href="dealsheet.css?v=14">
 </head>
 <body>
 
+<nav class="site-strip" aria-label="PrinterMan's Art Club">
+  <div class="site-strip-inner">
+    <a class="site-home" href="/">PrinterMan&rsquo;s Art Club</a>
+    <a href="/news.html">News</a>
+    <a href="/art-history/">Art History</a>
+  </div>
+</nav>
+
 <header class="liner">
   <div class="liner-inner">
-    <a class="home" href="/">PrinterMan's Art Club</a>
     <h1 class="wordmark"><span>Deal</span><span>Sheet</span></h1>
     <p class="lede">Your Deals on the Table</p>
   </div>
@@ -89,6 +96,12 @@
           </select>
         </label>
         <label class="field">
+          <span>Food</span>
+          <select id="type">
+            <option value="">All kinds</option>
+          </select>
+        </label>
+        <label class="field">
           <span>Sort by</span>
           <select id="sort">
             <option value="ends">Ending soonest</option>
@@ -100,7 +113,7 @@
         </label>
         <label class="toggle">
           <input type="checkbox" id="noapp">
-          <span>Hide app-only deals</span>
+          <span>Hide in-app offers</span>
         </label>
       </div>
     </div>
@@ -140,6 +153,6 @@
   <a href="/news.html">News Briefing</a>
 </footer>
 
-<script src="dealsheet.js?v=6" defer></script>
+<script src="dealsheet.js?v=14" defer></script>
 </body>
 </html>

@@ -400,3 +400,181 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
   .deals tr.deal.alt td, .deals tr.deal:hover td { background: transparent; }
   .deals tr.deal.open, .deals tr.deal.open td { background: #FFF6D6; }
 }
+
+/* ---------- Order button ---------- */
+.c-more { white-space: nowrap; }
+.c-more { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+td.c-more { display: table-cell; text-align: right; }
+td.c-more > * + * { margin-left: 6px; }
+.go {
+  display: inline-flex; align-items: center;
+  font-size: 13px; font-weight: 800; color: var(--ink); text-decoration: none;
+  background: var(--mustard); border: 2px solid var(--ink); border-radius: 8px;
+  padding: 5px 10px; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap;
+}
+.go:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+@media (max-width: 760px) {
+  td.c-more { display: flex; }
+  .go { font-size: 12px; padding: 3px 8px; border-width: 1.5px; }
+}
+@media (max-width: 760px) {
+  .deals tr.deal { grid-template-areas: "chain chain price" "deal deal deal" "ends how how" "more more more"; }
+  td.c-more { justify-content: flex-end; margin-top: 2px; }
+}
+@media (max-width: 760px) {
+  .deals tbody tr.deal td, .deals tbody tr.deal:hover td, .deals tbody tr.deal.open td { background: transparent; }
+}
+/* Phone: "Details" stays on the tags line; only rows that also have an
+   order button (two buttons don't fit beside the tags) get a button row. */
+@media (max-width: 760px) {
+  .deals tr.deal { grid-template-areas: "chain chain price" "deal deal deal" "ends how more"; }
+  .deals tr.deal:has(.go) { grid-template-areas: "chain chain price" "deal deal deal" "ends how how" "more more more"; }
+  td.c-more { margin-top: 0; }
+  .c-how { min-width: 0; }
+}
+/* Phone: date pill, tags and buttons flow as one wrapping line from the left
+   edge; the buttons keep to the right. */
+@media (max-width: 760px) {
+  .deals tr.deal, .deals tr.deal:has(.go) {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 6px;
+  }
+  .deals tr.deal .c-chain { flex: 1 1 auto; order: 0; }
+  .deals tr.deal .c-price { flex: 0 0 auto; order: 1; }
+  .deals tr.deal .c-deal { flex: 0 0 100%; order: 2; margin: 2px 0 4px; }
+  .deals tr.deal .c-ends { order: 3; }
+  .deals tr.deal .c-how, .deals tr.deal .c-how .tags { display: contents; }
+  .deals tr.deal .c-how .tag { order: 4; }
+  .deals tr.deal td.c-more { order: 5; margin-left: auto; display: flex; gap: 6px; }
+}
+@media (max-width: 760px) { .table-wrap { position: relative; } }
+/* Phone: on rows with an order button, the buttons take their own line on
+   the right, so the date and every tag (code included) share the line above. */
+@media (max-width: 760px) {
+  .deals tr.deal:has(.go) td.c-more { flex: 0 0 100%; justify-content: flex-end; margin-left: 0; }
+  .deals tr.deal { gap: 6px 5px; }
+  .when { padding: 2px 6px; }
+  .tag { padding: 1px 5px; }
+}
+@media (max-width: 760px) {
+  .deals tr.deal { column-gap: 4px; }
+  .when { font-size: 11.5px; }
+}
+@media (max-width: 760px) { .deals thead { display: none; } }
+@media (max-width: 760px) { .deals tr.deal, .deals tr.deal:has(.go) { column-gap: 4px; } }
+@media (max-width: 760px) {
+  .deals tr.deal:has(.go) td.c-more { justify-content: flex-start; }
+}
+
+/* ---------- Copy code, pin ---------- */
+button.tag { font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; line-height: inherit; }
+.tag .copy { width: 11px; height: 11px; }
+.tag.code.copied { background: var(--pickle); border-color: var(--pickle); color: #fff; }
+.pin {
+  display: inline-grid; place-items: center; width: 24px; height: 24px; margin: -3px 6px -3px -4px; vertical-align: middle;
+  padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink-3);
+}
+.pin svg { width: 16px; height: 16px; fill: none; }
+.pin:hover { color: var(--ink); }
+.pin[aria-pressed="true"] { color: var(--mustard-deep); }
+.pin[aria-pressed="true"] svg { fill: var(--mustard); }
+.deals tr.deal.pinned td:first-child { box-shadow: inset 4px 0 0 var(--mustard); }
+@media (max-width: 760px) {
+  button.tag { font-size: 11px; }
+  .deals tr.deal.pinned td:first-child { box-shadow: none; }
+  .deals tr.deal.pinned { box-shadow: inset 4px 0 0 var(--mustard); }
+}
+
+/* ---------- Thin site bar (matches the News Briefing's strip) ---------- */
+.site-strip { background: var(--ink); }
+.site-strip-inner {
+  max-width: var(--maxw); margin: 0 auto; padding: 10px 20px;
+  display: flex; align-items: center; gap: 8px 20px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .16em;
+}
+.site-strip a { color: rgba(255, 255, 255, .62); text-decoration: none; white-space: nowrap; }
+.site-strip a:hover { color: var(--mustard); }
+.site-strip a:focus-visible { outline: 2px solid var(--mustard); outline-offset: 3px; }
+.site-strip .site-home { margin-right: auto; color: #fff; letter-spacing: .12em; }
+@media (max-width: 420px) {
+  .site-strip-inner { gap: 6px 14px; padding: 9px 16px; font-size: 10px; letter-spacing: .1em; }
+  .site-strip .site-home { letter-spacing: .06em; }
+}
+@media (max-width: 760px) { .tag.code .cw { display: none; } }
+
+/* ---------- Food type dots ---------- */
+.type-dot {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  margin-right: 7px; vertical-align: 1px; box-shadow: 0 0 0 1.5px rgba(42, 26, 18, .25);
+}
+.chip .type-dot { margin: 0 6px 0 0; }
+
+/* Draft 2: DealSheet served on a pretty dinner plate over the gingham tablecloth */
+.liner { padding: 34px 16px 44px; position: relative; overflow: hidden; }
+.liner-inner {
+  position: relative; isolation: isolate;
+  width: min(86vw, 540px); aspect-ratio: 1; margin: 0 auto; max-width: none;
+  border-radius: 50%; justify-content: center; gap: 0;
+  background:
+    radial-gradient(circle at 50% 50%,
+      #FFFFFF 0 52%,
+      #F3E6E2 52.6% 53.4%,
+      #FFFDFB 54% 66%,
+      #E8B9A8 66.4% 67.2%,
+      #FFFDFB 67.8% 100%);
+  box-shadow:
+    0 0 0 2px #EADBD3,
+    0 0 0 7px #FFFFFF,
+    0 0 0 8.5px #D9B38C,
+    0 18px 30px rgba(42, 26, 18, .35),
+    0 4px 8px rgba(42, 26, 18, .25);
+}
+/* Rim pattern: a ring of tiny pink flowers with gold centers */
+.liner-inner::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; z-index: -1;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Ccircle%20cx=%2792.55%27%20cy=%2750.00%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2791.82%27%20cy=%2751.00%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2790.65%27%20cy=%2750.62%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2790.65%27%20cy=%2749.38%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2791.82%27%20cy=%2749.00%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2791.50%27%20cy=%2750.00%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2791.30%27%20cy=%2754.07%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2791.73%27%20cy=%2758.30%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2790.83%27%20cy=%2759.14%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2789.75%27%20cy=%2758.54%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2789.99%27%20cy=%2757.33%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2791.22%27%20cy=%2757.18%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2790.70%27%20cy=%2758.10%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2789.71%27%20cy=%2762.05%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2789.31%27%20cy=%2766.28%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2788.26%27%20cy=%2766.93%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2787.32%27%20cy=%2766.13%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2787.79%27%20cy=%2764.99%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2789.02%27%20cy=%2765.08%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2788.34%27%20cy=%2765.88%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2786.60%27%20cy=%2769.56%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2785.38%27%20cy=%2773.64%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2784.22%27%20cy=%2774.07%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2783.46%27%20cy=%2773.10%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2784.14%27%20cy=%2772.07%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2785.33%27%20cy=%2772.41%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2784.51%27%20cy=%2773.06%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2782.08%27%20cy=%2776.33%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2780.09%27%20cy=%2780.09%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2778.87%27%20cy=%2780.28%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2778.31%27%20cy=%2779.18%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2779.18%27%20cy=%2778.31%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2780.28%27%20cy=%2778.87%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2779.34%27%20cy=%2779.34%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2776.33%27%20cy=%2782.08%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2773.64%27%20cy=%2785.38%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2772.41%27%20cy=%2785.33%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2772.07%27%20cy=%2784.14%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2773.10%27%20cy=%2783.46%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2774.07%27%20cy=%2784.22%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2773.06%27%20cy=%2784.51%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2769.56%27%20cy=%2786.60%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2766.28%27%20cy=%2789.31%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2765.08%27%20cy=%2789.02%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2764.99%27%20cy=%2787.79%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2766.13%27%20cy=%2787.32%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2766.93%27%20cy=%2788.26%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2765.88%27%20cy=%2788.34%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2762.05%27%20cy=%2789.71%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2758.30%27%20cy=%2791.73%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2757.18%27%20cy=%2791.22%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2757.33%27%20cy=%2789.99%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2758.54%27%20cy=%2789.75%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2759.14%27%20cy=%2790.83%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2758.10%27%20cy=%2790.70%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2754.07%27%20cy=%2791.30%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2750.00%27%20cy=%2792.55%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2749.00%27%20cy=%2791.82%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2749.38%27%20cy=%2790.65%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2750.62%27%20cy=%2790.65%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2751.00%27%20cy=%2791.82%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2750.00%27%20cy=%2791.50%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2745.93%27%20cy=%2791.30%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2741.70%27%20cy=%2791.73%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2740.86%27%20cy=%2790.83%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2741.46%27%20cy=%2789.75%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2742.67%27%20cy=%2789.99%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2742.82%27%20cy=%2791.22%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2741.90%27%20cy=%2790.70%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2737.95%27%20cy=%2789.71%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2733.72%27%20cy=%2789.31%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2733.07%27%20cy=%2788.26%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2733.87%27%20cy=%2787.32%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2735.01%27%20cy=%2787.79%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2734.92%27%20cy=%2789.02%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2734.12%27%20cy=%2788.34%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2730.44%27%20cy=%2786.60%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2726.36%27%20cy=%2785.38%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2725.93%27%20cy=%2784.22%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2726.90%27%20cy=%2783.46%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2727.93%27%20cy=%2784.14%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2727.59%27%20cy=%2785.33%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2726.94%27%20cy=%2784.51%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2723.67%27%20cy=%2782.08%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2719.91%27%20cy=%2780.09%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2719.72%27%20cy=%2778.87%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2720.82%27%20cy=%2778.31%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2721.69%27%20cy=%2779.18%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2721.13%27%20cy=%2780.28%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2720.66%27%20cy=%2779.34%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2717.92%27%20cy=%2776.33%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2714.62%27%20cy=%2773.64%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2714.67%27%20cy=%2772.41%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2715.86%27%20cy=%2772.07%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2716.54%27%20cy=%2773.10%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2715.78%27%20cy=%2774.07%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2715.49%27%20cy=%2773.06%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2713.40%27%20cy=%2769.56%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2710.69%27%20cy=%2766.28%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2710.98%27%20cy=%2765.08%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2712.21%27%20cy=%2764.99%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2712.68%27%20cy=%2766.13%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2711.74%27%20cy=%2766.93%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2711.66%27%20cy=%2765.88%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2710.29%27%20cy=%2762.05%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%278.27%27%20cy=%2758.30%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%278.78%27%20cy=%2757.18%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2710.01%27%20cy=%2757.33%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2710.25%27%20cy=%2758.54%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%279.17%27%20cy=%2759.14%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%279.30%27%20cy=%2758.10%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%278.70%27%20cy=%2754.07%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%277.45%27%20cy=%2750.00%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%278.18%27%20cy=%2749.00%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%279.35%27%20cy=%2749.38%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%279.35%27%20cy=%2750.62%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%278.18%27%20cy=%2751.00%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%278.50%27%20cy=%2750.00%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%278.70%27%20cy=%2745.93%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%278.27%27%20cy=%2741.70%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%279.17%27%20cy=%2740.86%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2710.25%27%20cy=%2741.46%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2710.01%27%20cy=%2742.67%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%278.78%27%20cy=%2742.82%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%279.30%27%20cy=%2741.90%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2710.29%27%20cy=%2737.95%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2710.69%27%20cy=%2733.72%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2711.74%27%20cy=%2733.07%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2712.68%27%20cy=%2733.87%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2712.21%27%20cy=%2735.01%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2710.98%27%20cy=%2734.92%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2711.66%27%20cy=%2734.12%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2713.40%27%20cy=%2730.44%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2714.62%27%20cy=%2726.36%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2715.78%27%20cy=%2725.93%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2716.54%27%20cy=%2726.90%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2715.86%27%20cy=%2727.93%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2714.67%27%20cy=%2727.59%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2715.49%27%20cy=%2726.94%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2717.92%27%20cy=%2723.67%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2719.91%27%20cy=%2719.91%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2721.13%27%20cy=%2719.72%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2721.69%27%20cy=%2720.82%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2720.82%27%20cy=%2721.69%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2719.72%27%20cy=%2721.13%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2720.66%27%20cy=%2720.66%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2723.67%27%20cy=%2717.92%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2726.36%27%20cy=%2714.62%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2727.59%27%20cy=%2714.67%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2727.93%27%20cy=%2715.86%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2726.90%27%20cy=%2716.54%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2725.93%27%20cy=%2715.78%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2726.94%27%20cy=%2715.49%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2730.44%27%20cy=%2713.40%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2733.72%27%20cy=%2710.69%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2734.92%27%20cy=%2710.98%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2735.01%27%20cy=%2712.21%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2733.87%27%20cy=%2712.68%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2733.07%27%20cy=%2711.74%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2734.12%27%20cy=%2711.66%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2737.95%27%20cy=%2710.29%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2741.70%27%20cy=%278.27%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2742.82%27%20cy=%278.78%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2742.67%27%20cy=%2710.01%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2741.46%27%20cy=%2710.25%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2740.86%27%20cy=%279.17%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2741.90%27%20cy=%279.30%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2745.93%27%20cy=%278.70%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2750.00%27%20cy=%277.45%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2751.00%27%20cy=%278.18%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2750.62%27%20cy=%279.35%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2749.38%27%20cy=%279.35%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2749.00%27%20cy=%278.18%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2750.00%27%20cy=%278.50%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2754.07%27%20cy=%278.70%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2758.30%27%20cy=%278.27%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2759.14%27%20cy=%279.17%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2758.54%27%20cy=%2710.25%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2757.33%27%20cy=%2710.01%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2757.18%27%20cy=%278.78%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2758.10%27%20cy=%279.30%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2762.05%27%20cy=%2710.29%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2766.28%27%20cy=%2710.69%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2766.93%27%20cy=%2711.74%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2766.13%27%20cy=%2712.68%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2764.99%27%20cy=%2712.21%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2765.08%27%20cy=%2710.98%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2765.88%27%20cy=%2711.66%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2769.56%27%20cy=%2713.40%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2773.64%27%20cy=%2714.62%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2774.07%27%20cy=%2715.78%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2773.10%27%20cy=%2716.54%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2772.07%27%20cy=%2715.86%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2772.41%27%20cy=%2714.67%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2773.06%27%20cy=%2715.49%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2776.33%27%20cy=%2717.92%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2780.09%27%20cy=%2719.91%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2780.28%27%20cy=%2721.13%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2779.18%27%20cy=%2721.69%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2778.31%27%20cy=%2720.82%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2778.87%27%20cy=%2719.72%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2779.34%27%20cy=%2720.66%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2782.08%27%20cy=%2723.67%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2785.38%27%20cy=%2726.36%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2785.33%27%20cy=%2727.59%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2784.14%27%20cy=%2727.93%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2783.46%27%20cy=%2726.90%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2784.22%27%20cy=%2725.93%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2784.51%27%20cy=%2726.94%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2786.60%27%20cy=%2730.44%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2789.31%27%20cy=%2733.72%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2789.02%27%20cy=%2734.92%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2787.79%27%20cy=%2735.01%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2787.32%27%20cy=%2733.87%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2788.26%27%20cy=%2733.07%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2788.34%27%20cy=%2734.12%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2789.71%27%20cy=%2737.95%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3Ccircle%20cx=%2791.73%27%20cy=%2741.70%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2791.22%27%20cy=%2742.82%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2789.99%27%20cy=%2742.67%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2789.75%27%20cy=%2741.46%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2790.83%27%20cy=%2740.86%27%20r=%270.95%27%20fill=%27%23F2A7B8%27/%3E%3Ccircle%20cx=%2790.70%27%20cy=%2741.90%27%20r=%270.6%27%20fill=%27%23E2B35B%27/%3E%3Ccircle%20cx=%2791.30%27%20cy=%2745.93%27%20r=%270.45%27%20fill=%27%23D9B38C%27/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+.wordmark {
+  transform: none; animation: plate-pop .5s cubic-bezier(.2, 1.3, .4, 1) both .1s;
+  margin: 0; font-size: clamp(30px, 9vw, 74px);
+  border-width: 3px; border-radius: 16px; box-shadow: 5px 5px 0 var(--ink);
+}
+@keyframes plate-pop { 0% { transform: scale(.85); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.lede {
+  display: flex; align-items: center; gap: .55em;
+  margin: 22px 0 0; padding: 0; border: 0; box-shadow: none; background: none; border-radius: 0;
+  font-size: clamp(14px, 3.9vw, 22px); color: var(--ketchup);
+}
+.lede::before, .lede::after {
+  content: "\2665"; font-size: .7em; color: #E78A9C;
+}
+/* Fork and knife: beside the plate on wide screens, crossed behind it on phones */
+@media (min-width: 0px) {
+  .liner::before, .liner::after {
+    content: ""; position: absolute; top: 50%; width: 46px; height: 330px; transform: translateY(-50%);
+    background-repeat: no-repeat; background-position: center; background-size: contain;
+    filter: drop-shadow(0 6px 6px rgba(42, 26, 18, .3));
+  }
+  .liner::before {
+    left: calc(50% - 270px - 90px);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 330'%3E%3Cg fill='%23E9E4DF' stroke='%23A79C93' stroke-width='1.5'%3E%3Cpath d='M9 4v70q0 22 10 26v226q0 4 4 4t4-4V100q10-4 10-26V4h-3v62h-4V4h-3v62h-4V4h-3v62h-4V4z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+  .liner::after {
+    left: calc(50% + 270px + 44px);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 330'%3E%3Cg fill='%23E9E4DF' stroke='%23A79C93' stroke-width='1.5'%3E%3Cpath d='M27 4q-14 10-14 70v40q0 6 6 8v204q0 4 4 4t4-4z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+@media (max-width: 760px) {
+  .liner { padding: 24px 12px 30px; }
+  .wordmark { box-shadow: 4px 4px 0 var(--ink); }
+  .lede { margin-top: 14px; }
+}
+
+@media (max-width: 760px) {
+  .liner-inner { width: 64vw; }
+  .wordmark { font-size: 7.4vw; }
+  .lede { font-size: 3.3vw; }
+  .lede::before, .lede::after { display: none; }
+  .liner::before, .liner::after { width: 30px; height: 56vw; }
+  .liner::before { left: calc(50% - 32vw - 9vw - 15px); }
+  .liner::after { left: calc(50% + 32vw + 9vw - 15px); }
+}

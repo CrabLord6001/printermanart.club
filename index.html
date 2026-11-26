@@ -528,6 +528,43 @@
   .rail-tag{ font-size:.57rem; letter-spacing:.13em; text-transform:uppercase;
     color:#6B7183; border:1px solid #2A2F3C; border-radius:3px; padding:2px 6px; }
   .rail-what{ font-size:.87rem; color:#C7CBD6; line-height:1.5; margin:4px 0 0; }
+
+  /* Search sits in the middle cell of the menu, between the two links. */
+  .menu { position: relative; }
+  .menu-search {
+    flex: 1.3 1 0; min-width: 0; position: static;
+    display: flex; align-items: center; padding: 8px 12px;
+    border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+  }
+  .menu-search + a { border-left: 0; }
+  .menu a { display: flex; align-items: center; justify-content: center; }
+  .ss-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .menu-search input {
+    width: 100%; height: 34px; padding: 0 12px 0 32px;
+    font: inherit; font-size: 0.85rem; color: var(--text);
+    background: var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239BA0AE' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 10px 50% / 15px;
+    border: 1px solid var(--border); border-radius: 999px;
+    -webkit-appearance: none; appearance: none;
+  }
+  .menu-search input::placeholder { color: var(--text-dim); }
+  .menu-search input:focus { outline: none; border-color: var(--blurple-text); }
+  .menu-search input::-webkit-search-cancel-button { filter: invert(0.6); }
+  .ss-results {
+    position: absolute; left: 0; right: 0; top: 100%; z-index: 20;
+    margin: 0; padding: 6px; list-style: none;
+    background: var(--panel); border: 1px solid var(--border); border-top: 0;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+    max-height: 60vh; overflow-y: auto;
+  }
+  .menu .ss-results a { display: block; padding: 9px 12px; border-radius: 6px; text-decoration: none; text-transform: none; letter-spacing: normal; text-align: left; font-size: inherit; font-weight: inherit; border-left: 0; }
+  .ss-results li.on a, .ss-results a:hover { background: var(--border); }
+  .ss-t { display: block; color: var(--text); font-size: 0.92rem; font-weight: 500; }
+  .ss-s { display: block; color: var(--text-dim); font-size: 0.78rem; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ss-note { padding: 10px 12px; color: var(--text-muted); font-size: 0.88rem; }
+  @media (max-width: 480px) {
+    .menu-search { flex-basis: 0; flex-grow: 1.15; padding: 7px 6px; }
+    .menu-search input { height: 32px; padding: 0 8px 0 27px; background-position: 8px 50%; background-size: 13px; font-size: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -546,8 +583,13 @@
 
     <nav class="menu">
       <a href="/news.html">News Briefing</a>
+      <form class="menu-search" id="site-search" role="search" autocomplete="off">
+        <label for="site-q" class="ss-label">Search the site</label>
+        <input id="site-q" type="search" placeholder="Search" enterkeyhint="search"
+               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="site-search-results">
+        <ul id="site-search-results" class="ss-results" role="listbox" aria-label="Search results" hidden></ul>
+      </form>
       <a href="/art-history/">Art History</a>
-      <a href="/games/">Arcade</a>
     </nav>
 
     <div class="card-body">
@@ -1012,6 +1054,7 @@ if (section && track) {
 }
 </script>
 
+<script src="/site-search.js" defer></script>
 <script type="module" src="/session.js"></script>
 
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0b3e30f708cd4777957b92defbbdd859"}'></script><!-- End Cloudflare Web Analytics -->
