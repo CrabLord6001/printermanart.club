@@ -222,7 +222,7 @@
     if (d.app_only) out.unshift('<span class="tag app" title="Claim it in the app, then use it any of the ways listed">In-app offer</span>');
     if (d.areas && d.areas.length) out.unshift('<span class="tag area">Only in ' + esc(d.areas.join(', ')) + '</span>');
     if (d.rewards) out.push('<span class="tag rewards">Rewards members</span>');
-    if (d.code) out.push('<button type="button" class="tag code" data-code="' + esc(d.code) + '" aria-label="Copy code ' + esc(d.code) + '">Code ' + esc(d.code) + COPY + '</button>');
+    if (d.code) out.push('<button type="button" class="tag code" data-code="' + esc(d.code) + '" aria-label="Copy code ' + esc(d.code) + '">' + COPY + '<span class="ct"><span class="cw">Code </span>' + esc(d.code) + '</span></button>');
     if (!out.length) out.push('<span class="tag">Not stated</span>');
     return '<div class="tags">' + out.join('') + '</div>';
   }
@@ -406,8 +406,9 @@
     if (cb) {
       var code = cb.getAttribute('data-code');
       var done = function () {
-        cb.classList.add('copied'); cb.firstChild.textContent = 'Copied ';
-        setTimeout(function () { cb.classList.remove('copied'); cb.firstChild.textContent = 'Code ' + code; }, 1600);
+        var ct = cb.querySelector('.ct'), was = ct.innerHTML;
+        cb.classList.add('copied'); ct.textContent = 'Copied';
+        setTimeout(function () { cb.classList.remove('copied'); ct.innerHTML = was; }, 1600);
       };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, function () {});
       return;
