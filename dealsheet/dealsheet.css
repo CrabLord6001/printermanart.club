@@ -421,3 +421,6 @@ td.c-more > * + * { margin-left: 6px; }
   .deals tr.deal { grid-template-areas: "chain chain price" "deal deal deal" "ends how how" "more more more"; }
   td.c-more { justify-content: flex-end; margin-top: 2px; }
 }
+@media (max-width: 760px) {
+  .deals tbody tr.deal td, .deals tbody tr.deal:hover td, .deals tbody tr.deal.open td { background: transparent; }
+}

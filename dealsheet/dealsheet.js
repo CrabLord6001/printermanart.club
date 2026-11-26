@@ -218,7 +218,7 @@
     var src = '<p><a href="' + esc(d.source.url) + '" target="_blank" rel="noopener">' + esc(d.source.name) + '</a></p>';
     if (d.official) src += '<p><a href="' + esc(d.official) + '" target="_blank" rel="noopener">' + esc(d.chain) + "'s own page</a></p>";
     return '<tr class="detail" id="detail-' + esc(d.id) + '"><td colspan="6"><div class="detail-body">' +
-      '<div><h3>Fine print</h3><p>' + esc(d.fine_print || 'None stated by the source. Check with the restaurant.') + '</p></div>' +
+      '<div><p>' + esc(d.fine_print || 'The source gave no extra terms. Check with the restaurant.') + '</p></div>' +
       '<div class="src"><h3>Source</h3>' + src + '</div>' +
       '</div></td></tr>';
   }
@@ -308,7 +308,7 @@
         '<td class="c-ends">' + endsCell(d) + '</td>' +
         '<td class="c-how">' + tags(d) + '</td>' +
         '<td class="c-more">' + goLink(d) + '<button type="button" class="more" data-id="' + esc(d.id) + '" aria-expanded="' + open + '" aria-controls="detail-' + esc(d.id) + '">' +
-        (open ? 'Hide' : 'Fine print') + CHEV + '</button></td>' +
+        (open ? 'Hide' : 'Details') + CHEV + '</button></td>' +
         '</tr>' + (open ? detailRow(d).replace('class="detail"', 'class="detail' + alt + '"') : '');
     }).join('');
 
