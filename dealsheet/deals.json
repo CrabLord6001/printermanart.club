@@ -1,5 +1,286 @@
 {
  "updated": "2026-11-26T15:00:00Z",
+ "chains": [
+  {
+   "name": "7-Eleven",
+   "osm": [
+    "7-Eleven"
+   ]
+  },
+  {
+   "name": "Arby's",
+   "osm": [
+    "Arby's"
+   ]
+  },
+  {
+   "name": "Blimpie",
+   "osm": [
+    "Blimpie"
+   ]
+  },
+  {
+   "name": "Bojangles",
+   "osm": [
+    "Bojangles",
+    "Bojangles'"
+   ]
+  },
+  {
+   "name": "Burger King",
+   "osm": [
+    "Burger King"
+   ]
+  },
+  {
+   "name": "Carl's Jr.",
+   "osm": [
+    "Carl's Jr.",
+    "Carl's Jr"
+   ]
+  },
+  {
+   "name": "Checkers",
+   "osm": [
+    "Checkers",
+    "Rally's"
+   ]
+  },
+  {
+   "name": "Chick-fil-A",
+   "osm": [
+    "Chick-fil-A"
+   ]
+  },
+  {
+   "name": "Chipotle",
+   "osm": [
+    "Chipotle",
+    "Chipotle Mexican Grill"
+   ]
+  },
+  {
+   "name": "Church's Texas Chicken",
+   "osm": [
+    "Church's Texas Chicken",
+    "Church's Chicken"
+   ]
+  },
+  {
+   "name": "Cinnabon",
+   "osm": [
+    "Cinnabon"
+   ]
+  },
+  {
+   "name": "Culver's",
+   "osm": [
+    "Culver's"
+   ]
+  },
+  {
+   "name": "Dairy Queen",
+   "osm": [
+    "Dairy Queen",
+    "DQ"
+   ]
+  },
+  {
+   "name": "Del Taco",
+   "osm": [
+    "Del Taco"
+   ]
+  },
+  {
+   "name": "Domino's",
+   "osm": [
+    "Domino's",
+    "Domino's Pizza"
+   ]
+  },
+  {
+   "name": "Dunkin'",
+   "osm": [
+    "Dunkin'",
+    "Dunkin",
+    "Dunkin' Donuts"
+   ]
+  },
+  {
+   "name": "Firehouse Subs",
+   "osm": [
+    "Firehouse Subs"
+   ]
+  },
+  {
+   "name": "Five Guys",
+   "osm": [
+    "Five Guys"
+   ]
+  },
+  {
+   "name": "Hardee's",
+   "osm": [
+    "Hardee's"
+   ]
+  },
+  {
+   "name": "Jack in the Box",
+   "osm": [
+    "Jack in the Box"
+   ]
+  },
+  {
+   "name": "Jamba",
+   "osm": [
+    "Jamba",
+    "Jamba Juice"
+   ]
+  },
+  {
+   "name": "Jersey Mike's",
+   "osm": [
+    "Jersey Mike's",
+    "Jersey Mike's Subs"
+   ]
+  },
+  {
+   "name": "Jimmy John's",
+   "osm": [
+    "Jimmy John's"
+   ]
+  },
+  {
+   "name": "KFC",
+   "osm": [
+    "KFC"
+   ]
+  },
+  {
+   "name": "Krispy Kreme",
+   "osm": [
+    "Krispy Kreme"
+   ]
+  },
+  {
+   "name": "Little Caesars",
+   "osm": [
+    "Little Caesars"
+   ]
+  },
+  {
+   "name": "Long John Silver's",
+   "osm": [
+    "Long John Silver's"
+   ]
+  },
+  {
+   "name": "McDonald's",
+   "osm": [
+    "McDonald's"
+   ]
+  },
+  {
+   "name": "Moe's Southwest Grill",
+   "osm": [
+    "Moe's Southwest Grill"
+   ]
+  },
+  {
+   "name": "Panda Express",
+   "osm": [
+    "Panda Express"
+   ]
+  },
+  {
+   "name": "Panera Bread",
+   "osm": [
+    "Panera Bread",
+    "Panera"
+   ]
+  },
+  {
+   "name": "Pizza Hut",
+   "osm": [
+    "Pizza Hut"
+   ]
+  },
+  {
+   "name": "Popeyes",
+   "osm": [
+    "Popeyes",
+    "Popeyes Louisiana Kitchen"
+   ]
+  },
+  {
+   "name": "Raising Cane's",
+   "osm": [
+    "Raising Cane's",
+    "Raising Cane's Chicken Fingers"
+   ]
+  },
+  {
+   "name": "Shake Shack",
+   "osm": [
+    "Shake Shack"
+   ]
+  },
+  {
+   "name": "Sonic",
+   "osm": [
+    "Sonic",
+    "Sonic Drive-In"
+   ]
+  },
+  {
+   "name": "Starbucks",
+   "osm": [
+    "Starbucks"
+   ]
+  },
+  {
+   "name": "Subway",
+   "osm": [
+    "Subway"
+   ]
+  },
+  {
+   "name": "Taco Bell",
+   "osm": [
+    "Taco Bell"
+   ]
+  },
+  {
+   "name": "Wendy's",
+   "osm": [
+    "Wendy's"
+   ]
+  },
+  {
+   "name": "Whataburger",
+   "osm": [
+    "Whataburger"
+   ]
+  },
+  {
+   "name": "Wingstop",
+   "osm": [
+    "Wingstop"
+   ]
+  },
+  {
+   "name": "Yogurtland",
+   "osm": [
+    "Yogurtland"
+   ]
+  },
+  {
+   "name": "Zaxby's",
+   "osm": [
+    "Zaxby's"
+   ]
+  }
+ ],
  "deals": [
   {
    "id": "7eleven-bf-pizza",

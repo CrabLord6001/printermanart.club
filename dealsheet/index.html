@@ -32,16 +32,41 @@
 </header>
 
 <main>
-  <section class="picker" aria-labelledby="picker-h">
-    <div class="picker-head">
-      <h2 id="picker-h">Your restaurants</h2>
-      <div class="picker-actions">
-        <button type="button" class="linkbtn" data-pick="all">Select all</button>
-        <button type="button" class="linkbtn" data-pick="none">Clear</button>
+  <section class="setup" aria-label="Your restaurants and location">
+    <div class="setup-bar">
+      <div class="mine">
+        <h2 id="picker-h">Your restaurants</h2>
+        <p class="mine-list" id="mine-list"></p>
+        <button type="button" class="btn small" id="edit-picks" aria-expanded="false" aria-controls="picker">Choose restaurants</button>
+      </div>
+      <form class="near" id="near-form" novalidate>
+        <label for="zip"><span class="near-h">Near ZIP code</span></label>
+        <div class="near-row">
+          <input id="zip" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="33431" autocomplete="postal-code">
+          <button type="submit" class="btn small">Set</button>
+          <button type="button" class="linkbtn" id="zip-clear" hidden>Clear</button>
+        </div>
+        <p class="near-status" id="near-status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="picker" id="picker" hidden>
+      <div class="picker-head">
+        <label class="field grow">
+          <span>Find a restaurant</span>
+          <input type="search" id="chain-q" placeholder="Type a name" autocomplete="off">
+        </label>
+        <div class="picker-actions">
+          <button type="button" class="linkbtn" data-pick="all">Select all</button>
+          <button type="button" class="linkbtn" data-pick="none">Clear all</button>
+        </div>
+      </div>
+      <div class="chips" id="chips" role="group" aria-labelledby="picker-h"></div>
+      <div class="picker-foot">
+        <p class="picker-note">Tap the places you eat. Picks stay in this browser. Restaurants with no current deals are listed too, so you'll see their next one. Missing a restaurant? <a href="https://discord.gg/nn3xjcS745">Ask for it on our Discord</a>.</p>
+        <button type="button" class="btn" id="done-picks">Done</button>
       </div>
     </div>
-    <div class="chips" id="chips" role="group" aria-labelledby="picker-h"></div>
-    <p class="picker-note" id="picker-note">Your picks stay in this browser. No account needed.</p>
   </section>
 
   <section class="sheet" aria-labelledby="sheet-h">
@@ -69,6 +94,7 @@
             <option value="chain">Restaurant A to Z</option>
             <option value="price">Lowest price</option>
             <option value="new">Newest first</option>
+            <option value="near" id="sort-near" disabled>Closest restaurant</option>
           </select>
         </label>
         <label class="toggle">
@@ -102,6 +128,7 @@
   <section class="about" aria-labelledby="about-h">
     <h2 id="about-h">Where these deals come from</h2>
     <p>Each deal links to the report where it was found. Deals with a stated end date drop off the table on their own once they expire. Deals inside each chain's app can differ by person and by store, so confirm in the app or at the counter before you order.</p>
+    <p>Distances use store locations from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, which can miss a store or two. Your ZIP code is saved only in this browser. It goes to a ZIP lookup service to get map coordinates, and those coordinates go to OpenStreetMap to find nearby stores.</p>
     <p class="updated" id="updated"></p>
     <p class="fine">DealSheet is not affiliated with any restaurant. Prices and availability vary by location.</p>
   </section>
