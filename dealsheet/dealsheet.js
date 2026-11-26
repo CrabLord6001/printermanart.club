@@ -95,6 +95,28 @@
     });
   }
 
+  // The free OpenStreetMap servers often turn requests away when busy, so a
+  // failed store lookup is tried again after a pause before giving up.
+  function withRetry(fn, waits, onRetry) {
+    return fn().catch(function (err) {
+      if (!waits.length) throw err;
+      onRetry && onRetry(3 - waits.length);
+      return new Promise(function (r) { setTimeout(r, waits[0]); })
+        .then(function () { return withRetry(fn, waits.slice(1), onRetry); });
+    });
+  }
+
+  // With a ZIP set and store locations known, a restaurant with no store
+  // inside the radius drops out of the table (its deals can't be used).
+  function hasStoreNear(chain) {
+    if (!near || !near.stores || state.showFar) return true;
+    return !!near.stores[chain];
+  }
+  function farChains() {
+    if (!near || !near.stores) return [];
+    return picked().filter(function (c) { return !near.stores[c]; });
+  }
+
   function radius() { return Math.min(30, Math.max(1, +state.radius || RADIUS_MI)); }
   function showRadius() {
     var r = radius();
@@ -120,9 +142,11 @@
       near = loc; near.stores = null;
       afterNear();
       setNearStatus('Showing for ' + loc.place + '. Finding stores…');
-      if (!state.picks || !picked().length) { near.stores = null; near.needPicks = true; afterNear(); return; }
+      if (!picked().length) { near.stores = null; near.needPicks = true; afterNear(); return; }
       near.needPicks = false;
-      return lookupStores(loc, picked()).then(function (stores) {
+      return withRetry(function () { return lookupStores(loc, picked()); }, [8000, 25000], function (n) {
+        if (state.zip === zip) setNearStatus('Showing for ' + loc.place + '. The store map is busy, trying again (' + n + ' of 2)…');
+      }).then(function (stores) {
         near.stores = stores; near.failed = false;
         try { localStorage.setItem(NEAR_CACHE, JSON.stringify({ zip: zip, near: near, at: Date.now(), key: key })); } catch (e) { /* ignore */ }
         afterNear();
@@ -141,7 +165,15 @@
     var where = near.place;
     if (near.needPicks) setNearStatus('Showing for ' + where + '. Choose restaurants to see distances.');
     else if (near.failed) setNearStatus('Showing for ' + where + '. Distances didn’t load, so rows link to a map.');
-    else setNearStatus('Showing for ' + where + (near.stores ? '' : '. Finding stores…'));
+    else if (!near.stores) setNearStatus('Showing for ' + where + '. Finding stores…');
+    else {
+      var far = farChains().filter(function (c) { return data.deals.some(function (d) { return d.chain === c && isLive(d); }); });
+      $nearStatus.classList.remove('err');
+      $nearStatus.innerHTML = 'Showing for ' + esc(where) + (far.length
+        ? '. ' + (state.showFar ? 'Including' : 'Hiding') + ' ' + far.length + (far.length === 1 ? ' restaurant' : ' restaurants') +
+          ' with no store within ' + radius() + ' mi. <button type="button" class="linkbtn" id="toggle-far">' + (state.showFar ? 'Hide them' : 'Show them') + '</button>'
+        : '.');
+    }
     renderChips(); renderMine(); render();
   }
 
@@ -235,7 +267,7 @@
   function visible() {
     var picks = picked(), q = ($q.value || '').trim().toLowerCase(), how = $how.value;
     var list = data.deals.filter(function (d) {
-      if (!isLive(d) || picks.indexOf(d.chain) === -1 || !inArea(d)) return false;
+      if (!isLive(d) || picks.indexOf(d.chain) === -1 || !inArea(d) || !hasStoreNear(d.chain)) return false;
       if ($noapp.checked && d.app_only) return false;
       if (how) {
         var h = d.how || [];
@@ -356,6 +388,11 @@
     state.picks = b.getAttribute('data-pick') === 'all' ? chains.slice() : [];
     save(); renderChips(); renderMine(); render();
   });
+  $nearStatus.addEventListener('click', function (e) {
+    if (!e.target.closest('#toggle-far')) return;
+    state.showFar = !state.showFar; save(); afterNear();
+  });
+
   $rows.addEventListener('click', function (e) {
     var b = e.target.closest('.more'); if (!b) return;
     var id = b.getAttribute('data-id');
