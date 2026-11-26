@@ -424,3 +424,11 @@ td.c-more > * + * { margin-left: 6px; }
 @media (max-width: 760px) {
   .deals tbody tr.deal td, .deals tbody tr.deal:hover td, .deals tbody tr.deal.open td { background: transparent; }
 }
+/* Phone: "Details" stays on the tags line; only rows that also have an
+   order button (two buttons don't fit beside the tags) get a button row. */
+@media (max-width: 760px) {
+  .deals tr.deal { grid-template-areas: "chain chain price" "deal deal deal" "ends how more"; }
+  .deals tr.deal:has(.go) { grid-template-areas: "chain chain price" "deal deal deal" "ends how how" "more more more"; }
+  td.c-more { margin-top: 0; }
+  .c-how { min-width: 0; }
+}
