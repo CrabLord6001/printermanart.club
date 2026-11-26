@@ -432,3 +432,18 @@ td.c-more > * + * { margin-left: 6px; }
   td.c-more { margin-top: 0; }
   .c-how { min-width: 0; }
 }
+/* Phone: date pill, tags and buttons flow as one wrapping line from the left
+   edge; the buttons keep to the right. */
+@media (max-width: 760px) {
+  .deals tr.deal, .deals tr.deal:has(.go) {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 6px;
+  }
+  .deals tr.deal .c-chain { flex: 1 1 auto; order: 0; }
+  .deals tr.deal .c-price { flex: 0 0 auto; order: 1; }
+  .deals tr.deal .c-deal { flex: 0 0 100%; order: 2; margin: 2px 0 4px; }
+  .deals tr.deal .c-ends { order: 3; }
+  .deals tr.deal .c-how, .deals tr.deal .c-how .tags { display: contents; }
+  .deals tr.deal .c-how .tag { order: 4; }
+  .deals tr.deal td.c-more { order: 5; margin-left: auto; display: flex; gap: 6px; }
+}
+@media (max-width: 760px) { .table-wrap { position: relative; } }
