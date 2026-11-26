@@ -12,6 +12,17 @@
   var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5 5 9l5-6" fill="none" stroke="#F4C542" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var COPY = '<svg class="copy" viewBox="0 0 12 12" aria-hidden="true"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2 8V2.8C2 2.4 2.4 2 2.8 2H8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
   var STAR = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6l1.95 4 4.4.6-3.2 3.08.78 4.37L8 11.57 4.07 13.65l.78-4.37L1.65 6.2l4.4-.6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+  // One dot color per food type (a chain's first type).
+  var TYPE_COLOR = {
+    'Burgers': '#C2410C', 'Chicken & Wings': '#E0A21B', 'Mexican': '#2E9E4F', 'Pizza & Italian': '#D7263D',
+    'Sandwiches': '#A47551', 'Coffee & Breakfast': '#5B3A29', 'Sweets': '#E879A6', 'Asian': '#7C3AED',
+    'Salads & Smoothies': '#84CC16', 'Seafood': '#0EA5E9', 'Convenience': '#64748B'
+  };
+  function dot(chain) {
+    var t = ((chainInfo[chain] || {}).types || [])[0];
+    if (!t || !TYPE_COLOR[t]) return '';
+    return '<span class="type-dot" style="background:' + TYPE_COLOR[t] + '" title="' + esc(t) + '" role="img" aria-label="' + esc(t) + '"></span>';
+  }
   var CHEV = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
   var el = function (id) { return document.getElementById(id); };
@@ -307,7 +318,7 @@
     $chips.innerHTML = shown.length ? shown.map(function (c) {
       var on = !!state.picks && picks.indexOf(c) !== -1, n = counts[c] || 0;
       return '<button type="button" class="chip" aria-pressed="' + on + '" data-chain="' + esc(c) + '">' +
-        '<span class="box">' + CHECK + '</span>' + esc(c) +
+        '<span class="box">' + CHECK + '</span>' + dot(c) + esc(c) +
         ' <span class="n' + (n ? '' : ' zero') + '">' + (n ? n + (n === 1 ? ' deal' : ' deals') : 'no deals yet') + '</span></button>';
     }).join('') : '<p class="none">No restaurant matches “' + esc($chainQ.value) + '”.</p>';
   }
@@ -340,7 +351,7 @@
       var open = openId === d.id, alt = i % 2 ? ' alt' : '', pinned = (state.pins || []).indexOf(d.id) !== -1;
       return '<tr class="deal' + alt + (open ? ' open' : '') + (pinned ? ' pinned' : '') + '">' +
         '<td class="c-chain"><button type="button" class="pin" data-pin="' + esc(d.id) + '" aria-pressed="' + pinned + '" aria-label="' + (pinned ? 'Unpin' : 'Pin') + ' this deal">' + STAR + '</button>' +
-        esc(d.chain) + distHtml(d.chain) + '</td>' +
+        dot(d.chain) + esc(d.chain) + distHtml(d.chain) + '</td>' +
         '<td class="c-deal"><span class="t">' + esc(d.title) + '</span><span class="d">' + esc(d.details) + '</span></td>' +
         '<td class="c-price">' + priceCell(d) + '</td>' +
         '<td class="c-ends">' + endsCell(d) + '</td>' +
