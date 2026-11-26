@@ -34,24 +34,22 @@
 <main>
   <section class="setup" aria-label="Your restaurants and location">
     <div class="setup-bar">
-      <div class="mine">
-        <h2 id="picker-h">Your restaurants</h2>
-        <p class="mine-list" id="mine-list"></p>
+      <h2 id="picker-h">Your restaurants</h2>
+      <p class="mine-list" id="mine-list"></p>
+      <div class="setup-row">
         <button type="button" class="btn small" id="edit-picks" aria-expanded="false" aria-controls="picker">Choose restaurants</button>
-      </div>
-      <form class="near" id="near-form" novalidate>
-        <label for="zip"><span class="near-h">Near ZIP code</span></label>
-        <div class="near-row">
-          <input id="zip" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="33431" autocomplete="postal-code">
+        <form class="near" id="near-form" novalidate>
+          <label for="zip" class="sr-only">ZIP code</label>
+          <input id="zip" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="ZIP code" autocomplete="postal-code">
           <button type="submit" class="btn small">Set</button>
-          <button type="button" class="linkbtn" id="zip-clear" hidden>Clear</button>
-        </div>
-        <div class="radius" id="radius-wrap">
-          <label for="radius">Search within <output id="radius-out" for="radius">15 miles</output></label>
-          <input type="range" id="radius" min="1" max="30" step="1" value="15">
-        </div>
-        <p class="near-status" id="near-status" aria-live="polite"></p>
-      </form>
+          <button type="button" class="zip-x" id="zip-clear" aria-label="Clear ZIP code" hidden>&times;</button>
+        </form>
+      </div>
+      <div class="radius" id="radius-wrap">
+        <label for="radius">Search within <output id="radius-out" for="radius">15 miles</output></label>
+        <input type="range" id="radius" min="1" max="30" step="1" value="15">
+      </div>
+      <p class="near-status" id="near-status" aria-live="polite"></p>
     </div>
 
     <div class="picker" id="picker" hidden>

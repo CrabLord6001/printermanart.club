@@ -338,3 +338,28 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
   .radius input { max-width: none; }
 }
 [hidden] { display: none !important; }
+
+/* ---------- Round 4: restaurants button and ZIP on one row ---------- */
+.setup-bar { display: block; padding-bottom: 6px; }
+.setup-bar h2 { margin-bottom: 4px; }
+.setup-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.setup-row .near { display: flex; align-items: center; gap: 8px; }
+.setup-row .near input { width: 112px; height: 38px; font-size: 16px; }
+.setup-row .near input::placeholder { letter-spacing: 0; font-weight: 500; color: var(--ink-3); }
+.zip-x {
+  width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--rule); background: var(--paper);
+  font: inherit; font-size: 18px; line-height: 1; color: var(--ink-2); cursor: pointer; padding: 0;
+}
+.zip-x:hover { border-color: var(--ink); color: var(--ink); }
+.radius { margin-top: 12px; max-width: 320px; }
+.near-status { margin-top: 6px; max-width: 60ch; }
+@media (max-width: 760px) {
+  .setup-row { gap: 8px; flex-wrap: nowrap; }
+  .setup-row .btn.small { padding: 7px 10px; white-space: nowrap; }
+  .setup-row .near { gap: 6px; }
+  .setup-row .near input { width: 92px; padding: 0 8px; }
+  .radius { max-width: none; }
+}
+@media (max-width: 360px) {
+  .setup-row { flex-wrap: wrap; }
+}
