@@ -390,3 +390,13 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
   tr.detail td { border-radius: 0; padding: 0 12px 14px; }
   .deals tr.detail:last-child { border-bottom: 0; }
 }
+
+/* ---------- Alternating row shading ---------- */
+.deals tr.deal.alt td, .deals tr.detail.alt td { background: #F6EFE2; }
+.deals tbody tr.deal:hover td { background: #FFFBEA; }
+.deals tbody tr.deal.open td, .deals tr.detail td { background: #FFF6D6; }
+@media (max-width: 760px) {
+  .deals tr.deal.alt { background: #F6EFE2; }
+  .deals tr.deal.alt td, .deals tr.deal:hover td { background: transparent; }
+  .deals tr.deal.open, .deals tr.deal.open td { background: #FFF6D6; }
+}
