@@ -6,8 +6,8 @@
 
   var STORE = 'dealsheet:v1';
   var NEAR_CACHE = 'dealsheet:near:v1';
-  var RADIUS_MI = 25;
-  var OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
+  var RADIUS_MI = 15;
+  var OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
   var HOW_LABEL = { 'in-store': 'In restaurant', 'drive-thru': 'Drive-thru', app: 'App', online: 'Online', delivery: 'Delivery' };
   var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5 5 9l5-6" fill="none" stroke="#F4C542" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var CHEV = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -64,24 +64,24 @@
     });
   }
 
-  // One query for every chain's brand names within the radius; first mirror to answer wins.
-  function lookupStores(loc) {
+  // One brand-tag query for the visitor's own restaurants; the first mirror to answer wins.
+  // (Public Overpass servers are busy, so the query stays small: picked chains, brand tag only.)
+  function lookupStores(loc, list) {
     var names = [];
-    chains.forEach(function (c) { (osmNames[c] || [c]).forEach(function (n) { names.push(reEsc(n)); }); });
-    var re = '^(' + names.join('|') + ')$';
-    var q = '[out:json][timeout:25];(nwr["brand"~"' + re + '",i](around:' + Math.round(RADIUS_MI * 1609) + ',' + loc.lat + ',' + loc.lon + ');' +
-            'nwr["name"~"' + re + '",i]["amenity"](around:' + Math.round(RADIUS_MI * 1609) + ',' + loc.lat + ',' + loc.lon + '););out center;';
+    list.forEach(function (c) { (osmNames[c] || [c]).forEach(function (n) { names.push(reEsc(n)); }); });
+    var q = '[out:json][timeout:40];nwr["brand"~"^(' + names.join('|') + ')$"](around:' +
+            Math.round(RADIUS_MI * 1609) + ',' + loc.lat + ',' + loc.lon + ');out center;';
     var body = 'data=' + encodeURIComponent(q);
     var tries = OVERPASS.map(function (u) {
-      return timeoutFetch(u, { method: 'POST', body: body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, 30000)
+      return timeoutFetch(u, { method: 'POST', body: body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, 45000)
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
     });
     return Promise.any(tries).then(function (j) {
       var lookup = {};
-      chains.forEach(function (c) { (osmNames[c] || [c]).forEach(function (n) { lookup[n.toLowerCase()] = c; }); });
+      list.forEach(function (c) { (osmNames[c] || [c]).forEach(function (n) { lookup[n] = c; }); });
       var best = {};
       j.elements.forEach(function (e) {
-        var t = e.tags || {}, c = lookup[(t.brand || '').toLowerCase()] || lookup[(t.name || '').toLowerCase()];
+        var t = e.tags || {}, c = lookup[t.brand];
         var lat = e.lat != null ? e.lat : e.center && e.center.lat, lon = e.lon != null ? e.lon : e.center && e.center.lon;
         if (!c || lat == null) return;
         var mi = miles(loc.lat, loc.lon, lat, lon);
@@ -96,7 +96,8 @@
   function applyZip(zip, fromLoad) {
     if (!/^\d{5}$/.test(zip)) { setNearStatus('Enter a 5-digit ZIP code.', true); return; }
     var cache = load(NEAR_CACHE);
-    var fresh = cache.zip === zip && cache.chainsKey === chains.join('|') && Date.now() - (cache.at || 0) < 7 * 864e5;
+    var key = picked().slice().sort().join('|');
+    var fresh = cache.zip === zip && cache.key === key && Date.now() - (cache.at || 0) < 7 * 864e5;
     state.zip = zip; save();
     $zipClear.hidden = false;
     el('sort-near').disabled = false;
@@ -105,10 +106,12 @@
     lookupZip(zip).then(function (loc) {
       near = loc; near.stores = null;
       afterNear();
-      setNearStatus('Finding restaurants near ' + loc.place + ', ' + loc.state + '…');
-      return lookupStores(loc).then(function (stores) {
+      setNearStatus('Finding your restaurants near ' + loc.place + ', ' + loc.state + '. This can take up to half a minute…');
+      if (!state.picks || !picked().length) { near.stores = null; near.needPicks = true; afterNear(); return; }
+      near.needPicks = false;
+      return lookupStores(loc, picked()).then(function (stores) {
         near.stores = stores; near.failed = false;
-        try { localStorage.setItem(NEAR_CACHE, JSON.stringify({ zip: zip, near: near, at: Date.now(), chainsKey: chains.join('|') })); } catch (e) { /* ignore */ }
+        try { localStorage.setItem(NEAR_CACHE, JSON.stringify({ zip: zip, near: near, at: Date.now(), key: key })); } catch (e) { /* ignore */ }
         afterNear();
       }, function () {
         near.failed = true; afterNear();
@@ -123,7 +126,8 @@
   function afterNear() {
     if (!near) { setNearStatus(''); render(); renderMine(); return; }
     var where = near.place + ', ' + near.state;
-    if (near.failed) setNearStatus('Showing deals for ' + where + '. Store distances didn’t load; use the map links instead.');
+    if (near.needPicks) setNearStatus('Showing deals for ' + where + '. Choose your restaurants to see how far each one is.');
+    else if (near.failed) setNearStatus('Showing deals for ' + where + '. Store distances didn’t load; use the map links instead.');
     else if (near.stores) {
       var n = picked().filter(function (c) { return near.stores[c]; }).length;
       setNearStatus('Showing deals for ' + where + '. ' + n + ' of your restaurants have a location within ' + RADIUS_MI + ' miles.');
@@ -291,7 +295,11 @@
     state.q = $q.value; state.how = $how.value; state.sort = $sort.value; state.noapp = $noapp.checked;
     save();
   }
+  var picksAtOpen = '';
   function setPicker(open) {
+    var key = picked().slice().sort().join('|');
+    if (open) picksAtOpen = key;
+    else if (near && state.zip && key !== picksAtOpen) applyZip(state.zip);
     $picker.hidden = !open;
     $edit.setAttribute('aria-expanded', open);
     renderMine();
