@@ -2,6 +2,17 @@
  "updated": "2026-11-26T15:52:04Z",
  "chains": [
   {
+   "name": "7 Brew",
+   "osm": [
+    "7 Brew"
+   ],
+   "ios": 6762023973,
+   "web": "https://7brew.com/",
+   "types": [
+    "Coffee & Breakfast"
+   ]
+  },
+  {
    "name": "7-Eleven",
    "osm": [
     "7-Eleven"
@@ -104,6 +115,17 @@
    ]
   },
   {
+   "name": "CAVA",
+   "osm": [
+    "CAVA"
+   ],
+   "ios": 726270499,
+   "web": "https://cava.com/",
+   "types": [
+    "Mediterranean"
+   ]
+  },
+  {
    "name": "Checkers",
    "osm": [
     "Checkers",
@@ -184,6 +206,17 @@
    ]
   },
   {
+   "name": "Crumbl",
+   "osm": [
+    "Crumbl Cookies"
+   ],
+   "ios": 1438166219,
+   "web": "https://crumbl.com/",
+   "types": [
+    "Sweets"
+   ]
+  },
+  {
    "name": "Culver's",
    "osm": [
     "Culver's"
@@ -205,6 +238,17 @@
    "types": [
     "Sweets",
     "Burgers",
+    "Chicken & Wings"
+   ]
+  },
+  {
+   "name": "Dave's Hot Chicken",
+   "osm": [
+    "Dave's Hot Chicken"
+   ],
+   "ios": 1668228991,
+   "web": "https://www.daveshotchicken.com/",
+   "types": [
     "Chicken & Wings"
    ]
   },
@@ -242,6 +286,29 @@
    "web": "https://www.dunkindonuts.com/",
    "types": [
     "Coffee & Breakfast"
+   ]
+  },
+  {
+   "name": "Dutch Bros",
+   "osm": [
+    "Dutch Bros. Coffee"
+   ],
+   "ios": 1529179884,
+   "web": "https://www.dutchbros.com/",
+   "types": [
+    "Coffee & Breakfast"
+   ]
+  },
+  {
+   "name": "El Pollo Loco",
+   "osm": [
+    "El Pollo Loco"
+   ],
+   "ios": 1138437085,
+   "web": "https://www.elpolloloco.com/",
+   "types": [
+    "Mexican",
+    "Chicken & Wings"
    ]
   },
   {
@@ -318,6 +385,16 @@
    ],
    "ios": 1577790947,
    "web": "https://hardees.com/",
+   "types": [
+    "Burgers"
+   ]
+  },
+  {
+   "name": "In-N-Out Burger",
+   "osm": [
+    "In-N-Out Burger"
+   ],
+   "web": "https://www.in-n-out.com/",
    "types": [
     "Burgers"
    ]
@@ -436,6 +513,28 @@
    ]
   },
   {
+   "name": "Marco's Pizza",
+   "osm": [
+    "Marco's Pizza"
+   ],
+   "ios": 1437373132,
+   "web": "https://www.marcos.com/",
+   "types": [
+    "Pizza & Italian"
+   ]
+  },
+  {
+   "name": "McAlister's Deli",
+   "osm": [
+    "McAlister's Deli"
+   ],
+   "ios": 475738160,
+   "web": "https://www.mcalistersdeli.com/",
+   "types": [
+    "Sandwiches"
+   ]
+  },
+  {
    "name": "McDonald's",
    "osm": [
     "McDonald's"
@@ -455,6 +554,17 @@
    "web": "https://moes.com/",
    "types": [
     "Mexican"
+   ]
+  },
+  {
+   "name": "Nothing Bundt Cakes",
+   "osm": [
+    "Nothing Bundt Cakes"
+   ],
+   "ios": 6473964435,
+   "web": "https://www.nothingbundtcakes.com/",
+   "types": [
+    "Sweets"
    ]
   },
   {
@@ -479,6 +589,17 @@
    "types": [
     "Sandwiches",
     "Coffee & Breakfast"
+   ]
+  },
+  {
+   "name": "Papa Johns",
+   "osm": [
+    "Papa John's"
+   ],
+   "ios": 407517450,
+   "web": "https://www.papajohns.com/",
+   "types": [
+    "Pizza & Italian"
    ]
   },
   {
@@ -549,6 +670,17 @@
    ]
   },
   {
+   "name": "Qdoba",
+   "osm": [
+    "Qdoba"
+   ],
+   "ios": 1172435208,
+   "web": "https://www.qdoba.com/",
+   "types": [
+    "Mexican"
+   ]
+  },
+  {
    "name": "Raising Cane's",
    "osm": [
     "Raising Cane's",
@@ -558,6 +690,17 @@
    "web": "https://www.raisingcanes.com/",
    "types": [
     "Chicken & Wings"
+   ]
+  },
+  {
+   "name": "Scooter's Coffee",
+   "osm": [
+    "Scooter's Coffee"
+   ],
+   "ios": 1151532978,
+   "web": "https://scooterscoffee.com/",
+   "types": [
+    "Coffee & Breakfast"
    ]
   },
   {
@@ -647,6 +790,17 @@
    "web": "https://tocayaorganica.com/",
    "types": [
     "Mexican"
+   ]
+  },
+  {
+   "name": "Tropical Smoothie Cafe",
+   "osm": [
+    "Tropical Smoothie Cafe"
+   ],
+   "ios": 1470030691,
+   "web": "https://www.tropicalsmoothiecafe.com/",
+   "types": [
+    "Salads & Smoothies"
    ]
   },
   {

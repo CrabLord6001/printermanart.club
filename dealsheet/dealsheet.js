@@ -16,7 +16,7 @@
   var TYPE_COLOR = {
     'Burgers': '#C2410C', 'Chicken & Wings': '#E0A21B', 'Mexican': '#2E9E4F', 'Pizza & Italian': '#D7263D',
     'Sandwiches': '#A47551', 'Coffee & Breakfast': '#5B3A29', 'Sweets': '#E879A6', 'Asian': '#7C3AED',
-    'Salads & Smoothies': '#84CC16', 'Seafood': '#0EA5E9', 'Convenience': '#64748B'
+    'Salads & Smoothies': '#84CC16', 'Seafood': '#0EA5E9', 'Convenience': '#64748B', 'Mediterranean': '#0F766E'
   };
   function dot(chain) {
     var t = ((chainInfo[chain] || {}).types || [])[0];
