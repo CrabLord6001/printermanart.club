@@ -1,15 +1,15 @@
 /* Site search for the homepage menu.
    No index file to keep up to date: on first use it reads sitemap.xml, fetches
    each listed page, and searches page titles, descriptions and h1/h2 headings
-   (artwork titles, news headlines, game names). Pages not in the sitemap, and
-   /dealsheet/, are left out. A result for a heading links with a text fragment
+   (artwork titles, news headlines, game names). Pages not in the sitemap are
+   left out; list a path in SKIP to hide a page that is. A result for a heading links with a text fragment
    so supporting browsers scroll to it. */
 (function () {
   var form = document.getElementById('site-search');
   if (!form) return;
   var input = form.querySelector('input');
   var list = document.getElementById('site-search-results');
-  var SKIP = ['/dealsheet/'];
+  var SKIP = [];
   var docs = null, loading = null, active = -1, shown = [];
 
   function norm(s) {

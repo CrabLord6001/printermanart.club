@@ -5,128 +5,168 @@
    "name": "7-Eleven",
    "osm": [
     "7-Eleven"
-   ]
+   ],
+   "ios": 589653414,
+   "web": "https://www.7-eleven.com/"
   },
   {
    "name": "Arby's",
    "osm": [
     "Arby's"
-   ]
+   ],
+   "ios": 1348507359,
+   "web": "https://www.arbys.com/"
   },
   {
    "name": "Biggby Coffee",
    "osm": [
     "Biggby Coffee"
-   ]
+   ],
+   "ios": 907566791,
+   "web": "https://www.biggby.com/"
   },
   {
    "name": "Black Rock Coffee Bar",
    "osm": [
     "Black Rock Coffee Bar"
-   ]
+   ],
+   "ios": 6483943441,
+   "web": "https://br.coffee/"
   },
   {
    "name": "Blimpie",
    "osm": [
     "Blimpie"
-   ]
+   ],
+   "ios": 1511175953,
+   "web": "https://www.blimpie.com/"
   },
   {
    "name": "Bojangles",
    "osm": [
     "Bojangles",
     "Bojangles'"
-   ]
+   ],
+   "ios": 1564685788,
+   "web": "https://www.bojangles.com/"
   },
   {
    "name": "Burger King",
    "osm": [
     "Burger King"
-   ]
+   ],
+   "ios": 638323895,
+   "web": "https://www.bk.com/"
   },
   {
    "name": "Carl's Jr.",
    "osm": [
     "Carl's Jr.",
     "Carl's Jr"
-   ]
+   ],
+   "ios": 1577790958,
+   "web": "https://carlsjr.com/"
   },
   {
    "name": "Casey's",
    "osm": [
     "Casey's"
-   ]
+   ],
+   "ios": 1470522110,
+   "web": "https://www.caseys.com/"
   },
   {
    "name": "Checkers",
    "osm": [
     "Checkers",
     "Rally's"
-   ]
+   ],
+   "ios": 1531948632,
+   "web": "https://www.checkersandrallys.com/"
   },
   {
    "name": "Chick-fil-A",
    "osm": [
     "Chick-fil-A"
-   ]
+   ],
+   "ios": 488818252,
+   "web": "https://www.chick-fil-a.com/"
   },
   {
    "name": "Chipotle",
    "osm": [
     "Chipotle",
     "Chipotle Mexican Grill"
-   ]
+   ],
+   "ios": 327228455,
+   "web": "https://www.chipotle.com/"
   },
   {
    "name": "Chronic Tacos",
    "osm": [
     "Chronic Tacos"
-   ]
+   ],
+   "ios": 1610719960,
+   "web": "https://chronictacos.com/"
   },
   {
    "name": "Church's Texas Chicken",
    "osm": [
     "Church's Texas Chicken",
     "Church's Chicken"
-   ]
+   ],
+   "ios": 653653356,
+   "web": "https://www.churchs.com/"
   },
   {
    "name": "Cinnabon",
    "osm": [
     "Cinnabon"
-   ]
+   ],
+   "ios": 1532016072,
+   "web": "https://www.cinnabon.com/"
   },
   {
    "name": "Crisp & Green",
    "osm": [
     "Crisp & Green"
-   ]
+   ],
+   "ios": 1180644340,
+   "web": "https://www.crispandgreen.com/"
   },
   {
    "name": "Culver's",
    "osm": [
     "Culver's"
-   ]
+   ],
+   "ios": 6450863099,
+   "web": "https://www.culvers.com/"
   },
   {
    "name": "Dairy Queen",
    "osm": [
     "Dairy Queen",
     "DQ"
-   ]
+   ],
+   "ios": 1359480496,
+   "web": "https://www.dairyqueen.com/"
   },
   {
    "name": "Del Taco",
    "osm": [
     "Del Taco"
-   ]
+   ],
+   "ios": 1114398020,
+   "web": "https://www.deltaco.com/"
   },
   {
    "name": "Domino's",
    "osm": [
     "Domino's",
     "Domino's Pizza"
-   ]
+   ],
+   "ios": 436491861,
+   "web": "https://www.dominos.com/"
   },
   {
    "name": "Dunkin'",
@@ -134,271 +174,359 @@
     "Dunkin'",
     "Dunkin",
     "Dunkin' Donuts"
-   ]
+   ],
+   "ios": 1056813463,
+   "web": "https://www.dunkindonuts.com/"
   },
   {
    "name": "Fazoli's",
    "osm": [
     "Fazoli's"
-   ]
+   ],
+   "ios": 1258045562,
+   "web": "https://fazolis.com/"
   },
   {
    "name": "Firehouse Subs",
    "osm": [
     "Firehouse Subs"
-   ]
+   ],
+   "ios": 894658475,
+   "web": "https://www.firehousesubs.com/"
   },
   {
    "name": "Five Guys",
    "osm": [
     "Five Guys"
-   ]
+   ],
+   "ios": 457494327,
+   "web": "https://www.fiveguys.com/"
   },
   {
    "name": "Freddy's",
    "osm": [
     "Freddy's"
-   ]
+   ],
+   "ios": 1463076279,
+   "web": "https://freddys.com/"
   },
   {
    "name": "Freebirds World Burrito",
    "osm": [
     "Freebirds World Burrito"
-   ]
+   ],
+   "ios": 1079328303,
+   "web": "https://www.freebirds.com/"
   },
   {
    "name": "Habit Burger & Grill",
    "osm": [
     "The Habit Burger Grill"
-   ]
+   ],
+   "ios": 1398002552,
+   "web": "https://www.habitburger.com/"
   },
   {
    "name": "Hardee's",
    "osm": [
     "Hardee's"
-   ]
+   ],
+   "ios": 1577790947,
+   "web": "https://hardees.com/"
   },
   {
    "name": "Jack in the Box",
    "osm": [
     "Jack in the Box"
-   ]
+   ],
+   "ios": 1283768751,
+   "web": "https://www.jackinthebox.com/"
   },
   {
    "name": "Jamba",
    "osm": [
     "Jamba",
     "Jamba Juice"
-   ]
+   ],
+   "ios": 932885438,
+   "web": "https://www.jamba.com/"
   },
   {
    "name": "Jason's Deli",
    "osm": [
     "Jason's Deli"
-   ]
+   ],
+   "ios": 1225753298,
+   "web": "https://www.jasonsdeli.com/"
   },
   {
    "name": "Jersey Mike's",
    "osm": [
     "Jersey Mike's",
     "Jersey Mike's Subs"
-   ]
+   ],
+   "ios": 718290805,
+   "web": "https://www.jerseymikes.com/"
   },
   {
    "name": "Jimmy John's",
    "osm": [
     "Jimmy John's"
-   ]
+   ],
+   "ios": 409366411,
+   "web": "https://www.jimmyjohns.com/"
   },
   {
    "name": "KFC",
    "osm": [
     "KFC"
-   ]
+   ],
+   "ios": 1538999662,
+   "web": "https://www.kfc.com/"
   },
   {
    "name": "Krispy Kreme",
    "osm": [
     "Krispy Kreme"
-   ]
+   ],
+   "ios": 482752836,
+   "web": "https://www.krispykreme.com/"
   },
   {
    "name": "Krystal",
    "osm": [
     "Krystal"
-   ]
+   ],
+   "ios": 1577457805,
+   "web": "https://www.krystal.com/"
   },
   {
    "name": "Little Caesars",
    "osm": [
     "Little Caesars"
-   ]
+   ],
+   "ios": 992600579,
+   "web": "https://www.littlecaesars.com/"
   },
   {
    "name": "Long John Silver's",
    "osm": [
     "Long John Silver's"
-   ]
+   ],
+   "ios": 6473635406,
+   "web": "https://www.ljsilvers.com/"
   },
   {
    "name": "McDonald's",
    "osm": [
     "McDonald's"
-   ]
+   ],
+   "ios": 922103212,
+   "web": "https://www.mcdonalds.com/"
   },
   {
    "name": "Moe's Southwest Grill",
    "osm": [
     "Moe's Southwest Grill"
-   ]
+   ],
+   "ios": 1008719375,
+   "web": "https://moes.com/"
   },
   {
    "name": "Panda Express",
    "osm": [
     "Panda Express"
-   ]
+   ],
+   "ios": 903990394,
+   "web": "https://www.pandaexpress.com/"
   },
   {
    "name": "Panera Bread",
    "osm": [
     "Panera Bread",
     "Panera"
-   ]
+   ],
+   "ios": 692365393,
+   "web": "https://www.panerabread.com/"
   },
   {
    "name": "Paris Baguette",
    "osm": [
     "Paris Baguette"
-   ]
+   ],
+   "ios": 1435128100,
+   "web": "https://parisbaguette.com/"
   },
   {
    "name": "Pizza Hut",
    "osm": [
     "Pizza Hut"
-   ]
+   ],
+   "ios": 321560858,
+   "web": "https://www.pizzahut.com/"
   },
   {
    "name": "Pokeworks",
    "osm": [
     "Pokeworks"
-   ]
+   ],
+   "ios": 1591233747,
+   "web": "https://pokeworks.com/"
   },
   {
    "name": "Popeyes",
    "osm": [
     "Popeyes",
     "Popeyes Louisiana Kitchen"
-   ]
+   ],
+   "ios": 1386566985,
+   "web": "https://www.popeyes.com/"
   },
   {
    "name": "Port of Subs",
    "osm": [
     "Port of Subs"
-   ]
+   ],
+   "ios": 953131651,
+   "web": "https://portofsubs.com/"
   },
   {
    "name": "Potbelly",
    "osm": [
     "Potbelly"
-   ]
+   ],
+   "ios": 835528979,
+   "web": "https://www.potbelly.com/"
   },
   {
    "name": "Raising Cane's",
    "osm": [
     "Raising Cane's",
     "Raising Cane's Chicken Fingers"
-   ]
+   ],
+   "ios": 1530642656,
+   "web": "https://www.raisingcanes.com/"
   },
   {
    "name": "Shake Shack",
    "osm": [
     "Shake Shack"
-   ]
+   ],
+   "ios": 317279545,
+   "web": "https://www.shakeshack.com/"
   },
   {
    "name": "Sonic",
    "osm": [
     "Sonic",
     "Sonic Drive-In"
-   ]
+   ],
+   "ios": 867827909,
+   "web": "https://www.sonicdrivein.com/"
   },
   {
    "name": "Starbucks",
    "osm": [
     "Starbucks"
-   ]
+   ],
+   "ios": 331177714,
+   "web": "https://www.starbucks.com/"
   },
   {
    "name": "Subway",
    "osm": [
     "Subway"
-   ]
+   ],
+   "ios": 901941015,
+   "web": "https://www.subway.com/"
   },
   {
    "name": "Taco Bell",
    "osm": [
     "Taco Bell"
-   ]
+   ],
+   "ios": 497387361,
+   "web": "https://www.tacobell.com/"
   },
   {
    "name": "Taco Cabana",
    "osm": [
     "Taco Cabana"
-   ]
+   ],
+   "ios": 1012035722,
+   "web": "https://www.tacocabana.com/"
   },
   {
    "name": "Tijuana Flats",
    "osm": [
     "Tijuana Flats"
-   ]
+   ],
+   "ios": 1491125522,
+   "web": "https://www.tijuanaflats.com/"
   },
   {
    "name": "Tocaya",
    "osm": [
     "Tocaya"
-   ]
+   ],
+   "ios": 1192424606,
+   "web": "https://tocayaorganica.com/"
   },
   {
    "name": "Wayback Burgers",
    "osm": [
     "Wayback Burgers"
-   ]
+   ],
+   "ios": 966235042,
+   "web": "https://waybackburgers.com/"
   },
   {
    "name": "Wendy's",
    "osm": [
     "Wendy's"
-   ]
+   ],
+   "ios": 540518599,
+   "web": "https://www.wendys.com/"
   },
   {
    "name": "Whataburger",
    "osm": [
     "Whataburger"
-   ]
+   ],
+   "ios": 1141643627,
+   "web": "https://whataburger.com/"
   },
   {
    "name": "Wienerschnitzel",
    "osm": [
     "Wienerschnitzel"
-   ]
+   ],
+   "ios": 6448481896,
+   "web": "https://www.wienerschnitzel.com/"
   },
   {
    "name": "Wingstop",
    "osm": [
     "Wingstop"
-   ]
+   ],
+   "ios": 454719277,
+   "web": "https://www.wingstop.com/"
   },
   {
    "name": "Yogurtland",
    "osm": [
     "Yogurtland"
-   ]
+   ],
+   "ios": 604968321,
+   "web": "https://www.yogurtland.com/"
   },
   {
    "name": "Zaxby's",
    "osm": [
     "Zaxby's"
-   ]
+   ],
+   "ios": 480603264,
+   "web": "https://www.zaxbys.com/"
   }
  ],
  "deals": [
@@ -425,7 +553,8 @@
    },
    "ongoing": false,
    "official": null,
-   "added": "2026-11-26"
+   "added": "2026-11-26",
+   "app_ios": 1316244211
   },
   {
    "id": "arbys-1-curly",
@@ -1010,7 +1139,8 @@
     "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
    },
    "official": "https://www.7now.com/",
-   "added": "2026-11-26"
+   "added": "2026-11-26",
+   "app_ios": 1316244211
   },
   {
    "id": "dunkin-6-meal",

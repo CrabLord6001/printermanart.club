@@ -20,6 +20,10 @@
 
   var data = { deals: [], chains: [] };
   var chains = [];          // all chain names, A to Z
+  var chainInfo = {};       // name -> { ios: App Store id, web: official site }
+  var UA = navigator.userAgent || '';
+  var IS_IOS = /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1);
+  var IS_ANDROID = /Android/.test(UA);
   var osmNames = {};        // chain -> [brand names used on OpenStreetMap]
   var state = load(STORE);
   var near = null;          // { zip, lat, lon, state, place, stores: {chain: {mi, lat, lon}} | null, failed }
@@ -189,12 +193,33 @@
     if (!out.length) out.push('<span class="tag">Not stated</span>');
     return '<div class="tags">' + out.join('') + '</div>';
   }
+  // The button that starts the order. App deals go to the store listing, which
+  // shows "Open" when the app is already installed; online deals go to the
+  // deal's own page on the chain's site, or the site's home page.
+  function goLink(d) {
+    var info = chainInfo[d.chain] || {}, how = d.how || [];
+    var online = how.indexOf('online') !== -1 || how.indexOf('delivery') !== -1;
+    var app = d.app_only || how.indexOf('app') !== -1;
+    var href, label;
+    if (online && !d.app_only && (d.official || info.web)) {
+      href = d.official || info.web; label = 'Order online';
+    } else if (app && (d.app_ios || info.ios || IS_ANDROID)) {
+      if (IS_ANDROID) href = 'https://play.google.com/store/search?q=' + encodeURIComponent(d.chain) + '&c=apps';
+      else href = 'https://apps.apple.com/us/app/id' + (d.app_ios || info.ios);
+      label = (IS_IOS || IS_ANDROID) ? 'Open app' : 'Get the app';
+    } else if (app && info.web) {
+      href = info.web; label = 'Open site';
+    }
+    if (!href) return '';
+    return '<a class="go" href="' + esc(href) + '" target="_blank" rel="noopener">' + label + '</a>';
+  }
+
   function detailRow(d) {
     var src = '<p><a href="' + esc(d.source.url) + '" target="_blank" rel="noopener">' + esc(d.source.name) + '</a></p>';
     if (d.official) src += '<p><a href="' + esc(d.official) + '" target="_blank" rel="noopener">' + esc(d.chain) + "'s own page</a></p>";
     return '<tr class="detail" id="detail-' + esc(d.id) + '"><td colspan="6"><div class="detail-body">' +
       '<div><h3>Fine print</h3><p>' + esc(d.fine_print || 'None stated by the source. Check with the restaurant.') + '</p></div>' +
-      '<div class="src"><h3>Where we found it</h3>' + src + '</div>' +
+      '<div class="src"><h3>Source</h3>' + src + '</div>' +
       '</div></td></tr>';
   }
 
@@ -282,7 +307,7 @@
         '<td class="c-price">' + priceCell(d) + '</td>' +
         '<td class="c-ends">' + endsCell(d) + '</td>' +
         '<td class="c-how">' + tags(d) + '</td>' +
-        '<td class="c-more"><button type="button" class="more" data-id="' + esc(d.id) + '" aria-expanded="' + open + '" aria-controls="detail-' + esc(d.id) + '">' +
+        '<td class="c-more">' + goLink(d) + '<button type="button" class="more" data-id="' + esc(d.id) + '" aria-expanded="' + open + '" aria-controls="detail-' + esc(d.id) + '">' +
         (open ? 'Hide' : 'Fine print') + CHEV + '</button></td>' +
         '</tr>' + (open ? detailRow(d).replace('class="detail"', 'class="detail' + alt + '"') : '');
     }).join('');
@@ -366,6 +391,7 @@
       var seen = {};
       (data.chains || []).forEach(function (c) {
         seen[c.name] = 1;
+        chainInfo[c.name] = { ios: c.ios, web: c.web };
         var list = (c.osm || [c.name]).slice();
         list.forEach(function (n) { if (n.indexOf("'") !== -1) list.push(n.replace(/'/g, '\u2019')); });
         osmNames[c.name] = list;
