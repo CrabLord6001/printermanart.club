@@ -109,7 +109,7 @@
   // With a ZIP set and store locations known, a restaurant with no store
   // inside the radius drops out of the table (its deals can't be used).
   function hasStoreNear(chain) {
-    if (!near || !near.stores || state.showFar) return true;
+    if (!near || !near.stores) return true;
     return !!near.stores[chain];
   }
   function farChains() {
@@ -170,7 +170,7 @@
       var far = farChains().filter(function (c) { return data.deals.some(function (d) { return d.chain === c && isLive(d); }); });
       $nearStatus.classList.remove('err');
       $nearStatus.innerHTML = 'Showing for ' + esc(where) + (far.length
-        ? '. ' + far.length + (far.length === 1 ? ' store' : ' stores') + ' out of range. <button type="button" class="linkbtn" id="toggle-far">' + (state.showFar ? 'Hide them' : 'Show them') + '</button>'
+        ? '. ' + far.length + (far.length === 1 ? ' store' : ' stores') + ' out of range.'
         : '.');
     }
     renderChips(); renderMine(); render();
@@ -387,11 +387,6 @@
     state.picks = b.getAttribute('data-pick') === 'all' ? chains.slice() : [];
     save(); renderChips(); renderMine(); render();
   });
-  $nearStatus.addEventListener('click', function (e) {
-    if (!e.target.closest('#toggle-far')) return;
-    state.showFar = !state.showFar; save(); afterNear();
-  });
-
   $rows.addEventListener('click', function (e) {
     var b = e.target.closest('.more'); if (!b) return;
     var id = b.getAttribute('data-id');
