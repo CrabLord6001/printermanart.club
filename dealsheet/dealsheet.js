@@ -326,7 +326,7 @@
   function renderMine() {
     var picks = picked(), $l = el('mine-list');
     if (!state.picks || picks.length === chains.length) {
-      $l.innerHTML = 'All <strong>' + chains.length + ' restaurants</strong>. Choose yours to cut the list down.';
+      $l.innerHTML = 'All <strong>' + chains.length + ' restaurants</strong>.';
     } else if (!picks.length) {
       $l.textContent = 'No restaurants chosen yet.';
     } else {

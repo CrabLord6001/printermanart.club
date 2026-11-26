@@ -570,11 +570,11 @@ button.tag { font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; 
 }
 
 @media (max-width: 760px) {
-  .liner-inner { z-index: 1; }
-  .liner::before, .liner::after {
-    left: 50%; top: 50%; width: min(17vw, 66px); height: min(120vw, 470px);
-    margin-left: max(-8.5vw, -33px); z-index: 0;
-  }
-  .liner::before { transform: translateY(-50%) rotate(-38deg); }
-  .liner::after { transform: translateY(-50%) rotate(38deg); }
+  .liner-inner { width: 64vw; }
+  .wordmark { font-size: 7.4vw; }
+  .lede { font-size: 3.3vw; }
+  .lede::before, .lede::after { display: none; }
+  .liner::before, .liner::after { width: 30px; height: 56vw; }
+  .liner::before { left: calc(50% - 32vw - 9vw - 15px); }
+  .liner::after { left: calc(50% + 32vw + 9vw - 15px); }
 }
