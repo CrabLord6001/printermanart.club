@@ -461,3 +461,6 @@ td.c-more > * + * { margin-left: 6px; }
 }
 @media (max-width: 760px) { .deals thead { display: none; } }
 @media (max-width: 760px) { .deals tr.deal, .deals tr.deal:has(.go) { column-gap: 4px; } }
+@media (max-width: 760px) {
+  .deals tr.deal:has(.go) td.c-more { justify-content: flex-start; }
+}
