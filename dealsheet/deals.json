@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T15:52:04Z",
+ "updated": "2026-11-26T19:51:34Z",
  "chains": [
   {
    "name": "7 Brew",
@@ -77,6 +77,16 @@
    "web": "https://www.bojangles.com/",
    "types": [
     "Chicken & Wings"
+   ]
+  },
+  {
+   "name": "Bubbakoo's Burritos",
+   "osm": [
+    "Bubbakoo's Burritos"
+   ],
+   "web": "https://www.bubbakoos.com/",
+   "types": [
+    "Mexican"
    ]
   },
   {
@@ -289,6 +299,16 @@
    ]
   },
   {
+   "name": "Dunn Brothers Coffee",
+   "osm": [
+    "Dunn Brothers Coffee"
+   ],
+   "web": "https://dunnbrothers.com/",
+   "types": [
+    "Coffee & Breakfast"
+   ]
+  },
+  {
    "name": "Dutch Bros",
    "osm": [
     "Dutch Bros. Coffee"
@@ -491,6 +511,16 @@
    ]
   },
   {
+   "name": "Las Palapas",
+   "osm": [
+    "Las Palapas"
+   ],
+   "web": "https://laspalapas.com/",
+   "types": [
+    "Mexican"
+   ]
+  },
+  {
    "name": "Little Caesars",
    "osm": [
     "Little Caesars"
@@ -614,12 +644,32 @@
    ]
   },
   {
+   "name": "&pizza",
+   "osm": [
+    "&pizza"
+   ],
+   "web": "https://andpizza.com/",
+   "types": [
+    "Pizza & Italian"
+   ]
+  },
+  {
    "name": "Pizza Hut",
    "osm": [
     "Pizza Hut"
    ],
    "ios": 321560858,
    "web": "https://www.pizzahut.com/",
+   "types": [
+    "Pizza & Italian"
+   ]
+  },
+  {
+   "name": "Pizza Inn",
+   "osm": [
+    "Pizza Inn"
+   ],
+   "web": "https://www.pizzainn.com/",
    "types": [
     "Pizza & Italian"
    ]
@@ -2111,6 +2161,315 @@
     "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
    },
    "official": "https://www.jasonsdeli.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "andpizza-bf-free-pie",
+   "chain": "&pizza",
+   "title": "Free pie with wings",
+   "details": "Buy an order of wings and get a basic pie free.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": "BLCKFRI",
+   "fine_print": "Black Friday only. Pie value up to $12. Use code BLCKFRI.",
+   "source": {
+    "name": "Food Network, Nov 24, 2026",
+    "url": "https://www.foodnetwork.com/fn-dish/news/black-friday-food-deals-roundup-2026"
+   },
+   "official": "https://andpizza.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "bubbakoos-bf-bogo",
+   "chain": "Bubbakoo's Burritos",
+   "title": "BOGO single-protein entrees",
+   "details": "Buy one single-protein entree, get one free.",
+   "price": "BOGO",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-29",
+   "ongoing": false,
+   "how": [
+    "online",
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": "BLKFRIBOGO",
+   "fine_print": "Second entree of equal or lesser value. Code BLKFRIBOGO online; mention the offer when ordering in store. Participating locations.",
+   "source": {
+    "name": "Food Network, Nov 24, 2026",
+    "url": "https://www.foodnetwork.com/fn-dish/news/black-friday-food-deals-roundup-2026"
+   },
+   "official": "https://www.bubbakoos.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "elpolloloco-bf-30",
+   "chain": "El Pollo Loco",
+   "title": "30% off $15 or more",
+   "details": "Loco Rewards members get 30% off an order of $15 or more.",
+   "price": "30% off",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Black Friday only. Loco Rewards members.",
+   "source": {
+    "name": "Food Network, Nov 24, 2026",
+    "url": "https://www.foodnetwork.com/fn-dish/news/black-friday-food-deals-roundup-2026"
+   },
+   "official": "https://www.elpolloloco.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "kfc-friendsgiving-20",
+   "chain": "KFC",
+   "title": "$20 Friendsgiving Feast",
+   "details": "Four dark-meat pieces, 12 nuggets, two large sides, and two sauces for $20.",
+   "price": "$20",
+   "price_value": 20,
+   "start": null,
+   "end": "2026-11-29",
+   "ongoing": false,
+   "how": [
+    "app",
+    "online"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "KFC Rewards members only, in the KFC app or on KFC.com. Start date not stated.",
+   "source": {
+    "name": "Food Network, Nov 24, 2026",
+    "url": "https://www.foodnetwork.com/fn-dish/news/black-friday-food-deals-roundup-2026"
+   },
+   "official": "https://www.kfc.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "pizzainn-5-pizzerts",
+   "chain": "Pizza Inn",
+   "title": "$5 carryout Pizzerts",
+   "details": "Dessert pizzas, including Chocolate Chip and Bavarian Cream, for $5 at carryout.",
+   "price": "$5",
+   "price_value": 5,
+   "start": null,
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Carryout only, participating locations. Not valid in Goldsboro, NC or Richland Hills, TX. Start date not stated.",
+   "source": {
+    "name": "Food Network, Nov 24, 2026",
+    "url": "https://www.foodnetwork.com/fn-dish/news/black-friday-food-deals-roundup-2026"
+   },
+   "official": "https://www.pizzainn.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "shakeshack-bf-truffle",
+   "chain": "Shake Shack",
+   "title": "Free Black Truffle Sauce",
+   "details": "Add Black Truffle Sauce free to any menu item.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [
+    "app",
+    "online",
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": "TRUFFLE",
+   "fine_print": "Black Friday only. Code TRUFFLE in the app, online, or at a kiosk; purchase required.",
+   "source": {
+    "name": "Food Network, Nov 24, 2026",
+    "url": "https://www.foodnetwork.com/fn-dish/news/black-friday-food-deals-roundup-2026"
+   },
+   "official": "https://shakeshack.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "dunnbros-2-for-12",
+   "chain": "Dunn Brothers Coffee",
+   "title": "2 medium drinks for $12",
+   "details": "Two medium prepared drinks for $12.",
+   "price": "$12",
+   "price_value": 12,
+   "start": "2026-11-27",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Valid on Black Friday, Small Business Saturday (Nov 28), and Cyber Monday (Nov 30).",
+   "source": {
+    "name": "Food Network, Nov 24, 2026",
+    "url": "https://www.foodnetwork.com/fn-dish/news/black-friday-food-deals-roundup-2026"
+   },
+   "official": "https://dunnbrothers.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "7brew-bf-bakery",
+   "chain": "7 Brew",
+   "title": "BOGO bakery treats",
+   "details": "Buy a bakery treat, get one free; mix and match bars and loaves.",
+   "price": "BOGO",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Black Friday only. Free item of equal or lesser value. Participating locations.",
+   "source": {
+    "name": "Sporked, Nov 26, 2026",
+    "url": "https://sporked.com/article/every-black-friday-deal-for-food-groceries-arbys-target-more/"
+   },
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "laspalapas-bf-tacos",
+   "chain": "Las Palapas",
+   "title": "$1 breakfast tacos",
+   "details": "Potato and egg tacos for $1, sausage and egg tacos and coffee for $2, 6 to 10 AM.",
+   "price": "$1",
+   "price_value": 1,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "ongoing": false,
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Black Friday only. Also 30% off enchilada plates from 11 AM to close.",
+   "source": {
+    "name": "Sporked, Nov 26, 2026",
+    "url": "https://sporked.com/article/every-black-friday-deal-for-food-groceries-arbys-target-more/"
+   },
+   "official": "https://laspalapas.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "crispgreen-kids-free",
+   "chain": "Crisp & Green",
+   "title": "Free kids' meal",
+   "details": "A free kids' meal with a full-price adult entree.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-28",
+   "end": "2026-11-28",
+   "ongoing": false,
+   "how": [
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Nov 28 only. Child 12 or younger must be present. CRISP Rewards, one per member, while supplies last.",
+   "source": {
+    "name": "Sporked, Nov 26, 2026",
+    "url": "https://sporked.com/article/every-black-friday-deal-for-food-groceries-arbys-target-more/"
+   },
+   "official": "https://crispandgreen.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "crispgreen-cyber-smoothie",
+   "chain": "Crisp & Green",
+   "title": "Free smoothie",
+   "details": "A free 16-oz smoothie, 10 to 11 AM local time.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-30",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Nov 30 only, 10 to 11 AM. CRISP Rewards, one per member, while supplies last.",
+   "source": {
+    "name": "Sporked, Nov 26, 2026",
+    "url": "https://sporked.com/article/every-black-friday-deal-for-food-groceries-arbys-target-more/"
+   },
+   "official": "https://crispandgreen.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "tocaya-cyber-chips",
+   "chain": "Tocaya",
+   "title": "Free chips and guac or quesadilla",
+   "details": "Free chips and guacamole on a $20 order, or a free quesadilla on a $40 order.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-30",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "online"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Cyber Monday only, online. Rewards members.",
+   "source": {
+    "name": "The Frugaler, Nov 26, 2026",
+    "url": "https://thefrugaler.com/black-friday-food-deals-2026/"
+   },
+   "official": "https://www.tocaya.com/",
+   "added": "2026-11-26"
+  },
+  {
+   "id": "scooters-bf-surprise",
+   "chain": "Scooter's Coffee",
+   "title": "Surprise app reward",
+   "details": "Scan the app or order in it on Black Friday to unlock a surprise reward.",
+   "price": "Surprise",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "how": [
+    "app",
+    "drive-thru"
+   ],
+   "app_only": true,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Unlock Nov 27; reward may be a free drink, bonus points, or a discount. Redeem by Nov 30.",
+   "source": {
+    "name": "The Frugaler, Nov 26, 2026",
+    "url": "https://thefrugaler.com/black-friday-food-deals-2026/"
+   },
+   "official": "https://www.scooterscoffee.com/",
    "added": "2026-11-26"
   }
  ]
