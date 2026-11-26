@@ -363,3 +363,40 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
 @media (max-width: 360px) {
   .setup-row { flex-wrap: wrap; }
 }
+
+/* ---------- Phone: one sheet with ruled rows, not separate cards ---------- */
+@media (max-width: 760px) {
+  .table-wrap { border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; background: var(--paper); }
+  .deals tr.deal {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "chain chain price" "deal deal deal" "ends how more";
+    gap: 4px 10px; align-items: center;
+    border: 0; border-radius: 0; margin: 0;
+    border-bottom: 1px solid var(--rule);
+    padding: 11px 12px;
+  }
+  .deals tr.deal:last-child { border-bottom: 0; }
+  .deals tr.deal.open { border-bottom: 0; }
+  .c-chain { font-size: 13px; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-2); }
+  .c-price { font-size: 16px; align-self: start; }
+  .c-deal .t { font-size: 15px; }
+  .c-deal .d { font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .c-ends .date { display: none; }
+  .when { font-size: 12px; padding: 2px 7px; }
+  .c-how .tags { gap: 4px; }
+  .tag { font-size: 11px; padding: 1px 6px; }
+  .more { width: auto; padding: 3px 8px; font-size: 12px; border-width: 1.5px; }
+  tr.detail { border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; margin: 0; }
+  tr.detail td { border-radius: 0; padding: 0 12px 14px; }
+  .deals tr.detail:last-child { border-bottom: 0; }
+}
+
+/* ---------- Alternating row shading ---------- */
+.deals tr.deal.alt td, .deals tr.detail.alt td { background: #F6EFE2; }
+.deals tbody tr.deal:hover td { background: #FFFBEA; }
+.deals tbody tr.deal.open td, .deals tr.detail td { background: #FFF6D6; }
+@media (max-width: 760px) {
+  .deals tr.deal.alt { background: #F6EFE2; }
+  .deals tr.deal.alt td, .deals tr.deal:hover td { background: transparent; }
+  .deals tr.deal.open, .deals tr.deal.open td { background: #FFF6D6; }
+}

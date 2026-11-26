@@ -274,9 +274,9 @@
     $count.textContent = list.length + (list.length === 1 ? ' deal' : ' deals') +
       (list.length ? ' at ' + np + (np === 1 ? ' place' : ' places') : '');
 
-    $rows.innerHTML = list.map(function (d) {
-      var open = openId === d.id;
-      return '<tr class="deal' + (open ? ' open' : '') + '">' +
+    $rows.innerHTML = list.map(function (d, i) {
+      var open = openId === d.id, alt = i % 2 ? ' alt' : '';
+      return '<tr class="deal' + alt + (open ? ' open' : '') + '">' +
         '<td class="c-chain">' + esc(d.chain) + distHtml(d.chain) + '</td>' +
         '<td class="c-deal"><span class="t">' + esc(d.title) + '</span><span class="d">' + esc(d.details) + '</span></td>' +
         '<td class="c-price">' + priceCell(d) + '</td>' +
@@ -284,7 +284,7 @@
         '<td class="c-how">' + tags(d) + '</td>' +
         '<td class="c-more"><button type="button" class="more" data-id="' + esc(d.id) + '" aria-expanded="' + open + '" aria-controls="detail-' + esc(d.id) + '">' +
         (open ? 'Hide' : 'Fine print') + CHEV + '</button></td>' +
-        '</tr>' + (open ? detailRow(d) : '');
+        '</tr>' + (open ? detailRow(d).replace('class="detail"', 'class="detail' + alt + '"') : '');
     }).join('');
 
     var none = !list.length;
