@@ -1,0 +1,590 @@
+{
+ "updated": "2026-11-26T15:00:00Z",
+ "deals": [
+  {
+   "id": "7eleven-bf-pizza",
+   "chain": "7-Eleven",
+   "title": "Free large pizza with delivery",
+   "details": "Get a free large pizza on a 7NOW app delivery order of $30 or more.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "how": [
+    "app",
+    "delivery"
+   ],
+   "app_only": true,
+   "rewards": false,
+   "code": "BLKFRI",
+   "fine_print": "Black Friday only. Requires a 7NOW delivery order of $30 or more with code BLKFRI.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "arbys-1-curly",
+   "chain": "Arby's",
+   "title": "Any-size curly fries for $1",
+   "details": "Curly fries in any size for $1 when you spend at least $5.",
+   "price": "$1",
+   "price_value": 1,
+   "start": null,
+   "end": null,
+   "how": [],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "For Loaded Rewards members, with a $5 minimum purchase. The source gives no end date.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "bk-free-sandwich",
+   "chain": "Burger King",
+   "title": "Free sandwich every day",
+   "details": "Pick a free Cheeseburger, Original Chicken Sandwich, or Croissan'wich, once per day.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": "2026-11-30",
+   "how": [
+    "app",
+    "online"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Rewards members only. $5 minimum purchase. Order online or in the app. Limit one free sandwich per day.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "chipotle-cyber26",
+   "chain": "Chipotle",
+   "title": "$0 delivery fee",
+   "details": "No delivery fee on orders of $10 or more.",
+   "price": "$0 fee",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-30",
+   "how": [
+    "app",
+    "online",
+    "delivery"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": "CYBER26",
+   "fine_print": "Order online or in the Chipotle app with code CYBER26. $10 minimum.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "dunkin-donut-fridays",
+   "chain": "Dunkin'",
+   "title": "Free Donut Fridays",
+   "details": "A free classic donut with any drink, every Friday.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": null,
+   "ongoing": true,
+   "how": [],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Dunkin' Rewards members only, with any drink purchase. Fridays only, starting Black Friday. No end date given.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "jamba-focker",
+   "chain": "Jamba",
+   "title": "$5 small Bananas Focker smoothie",
+   "details": "The Banana Cream Pie Smoothie, renamed for a movie tie-in, in a small size for $5.",
+   "price": "$5",
+   "price_value": 5,
+   "start": "2026-11-25",
+   "end": "2026-12-01",
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": "FOCKER",
+   "fine_print": "Use promo code FOCKER. Small size only.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "moes-bogo",
+   "chain": "Moe's Southwest Grill",
+   "title": "Buy one entree, get one free",
+   "details": "Buy-one-get-one-free entrees when you order online or in the app.",
+   "price": "BOGO",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-29",
+   "how": [
+    "app",
+    "online"
+   ],
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "fine_print": "Rewards members only. Online or app orders.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "whataburger-hbcb",
+   "chain": "Whataburger",
+   "title": "BOGO Honey Butter Chicken Biscuit",
+   "details": "Buy a Honey Butter Chicken Biscuit and get a second one free.",
+   "price": "BOGO",
+   "price_value": null,
+   "start": "2026-11-25",
+   "end": "2026-11-30",
+   "how": [],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Breakfast hours only.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "yogurtland-bf",
+   "chain": "Yogurtland",
+   "title": "Second froyo 50% off",
+   "details": "Buy one frozen yogurt and get the second at half price, in store.",
+   "price": "50% off",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "how": [
+    "in-store"
+   ],
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "fine_print": "Black Friday only, in store. Rewards members also earn double points.",
+   "source": {
+    "name": "Spoon University, Nov 24, 2026",
+    "url": "https://spoonuniversity.com/news/black-friday-fast-food-deals-2026/"
+   },
+   "ongoing": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "churchs-3pc-feast",
+   "chain": "Church's Texas Chicken",
+   "title": "Texas 3-piece Feast",
+   "details": "A three-piece chicken meal at a value price.",
+   "price": "$4.49",
+   "price_value": 4.49,
+   "end": "2026-12-27",
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "Valid through December 27 at your local restaurant.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "churchs-6wings",
+   "chain": "Church's Texas Chicken",
+   "title": "6-piece wings with a dipping sauce",
+   "details": "Six wings and one dipping sauce. A 9-piece with two sauces is $8.99.",
+   "price": "$5.99",
+   "price_value": 5.99,
+   "end": "2026-12-27",
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "Valid through December 27. Combos run $9.99 (6-piece) and $12.99 (9-piece).",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "churchs-family",
+   "chain": "Church's Texas Chicken",
+   "title": "10-piece Family Meal",
+   "details": "Ten pieces of chicken for the table. A 24-piece wing pack with four sauces is the same price.",
+   "price": "$19.99",
+   "price_value": 19.99,
+   "end": "2026-12-27",
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "Valid through December 27.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "cinnabon-5-reward",
+   "chain": "Cinnabon",
+   "title": "$5 reward with any CinnaPack",
+   "details": "Buy a CinnaPack of any size and get $5 toward a future visit.",
+   "price": "$5 back",
+   "price_value": null,
+   "end": "2026-12-31",
+   "how": [
+    "in-store"
+   ],
+   "rewards": true,
+   "fine_print": "Cinnabon Rewards members. Reward is for a future purchase, through December 31.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "cinnabon-tue-20",
+   "chain": "Cinnabon",
+   "title": "20% off CinnaPacks on Tuesdays",
+   "details": "Every Tuesday, 20% off any CinnaPack.",
+   "price": "20% off",
+   "price_value": null,
+   "ongoing": true,
+   "how": [
+    "app",
+    "online"
+   ],
+   "rewards": true,
+   "fine_print": "Cinnabon Rewards members, online or app orders, Tuesdays. The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "app_only": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "dq-8-meal",
+   "chain": "Dairy Queen",
+   "title": "$8 Meal Deal",
+   "details": "Chicken strips or a cheeseburger, fries, a drink, and a sundae. Upgrade to a Blizzard for $2.",
+   "price": "$8",
+   "price_value": 8,
+   "end": "2026-11-29",
+   "how": [
+    "in-store",
+    "drive-thru"
+   ],
+   "fine_print": "Through November 29 at your local restaurant.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "jitb-tacos",
+   "chain": "Jack in the Box",
+   "title": "Two tacos for 75 cents on Tuesdays",
+   "details": "Every Tuesday, two tacos for $0.75 with any app purchase.",
+   "price": "$0.75",
+   "price_value": 0.75,
+   "ongoing": true,
+   "end": "2026-12-27",
+   "how": [
+    "app"
+   ],
+   "app_only": true,
+   "rewards": true,
+   "fine_print": "Jack Pack members, with any in-app purchase. Tuesdays through December 27.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "popeyes-mon-wings",
+   "chain": "Popeyes",
+   "title": "Free 6-piece wings on Mondays",
+   "details": "Every Monday, free 6-piece wings with a $10 order. Pick your sauce.",
+   "price": "Free",
+   "price_value": 0,
+   "ongoing": true,
+   "end": "2027-01-04",
+   "how": [
+    "app",
+    "online"
+   ],
+   "fine_print": "$10 minimum. Online or app orders only. Mondays through January 4, 2027.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "popeyes-20-box",
+   "chain": "Popeyes",
+   "title": "3 proteins and 2 sides for $20",
+   "details": "Mix chicken sandwiches, 3-piece tenders, 6-piece wings, or 2-piece chicken, plus two regular sides.",
+   "price": "$20",
+   "price_value": 20,
+   "how": [
+    "app",
+    "online"
+   ],
+   "fine_print": "Online and app orders. The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "shakeshack-sundays",
+   "chain": "Shake Shack",
+   "title": "Free sandwich on Sundays",
+   "details": "Every Sunday, a free Chicken Shack, ShackBurger, or 6-piece chicken bites with a $10 order.",
+   "price": "Free",
+   "price_value": 0,
+   "ongoing": true,
+   "end": "2026-12-27",
+   "how": [
+    "app",
+    "online",
+    "in-store"
+   ],
+   "code": "SHACKSUNDAY",
+   "fine_print": "$10 minimum. Use code SHACKSUNDAY online, in the app, or at a kiosk. Sundays through December 27.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "app_only": false,
+   "rewards": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "wendys-daves-half",
+   "chain": "Wendy's",
+   "title": "Half off a Dave's Single",
+   "details": "50% off a Dave's Single with any purchase, once a week.",
+   "price": "50% off",
+   "price_value": null,
+   "end": "2026-12-04",
+   "how": [
+    "app",
+    "online"
+   ],
+   "rewards": true,
+   "code": "FOXBIGNOON",
+   "fine_print": "Wendy's Rewards members, once per week, online or app orders with code FOXBIGNOON. Through December 4.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "ongoing": false,
+   "app_only": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "subway-happy-hour",
+   "chain": "Subway",
+   "title": "Happy Hour: second Footlong half off",
+   "details": "Buy a Footlong, get the second half off, from 4 PM to close or all day on weekends.",
+   "price": "50% off",
+   "price_value": null,
+   "ongoing": true,
+   "how": [
+    "in-store",
+    "app",
+    "online"
+   ],
+   "code": "BOGO50",
+   "fine_print": "4 PM to close local time, or all day Saturday and Sunday. Use BOGO50 online or in the app. The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "app_only": false,
+   "rewards": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "bojangles-iced-coffee",
+   "chain": "Bojangles",
+   "title": "Free iced coffee, 2 to 4 PM",
+   "details": "A free iced coffee with any purchase of $1 or more in the afternoon window.",
+   "price": "Free",
+   "price_value": 0,
+   "ongoing": true,
+   "how": [
+    "in-store",
+    "app",
+    "online"
+   ],
+   "code": "ICEICEBABY",
+   "fine_print": "2 to 4 PM with a $1 purchase. Online or app orders need code ICEICEBABY. The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "app_only": false,
+   "rewards": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "ljs-thursday",
+   "chain": "Long John Silver's",
+   "title": "2-piece Chicken Basket on Thursdays",
+   "details": "Weekly Thursday price on a 2-piece chicken basket. Other days have their own codes.",
+   "price": "$3.99",
+   "price_value": 3.99,
+   "ongoing": true,
+   "how": [
+    "app",
+    "online"
+   ],
+   "code": "THURSCKN",
+   "fine_print": "Online or app orders. Other weekly codes: MONDAY (2 meals $11.99), 10TUES ($10 Variety Platter, limit six), WED25 (25% off), DTFISH ($30 Date Night), WKNDFAM ($25 family meal on weekends). The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "app_only": false,
+   "rewards": false,
+   "official": null,
+   "added": "2026-11-26"
+  },
+  {
+   "id": "blimpie-best-meal",
+   "chain": "Blimpie",
+   "title": "Best Meal Deal",
+   "details": "A regular sub, chips, and a drink, with a different sub featured each day.",
+   "price": "$7.99",
+   "price_value": 7.99,
+   "ongoing": true,
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "$11.99 with a large sub. Featured sub rotates daily. The source gives no end date and was published Nov 7, so confirm it is still running.",
+   "source": {
+    "name": "Sporked, Nov 7, 2026",
+    "url": "https://sporked.com/article/every-fast-food-deal-this-week-9/"
+   },
+   "start": null,
+   "end": null,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "added": "2026-11-26"
+  }
+ ]
+}

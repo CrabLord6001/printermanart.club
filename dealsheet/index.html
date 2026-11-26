@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DealSheet: fast food deals in one table</title>
+<meta name="description" content="Current fast food and quick-service deals in one sortable table. Pick the restaurants you use and see only their deals, with expiration dates and fine print.">
+<link rel="canonical" href="https://printermanart.club/dealsheet/">
+<meta name="theme-color" content="#F4C542">
+<link rel="icon" href="/img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/img/favicon-180.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PrinterMan's Art Club">
+<meta property="og:title" content="DealSheet: fast food deals in one table">
+<meta property="og:description" content="Pick the restaurants you use. See only their deals, sorted by when they end.">
+<meta property="og:url" content="https://printermanart.club/dealsheet/">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dealsheet.css">
+</head>
+<body>
+
+<header class="liner">
+  <div class="liner-inner">
+    <a class="home" href="/">PrinterMan's Art Club</a>
+    <h1 class="wordmark"><span>Deal</span><span>Sheet</span></h1>
+    <p class="lede">Fast food deals in one table. Pick the places you actually eat, and the rest disappears.</p>
+  </div>
+</header>
+
+<main>
+  <section class="picker" aria-labelledby="picker-h">
+    <div class="picker-head">
+      <h2 id="picker-h">Your restaurants</h2>
+      <div class="picker-actions">
+        <button type="button" class="linkbtn" data-pick="all">Select all</button>
+        <button type="button" class="linkbtn" data-pick="none">Clear</button>
+      </div>
+    </div>
+    <div class="chips" id="chips" role="group" aria-labelledby="picker-h"></div>
+    <p class="picker-note" id="picker-note">Your picks stay in this browser. No account needed.</p>
+  </section>
+
+  <section class="sheet" aria-labelledby="sheet-h">
+    <div class="toolbar">
+      <h2 id="sheet-h" class="count" aria-live="polite"></h2>
+      <div class="controls">
+        <label class="field">
+          <span>Search</span>
+          <input type="search" id="q" placeholder="Nuggets, BOGO, free…" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>How you order</span>
+          <select id="how">
+            <option value="">Any way</option>
+            <option value="in-store">In the restaurant</option>
+            <option value="drive-thru">Drive-thru</option>
+            <option value="app">App or online</option>
+            <option value="delivery">Delivery</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Sort by</span>
+          <select id="sort">
+            <option value="ends">Ending soonest</option>
+            <option value="chain">Restaurant A to Z</option>
+            <option value="price">Lowest price</option>
+            <option value="new">Newest first</option>
+          </select>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="noapp">
+          <span>Hide app-only deals</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="deals" id="deals">
+        <thead>
+          <tr>
+            <th scope="col">Restaurant</th>
+            <th scope="col">Deal</th>
+            <th scope="col" class="num">Price</th>
+            <th scope="col">Ends</th>
+            <th scope="col">How to get it</th>
+            <th scope="col"><span class="sr-only">Details</span></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty" hidden>
+      <p id="empty-msg"></p>
+      <button type="button" class="btn" id="reset">Show all deals</button>
+    </div>
+  </section>
+
+  <section class="about" aria-labelledby="about-h">
+    <h2 id="about-h">Where these deals come from</h2>
+    <p>Each deal links to the report where it was found. Deals with a stated end date drop off the table on their own once they expire. Deals inside each chain's app can differ by person and by store, so confirm in the app or at the counter before you order.</p>
+    <p class="updated" id="updated"></p>
+    <p class="fine">DealSheet is not affiliated with any restaurant. Prices and availability vary by location.</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <a href="/">printermanart.club</a>
+  <a href="/games/">Arcade</a>
+  <a href="/news.html">News Briefing</a>
+</footer>
+
+<script src="dealsheet.js" defer></script>
+</body>
+</html>
