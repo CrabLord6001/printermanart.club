@@ -170,8 +170,7 @@
       var far = farChains().filter(function (c) { return data.deals.some(function (d) { return d.chain === c && isLive(d); }); });
       $nearStatus.classList.remove('err');
       $nearStatus.innerHTML = 'Showing for ' + esc(where) + (far.length
-        ? '. ' + (state.showFar ? 'Including' : 'Hiding') + ' ' + far.length + (far.length === 1 ? ' restaurant' : ' restaurants') +
-          ' with no store within ' + radius() + ' mi. <button type="button" class="linkbtn" id="toggle-far">' + (state.showFar ? 'Hide them' : 'Show them') + '</button>'
+        ? '. ' + far.length + (far.length === 1 ? ' store' : ' stores') + ' out of range. <button type="button" class="linkbtn" id="toggle-far">' + (state.showFar ? 'Hide them' : 'Show them') + '</button>'
         : '.');
     }
     renderChips(); renderMine(); render();
