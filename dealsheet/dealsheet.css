@@ -483,3 +483,19 @@ button.tag { font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; 
   .deals tr.deal.pinned td:first-child { box-shadow: none; }
   .deals tr.deal.pinned { box-shadow: inset 4px 0 0 var(--mustard); }
 }
+
+/* ---------- Thin site bar (matches the News Briefing's strip) ---------- */
+.site-strip { background: var(--ink); }
+.site-strip-inner {
+  max-width: var(--maxw); margin: 0 auto; padding: 10px 20px;
+  display: flex; align-items: center; gap: 8px 20px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .16em;
+}
+.site-strip a { color: rgba(255, 255, 255, .62); text-decoration: none; white-space: nowrap; }
+.site-strip a:hover { color: var(--mustard); }
+.site-strip a:focus-visible { outline: 2px solid var(--mustard); outline-offset: 3px; }
+.site-strip .site-home { margin-right: auto; color: #fff; letter-spacing: .12em; }
+@media (max-width: 420px) {
+  .site-strip-inner { gap: 6px 14px; padding: 9px 16px; font-size: 10px; letter-spacing: .1em; }
+  .site-strip .site-home { letter-spacing: .06em; }
+}
