@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T19:51:34Z",
+ "updated": "2026-11-27T11:51:49Z",
  "chains": [
   {
    "name": "7 Brew",
@@ -205,6 +205,15 @@
    ]
   },
   {
+   "name": "Clean Juice",
+   "osm": [
+    "Clean Juice"
+   ],
+   "types": [
+    "Salads & Smoothies"
+   ]
+  },
+  {
    "name": "Crisp & Green",
    "osm": [
     "Crisp & Green"
@@ -343,6 +352,15 @@
    ]
   },
   {
+   "name": "Feng Cha",
+   "osm": [
+    "Feng Cha"
+   ],
+   "types": [
+    "Sweets"
+   ]
+  },
+  {
    "name": "Firehouse Subs",
    "osm": [
     "Firehouse Subs"
@@ -385,6 +403,15 @@
    "web": "https://www.freebirds.com/",
    "types": [
     "Mexican"
+   ]
+  },
+  {
+   "name": "Frutta Bowls",
+   "osm": [
+    "Frutta Bowls"
+   ],
+   "types": [
+    "Salads & Smoothies"
    ]
   },
   {
@@ -740,6 +767,34 @@
    "web": "https://www.raisingcanes.com/",
    "types": [
     "Chicken & Wings"
+   ]
+  },
+  {
+   "name": "Round Table Pizza",
+   "osm": [
+    "Round Table Pizza",
+    "Round Table"
+   ],
+   "types": [
+    "Pizza & Italian"
+   ]
+  },
+  {
+   "name": "Rusty Taco",
+   "osm": [
+    "Rusty Taco"
+   ],
+   "types": [
+    "Mexican"
+   ]
+  },
+  {
+   "name": "Schlotzsky's",
+   "osm": [
+    "Schlotzsky's"
+   ],
+   "types": [
+    "Sandwiches"
    ]
   },
   {
@@ -2471,6 +2526,225 @@
    },
    "official": "https://www.scooterscoffee.com/",
    "added": "2026-11-26"
+  },
+  {
+   "price_value": 22,
+   "start": "2026-11-27",
+   "end": "2026-12-06",
+   "ongoing": false,
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "official": null,
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 26, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "added": "2026-11-27",
+   "id": "subway-bf-bundle",
+   "chain": "Subway",
+   "title": "$22 Black Friday Bundle",
+   "details": "Two Footlongs, two 20 oz fountain drinks, and six cookies for $22.",
+   "price": "$22",
+   "how": [
+    "app",
+    "online"
+   ],
+   "fine_print": "Sub Club members only. Online or app. One per member."
+  },
+  {
+   "price_value": 6,
+   "start": null,
+   "end": "2026-11-29",
+   "ongoing": false,
+   "app_only": true,
+   "rewards": true,
+   "code": null,
+   "official": null,
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 26, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "added": "2026-11-27",
+   "id": "dq-2-cupcakes",
+   "chain": "Dairy Queen",
+   "title": "Two cupcakes for $6",
+   "details": "Two DQ cupcakes for $6 in the DQ app.",
+   "price": "$6",
+   "how": [
+    "app"
+   ],
+   "fine_print": "DQ Rewards members. Redeem in the app. Start date not given."
+  },
+  {
+   "price_value": 29.99,
+   "start": "2026-11-27",
+   "end": "2026-12-03",
+   "ongoing": false,
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "official": null,
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 26, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "added": "2026-11-27",
+   "id": "schlotzskys-bogo-pass",
+   "chain": "Schlotzsky's",
+   "title": "BOGO Entree for a Year Pass, $29.99",
+   "details": "Buy the pass in store and get a free select entree with another entree once a week for 52 weeks.",
+   "price": "$29.99",
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "Rewards members. While supplies last. Activate in the app by Jan 31, 2027."
+  },
+  {
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-12-01",
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": "BLACKFRIDAY50",
+   "official": null,
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 26, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "added": "2026-11-27",
+   "id": "moes-catering-bf",
+   "chain": "Moe's Southwest Grill",
+   "title": "Up to $100 off catering",
+   "details": "$50 off catering orders of $250 or more, or $100 off orders of $500 or more.",
+   "price": "$50-$100 off",
+   "how": [
+    "online"
+   ],
+   "fine_print": "Use BLACKFRIDAY100 for $100 off $500+. Order by Dec 1; pickup or delivery by Dec 31."
+  },
+  {
+   "price_value": null,
+   "start": null,
+   "end": "2026-11-30",
+   "ongoing": false,
+   "app_only": false,
+   "rewards": true,
+   "code": null,
+   "official": null,
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 26, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "added": "2026-11-27",
+   "id": "roundtable-7-off",
+   "chain": "Round Table Pizza",
+   "title": "$7 off a large or XL pizza",
+   "details": "Save $7 on a large or extra-large pizza.",
+   "price": "$7 off",
+   "how": [
+    "in-store",
+    "delivery"
+   ],
+   "fine_print": "Rewards members. Dine-in, takeout, or delivery. Start date not given."
+  },
+  {
+   "price_value": 0,
+   "start": null,
+   "end": "2026-12-04",
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": "FREEDELIVERY",
+   "official": null,
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 26, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "added": "2026-11-27",
+   "id": "rustytaco-free-delivery",
+   "chain": "Rusty Taco",
+   "title": "Free delivery",
+   "details": "Free delivery on online orders.",
+   "price": "Free delivery",
+   "how": [
+    "online",
+    "delivery"
+   ],
+   "fine_print": "Online orders. Start date not given. A Black Friday catering offer (free gallon of tea or lemonade on $200+, code FREEGALLON) also runs."
+  },
+  {
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-30",
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 26, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "added": "2026-11-27",
+   "id": "cleanjuice-bf-juice",
+   "chain": "Clean Juice",
+   "title": "Juice bundle discounts",
+   "details": "Buy three cold-pressed juices and get one 50% off, or buy five and get one free.",
+   "price": "Up to 1 free",
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "Organic cold-pressed juices. How to redeem not stated; assume in store."
+  },
+  {
+   "price_value": null,
+   "start": "2026-11-26",
+   "end": "2026-11-29",
+   "ongoing": false,
+   "app_only": true,
+   "rewards": true,
+   "code": null,
+   "official": null,
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 26, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "added": "2026-11-27",
+   "id": "fruttabowls-bogo50",
+   "chain": "Frutta Bowls",
+   "title": "Second bowl 50% off",
+   "details": "Buy one bowl in the app and get a second at half price.",
+   "price": "BOGO 50%",
+   "how": [
+    "app"
+   ],
+   "fine_print": "App orders. One per rewards account."
+  },
+  {
+   "price_value": 19.99,
+   "start": null,
+   "end": "2026-11-27",
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "official": null,
+   "source": {
+    "name": "The Krazy Coupon Lady, Nov 26, 2026",
+    "url": "https://thekrazycouponlady.com/tips/money/free-food-on-black-friday"
+   },
+   "added": "2026-11-27",
+   "id": "fengcha-4-drinks",
+   "chain": "Feng Cha",
+   "title": "Four drinks for $19.99",
+   "details": "Any four drinks for $19.99.",
+   "price": "$19.99",
+   "how": [
+    "in-store"
+   ],
+   "fine_print": "All locations. Ends Black Friday. Start date not given."
   }
  ]
 }
