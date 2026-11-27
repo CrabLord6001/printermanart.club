@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T11:51:49Z",
+ "updated": "2026-11-27T15:50:28Z",
  "chains": [
   {
    "name": "7 Brew",
@@ -611,6 +611,15 @@
    "web": "https://moes.com/",
    "types": [
     "Mexican"
+   ]
+  },
+  {
+   "name": "MOOYAH",
+   "osm": [
+    "MOOYAH"
+   ],
+   "types": [
+    "Burgers"
    ]
   },
   {
@@ -2745,6 +2754,98 @@
     "in-store"
    ],
    "fine_print": "All locations. Ends Black Friday. Start date not given."
+  },
+  {
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "source": {
+    "name": "SavorNation, Nov 25, 2026",
+    "url": "https://savornation.tv/news/black-friday-cyber-monday-food-deals-2026/"
+   },
+   "official": null,
+   "added": "2026-11-27",
+   "id": "deltaco-bf-epic-5",
+   "chain": "Del Taco",
+   "title": "$5 Epic burrito",
+   "details": "Get an Epic burrito for $5.",
+   "price": "$5",
+   "price_value": 5,
+   "start": "2026-11-27",
+   "end": "2026-11-29",
+   "how": [],
+   "fine_print": "Black Friday weekend. The source does not say how to order or which items count."
+  },
+  {
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "source": {
+    "name": "SavorNation, Nov 25, 2026",
+    "url": "https://savornation.tv/news/black-friday-cyber-monday-food-deals-2026/"
+   },
+   "official": null,
+   "added": "2026-11-27",
+   "id": "deltaco-cyber-20",
+   "chain": "Del Taco",
+   "title": "20% off $10",
+   "details": "Take 20% off an order of $10 or more, up to $10 off.",
+   "price": "20% off",
+   "price_value": null,
+   "start": "2026-11-30",
+   "end": "2026-11-30",
+   "how": [],
+   "fine_print": "Cyber Monday only. The source does not say how to order."
+  },
+  {
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "source": {
+    "name": "SavorNation, Nov 25, 2026",
+    "url": "https://savornation.tv/news/black-friday-cyber-monday-food-deals-2026/"
+   },
+   "official": null,
+   "added": "2026-11-27",
+   "id": "mooyah-bf-fries",
+   "chain": "MOOYAH",
+   "title": "Free fries with purchase",
+   "details": "Free fries with any purchase.",
+   "price": "Free",
+   "price_value": 0,
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "how": [],
+   "fine_print": "Black Friday only. The source gives no other terms."
+  },
+  {
+   "ongoing": false,
+   "app_only": false,
+   "rewards": false,
+   "code": null,
+   "source": {
+    "name": "SavorNation, Nov 25, 2026",
+    "url": "https://savornation.tv/news/black-friday-cyber-monday-food-deals-2026/"
+   },
+   "official": null,
+   "added": "2026-11-27",
+   "id": "tijuanaflats-free-delivery",
+   "chain": "Tijuana Flats",
+   "title": "Free delivery on $35",
+   "details": "Free delivery on app or online orders of $35 or more.",
+   "price": "Free delivery",
+   "price_value": null,
+   "start": "2026-11-27",
+   "end": "2026-11-29",
+   "how": [
+    "app",
+    "online",
+    "delivery"
+   ],
+   "fine_print": "Black Friday through Sunday."
   }
  ]
 }
