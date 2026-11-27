@@ -18,7 +18,7 @@
 
   --display: 'Bowlby One', 'Arial Black', sans-serif;
   --text: 'Figtree', system-ui, -apple-system, sans-serif;
-  --maxw: 1180px;
+  --maxw: 1280px;
 }
 
 * { box-sizing: border-box; }
@@ -240,7 +240,7 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
 .foot a:hover { text-decoration: underline; }
 
 /* ---------- Phone: rows become stacked cards ---------- */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .liner { padding-bottom: 44px; background-size: 40px 40px; }
   .wordmark { box-shadow: 7px 7px 0 var(--ink); margin-top: 30px; }
   .lede { margin-top: 30px; }
@@ -320,7 +320,7 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
 .dist.far { color: var(--ink-3); font-weight: 500; }
 .tag.area { background: #E6EEFB; border-color: #B9CDEF; color: #1F4E9E; }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .setup-bar { grid-template-columns: 1fr; }
   .picker { padding: 14px; }
   .picker .chips { max-height: 220px; }
@@ -332,7 +332,7 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
 .radius output { color: var(--ink); }
 .radius input { width: 100%; max-width: 260px; accent-color: var(--ketchup); height: 24px; }
 .near-status { max-width: 34ch; }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .wordmark { padding: .12em .2em .16em; border-width: 3px; }
   .lede { margin-top: 26px; box-shadow: 4px 4px 0 var(--ink); }
   .radius input { max-width: none; }
@@ -353,7 +353,7 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
 .zip-x:hover { border-color: var(--ink); color: var(--ink); }
 .radius { margin-top: 12px; max-width: 320px; }
 .near-status { margin-top: 6px; max-width: 60ch; }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .setup-row { gap: 8px; flex-wrap: nowrap; }
   .setup-row .btn.small { padding: 7px 10px; white-space: nowrap; }
   .setup-row .near { gap: 6px; }
@@ -365,7 +365,7 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
 }
 
 /* ---------- Phone: one sheet with ruled rows, not separate cards ---------- */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .table-wrap { border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; background: var(--paper); }
   .deals tr.deal {
     grid-template-columns: auto 1fr auto;
@@ -395,7 +395,7 @@ tr.detail td { background: #FFF6D6; padding: 0 14px 18px; }
 .deals tr.deal.alt td, .deals tr.detail.alt td { background: #F6EFE2; }
 .deals tbody tr.deal:hover td { background: #FFFBEA; }
 .deals tbody tr.deal.open td, .deals tr.detail td { background: #FFF6D6; }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .deals tr.deal.alt { background: #F6EFE2; }
   .deals tr.deal.alt td, .deals tr.deal:hover td { background: transparent; }
   .deals tr.deal.open, .deals tr.deal.open td { background: #FFF6D6; }
@@ -413,20 +413,20 @@ td.c-more > * + * { margin-left: 6px; }
   padding: 5px 10px; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap;
 }
 .go:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   td.c-more { display: flex; }
   .go { font-size: 12px; padding: 3px 8px; border-width: 1.5px; }
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .deals tr.deal { grid-template-areas: "chain chain price" "deal deal deal" "ends how how" "more more more"; }
   td.c-more { justify-content: flex-end; margin-top: 2px; }
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .deals tbody tr.deal td, .deals tbody tr.deal:hover td, .deals tbody tr.deal.open td { background: transparent; }
 }
 /* Phone: "Details" stays on the tags line; only rows that also have an
    order button (two buttons don't fit beside the tags) get a button row. */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .deals tr.deal { grid-template-areas: "chain chain price" "deal deal deal" "ends how more"; }
   .deals tr.deal:has(.go) { grid-template-areas: "chain chain price" "deal deal deal" "ends how how" "more more more"; }
   td.c-more { margin-top: 0; }
@@ -434,7 +434,7 @@ td.c-more > * + * { margin-left: 6px; }
 }
 /* Phone: date pill, tags and buttons flow as one wrapping line from the left
    edge; the buttons keep to the right. */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .deals tr.deal, .deals tr.deal:has(.go) {
     display: flex; flex-wrap: wrap; align-items: center; gap: 6px 6px;
   }
@@ -446,22 +446,22 @@ td.c-more > * + * { margin-left: 6px; }
   .deals tr.deal .c-how .tag { order: 4; }
   .deals tr.deal td.c-more { order: 5; margin-left: auto; display: flex; gap: 6px; }
 }
-@media (max-width: 900px) { .table-wrap { position: relative; } }
+@media (max-width: 1100px) { .table-wrap { position: relative; } }
 /* Phone: on rows with an order button, the buttons take their own line on
    the right, so the date and every tag (code included) share the line above. */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .deals tr.deal:has(.go) td.c-more { flex: 0 0 100%; justify-content: flex-end; margin-left: 0; }
   .deals tr.deal { gap: 6px 5px; }
   .when { padding: 2px 6px; }
   .tag { padding: 1px 5px; }
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .deals tr.deal { column-gap: 4px; }
   .when { font-size: 11.5px; }
 }
-@media (max-width: 900px) { .deals thead { display: none; } }
-@media (max-width: 900px) { .deals tr.deal, .deals tr.deal:has(.go) { column-gap: 4px; } }
-@media (max-width: 900px) {
+@media (max-width: 1100px) { .deals thead { display: none; } }
+@media (max-width: 1100px) { .deals tr.deal, .deals tr.deal:has(.go) { column-gap: 4px; } }
+@media (max-width: 1100px) {
   .deals tr.deal:has(.go) td.c-more { justify-content: flex-start; }
 }
 
@@ -478,7 +478,7 @@ button.tag { font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; 
 .pin[aria-pressed="true"] { color: var(--mustard-deep); }
 .pin[aria-pressed="true"] svg { fill: var(--mustard); }
 .deals tr.deal.pinned td:first-child { box-shadow: inset 4px 0 0 var(--mustard); }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   button.tag { font-size: 11px; }
   .deals tr.deal.pinned td:first-child { box-shadow: none; }
   .deals tr.deal.pinned { box-shadow: inset 4px 0 0 var(--mustard); }
@@ -499,7 +499,7 @@ button.tag { font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; 
   .site-strip-inner { gap: 6px 14px; padding: 9px 16px; font-size: 10px; letter-spacing: .1em; }
   .site-strip .site-home { letter-spacing: .06em; }
 }
-@media (max-width: 900px) { .tag.code .cw { display: none; } }
+@media (max-width: 1100px) { .tag.code .cw { display: none; } }
 
 /* ---------- Food type dots ---------- */
 .type-dot {
@@ -563,26 +563,26 @@ button.tag { font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; 
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 330'%3E%3Cg fill='%23E9E4DF' stroke='%23A79C93' stroke-width='1.5'%3E%3Cpath d='M27 4q-14 10-14 70v40q0 6 6 8v204q0 4 4 4t4-4z'/%3E%3C/g%3E%3C/svg%3E");
   }
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .liner { padding: 24px 12px 30px; }
   .wordmark { box-shadow: 4px 4px 0 var(--ink); }
   .lede { margin-top: 14px; }
 }
 
-@media (max-width: 900px) {
-  .liner-inner { width: 64vw; }
-  .wordmark { font-size: 7.4vw; }
-  .lede { font-size: 3.3vw; }
+@media (max-width: 1100px) {
+  .liner-inner { width: min(64vw, 540px); }
+  .wordmark { font-size: min(7.4vw, 74px); }
+  .lede { font-size: min(3.3vw, 22px); }
   .lede::before, .lede::after { display: none; }
-  .liner::before, .liner::after { width: 30px; height: 56vw; }
-  .liner::before { left: calc(50% - 32vw - 9vw - 15px); }
-  .liner::after { left: calc(50% + 32vw + 9vw - 15px); }
+  .liner::before, .liner::after { width: 30px; height: min(56vw, 400px); }
+  .liner::before { left: calc(50% - min(32vw, 270px) - min(9vw, 70px) - 15px); }
+  .liner::after { left: calc(50% + min(32vw, 270px) + min(9vw, 70px) - 15px); }
 }
 
 /* Table view (tablets in landscape and computers): give the deal text room */
-@media (min-width: 901px) {
-  .c-chain { white-space: normal; width: 15%; }
-  .c-deal { width: 34%; }
+@media (min-width: 1101px) {
+  .c-chain { white-space: nowrap; }
+  .c-deal { width: 32%; min-width: 220px; }
   .c-deal .d { max-width: none; }
   td.c-more { width: 1%; }
   td.c-more > * { display: flex; width: 100%; justify-content: center; }
